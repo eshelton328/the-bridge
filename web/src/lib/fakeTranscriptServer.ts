@@ -47,7 +47,16 @@
 // each send, command and clear of its terminal input answers 409
 // chat-not-ready `inputUnreadable` and changes nothing, as the server does,
 // before it looks at the text in the box.
+//
+// R34 (backend #352): it answers a chat's "/" list, `GET
+// /api/chats/:chat/skills`, with the contract's `ChatSkillsResponse`: the
+// four built-ins first (compact, clear, model, effort), then the skills the
+// test set for the chat (`setSkills`) in the order it gave, as the server
+// sorts them by name. It records each read's chat in `skillReads`, and
+// `answerSkills` answers in its place, such as a 503 or one that waits.
 import {
+  type ChatSkill,
+  ChatSkillsResponse,
   ChatCommandRequest,
   ClearInputRequest,
   ErrorBody,
@@ -80,6 +89,14 @@ export function errorAnswer(error: ErrorBody['error'], status: number): Response
     headers: { 'content-type': 'application/json', 'X-Request-Id': error.requestId },
   })
 }
+
+/** The server's built-ins, first in every Claude chat's list (backend #352). */
+const builtins: readonly ChatSkill[] = [
+  { name: 'compact', description: 'Free up context by summarising the conversation', source: 'builtin' },
+  { name: 'clear', description: 'Start the conversation over', source: 'builtin' },
+  { name: 'model', description: 'Set the model', source: 'builtin' },
+  { name: 'effort', description: 'Set the effort level', source: 'builtin' },
+]
 
 const readBody = (init: RequestInit | undefined): unknown => {
   try {
@@ -125,6 +142,13 @@ export function fakeTranscriptServer({ streams: mode = 'open', uploads: uploadOp
   const clearListeners: ((chat: string) => void)[] = []
   /** The path of each send, stop, clear or command as the page wrote it, before any decoding. */
   const paths: string[] = []
+  /** The skills of each chat after the built-ins, as the test set them. */
+  const skills = new Map<string, readonly ChatSkill[]>()
+  /** The chat of each "/" list read, in order. */
+  const skillReads: string[] = []
+  /** The path of each "/" list read as the page wrote it, before any decoding. */
+  const skillPaths: string[] = []
+  let skillsAnswer: ((chat: string) => Response | Promise<Response>) | undefined
   let promptAnswer: ActionAnswer | undefined
   let stopAnswer: ActionAnswer | undefined
   let clearAnswer: ActionAnswer | undefined
@@ -241,6 +265,16 @@ export function fakeTranscriptServer({ streams: mode = 'open', uploads: uploadOp
     return new Response(body, { status: 200, headers: { 'content-type': 'text/event-stream' } })
   }
 
+  /** A chat's "/" list: the built-ins, then its skills, checked against the contract. */
+  const skillList = (chat: string) =>
+    new Response(
+      JSON.stringify(ChatSkillsResponse.parse({ chat, skills: [...builtins, ...(skills.get(chat) ?? [])] })),
+      {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      },
+    )
+
   return {
     /** The upload routes (W1b): their records and switches, and the XMLHttpRequest a test stubs for the chunks. */
     uploads,
@@ -252,6 +286,16 @@ export function fakeTranscriptServer({ streams: mode = 'open', uploads: uploadOp
     posts,
     paths,
     commands,
+    skillReads,
+    skillPaths,
+    /** Sets the skills of `chat` after the built-ins, as the server reads them from its folders. */
+    setSkills: (chat: string, list: readonly ChatSkill[]) => {
+      skills.set(chat, [...list])
+    },
+    /** Answers each "/" list read with `answer` until it is set to undefined; the read is still recorded. */
+    answerSkills: (answer: ((chat: string) => Response | Promise<Response>) | undefined) => {
+      skillsAnswer = answer
+    },
     /** Answers each command with `answer` until it is set to undefined; the command is not recorded in `commands`. */
     answerCommands: (answer: ActionAnswer | undefined) => {
       commandAnswer = answer
@@ -367,6 +411,13 @@ export function fakeTranscriptServer({ streams: mode = 'open', uploads: uploadOp
     handle: (path: string, init?: RequestInit): Response | Promise<Response> | undefined => {
       const upload = uploads.handle(path, init)
       if (upload !== undefined) return upload
+      const listed = /^\/api\/chats\/([^/]+)\/skills$/.exec(path)
+      if (listed !== null && (init?.method ?? 'GET') === 'GET') {
+        skillPaths.push(path)
+        const chat = decodeURIComponent(listed[1] ?? '')
+        skillReads.push(chat)
+        return skillsAnswer?.(chat) ?? skillList(chat)
+      }
       const posted = /^\/api\/chats\/([^/]+)\/command$/.exec(path)
       if (posted !== null && init?.method === 'POST') {
         paths.push(path)

@@ -40,6 +40,7 @@ import { chatPanesOf, paneMoves, withMovedChats } from './paneFollow.ts'
 import { WorkspacesScreen } from './screens/WorkspacesScreen.tsx'
 import type { ComposerAnswer } from './blocks/useComposerActions.ts'
 import type { WorkspacesUi } from './types.ts'
+import { useLiveSkills } from './useLiveSkills.ts'
 import { useLiveTranscripts } from './useLiveTranscripts.ts'
 import { useLayoutWrites } from './useLayoutWrites.ts'
 import { useLivePending } from './useLivePending.ts'
@@ -140,6 +141,8 @@ export function WorkspacesPage() {
   const { data, ui: shownUi } = useMemo(() => withShownTabs(liveData, ui), [liveData, ui])
   const files = useLiveUploads(import.meta.env.DEV && live)
   const pendings = useLivePending(import.meta.env.DEV && live)
+  // Each live Claude chat's "/" list, read from the server each time it opens (review R34).
+  const skillLists = useLiveSkills(import.meta.env.DEV && live)
   const layoutWrites = useLayoutWrites(import.meta.env.DEV && live, data, (workspace, chat, tab) => {
     changeUi(followTab(liveData, uiRef.current, workspace, chat, tab))
   })
@@ -179,6 +182,7 @@ export function WorkspacesPage() {
       onUiChange={changeUi}
       onRetry={() => void router.invalidate()}
       transcripts={transcripts}
+      skillLists={skillLists}
       onCopy={copyReply}
       onSend={(chat, text) =>
         pendingRef.current.has(`clear:${chat}`)

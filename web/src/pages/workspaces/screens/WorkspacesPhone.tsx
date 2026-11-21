@@ -75,6 +75,8 @@ import { SubtaskDialog } from '../blocks/SubtaskDialog.tsx'
 import type { CopyReply } from '../blocks/ChatEntryView.tsx'
 import type { ChatFiles, ChatPending, TranscriptWatch } from '../blocks/ChatPane.tsx'
 import type { DraftBook } from '../blocks/draftBook.ts'
+import type { SkillLists } from '../blocks/skillLists.ts'
+import { liveSkillList } from '../blocks/useSkillRows.ts'
 import { isChatCommand, withCommands } from '../blocks/chatCommands.ts'
 import { type LayoutWrites, tabOf, withLayoutActions } from '../blocks/layoutActions.ts'
 import { modelText } from '../blocks/modelText.ts'
@@ -103,6 +105,8 @@ export type WorkspacesPhoneProps = {
   pendingOf?: ((chat: string) => ChatPending | undefined) | undefined
   /** Reads each live chat's transcript while its pane shows (ChatPane); fixtures have none. */
   transcripts?: TranscriptWatch | undefined
+  /** Reads each live Claude chat's "/" list each time it opens (review R34); fixtures have none. */
+  skillLists?: SkillLists | undefined
   /** A reply's Copy, sample or live: the page writes the clipboard, and the button shows the result (audit P-4). */
   onCopy?: CopyReply | undefined
   /** The live-unavailable notice (LiveNotice), drawn at the top of the list and of a chat; none when not set. */
@@ -124,6 +128,7 @@ export function WorkspacesPhone({
   filesOf,
   pendingOf,
   transcripts,
+  skillLists,
   onCopy,
   notice,
   layoutWrites,
@@ -371,6 +376,7 @@ export function WorkspacesPhone({
                   items: data.skills,
                   value: ui.skill,
                   open: ui.skillsFor === chat.id,
+                  live: liveSkillList(skillLists, chat, onUiChange),
                 }}
                 meta={meta}
                 focusMessage={ui.messageFocus}

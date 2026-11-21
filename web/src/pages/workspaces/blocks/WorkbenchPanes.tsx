@@ -25,6 +25,8 @@
 import { SplitPanes } from '@eshelton328/component-library-1701'
 import type { ResizePart, WorkbenchPane, WorkspacesData, WorkspacesUi } from '../types.ts'
 import type { CopyReply } from './ChatEntryView.tsx'
+import type { SkillLists } from './skillLists.ts'
+import { liveSkillList } from './useSkillRows.ts'
 import { isChatCommand, withCommands } from './chatCommands.ts'
 import { type LayoutWrites, moveTargets, swapTargets, tabOf, withLayoutActions } from './layoutActions.ts'
 import { ChatPane, type ChatFiles, type ChatPending, type TranscriptWatch } from './ChatPane.tsx'
@@ -76,6 +78,8 @@ export type WorkbenchPanesProps = {
   pendingOf?: ((chat: string) => ChatPending | undefined) | undefined
   /** Reads each live chat's transcript while its pane shows (ChatPane); fixtures have none. */
   transcripts?: TranscriptWatch | undefined
+  /** Reads each live Claude chat's "/" list each time it opens (review R34); fixtures have none. */
+  skillLists?: SkillLists | undefined
   /** A reply's Copy: the page writes the clipboard, and the button shows the result (audit P-4). */
   onCopy?: CopyReply | undefined
   /** The live chats' layout writes (W2); none on a fixture. */
@@ -98,6 +102,7 @@ export function WorkbenchPanes({
   filesOf,
   pendingOf,
   transcripts,
+  skillLists,
   onCopy,
   layout,
   onResize,
@@ -272,6 +277,7 @@ export function WorkbenchPanes({
               items: data.skills,
               value: ui.skill,
               open: ui.skillsFor === pane.id,
+              live: liveSkillList(skillLists, pane, onUiChange),
             }}
             onSkillsOpenChange={(open) => onUiChange?.({ skillsFor: open ? pane.id : null })}
             overlay={

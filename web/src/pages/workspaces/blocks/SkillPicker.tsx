@@ -7,10 +7,19 @@
 // Every list is compact, as Figma draws each one 173 high (D1 105:406, T4
 // 105:2246, M3 105:2805). On the phone and the tablet the focus stays in the
 // message box. A press on a row leaves the focus in the box, so the phone's
-// keyboard stays up while the owner picks a skill (`onPick`). Props only.
-import { OptionList, Popover, PopoverSection } from '@eshelton328/component-library-1701'
-import type { ReactElement } from 'react'
-import type { Skill } from '../types.ts'
+// keyboard stays up while the owner picks a skill (`onPick`). A long list
+// (a live chat's, review R34) scrolls inside the popover, which never grows
+// past the room above the composer (the library's `--available-height`), and
+// the highlighted row scrolls into view as the arrow keys move it. A
+// project's or a plugin's skill names its source in a badge. A list with no
+// rows says so in one muted line. Props only.
+import { Badge, OptionList, Popover, PopoverSection } from '@eshelton328/component-library-1701'
+import { type ReactElement, useEffect, useRef } from 'react'
+import { css } from '../../../../styled-system/css/index.js'
+import type { SkillRow } from './skillLists.ts'
+
+// The line in place of the rows, as quiet as the composer's hint: inset as a row's text is.
+const emptyLine = css({ display: 'block', px: '8', py: '6', textStyle: 'small', color: 'fg.muted' })
 
 // `pane`: the desktop's list (D1 105:406; Figma 160 × 173). `tablet`: T4's list (105:2246; Figma 360 × 173). `phone`:
 // Figma's 358 × 173 box (M3 105:2805), as wide as the composer. Each draws the same box: 7 from its edge to the
@@ -29,7 +38,9 @@ export type SkillPickerProps = {
   /** What the owner typed from the "/", drawn after the section's label in its own case (M10 147:72: "SKILLS MATCHING
    * /wri"); `label` is then the part before it. */
   query?: string | undefined
-  skills: readonly Skill[]
+  skills: readonly SkillRow[]
+  /** The line in place of the rows when there are none, such as "No match". */
+  empty?: string | undefined
   /** The highlighted skill. */
   value: string | null
   open: boolean
@@ -54,6 +65,7 @@ export function SkillPicker({
   label,
   query,
   skills,
+  empty,
   value,
   open,
   onOpenChange,
@@ -66,7 +78,15 @@ export function SkillPicker({
 }: SkillPickerProps) {
   const { width, keepFocus } = layouts[layout]
   // The phone's popover does not take the focus when it opens (M3), so nothing has to hand it back to the box.
-  const autoFocus = !keepFocus
+  // A list with no row to take the focus (no match, or only rows that are off) leaves it in the box too: the popover
+  // would focus its own box, which hands nothing back to the message box, so the owner's typing would go nowhere.
+  const autoFocus = !keepFocus && skills.some((s) => s.disabled !== true)
+  const rowsRef = useRef<HTMLDivElement>(null)
+  // The highlighted row stays in view as the arrow keys move it through a list that scrolls.
+  useEffect(() => {
+    if (!open || value === null) return
+    rowsRef.current?.querySelector('[data-part="item"][data-state="checked"]')?.scrollIntoView({ block: 'nearest' })
+  }, [open, value])
   return (
     <Popover
       data-figma={open ? (figma ?? '105:406') : undefined}
@@ -83,11 +103,13 @@ export function SkillPicker({
       <PopoverSection label={label} query={query}>
         {/* A press does not move the focus out of the message box: the click still picks the row. */}
         <div
+          ref={rowsRef}
           onFocus={autoFocus ? onListFocus : undefined}
           onMouseDown={(event) => {
             event.preventDefault()
           }}
         >
+          {skills.length === 0 && empty !== undefined ? <span className={emptyLine}>{empty}</span> : null}
           <OptionList
             label={query === undefined ? label : `${label} ${query}`}
             size="sm"
@@ -98,7 +120,15 @@ export function SkillPicker({
             value={value}
             onItemSelect={onPick}
             onValueChange={onHighlight}
-            items={skills.map((s) => ({ value: s.name, label: s.name, description: s.description }))}
+            items={skills.map((s) => ({
+              value: s.name,
+              label: s.name,
+              description: s.description,
+              ...(s.source === 'project' || s.source === 'plugin'
+                ? { badge: <Badge label={s.source} size="xs" /> }
+                : {}),
+              ...(s.disabled === true ? { disabled: true } : {}),
+            }))}
           />
         </div>
       </PopoverSection>

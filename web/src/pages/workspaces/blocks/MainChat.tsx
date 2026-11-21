@@ -6,7 +6,8 @@
 // A tap on its header sends a live chat's focus to herdr (`onHeaderTap`, W2).
 import type { MouseEvent, ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
-import type { SidebarLayers, Skill, WorkbenchPane } from '../types.ts'
+import type { SidebarLayers, WorkbenchPane } from '../types.ts'
+import type { ChatSkills } from './useSkillRows.ts'
 import { ChatHead } from './ChatHead.tsx'
 import type { CopyReply } from './ChatEntryView.tsx'
 import { ChatPane, type ChatFiles, type ChatPending, type TranscriptWatch } from './ChatPane.tsx'
@@ -28,7 +29,7 @@ export type MainChatProps = {
   pane: Extract<WorkbenchPane, { type: 'chat' }>
   workspace: string
   contextLabel: string
-  skills: { label: string; matching?: string | undefined; items: readonly Skill[]; value: string | null; open: boolean }
+  skills: ChatSkills
   onSkillsOpenChange?: ((open: boolean) => void) | undefined
   /** The chat actions menu with its trigger; a plain ⋯ button when not set, and none when `null`. */
   menu?: ReactNode

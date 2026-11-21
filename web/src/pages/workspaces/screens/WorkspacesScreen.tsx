@@ -67,6 +67,8 @@ import { WorkspaceSidebar } from '../blocks/WorkspaceSidebar.tsx'
 import { WorkspaceTabs } from '../blocks/WorkspaceTabs.tsx'
 import type { CopyReply } from '../blocks/ChatEntryView.tsx'
 import type { ChatFiles, ChatPending, TranscriptWatch } from '../blocks/ChatPane.tsx'
+import type { SkillLists } from '../blocks/skillLists.ts'
+import { liveSkillList } from '../blocks/useSkillRows.ts'
 import { createDraftBook, type DraftBook } from '../blocks/draftBook.ts'
 import { openableChats, openChat, shownView } from '../blocks/workspaceLayout.ts'
 import type { WorkspacesData, WorkspacesUi } from '../types.ts'
@@ -96,6 +98,8 @@ export type WorkspacesScreenProps = {
   onRetry?: (() => void) | undefined
   /** Reads each live chat's transcript while its pane shows (ChatPane); fixtures have none. */
   transcripts?: TranscriptWatch | undefined
+  /** Reads each live Claude chat's "/" list each time it opens (review R34); fixtures have none. */
+  skillLists?: SkillLists | undefined
   /** A reply's Copy, sample or live: the page writes the clipboard, and the button shows the result (audit P-4). */
   onCopy?: CopyReply | undefined
   /**
@@ -120,6 +124,7 @@ export function WorkspacesScreen({
   onCommand,
   onRetry,
   transcripts,
+  skillLists,
   onCopy,
   drafts: pageDrafts,
   layoutWrites,
@@ -231,6 +236,7 @@ export function WorkspacesScreen({
             filesOf={filesOf}
             pendingOf={pendingOf}
             transcripts={transcripts}
+            skillLists={skillLists}
             onCopy={onCopy}
             change={change}
             drafts={drafts}
@@ -266,6 +272,7 @@ function WorkspacesLayout({
   filesOf,
   pendingOf,
   transcripts,
+  skillLists,
   onCopy,
   change,
   drafts,
@@ -312,6 +319,7 @@ function WorkspacesLayout({
         filesOf={filesOf}
         pendingOf={pendingOf}
         transcripts={transcripts}
+        skillLists={skillLists}
         onCopy={onCopy}
         notice={notice}
         layoutWrites={layoutWrites}
@@ -489,6 +497,7 @@ function WorkspacesLayout({
                   filesOf={filesOf}
                   pendingOf={pendingOf}
                   transcripts={transcripts}
+                  skillLists={skillLists}
                   onCopy={onCopy}
                   layout={layoutWrites}
                 />
@@ -505,6 +514,7 @@ function WorkspacesLayout({
                     items: data.skills,
                     value: ui.skill,
                     open: ui.skillsFor === chat.id,
+                    live: liveSkillList(skillLists, chat, change),
                   }}
                   onSkillsOpenChange={(open) => {
                     change({ skillsFor: open ? chat.id : null })
@@ -608,6 +618,7 @@ function WorkspacesLayout({
               filesOf={filesOf}
               pendingOf={pendingOf}
               transcripts={transcripts}
+              skillLists={skillLists}
               onCopy={onCopy}
               notice={notice}
               layout={layoutWrites}
