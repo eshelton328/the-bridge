@@ -49,7 +49,9 @@ from the outside world.
 - `restarts.ts` holds one lock for each chat with a model restart in
   progress (slice W10, in memory): a confirm of another chat is
   `notConfirmed` with no call to the port, and a second restart of the
-  chat is `restarting` (`restarts.test.ts`).
+  chat is `restarting`. It also counts each other request to the chat
+  in progress: a restart waits for none (`busy`), and no request enters
+  while a restart runs (`restarts.test.ts`).
 - No polling (d-112): a service reads a port when a request or a
   subscription asks. `liveEvents.ts` shares one port subscription among
   all clients of `/api/events`, so with no client open (and no push

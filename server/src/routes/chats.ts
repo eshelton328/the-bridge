@@ -25,7 +25,8 @@
 // POST /:chat/model restarts an idle Claude chat with a new model by resume (slice W10): 200 with the chat and its
 // state, or 502 with `failed` and the session when the old chat ended and no new one resumed it. The confirm must
 // name the chat. Settings from the chat's first command line that are not flags (environment variables) are not
-// kept. While a restart runs, each POST to that chat is 409 `restarting`.
+// kept. While a restart runs, each POST to that chat is 409 `restarting`; while another POST to it is in progress, a
+// restart is 409 `working`.
 import {
   ChatCommandRequest,
   ChatId,

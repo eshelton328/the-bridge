@@ -106,8 +106,9 @@ Thin Hono sub-apps, one file for each area, named after the area
   of another chat is 400 with no call to the port; 409
   `launchArgsUnknown`, `skipsPermissions`, `folderChanged`,
   `sameModel`, or as an effort change. While a restart of a chat runs,
-  each POST to that chat is 409 `restarting` (`restartGate`,
-  `chats.test.ts`).
+  each POST to that chat is 409 `restarting`, and a restart while
+  another POST to the chat is in progress is 409 `working`
+  (`restartGate`, `chats.test.ts`).
 - `POST /api/chats` (slice W3) takes a `StartChatRequest` and starts a
   Claude chat beside a chat or in a new tab: 201 with the pane, the chat
   and the state (`ready`, `needsYou` or `starting`), or 200 with the
