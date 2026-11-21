@@ -631,15 +631,40 @@ export function createHerdrAgents({
    */
   const stoppedAt = new Map<string, number>()
 
-  /** The pane and status of a Claude or Codex chat, or why the chat takes no input: no such chat, or a shell. */
+  /**
+   * Where each agent chat is, from the newest list read of an open list stream, with its status from that stream's
+   * events, so a prompt needs no list read of its own. A change of the list or of a layout empties it, and it is
+   * used only while a stream is open: it reads nothing itself (d-112).
+   */
+  const places = new Map<ChatId, { pane: string; status: ChatStatus; claude: boolean }>()
+  /** Goes up at each emptying, so a list read that started before it fills nothing. */
+  let placesAge = 0
+  let openStreams = 0
+  const forgetPlaces = () => {
+    placesAge += 1
+    places.clear()
+  }
+
+  /**
+   * The pane and status of a Claude or Codex chat, or why the chat takes no input: no such chat, or a shell. With
+   * `cached`, a place that an open stream keeps comes first.
+   */
   const agentPane = async (
     chat: ChatId,
-  ): Promise<Result<{ pane: string; status: ChatStatus; claude: boolean } | 'notFound' | 'shell', AgentPortError>> => {
+    cached = false,
+  ): Promise<
+    Result<
+      { pane: string; status: ChatStatus; claude: boolean; cached: boolean } | 'notFound' | 'shell',
+      AgentPortError
+    >
+  > => {
+    const place = cached && openStreams > 0 ? places.get(chat) : undefined
+    if (place !== undefined) return ok({ ...place, cached: true })
     const located = await locate(chat)
     if (!located.ok) return located
     if (located.value === null) return ok('notFound')
     const { pane, status, claude } = located.value
-    return ok(pane === undefined ? 'shell' : { pane, status, claude })
+    return ok(pane === undefined ? 'shell' : { pane, status, claude, cached: false })
   }
 
   /**
@@ -823,17 +848,37 @@ export function createHerdrAgents({
     machine,
     async sendPrompt(chat, text) {
       const start = Date.now()
-      const target = await agentPane(chat)
+      let target = await agentPane(chat, true)
       if (!target.ok) return target
       if (typeof target.value === 'string') return ok(target.value)
-      const { pane, status, claude } = target.value
-      if (status === 'needsYou') return ok('needsYou')
-      const steps: SendSteps = {}
+      if (target.value.status === 'needsYou') return ok('needsYou')
+      let steps: SendSteps = {}
       const locateMs = msSince(start)
-      const sent = await submit(pane, claude, text, steps)
+      let sent = await submit(target.value.pane, target.value.claude, text, steps)
+      // A cached pane that herdr no longer knows fails before any text is typed: read the list once and try again.
+      // A failure of agent.prompt itself is retried only for herdr's refusal, never for a timeout, which may have typed.
+      const untyped =
+        steps.promptMs === undefined || (!sent.ok && /: (pane_not_found|agent_not_found)$/.test(sent.error.message))
+      const retried = target.value.cached && !sent.ok && untyped
+      if (retried) {
+        forgetPlaces()
+        target = await agentPane(chat)
+        if (!target.ok) return target
+        if (typeof target.value === 'string') return ok(target.value)
+        if (target.value.status === 'needsYou') return ok('needsYou')
+        steps = {}
+        sent = await submit(target.value.pane, target.value.claude, text, steps)
+      }
       // The time of each step, so a slow send shows where its time went; no text, no pane ID.
       const outcome = sent.ok ? sent.value : sent.error.reason
-      log.info('prompt sent', { outcome, totalMs: msSince(start), locateMs, ...steps })
+      log.info('prompt sent', {
+        outcome,
+        totalMs: msSince(start),
+        locateMs,
+        cached: target.value.cached,
+        retried,
+        ...steps,
+      })
       return sent
     },
     async sendCommand(chat, command) {
@@ -1131,13 +1176,25 @@ export function createHerdrAgents({
       let settle: ReturnType<typeof setTimeout> | undefined
       let lateSession: ReturnType<typeof setTimeout> | undefined
       let folderWatches: FSWatcher[] = []
+      /** The session folders that this stream watches now; a Claude chat in another folder is not cached. */
+      const watchedFolders = new Set<string>()
       const unwatchFolders = () => {
         for (const w of folderWatches) w.close()
         folderWatches = []
+        watchedFolders.clear()
+      }
+      /** Whether this subscription counts as an open stream for the place cache. */
+      let counted = false
+      const uncount = () => {
+        if (!counted) return
+        counted = false
+        openStreams -= 1
+        if (openStreams === 0) forgetPlaces()
       }
       const end = (error: AgentPortError) => {
         if (over) return
         over = true
+        uncount()
         clearTimeout(settle)
         clearTimeout(lateSession)
         unwatchFolders()
@@ -1179,6 +1236,8 @@ export function createHerdrAgents({
         for (const w of changed) tell({ type: 'layoutChanged', workspace: w })
       }
       const changedLayout = (workspace: WorkspaceId) => {
+        // A pane may have moved or closed: no prompt uses a cached place until the list is read again.
+        forgetPlaces()
         changedLayouts.add(workspace)
         clearTimeout(layoutSettle)
         layoutSettle = setTimeout(flushLayouts, settleMs)
@@ -1193,6 +1252,7 @@ export function createHerdrAgents({
       const open = async (changed: boolean) => {
         opens += 1
         const mine = opens
+        const age = placesAge
         const [agents, panes] = await Promise.all([call('agent.list', AgentList), call('pane.list', PaneList)])
         if (over || mine !== opens) return
         if (!agents.ok) {
@@ -1213,6 +1273,24 @@ export function createHerdrAgents({
         stream = herdrSubscribe(socket, subscriptions, {
           onStart: () => {
             goneRetries = 0
+            if (!counted) {
+              counted = true
+              openStreams += 1
+            }
+            // The places of this read, unless the cache was emptied while it ran.
+            if (age === placesAge) {
+              const shared = sharedSessions(agents.value.agents)
+              for (const a of agents.value.agents.filter(isChat)) {
+                // A /clear shows only through the session folder's watch: with none, the chat may have a new session.
+                const path = a.agent === 'claude' ? sessionPath(a) : undefined
+                if (a.agent === 'claude' && (path === undefined || !watchedFolders.has(dirname(path)))) continue
+                const id = chatIdOf(a, shared)
+                // A status that a stream's event gave after this read began is newer than the read's own.
+                const had = places.get(id)
+                const status = had?.pane === a.pane_id ? had.status : statusOf(a.agent_status)
+                places.set(id, { pane: a.pane_id, status, claude: a.agent === 'claude' })
+              }
+            }
             listening()
             if (changed) tell({ type: 'workspacesChanged' })
           },
@@ -1221,6 +1299,8 @@ export function createHerdrAgents({
             const chat = status.success ? chats.get(status.data.data.pane_id) : undefined
             if (status.success && chat) {
               const next = statusOf(status.data.data.agent_status)
+              const place = places.get(chat)
+              if (place !== undefined) places.set(chat, { ...place, status: next })
               tell({ type: 'chatStatus', chat, status: next })
               // A turn that ends changes the chat's model and context share: the app reads the list again.
               if (next === 'idle') tell({ type: 'workspacesChanged' })
@@ -1233,6 +1313,7 @@ export function createHerdrAgents({
           onEnd: (failure) => {
             // A pane closed after the list read: subscribe again to the chats that are left, and end no stream.
             if (paneGone(failure) && goneRetries < maxGoneRetries) {
+              forgetPlaces()
               goneRetries += 1
               void open(true)
               return
@@ -1257,11 +1338,14 @@ export function createHerdrAgents({
               clearTimeout(lateSession)
               lateSession = setTimeout(reopen, lateSessionMs)
             })
-            // A folder that goes away ends its watch; the list stream still runs.
+            // A folder that goes away ends its watch; the list stream still runs, and no cached place trusts it.
             watcher.on('error', () => {
               watcher.close()
+              watchedFolders.delete(folder)
+              forgetPlaces()
             })
             folderWatches.push(watcher)
+            watchedFolders.add(folder)
           } catch (error) {
             // A folder that is not there yet gets a watch when the list is read again. The log keeps no path.
             const code = error instanceof Error && 'code' in error ? String(error.code) : 'unknown'
@@ -1272,6 +1356,7 @@ export function createHerdrAgents({
 
       /** A pane or workspace came or went: wait for the burst to settle, then open the stream again. */
       const reopen = () => {
+        forgetPlaces()
         clearTimeout(settle)
         settle = setTimeout(() => {
           stream?.close()
@@ -1285,6 +1370,7 @@ export function createHerdrAgents({
         ready,
         close: () => {
           over = true
+          uncount()
           listening()
           clearTimeout(settle)
           clearTimeout(lateSession)

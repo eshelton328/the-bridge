@@ -1714,3 +1714,145 @@ describe('herdr adapter transcripts', () => {
     expect(socket.connections()).toBe(before)
   })
 })
+
+describe('herdr agents: the place of a chat while a list stream is open', () => {
+  const chat = ChatId.parse('test-mac/session-a')
+  const idle = {
+    ...results['agent.list'],
+    agents: results['agent.list'].agents.map((a) => (a.pane_id === 'w17:p1' ? { ...a, agent_status: 'idle' } : a)),
+  }
+  const listReads = () => socket.requests().filter((r) => r.method === 'agent.list').length
+  const typed = () => socket.requests().filter((r) => r.method === 'agent.prompt').length
+  const settle = () => new Promise((resolve) => setTimeout(resolve, 30))
+
+  it('sends a prompt with no list read while a stream is open, and reads the list for each prompt with none', async () => {
+    socket.set('agent.list', idle)
+    const ours = port()
+    try {
+      const before = listReads()
+      expect(await ours.sendPrompt(chat, 'Reply OK.')).toEqual({ ok: true, value: 'sent' })
+      expect(listReads()).toBe(before + 1)
+      const stream = ours.subscribe(
+        () => undefined,
+        () => undefined,
+      )
+      await stream.ready
+      const open = listReads()
+      expect(await ours.sendPrompt(chat, 'Reply OK.')).toEqual({ ok: true, value: 'sent' })
+      expect(listReads()).toBe(open)
+      stream.close()
+      expect(await ours.sendPrompt(chat, 'Reply OK.')).toEqual({ ok: true, value: 'sent' })
+      expect(listReads()).toBe(open + 1)
+    } finally {
+      socket.set('agent.list', undefined)
+    }
+  })
+
+  it('takes the status from the stream, so a chat that starts to wait gets no prompt and no list read', async () => {
+    socket.set('agent.list', idle)
+    const ours = port()
+    const stream = ours.subscribe(
+      () => undefined,
+      () => undefined,
+    )
+    try {
+      await stream.ready
+      socket.push(statusLine('w17:p1', 'blocked'))
+      await settle()
+      const [reads, prompts] = [listReads(), typed()]
+      expect(await ours.sendPrompt(chat, 'Reply OK.')).toEqual({ ok: true, value: 'needsYou' })
+      expect([listReads(), typed()]).toEqual([reads, prompts])
+    } finally {
+      stream.close()
+      socket.set('agent.list', undefined)
+    }
+  })
+
+  it('caches no Claude chat whose session folder the stream cannot watch, so a /clear there is not missed', async () => {
+    const unwatched = {
+      ...results['agent.list'],
+      agents: results['agent.list'].agents.map((a) =>
+        a.pane_id === 'w17:p1' ? { ...a, agent_status: 'idle', cwd: '/home/dev/no-such-folder' } : a,
+      ),
+    }
+    socket.set('agent.list', unwatched)
+    const ours = port()
+    const stream = ours.subscribe(
+      () => undefined,
+      () => undefined,
+    )
+    try {
+      await stream.ready
+      const before = listReads()
+      expect(await ours.sendPrompt(chat, 'Reply OK.')).toEqual({ ok: true, value: 'sent' })
+      expect(listReads()).toBe(before + 1)
+    } finally {
+      stream.close()
+      socket.set('agent.list', undefined)
+    }
+  })
+
+  it('keeps a status that an event gave when a second stream reads an older list', async () => {
+    const blocked = {
+      ...results['agent.list'],
+      agents: results['agent.list'].agents.map((a) => (a.pane_id === 'w17:p1' ? { ...a, agent_status: 'blocked' } : a)),
+    }
+    socket.set('agent.list', blocked)
+    const ours = port()
+    const first = ours.subscribe(
+      () => undefined,
+      () => undefined,
+    )
+    try {
+      await first.ready
+      socket.push(statusLine('w17:p1', 'idle'))
+      await settle()
+      // The second stream's read still gives the old "blocked".
+      const second = ours.subscribe(
+        () => undefined,
+        () => undefined,
+      )
+      await second.ready
+      expect(await ours.sendPrompt(chat, 'Reply OK.')).toEqual({ ok: true, value: 'sent' })
+      second.close()
+    } finally {
+      first.close()
+      socket.set('agent.list', undefined)
+    }
+  })
+
+  it('reads the list again after a layout event, and once more when herdr no longer knows the cached pane', async () => {
+    socket.set('agent.list', idle)
+    const ours = port()
+    const stream = ours.subscribe(
+      () => undefined,
+      () => undefined,
+    )
+    try {
+      await stream.ready
+      socket.push({
+        event: 'tab.renamed',
+        data: { type: 'tab_renamed', tab_id: 'w17:t1', workspace_id: 'w17', label: 'x' },
+      })
+      await settle()
+      const afterLayout = listReads()
+      expect(await ours.sendPrompt(chat, 'Reply OK.')).toEqual({ ok: true, value: 'sent' })
+      expect(listReads()).toBe(afterLayout + 1)
+      // A new stream read fills the cache again; then the box read finds the pane gone, before any text is typed.
+      stream.close()
+      const again = ours.subscribe(
+        () => undefined,
+        () => undefined,
+      )
+      await again.ready
+      const [reads, prompts] = [listReads(), typed()]
+      socket.failOnce('pane.read', 'pane_not_found', 'pane not found')
+      expect(await ours.sendPrompt(chat, 'Reply OK.')).toEqual({ ok: true, value: 'sent' })
+      expect([listReads(), typed()]).toEqual([reads + 1, prompts + 1])
+      again.close()
+    } finally {
+      stream.close()
+      socket.set('agent.list', undefined)
+    }
+  })
+})

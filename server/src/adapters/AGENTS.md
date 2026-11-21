@@ -117,7 +117,14 @@ client of a socket or a file sits beside them.
   prompt there, or from 150 ms on, as an earlier read can come before
   the prompt shows.
   Each send logs `prompt sent` with the ms of each step (list read,
-  box read, `agent.prompt`, the check) and its outcome, never text. When each read still shows that prompt, the
+  box read, `agent.prompt`, the check) and its outcome, never text.
+  While a list stream is open, a prompt takes its chat's pane and
+  status from the stream's own list read and status events, with no
+  list read; a list, layout or session change, or the end of the last
+  stream, empties that cache. A cached pane that fails before any text
+  is typed (a box read, or herdr's `pane_not_found` on
+  `agent.prompt`) reads the list once and sends again
+  (`herdrAgents.test.ts`). When each read still shows that prompt, the
   chat did not take its Enter: the adapter empties the box with ctrl+u
   and answers `notSubmitted` once a read shows it empty. Text it cannot
   match to the prompt (a box of more lines than it joins) or cannot
