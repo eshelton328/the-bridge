@@ -13,6 +13,7 @@ import { workspacesSearch } from './search.ts'
 import { WorkspacesPage } from './WorkspacesPage.tsx'
 import { queryClient } from '../../lib/queryClient.ts'
 import { workspacesStore } from './workspacesStore.ts'
+import { answerLateServerReads } from '../../lib/lateServerReads.ts'
 
 // Audit L-3 (library beta.90 `onSend`): on the owner's path, /workspaces > a chat in the list, the composer keeps the
 // draft when the store's send rejects, and empties once a send succeeds. The page reports the failed send. The page
@@ -46,6 +47,9 @@ const box = () => chat().getByRole('textbox')
 const sendButton = () => chat().getByRole('button', { name: 'Send', exact: true })
 
 let view: { unmount: () => Promise<void> } | undefined
+
+// A read that a page starts after its test ended gets no answer, not the real server (lib/lateServerReads.ts).
+answerLateServerReads()
 
 afterEach(async () => {
   await view?.unmount()

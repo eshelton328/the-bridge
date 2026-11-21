@@ -17,7 +17,10 @@ state file and a page are in `screenState.ts` (d-082).
 - A browser test never reads the real server: `testSetup.ts` fails a test whose
   `fetch` of `/api` has no stub (`serverGuard.test.ts`). A test file that
   opens the Workspaces live source calls `stubLiveServer()` at its top
-  (`app/liveServerStub.ts`, RouteScroll `/workspaces?source=live`).
+  (`app/liveServerStub.ts`, RouteScroll `/workspaces?source=live`). A file
+  that stubs `fetch` in each test and removes it in `afterEach` calls
+  `answerLateServerReads()` at its top (`lateServerReads.ts`): a page's
+  router can read after its test ended (WorkspacesLiveUnavailable).
 - Before a check of where an Ark popover or menu sits, wait until its
   positioner has the `--y` zag sets: until zag places it, the positioner
   draws it 100vh above the window (`SkillListHeight.test.tsx`).

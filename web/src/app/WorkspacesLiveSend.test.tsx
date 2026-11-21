@@ -19,6 +19,7 @@ import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
 import { markApp } from './appMarker.ts'
 import { stubLiveServer } from './liveServerStub.ts'
+import { answerLateServerReads } from '../lib/lateServerReads.ts'
 
 // W1: a live Claude chat's Send and Stop. Each test takes the owner's path:
 // it opens the app with no URL parameters, taps Workspaces and a live chat,
@@ -138,6 +139,9 @@ let router: ReturnType<typeof createRouter> | undefined
 const cleanups: (() => void)[] = []
 
 stubLiveServer()
+
+// A read that a page starts after its test ended gets no answer, not the real server (lib/lateServerReads.ts).
+answerLateServerReads()
 
 afterEach(async () => {
   for (const cleanup of cleanups.splice(0)) cleanup()
