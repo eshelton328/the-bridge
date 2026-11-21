@@ -42,7 +42,7 @@ describe('launchArgsOf', () => {
     expect(launchArgsOf(argvOf('claude --permission-mode=bypassPermissions'))).toBe('skipsPermissions')
   })
 
-  it('refuses another program, an unknown flag or value, a prompt, a value with a space or a missing value', () => {
+  it('refuses another program, an unknown flag or value, a prompt or a missing value', () => {
     for (const line of [
       'node /home/dev/cli.js',
       'claude --debug',
