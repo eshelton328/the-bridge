@@ -2,9 +2,10 @@ import '@fontsource-variable/geist'
 import '@fontsource-variable/geist-mono'
 import '../index.css'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
-import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
+import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
 import { clearReports, getReports } from '../errors/reporter.ts'
+import { holdTimers } from '../lib/holdTimers.ts'
 import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
@@ -139,7 +140,8 @@ describe('Copy link says whether it copied', () => {
     const control = page.getByRole('button', { name: 'Copy link' })
     const button = control.element()
     const before = button.getBoundingClientRect()
-    const pressed = performance.now()
+    // "Copied" waits for the test's clock, not the runner's (lib/holdTimers.ts).
+    const release = holdTimers()
     await control.click()
     await expect.poll(() => copied).toEqual(['https://claude.ai/artifact/8f3c2a91-skill-evals'])
     // The same control now reads Copied.
@@ -148,8 +150,12 @@ describe('Copy link says whether it copied', () => {
     // The label changes inside the button's own box, so the bar does not jump.
     const during = button.getBoundingClientRect()
     expect([during.width, during.height]).toEqual([before.width, before.height])
-    await expect.poll(() => buttonNamed('Copy link'), { timeout: 5000 }).toBe(button)
-    expect(performance.now() - pressed).toBeGreaterThan(1500)
+    // It still reads Copied 1.5 s after the press, and Copy link again at 2 s.
+    vi.advanceTimersByTime(1500)
+    await expect.poll(() => buttonNamed('Copied')).toBe(button)
+    vi.advanceTimersByTime(500)
+    await expect.poll(() => buttonNamed('Copy link')).toBe(button)
+    release()
   })
 
   it('on a phone with a clipboard that rejects, it shows Copy failed and reports the error', async () => {
@@ -161,12 +167,18 @@ describe('Copy link says whether it copied', () => {
     const control = page.getByRole('button', { name: 'Copy link' })
     const button = control.element()
     const before = button.getBoundingClientRect()
+    // "Copied" waits for the test's clock, not the runner's (lib/holdTimers.ts).
+    const release = holdTimers()
     await control.click()
     await expect.poll(() => buttonNamed('Copy failed')).toBe(button)
     await expect.element(page.getByRole('status').filter({ hasText: 'Copy failed' })).toBeInTheDocument()
     const during = button.getBoundingClientRect()
     expect([during.width, during.height]).toEqual([before.width, before.height])
     expect(getReports().map((r) => r.error)).toContain(broken)
-    await expect.poll(() => buttonNamed('Copy link'), { timeout: 5000 }).toBe(button)
+    vi.advanceTimersByTime(1500)
+    await expect.poll(() => buttonNamed('Copy failed')).toBe(button)
+    vi.advanceTimersByTime(500)
+    await expect.poll(() => buttonNamed('Copy link')).toBe(button)
+    release()
   })
 })
