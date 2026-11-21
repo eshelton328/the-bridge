@@ -79,6 +79,16 @@ describe('the push notifier', () => {
     t.notifier.close()
   })
 
+  it('sends done when a working chat goes to idle, as in the pane that the Mac shows', async () => {
+    const t = setup([sub(1)])
+    await t.notifier.refresh()
+    t.agents.setStatus(chat, 'working')
+    t.agents.setStatus(chat, 'idle')
+    await t.settle()
+    expect(t.sent.map((s) => [s.payload.chat, s.payload.event])).toEqual([[chat, 'done']])
+    t.notifier.close()
+  })
+
   it('sends done for a chat that a list change added while it worked', async () => {
     const t = setup([sub(1)])
     await t.notifier.refresh()

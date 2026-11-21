@@ -29,7 +29,8 @@ from the outside world.
   page of the owner was last visible.
 - `pushNotifier.ts` sends a Web Push (d-118) to each stored
   subscription when a chat's status changes to `needsYou`, or from
-  `working` to `done`, unless a page was seen in the last 30 s; a
+  `working` to `done` or `idle` (herdr gives `idle` in the pane
+  that its own screen shows), unless a page was seen in the last 30 s; a
   subscription the push service no longer knows (404 or 410) is
   dropped. It watches the agents only while a subscription is stored,
   and opens the watch again 5 s after the agents stop answering
