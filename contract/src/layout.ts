@@ -109,6 +109,37 @@ export const WorkspaceLayout = z.object({ workspace: WorkspaceId, tabs: z.array(
 })
 export type WorkspaceLayout = z.infer<typeof WorkspaceLayout>
 
+/** Which part of a split: `first` (left of a row, top of a column) or `second`. */
+export const SplitSide = z.enum(['first', 'second'])
+export type SplitSide = z.infer<typeof SplitSide>
+
+/** The least and the most share that a split gives its first part; herdr keeps each ratio between them. */
+export const minSplitRatio = 0.1
+export const maxSplitRatio = 0.9
+
+/**
+ * The body of `POST /api/chats/:chat/split`: `row` puts a new shell pane to the right of the chat's pane, `column`
+ * below it, each half of the old pane (201, `SplitChatResponse`).
+ */
+export const SplitChatRequest = z.strictObject({ direction: SplitDirection })
+export type SplitChatRequest = z.infer<typeof SplitChatRequest>
+
+/** The answer to a split: the chat ID of the new shell pane. */
+export const SplitChatResponse = z.object({ chat: ChatId })
+export type SplitChatResponse = z.infer<typeof SplitChatResponse>
+
+/**
+ * The body of `POST /api/workspaces/:workspace/layout/ratio`: the split of tab `tab` at `path` (the parts from the
+ * tree's root to it; empty for the root) gives its first part the share `ratio` (204). A tab or a path with no split
+ * is 404.
+ */
+export const SetSplitRatioRequest = z.strictObject({
+  tab: TabId,
+  path: z.array(SplitSide).max(32),
+  ratio: z.number().min(minSplitRatio).max(maxSplitRatio),
+})
+export type SetSplitRatioRequest = z.infer<typeof SetSplitRatioRequest>
+
 /** The body of `POST /api/chats/:chat/focus`, which focuses the chat's pane in its tab (204): an empty object. */
 export const FocusChatRequest = z.strictObject({})
 export type FocusChatRequest = z.infer<typeof FocusChatRequest>

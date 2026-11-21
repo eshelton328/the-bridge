@@ -1,7 +1,7 @@
 import { appendFileSync, existsSync, mkdirSync, mkdtempSync, statSync, watch, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { ChatId, MachineId, WorkspaceId } from '@bridge/contract'
+import { TabId, ChatId, MachineId, WorkspaceId } from '@bridge/contract'
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
 import type { AgentEvent } from '../services/agentPort.ts'
 import { describeAgentPort } from './agentPortContract.ts'
@@ -457,6 +457,32 @@ describe('herdr agents: input to a chat', () => {
       const closes = sent('pane.close').length
       expect(await port().closeChat(codex)).toEqual({ ok: true, value: 'working' })
       expect(sent('pane.close')).toHaveLength(closes)
+    })
+
+    it('splits a pane in the folder of its chat, with no focus, and gives the new shell chat', async () => {
+      socket.set('pane.list', {
+        ...results['pane.list'],
+        panes: results['pane.list'].panes.map((p) => (p.pane_id === 'w17:p2' ? { ...p, cwd: '/home/dev/repo' } : p)),
+      })
+      socket.once('pane.split', { type: 'pane_info', pane: { pane_id: 'w17:p9', terminal_id: 'term_9' } })
+      expect(await port().splitChat(codex, 'column')).toEqual({ ok: true, value: { chat: 'test-mac/term_9' } })
+      expect(sent('pane.split').at(-1)).toEqual({
+        target_pane_id: 'w17:p2',
+        direction: 'down',
+        focus: false,
+        cwd: '/home/dev/repo',
+      })
+    })
+
+    it('sets a split ratio by its path from the root, and says when herdr has no such tab or split', async () => {
+      socket.once('layout.set_split_ratio', { type: 'layout_split_ratio_set', layout: {} })
+      const tab = TabId.parse('test-mac/w17:t1')
+      expect(await port().setSplitRatio(tab, ['second', 'first'], 0.25)).toEqual({ ok: true, value: 'done' })
+      expect(sent('layout.set_split_ratio').at(-1)).toEqual({ tab_id: 'w17:t1', path: [true, false], ratio: 0.25 })
+      socket.failOnce('layout.set_split_ratio', 'split_not_found', 'split path not found')
+      expect(await port().setSplitRatio(tab, ['first'], 0.5)).toEqual({ ok: true, value: 'notFound' })
+      socket.failOnce('layout.set_split_ratio', 'tab_not_found', 'tab not found')
+      expect(await port().setSplitRatio(tab, [], 0.5)).toEqual({ ok: true, value: 'notFound' })
     })
 
     it('closes nothing by the old shell ID of a pane that now runs an agent', async () => {

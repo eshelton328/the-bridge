@@ -8,6 +8,8 @@ import {
   FocusChatRequest,
   SwapChatsRequest,
   ZoomChatRequest,
+  SetSplitRatioRequest,
+  SplitChatRequest,
 } from './layout.ts'
 
 const chat = (local: string, kind: 'claude' | 'shell' = 'claude') => ({
@@ -120,5 +122,23 @@ describe('the layout write requests (W2)', () => {
     expect(CloseChatRequest.safeParse({ confirm: 'mac-mini/c1' }).success).toBe(true)
     expect(CloseChatRequest.safeParse({}).success).toBe(false)
     expect(CloseChatRequest.safeParse({ confirm: 'mac-mini/c1', force: true }).success).toBe(false)
+  })
+})
+
+describe('the split and ratio requests (W2)', () => {
+  it('takes a split direction, and a ratio from 0.1 to 0.9 at a path of first and second parts', () => {
+    expect(SplitChatRequest.safeParse({ direction: 'row' }).success).toBe(true)
+    expect(SplitChatRequest.safeParse({ direction: 'right' }).success).toBe(false)
+    const ratio = { tab: 'mac-mini/w1:t1', path: ['second', 'first'], ratio: 0.5 }
+    expect(SetSplitRatioRequest.safeParse(ratio).success).toBe(true)
+    for (const bad of [
+      { ...ratio, ratio: 0.05 },
+      { ...ratio, ratio: 0.95 },
+      { ...ratio, path: ['left'] },
+      { ...ratio, path: Array.from({ length: 33 }, () => 'second') },
+      { ...ratio, tab: 'w1:t1' },
+      { ...ratio, extra: true },
+    ])
+      expect(SetSplitRatioRequest.safeParse(bad).success).toBe(false)
   })
 })

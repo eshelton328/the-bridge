@@ -8,6 +8,9 @@ import type {
   ChatId,
   ChatStatus,
   MachineId,
+  SplitDirection,
+  SplitSide,
+  TabId,
   TranscriptEntry,
   WorkspaceId,
   WorkspaceLayout,
@@ -64,6 +67,8 @@ export type PaneWriteOutcome = 'done' | 'notFound'
 export type ZoomOutcome = PaneWriteOutcome | 'singlePane'
 export type SwapOutcome = PaneWriteOutcome | 'otherTab' | 'samePane'
 export type CloseOutcome = PaneWriteOutcome | 'working' | 'needsYou'
+/** What a split did: the chat of the new shell pane, or `notFound` when the chat has no pane. */
+export type SplitOutcome = { readonly chat: ChatId } | 'notFound'
 
 /** What a stop did: as a send, or `notWorking` when the chat has no work to stop, so nothing was sent. */
 export type CancelOutcome = Exclude<SendOutcome, 'needsYou' | 'inputNotEmpty'> | 'notWorking'
@@ -143,4 +148,15 @@ export type AgentPort = {
    * the owner; the page asks the owner first, with the chat's name.
    */
   closeChat(chat: ChatId): Promise<Result<CloseOutcome, AgentPortError>>
+  /** Splits the pane of one chat in two, `row` with the new pane on the right, `column` below; the new pane is a shell. */
+  splitChat(chat: ChatId, direction: SplitDirection): Promise<Result<SplitOutcome, AgentPortError>>
+  /**
+   * Gives the split of `tab` at `path` (from the tree's root; empty for the root) the share `ratio` for its first
+   * part; `notFound` for no such tab or split.
+   */
+  setSplitRatio(
+    tab: TabId,
+    path: readonly SplitSide[],
+    ratio: number,
+  ): Promise<Result<PaneWriteOutcome, AgentPortError>>
 }

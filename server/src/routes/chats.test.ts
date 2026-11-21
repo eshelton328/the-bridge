@@ -2,6 +2,7 @@
 // process with the fake adapter, the SSE body read as it streams.
 import {
   ChatId,
+  SplitChatResponse,
   ErrorBody,
   MachineId,
   WorkspaceId,
@@ -405,6 +406,40 @@ describe('POST /api/chats/:chat/focus, /zoom, /swap and /close (W2)', () => {
     expect((await tab())?.chats.map((c) => c.id)).toEqual([drift])
     expect((await post(shell, 'close', { confirm: shell })).status).toBe(204)
     expect((await post(themes, 'close', { confirm: themes })).status).toBe(404)
+  })
+
+  it('splits a pane with 201 and the new shell chat, beside the chat in the layout', async () => {
+    const { post, tab } = setup()
+    const res = await post(themes, 'split', { direction: 'column' })
+    expect(res.status).toBe(201)
+    const { chat } = SplitChatResponse.parse(await res.json())
+    expect((await tab())?.chats.map((c) => [c.id, c.kind])).toEqual([
+      [themes, 'claude'],
+      [chat, 'shell'],
+      [drift, 'codex'],
+    ])
+    expect((await post('test-mac/no-such-chat', 'split', { direction: 'row' })).status).toBe(404)
+    expect((await post(themes, 'split', { direction: 'right' })).status).toBe(400)
+  })
+
+  it('sets the ratio of a split of a tab of the workspace with 204, and 404 for another tab or no split', async () => {
+    const { agents, tab } = setup()
+    const app = createApp({ agents, owner, log: memoryLogger().log })
+    const ratio = (workspace: string, body: unknown) =>
+      app.request(`/api/workspaces/${encodeURIComponent(workspace)}/layout/ratio`, {
+        method: 'POST',
+        headers: json,
+        body: JSON.stringify(body),
+      })
+    const t1 = 'test-mac/omni-brain:t1'
+    expect((await ratio(brain, { tab: t1, path: [], ratio: 0.3 })).status).toBe(204)
+    const root = (await tab())?.root
+    expect(root?.kind === 'split' ? root.ratio : undefined).toBe(0.3)
+    expect((await ratio(brain, { tab: t1, path: ['first'], ratio: 0.3 })).status).toBe(404)
+    expect((await ratio(brain, { tab: 'test-mac/omni:t1', path: [], ratio: 0.3 })).status).toBe(404)
+    expect((await ratio(brain, { tab: t1, path: [], ratio: 0.95 })).status).toBe(400)
+    expect((await ratio(brain, { tab: t1, path: ['left'], ratio: 0.5 })).status).toBe(400)
+    expect((await ratio('no-machine', { tab: t1, path: [], ratio: 0.5 })).status).toBe(400)
   })
 
   it('answers 400 to a body that is not the contract', async () => {

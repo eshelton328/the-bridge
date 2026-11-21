@@ -104,7 +104,12 @@ client of a socket or a file sits beside them.
   that works, waits for the owner or has a state herdr cannot tell; a
   pane that closed first is `notFound` (`herdrAgents.test.ts`). Never
   call `layout.apply`: herdr replaces the tab and its terminals, so
-  each shell and agent in it ends. `pane.move` inside one tab does
+  each shell and agent in it ends. A split calls `pane.split` in the
+  chat's folder with no focus, and the new pane's shell chat ID comes
+  from its terminal; a ratio calls `layout.set_split_ratio` with the
+  path as booleans (true for the second part), and herdr's
+  `tab_not_found` and `split_not_found` are `notFound`
+  (`herdrAgents.test.ts`). `pane.move` inside one tab does
   nothing (`same_tab`), so a pane goes to another place in its own tab
   only by a swap.
 - An input clear empties a Claude chat's box with ctrl+u, for text that

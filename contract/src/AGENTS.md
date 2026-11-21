@@ -23,7 +23,10 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
   (`layout.test.ts`). `zoomed` says that the tab shows only its
   focused pane (slice W2). A layout write request is a strict object:
   focus is empty, zoom has `zoomed`, swap the other chat's ID, and close
-  a `confirm` that must be the closed chat's ID (`layout.test.ts`).
+  a `confirm` that must be the closed chat's ID; a split has a
+  direction, and a ratio request a tab, the path of parts to its split
+  and a ratio from `minSplitRatio` to `maxSplitRatio` (0.1 to 0.9, as
+  herdr keeps them) (`layout.test.ts`).
 - A transcript entry has an ID that is stable in its chat; a change
   event replaces the entry with that ID or adds it at the end. A tool
   entry has a name and a short target, never its arguments or its

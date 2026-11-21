@@ -15,7 +15,7 @@
 // into an idle Claude chat (slice W5, 204); the compact instructions go to
 // the port only, as a prompt's text. POST /:chat/focus, /:chat/zoom,
 // /:chat/swap and /:chat/close change the chat's pane in its tab (slice W2,
-// 204); a close must name the chat in its confirm, and never ends a chat
+// 204), and POST /:chat/split puts a new shell pane beside it (201, its chat ID); a close must name the chat in its confirm, and never ends a chat
 // that works or waits for the owner.
 import {
   ChatCommandRequest,
@@ -27,6 +27,8 @@ import {
   maxCompactChars,
   maxPromptChars,
   SendPromptRequest,
+  SplitChatRequest,
+  SplitChatResponse,
   StartUploadRequest,
   StartUploadResponse,
   StopChatRequest,
@@ -57,7 +59,7 @@ import { type FilePromptOutcome, sendPromptWithFiles, startUpload } from '../ser
 import { jsonBody, jsonOnly, smallJson } from './jsonBody.ts'
 import { storeFailed } from './uploads.ts'
 import { connectTranscript } from '../services/transcriptEvents.ts'
-import { closeChat, focusChat, swapChats, zoomChat } from '../services/layoutWrites.ts'
+import { closeChat, focusChat, splitChat, swapChats, zoomChat } from '../services/layoutWrites.ts'
 
 const pingMs = 25_000
 const retryMs = 5_000
@@ -238,6 +240,14 @@ export function chatsRoutes(agents: AgentPort, log: Logger, uploads: UploadStore
       if (!id.success) return invalid(c)
       const done = await swapChats(agents, id.data, c.req.valid('json').with)
       return done.ok ? wrote(c, done.value) : failed(c, done.error)
+    })
+    .post('/:chat/split', smallJson, jsonOnly, jsonBody(SplitChatRequest), async (c) => {
+      const id = chatOf(c)
+      if (!id.success) return invalid(c)
+      const split = await splitChat(agents, id.data, c.req.valid('json').direction)
+      if (!split.ok) return failed(c, split.error)
+      if (split.value === 'notFound') return notFound(c)
+      return c.json(SplitChatResponse.parse(split.value), 201)
     })
     .post('/:chat/close', smallJson, jsonOnly, jsonBody(CloseChatRequest), async (c) => {
       const id = chatOf(c)

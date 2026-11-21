@@ -85,6 +85,10 @@ const AnyReply = z.object({})
 const Reason = z.string().nullable().optional()
 const ZoomReply = z.object({ zoom: z.object({ reason: Reason }) })
 const SwapReply = z.object({ swap: z.object({ reason: Reason }) })
+/** herdr's reply to a split: the new pane, of which the adapter reads only its terminal. */
+const SplitReply = z.object({ pane: z.object({ terminal_id: LocalIdPart }) })
+/** herdr's error codes that say the pane, the tab or the split of a layout write is not there. */
+const notFoundCodes = new Set(['pane_not_found', 'tab_not_found', 'split_not_found'])
 
 /** herdr's tree in the app's terms, each pane by its chat ID; undefined when a pane has no listed chat. */
 function nodeOf(node: HerdrNode, ids: ReadonlyMap<string, ChatId>): LayoutNode | undefined {
@@ -125,6 +129,7 @@ const PaneList = z.object({
       terminal_id: LocalIdPart,
       workspace_id: LocalIdPart,
       tab_id: z.string().optional(),
+      cwd: z.string().nullable().optional(),
       agent_status: z.string(),
       label: z.string().nullable().optional(),
     }),
@@ -533,7 +538,12 @@ export function createHerdrAgents({
    */
   const paneOf = async (
     chat: ChatId,
-  ): Promise<Result<{ pane: string; tab: string | undefined; status: ChatStatus } | null, AgentPortError>> => {
+  ): Promise<
+    Result<
+      { pane: string; tab: string | undefined; cwd: string | undefined; status: ChatStatus } | null,
+      AgentPortError
+    >
+  > => {
     const { machine: on } = splitId(chat)
     if (on !== machine) return ok(null)
     const [agents, panes] = await Promise.all([call('agent.list', AgentList), call('pane.list', PaneList)])
@@ -546,8 +556,13 @@ export function createHerdrAgents({
     const pane =
       agent?.pane_id ?? panes.value.panes.find((p) => !agentPanes.has(p.pane_id) && shellIdOf(p) === chat)?.pane_id
     if (pane === undefined) return ok(null)
-    const tab = panes.value.panes.find((p) => p.pane_id === pane)?.tab_id
-    return ok({ pane, tab, status: agent === undefined ? 'idle' : statusOf(agent.agent_status) })
+    const listed = panes.value.panes.find((p) => p.pane_id === pane)
+    return ok({
+      pane,
+      tab: listed?.tab_id,
+      cwd: listed?.cwd ?? undefined,
+      status: agent === undefined ? 'idle' : statusOf(agent.agent_status),
+    })
   }
 
   /**
@@ -562,7 +577,7 @@ export function createHerdrAgents({
     const reply = await herdrRequest(socket, method, params)
     if (!reply.ok) {
       if (reply.error.kind !== 'herdrError') return err(portErrorOf(reply.error))
-      if (reply.error.code === 'pane_not_found') return ok('notFound')
+      if (notFoundCodes.has(reply.error.code)) return ok('notFound')
       return err(badReply(`herdr ${method}: ${reply.error.code}`))
     }
     const parsed = schema.safeParse(reply.value)
@@ -800,6 +815,34 @@ export function createHerdrAgents({
       // A chat whose state herdr cannot tell may work, so only an idle or done chat (or a shell) closes.
       if (status !== 'idle' && status !== 'done') return ok('working')
       return doneOf(await paneWrite('pane.close', AnyReply, { pane_id: pane }))
+    },
+    async splitChat(chat, direction) {
+      const found = await paneOf(chat)
+      if (!found.ok) return found
+      if (found.value === null) return ok('notFound')
+      const { pane, cwd } = found.value
+      const written = await paneWrite('pane.split', SplitReply, {
+        target_pane_id: pane,
+        direction: direction === 'row' ? 'right' : 'down',
+        focus: false,
+        // The new shell starts in the chat's folder.
+        ...(cwd === undefined ? {} : { cwd }),
+      })
+      if (!written.ok) return written
+      if (written.value === 'notFound') return ok('notFound')
+      return ok({ chat: ChatId.parse(`${machine}/${written.value.pane.terminal_id}`) })
+    },
+    async setSplitRatio(tab, path, ratio) {
+      const { machine: on, local } = splitId(tab)
+      if (on !== machine) return ok('notFound')
+      return doneOf(
+        await paneWrite('layout.set_split_ratio', AnyReply, {
+          tab_id: local,
+          // herdr names each step by a boolean: true for the second part.
+          path: path.map((side) => side === 'second'),
+          ratio,
+        }),
+      )
     },
     async readTranscript(chat) {
       const located = await locate(chat)
