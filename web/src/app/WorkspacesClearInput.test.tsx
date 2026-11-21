@@ -440,6 +440,33 @@ describe('a chat switch around "Clear the terminal input", on the phone (R28 par
   })
 })
 
+describe('the draft that a clear sends again, on the phone (R28 part B, review of #315)', () => {
+  for (const change of [
+    { name: 'changed', text: 'a newer draft', prompts: [{ chat: plan, text: 'a newer draft' }] },
+    { name: 'emptied', text: '', prompts: [] },
+  ])
+    it(`sends the chat's draft as it is when the clear answers, after the owner reopened the chat and ${change.name} it`, async () => {
+      const fake = withChats()
+      const answer = held()
+      fake.answerClears(answer.answer)
+      await sendIntoTypedInput(fake, phone)
+      await askToClear()
+      await userEvent.click(dialog().getByRole('button', { name: 'Clear', exact: true }))
+      await expect.poll(() => fake.posts.length).toBe(2)
+      // Back to the list and into the same chat: a new pane, whose box the owner changes while the clear is pending.
+      await userEvent.click(page.getByRole('button', { name: 'Workspaces' }).first())
+      await userEvent.click(page.getByText('plan the slice', { exact: true }).first())
+      await expect.element(box('plan the slice')).toHaveValue(secret)
+      await userEvent.fill(box('plan the slice'), change.text)
+      fake.clearTerminal(plan)
+      answer.end(new Response(null, { status: 204 }))
+      await settle()
+      await expect.poll(() => fake.prompts).toEqual(change.prompts)
+      expect(fake.posts.filter((p) => p.route === 'prompt')).toHaveLength(1 + change.prompts.length)
+      expect(fake.prompts.some((p) => p.text === secret)).toBe(false)
+    })
+})
+
 describe('a send that the chat did not take (409 notSubmitted, R28 part B)', () => {
   for (const device of [
     { name: 'the phone', size: phone },

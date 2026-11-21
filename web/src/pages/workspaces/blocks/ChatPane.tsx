@@ -348,6 +348,8 @@ export function ChatPane(props: ChatPaneProps) {
     text,
     onSend,
     onStop,
+    // The page's draft book holds the chat's draft even after this pane unmounts.
+    draftNow: drafts === undefined ? undefined : () => drafts.get(chatId) ?? '',
     clear: (submitted) => {
       // The page keeps the draft by chat: it empties it only if it still holds what was sent, and the box follows.
       if (drafts !== undefined) drafts.clear(chatId, submitted)

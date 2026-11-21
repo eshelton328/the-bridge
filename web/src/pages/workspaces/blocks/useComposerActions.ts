@@ -49,15 +49,20 @@ export type ComposerActionsOptions = {
   readonly onStop?: (() => Promise<ComposerAnswer>) | undefined
   /** Empties the box when it still holds `submitted`. */
   readonly clear: (submitted: string) => void
+  /**
+   * The chat's draft now, read when a clear of its terminal input answers: the chat may have opened again in another
+   * pane, where the owner changed or emptied it. The text this pane last held when not set.
+   */
+  readonly draftNow?: (() => string) | undefined
 }
 
-export function useComposerActions({ text, onSend, onStop, clear }: ComposerActionsOptions) {
+export function useComposerActions({ text, onSend, onStop, clear, draftNow }: ComposerActionsOptions) {
   const [problem, setProblem] = useState<Problem>()
   // Refs, not state: a second tap or Enter in the same frame must see the first one's send.
   const sendingRef = useRef(false)
   const stoppingRef = useRef(false)
   const clearingRef = useRef(false)
-  // The text now, for a clear that ends after the owner typed on: it sends what the box holds then.
+  // The text now, for a clear that ends after the owner typed on, when the caller gives no `draftNow`.
   const textRef = useRef(text)
   useLayoutEffect(() => {
     textRef.current = text
@@ -111,7 +116,7 @@ export function useComposerActions({ text, onSend, onStop, clear }: ComposerActi
       (answer) => {
         clearingRef.current = false
         if (answer === true) {
-          const kept = textRef.current
+          const kept = draftNow?.() ?? textRef.current
           if (/\S/.test(kept)) void send(kept)
         } else if (answer !== false) setProblem({ line: answer.line, retry: answer.retry, action: 'clear', clearInput })
       },
