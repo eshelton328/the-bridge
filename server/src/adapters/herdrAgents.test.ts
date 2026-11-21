@@ -985,6 +985,8 @@ describe('herdr agents: subscribe', () => {
     tell?.('rename', 'session-a.jsonl')
     tell?.('change', 'session-new.jsonl')
     tell?.('rename', 'notes.txt')
+    tell?.('rename', 'session-new')
+    tell?.('rename', 'bad name.jsonl')
     await wait(250)
     expect(told()).toBe(before)
     tell?.('rename', 'session-new.jsonl')

@@ -936,7 +936,9 @@ export function createHerdrAgents({
         for (const folder of new Set(paths.map((p) => dirname(p)))) {
           try {
             const watcher = watchFs(folder, (event, name) => {
-              if (event !== 'rename' || name === null || !name.endsWith('.jsonl') || known.has(name)) return
+              // Only a new top-level session file: an append is a change event, and a subagent's file is in a subfolder.
+              if (event !== 'rename' || name === null || known.has(name)) return
+              if (!name.endsWith('.jsonl') || !sessionName.test(name.slice(0, -'.jsonl'.length))) return
               reopen()
               clearTimeout(lateSession)
               lateSession = setTimeout(reopen, lateSessionMs)
