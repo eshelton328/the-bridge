@@ -5,7 +5,13 @@ import { TabId, ChatId, MachineId, WorkspaceId } from '@bridge/contract'
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
 import type { AgentEvent } from '../services/agentPort.ts'
 import { describeAgentPort } from './agentPortContract.ts'
-import { claudeScreen, type FakeHerdrSocket, paneRead, startFakeHerdrSocket } from './fakeHerdrSocket.ts'
+import {
+  claudeScreen,
+  type FakeHerdrSocket,
+  paneRead,
+  startFakeHerdrSocket,
+  switchModelScreen,
+} from './fakeHerdrSocket.ts'
 import { createHerdrAgents } from './herdrAgents.ts'
 import { memoryLogger } from '../logger.ts'
 
@@ -673,6 +679,86 @@ describe('herdr agents: input to a chat', () => {
       const keys = sentTo('agent.send_keys')
       expect(await port().sendPrompt(chat, 'Reply OK.')).toEqual({ ok: true, value: 'inputNotEmpty' })
       expect(sentTo('agent.send_keys')).toBe(keys + 1)
+    })
+  })
+
+  describe('the "Switch model?" dialog of /model', () => {
+    const working = () => {
+      socket.set('agent.list', {
+        ...results['agent.list'],
+        agents: results['agent.list'].agents.map((a) =>
+          a.pane_id === 'w17:p1' ? { ...a, agent_status: 'working' } : a,
+        ),
+      })
+    }
+    const lastKeys = () =>
+      socket
+        .requests()
+        .filter((r) => r.method === 'agent.send_keys')
+        .at(-1)?.params
+    afterEach(() => {
+      socket.onRequest(undefined)
+      socket.set('pane.read', undefined)
+      socket.set('agent.list', undefined)
+    })
+
+    it('picks "Yes, switch" with one Enter while the chat works, and answers sent once the box shows again', async () => {
+      working()
+      socket.set('pane.read', paneRead('w17:p1', claudeScreen('')))
+      socket.onRequest((method) => {
+        if (method === 'agent.prompt') socket.set('pane.read', paneRead('w17:p1', switchModelScreen()))
+        if (method === 'agent.send_keys') socket.set('pane.read', paneRead('w17:p1', claudeScreen('')))
+      })
+      const keys = sentTo('agent.send_keys')
+      expect(await port().sendPrompt(chat, '/model sonnet')).toEqual({ ok: true, value: 'sent' })
+      expect(sentTo('agent.send_keys')).toBe(keys + 1)
+      expect(lastKeys()).toEqual({ target: 'w17:p1', keys: ['enter'] })
+    })
+
+    it('picks "Yes, switch" when the dialog shows 300 ms after the send', async () => {
+      working()
+      socket.set('pane.read', paneRead('w17:p1', claudeScreen('')))
+      socket.onRequest((method) => {
+        if (method === 'agent.prompt')
+          setTimeout(() => {
+            socket.set('pane.read', paneRead('w17:p1', switchModelScreen()))
+          }, 300)
+        if (method === 'agent.send_keys') socket.set('pane.read', paneRead('w17:p1', claudeScreen('')))
+      })
+      expect(await port().sendPrompt(chat, '/model sonnet')).toEqual({ ok: true, value: 'sent' })
+      expect(lastKeys()).toEqual({ target: 'w17:p1', keys: ['enter'] })
+    })
+
+    it('sends no Enter when the chat only shows the words of the dialog above its input box', async () => {
+      working()
+      const quoted = `  Switch model?\r\n  ❯ 1. Yes, switch to Sonnet 5.5\r\n${claudeScreen('')}`
+      socket.set('pane.read', paneRead('w17:p1', quoted))
+      const keys = sentTo('agent.send_keys')
+      expect(await port().sendPrompt(chat, '/model sonnet')).toEqual({ ok: true, value: 'sent' })
+      expect(sentTo('agent.send_keys')).toBe(keys)
+    })
+
+    it('answers inputUnreadable when the dialog stays after its Enter', async () => {
+      working()
+      socket.set('pane.read', paneRead('w17:p1', claudeScreen('')))
+      socket.onRequest((method) => {
+        if (method === 'agent.prompt') socket.set('pane.read', paneRead('w17:p1', switchModelScreen()))
+      })
+      const keys = sentTo('agent.send_keys')
+      expect(await port().sendPrompt(chat, '/model sonnet')).toEqual({ ok: true, value: 'inputUnreadable' })
+      expect(sentTo('agent.send_keys')).toBe(keys + 1)
+    })
+
+    it('sends no prompt, no command and no key into an open dialog, so no Enter can pick a choice', async () => {
+      working()
+      socket.set('pane.read', paneRead('w17:p1', switchModelScreen()))
+      const prompts = sentTo('agent.prompt')
+      const keys = sentTo('agent.send_keys')
+      expect(await port().sendPrompt(chat, 'Reply OK.')).toEqual({ ok: true, value: 'inputUnreadable' })
+      expect(await port().sendPrompt(chat, '/effort low')).toEqual({ ok: true, value: 'inputUnreadable' })
+      expect(await port().clearInputBox(chat)).toEqual({ ok: true, value: 'inputUnreadable' })
+      expect(sentTo('agent.prompt')).toBe(prompts)
+      expect(sentTo('agent.send_keys')).toBe(keys)
     })
   })
 

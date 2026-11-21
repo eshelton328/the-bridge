@@ -43,7 +43,7 @@ import type {
   PromptOutcome,
 } from '../services/agentPort.ts'
 import { type SocketFailure, type HerdrStream, herdrRequest, herdrSubscribe } from './herdrSocket.ts'
-import { boxKeys, type InputBox, inputBoxOf, promptKey } from './claudeInput.ts'
+import { boxKeys, type InputBox, inputBoxOf, promptKey, switchModelDialogOf } from './claudeInput.ts'
 import { readClaudeTranscript } from './claudeTranscript.ts'
 import { readClaudeSkills } from './claudeSkills.ts'
 import { readCompactWindows } from './claudeSettings.ts'
@@ -648,10 +648,46 @@ export function createHerdrAgents({
    */
   const lastSent = new Map<string, string>()
 
+  /** The screen of a pane with its colours; it never leaves the adapter. */
+  const screenOf = async (pane: string): Promise<Result<string, AgentPortError>> => {
+    const read = await call('pane.read', PaneRead, { pane_id: pane, source: 'visible', format: 'ansi' })
+    return read.ok ? ok(read.value.read.text) : read
+  }
+
   /** The input box of a Claude chat's pane, from its screen; null when the screen shows none. */
   const inputBox = async (pane: string): Promise<Result<InputBox | null, AgentPortError>> => {
-    const read = await call('pane.read', PaneRead, { pane_id: pane, source: 'visible', format: 'ansi' })
-    return read.ok ? ok(inputBoxOf(read.value.read.text)) : read
+    const screen = await screenOf(pane)
+    return screen.ok ? ok(inputBoxOf(screen.value)) : screen
+  }
+
+  /**
+   * After `/model <name>`, a chat with history asks "Switch model?" first, also while it works. The owner asked for
+   * the switch, so one Enter picks "Yes, switch", only when the screen shows that dialog with that choice picked;
+   * then the screen is read until the dialog is gone and the input box shows again (`sent`), else
+   * `inputUnreadable`. Each read of the check looks for the dialog, as it can come late; `none` when no read
+   * showed it and the box shows: the chat switched at once or kept the text.
+   */
+  const confirmModelSwitch = async (pane: string): Promise<Result<'none' | PromptOutcome, AgentPortError>> => {
+    let box: InputBox | null = null
+    for (const gap of submitReadGapsMs) {
+      await new Promise((resolve) => setTimeout(resolve, gap))
+      const screen = await screenOf(pane)
+      if (!screen.ok) return screen
+      if (switchModelDialogOf(screen.value)) {
+        const enter = await input('agent.send_keys', { target: pane, keys: ['enter'] })
+        if (!enter.ok || enter.value !== 'sent') return enter
+        for (const next of submitReadGapsMs) {
+          await new Promise((resolve) => setTimeout(resolve, next))
+          const after = await screenOf(pane)
+          if (!after.ok) return after
+          if (!switchModelDialogOf(after.value) && inputBoxOf(after.value) !== null) return ok('sent')
+        }
+        return ok('inputUnreadable')
+      }
+      box = inputBoxOf(screen.value)
+    }
+    // Another dialog hides the box: the page must not count it as sent.
+    return ok(box === null ? 'inputUnreadable' : 'none')
   }
 
   /**
@@ -751,6 +787,13 @@ export function createHerdrAgents({
     const key = hashOf(promptKey(text))
     lastSent.set(pane, key)
     if (!claude) return sent
+    if (modelSwitch.test(text.trim())) {
+      const switchAt = Date.now()
+      const switched = await confirmModelSwitch(pane)
+      steps.checkMs = msSince(switchAt)
+      if (!switched.ok) return switched
+      if (switched.value !== 'none') return ok(switched.value)
+    }
     // A lost Enter leaves the prompt in the box, where it would block each next send: take it back.
     const checkAt = Date.now()
     const left = await leftInBox(pane, key, steps)
@@ -766,6 +809,9 @@ export function createHerdrAgents({
     if (after.value === null) return ok('inputUnreadable')
     return ok(after.value.text === '' ? 'notSubmitted' : 'inputNotEmpty')
   }
+
+  /** The text of a model change, which may open the "Switch model?" dialog. */
+  const modelSwitch = /^\/model\s+\S/
 
   /** The text of a command as the owner would type it; one line, so one Enter sends it. */
   const commandText = (command: ChatCommand) =>
