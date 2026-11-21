@@ -76,8 +76,11 @@ export type WorkbenchPanesProps = {
   onCopy?: CopyReply | undefined
   /** The live chats' layout writes (W2); none on a fixture. */
   layout?: LayoutWrites | undefined
-  /** Takes a dragged handle's sizes in place of `onUiChange` (a live split, W2c, useRatioDrag.ts). */
-  onResize?: ((part: SplitPart, sizes: number[]) => void) | undefined
+  /**
+   * Takes a dragged handle's sizes in place of `onUiChange` (a live split, W2c, useRatioDrag.ts), with the sizes a stack
+   * drew before them.
+   */
+  onResize?: ((part: SplitPart, sizes: number[], drawn?: readonly number[]) => void) | undefined
 }
 
 export function WorkbenchPanes({
@@ -284,9 +287,9 @@ export function WorkbenchPanes({
   }
   const shown = data.panes.map((pane, i) => ({ id: pane.id, content: render(pane, i) }))
   // A live split's handle goes to `onResize` (W2c); a sample's to the ui.
-  const resized = (part: SplitPart, next: number[], change: Partial<WorkspacesUi>) => {
+  const resized = (part: SplitPart, next: number[], change: Partial<WorkspacesUi>, drawn?: readonly number[]) => {
     if (onResize === undefined) onUiChange?.(change)
-    else onResize(part, next)
+    else onResize(part, next, drawn)
   }
   if (data.split === 'stack')
     return (
@@ -294,8 +297,8 @@ export function WorkbenchPanes({
         stack
         panes={shown}
         sizes={ui.splitSizes}
-        onSizeChange={(part, next) => {
-          resized(part, next, { splitSizes: { ...ui.splitSizes, [part]: next } })
+        onSizeChange={(part, next, drawn) => {
+          resized(part, next, { splitSizes: { ...ui.splitSizes, [part]: next } }, drawn)
         }}
       />
     )

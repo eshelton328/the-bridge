@@ -39,7 +39,7 @@ export type RatioDrag = {
   /** `view.ui` with the held sizes over the server's, and the readout's sizes during a rows-first drag. */
   readonly ui: WorkspacesUi
   /** Takes a handle's new sizes; none when the shown split is not a live tab's. */
-  readonly onResize: ((part: SplitPart, sizes: number[]) => void) | undefined
+  readonly onResize: ((part: SplitPart, sizes: number[], drawn?: readonly number[]) => void) | undefined
   readonly onPointerDownCapture: (event: PointerEvent) => void
 }
 
@@ -98,14 +98,15 @@ export function useRatioDrag(
   }, [send])
 
   const onResize = useCallback(
-    (part: SplitPart, next: number[]) => {
+    (part: SplitPart, next: number[], drawnBefore?: readonly number[]) => {
       const { sizes: drawn, shown: workspace, mine: shownHeld, tab: live, view: shownView } = nowRef.current
-      const was = drawn[part] ?? next.map(() => 100 / next.length)
+      // A stack's floors may draw other sizes than the server's: the moved handle is found from the drawn ones.
+      const was = drawnBefore ?? drawn[part] ?? next.map(() => 100 / next.length)
       // The splitter tells back the sizes it was given; only the owner's gesture moves a handle.
       if (workspace === null || live === undefined || same(next, was)) return
       if (gestureRef.current !== undefined && gestureRef.current.part !== part) send()
       const sized = nowRef.current.view.ui.splitSizes?.[part]
-      const base = sized ?? next.map(() => 100 / next.length)
+      const base = drawnBefore === undefined ? (sized ?? next.map(() => 100 / next.length)) : [...drawnBefore]
       const ids = shownView.data.panes.map((p) => p.id)
       const panels = panelsOf(shownView.data.split, ids.length, part).map((panel) =>
         panel.flatMap((at) => (ids[at] === undefined ? [] : [ids[at]])),

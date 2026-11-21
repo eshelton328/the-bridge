@@ -1,6 +1,7 @@
 import '@fontsource-variable/geist'
 import '@fontsource-variable/geist-mono'
 import '../index.css'
+import { ChatId, type LayoutNode } from '@bridge/contract'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
@@ -36,6 +37,8 @@ const solo = 'mac-mini/w-solo'
 const plan = 'mac-mini/c1'
 const review = 'mac-mini/c2'
 const lone = 'mac-mini/c5'
+const six = 'mac-mini/c6'
+const seven = 'mac-mini/c7'
 const tab = `${live}:t1`
 
 const summary = (id: string, title: string) => ({
@@ -50,21 +53,26 @@ const summary = (id: string, title: string) => ({
   status: 'idle',
   parent: null,
 })
-// live work: plan and review side by side in one tab, split at half. solo work: one chat.
+// live work: plan and review side by side in one tab, split at half. solo work: three chats in a row, unless a test
+// gives its tree.
 const list = {
   machine: 'mac-mini',
   workspaces: [
     { id: live, label: 'live work', chats: [summary(plan, 'plan the slice'), summary(review, 'review notes')] },
-    { id: solo, label: 'solo work', chats: [summary(lone, 'lone chat')] },
+    {
+      id: solo,
+      label: 'solo work',
+      chats: [summary(lone, 'lone chat'), summary(six, 'six notes'), summary(seven, 'seven notes')],
+    },
   ],
 }
 
 type Fakes = { list: FakeWorkspacesServer; layoutReads: string[] }
 
-function withChats(): Fakes {
+function withChats(roots: Readonly<Record<string, readonly LayoutNode[]>> = {}): Fakes {
   const chats = fakeTranscriptServer()
-  for (const c of [plan, review, lone]) chats.set(c, [])
-  const workspaces = fakeWorkspacesServer(chats, list)
+  for (const c of [plan, review, lone, six, seven]) chats.set(c, [])
+  const workspaces = fakeWorkspacesServer(chats, list, { roots })
   const layoutReads: string[] = []
   vi.stubGlobal(
     'fetch',
@@ -392,6 +400,30 @@ describe('ratio (W2c)', () => {
     await userEvent.click(page.getByRole('tab', { name: /solo work/ }))
     await expect.poll(() => writesOf(fakes)).toHaveLength(1)
     expect(writesOf(fakes)[0]).toMatchObject({ chat: live, action: 'ratio', body: { tab, path: [], ratio: 0.52 } })
+  })
+
+  it('finds the dragged divider of a stack from the sizes it draws, with a pane at its floor', async () => {
+    const leaf = (chat: string): LayoutNode => ({ kind: 'pane', chat: ChatId.parse(chat) })
+    const column = (ratio: number, first: LayoutNode, second: LayoutNode): LayoutNode => ({
+      kind: 'split',
+      direction: 'column',
+      ratio,
+      first,
+      second,
+    })
+    // lone chat has 10 % of the tab, less than its header and composer: the stack draws it higher.
+    const fakes = withChats({ [solo]: [column(0.1, leaf(lone), column(0.5, leaf(six), leaf(seven)))] })
+    await showPanes()
+    await userEvent.click(page.getByRole('tab', { name: /solo work/ }))
+    await expect.poll(drawn).toEqual(['lone chat', 'six notes', 'seven notes'])
+    const held = await drag(handle('Resize rows', 1), 0, -60)
+    await held.release()
+    await expect.poll(() => writesOf(fakes)).toHaveLength(1)
+    expect(writesOf(fakes)[0]).toMatchObject({
+      chat: solo,
+      action: 'ratio',
+      body: { tab: `${solo}:t1`, path: ['second'] },
+    })
   })
 
   it('reads the layout again, quietly, on a 404', async () => {
