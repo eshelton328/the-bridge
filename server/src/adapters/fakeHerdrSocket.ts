@@ -40,6 +40,8 @@ export type FakeHerdrSocket = {
   readonly failOnce: (method: string, code: string, message: string) => void
   /** Answers the next request for `method` with `result`, once, then the recorded result again. */
   readonly once: (method: string, result: unknown) => void
+  /** Answers the next request for `method` `ms` later, once, as a slow herdr would. */
+  readonly delayOnce: (method: string, ms: number) => void
   /** Sends one event line to each open stream. */
   readonly push: (event: unknown) => void
   /** Calls `react` with each later request before the socket answers it, as a pane would act on its input. */
@@ -64,6 +66,7 @@ export async function startFakeHerdrSocket(results: Readonly<Record<string, unkn
   const lasting = new Map<string, unknown>()
   const failures = new Map<string, { readonly code: string; readonly message: string }>()
   const requests: { readonly method: unknown; readonly params: unknown }[] = []
+  const delays = new Map<string, number>()
   let reactTo: ((method: unknown, params: unknown) => void) | undefined
   const server = createServer((conn) => {
     connections += 1
@@ -88,6 +91,16 @@ export async function startFakeHerdrSocket(results: Readonly<Record<string, unkn
       }
       const id = field(request, 'id') ?? ''
       const method = field(request, 'method')
+      const wait = typeof method === 'string' ? delays.get(method) : undefined
+      if (typeof method === 'string' && wait !== undefined) {
+        // Reads the same line again later, as if it came then.
+        delays.delete(method)
+        setTimeout(() => {
+          buffer = `${line}\n${buffer}`
+          conn.emit('data', '')
+        }, wait)
+        return
+      }
       requests.push({ method, params: field(request, 'params') })
       reactTo?.(method, field(request, 'params'))
       switch (mode) {
@@ -161,6 +174,9 @@ export async function startFakeHerdrSocket(results: Readonly<Record<string, unkn
       else lasting.set(method, result)
     },
     streams: () => [...streams.values()],
+    delayOnce: (method, ms) => {
+      delays.set(method, ms)
+    },
     onRequest: (react) => {
       reactTo = react
     },
