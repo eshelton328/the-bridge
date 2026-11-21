@@ -491,14 +491,15 @@ describe("a live Claude chat's Send (W1)", () => {
       reports.expectNoText()
     })
 
-  it('sends no text that is empty, only spaces or over the limit, and says by how much it is over', async () => {
+  it('sends no text that is empty, only spaces or over the limit, says by how much it is over, and turns Send off', async () => {
     const fake = withChats()
     await openAndType(phone, 'plan the slice', '   ')
     await userEvent.click(sendButton('plan the slice'))
     await userEvent.fill(box('plan the slice'), 'x'.repeat(maxPromptChars + 1))
     const chat = chatRegion('plan the slice')
     await expect.element(chat.getByText('Message too long — 1 character over')).toBeVisible()
-    await userEvent.click(sendButton('plan the slice'))
+    // W1b: Send is off while the text is over the limit (the library's sendDisabled), and Enter sends nothing.
+    await expect.element(sendButton('plan the slice')).toBeDisabled()
     await userEvent.fill(box('plan the slice'), 'x'.repeat(maxPromptChars + 5))
     await expect.element(chat.getByText('Message too long — 5 characters over')).toBeVisible()
     await userEvent.keyboard('{Enter}')

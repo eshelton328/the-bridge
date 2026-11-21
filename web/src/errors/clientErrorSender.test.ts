@@ -130,6 +130,7 @@ describe('toClientErrorReport', () => {
     const misses = [
       new NamedError('TranscriptMissError', `A chat transcript read missed: status 404 (chat ${secret})`, 'status'),
       new NamedError('LayoutReadMissError', `A workspace layout read missed: ${secret}`, 'internal'),
+      new NamedError('ChatUploadMissError', `A chat upload missed: chunk internal 500 (${secret}.png)`, 'internal'),
     ]
     for (const error of misses) {
       const body = toClientErrorReport(entry(error, 'live'))

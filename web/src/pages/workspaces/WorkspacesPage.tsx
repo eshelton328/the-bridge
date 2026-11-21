@@ -9,7 +9,9 @@
 // its transcript while it shows (useLiveTranscripts.ts); a build has no live code. A live Claude chat's Send and
 // Stop go to the server (liveSend.ts, W1), to the chat whose composer sent them, as does a clear of its terminal
 // input (R28 part B); any other chat's Send goes to the
-// page store's `send`, and a failed send is reported. A failed send keeps the composer's draft.
+// page store's `send`, and a failed send is reported. A failed send keeps the composer's draft. A live Claude chat's
+// files upload as the owner adds them (useLiveUploads.ts, W1b), and its send names the ones ready, in the chips'
+// order: a send that goes through takes them out of the composer, and a 409 upload-conflict fails them.
 // The composer drafts are saved in sessionStorage as they change and read
 // back on load, so Reload app keeps them; a sent chat's draft leaves it
 // (draftStorage.ts). They live in a draft book (blocks/draftBook.ts), so a keystroke never renders this page (R28).
@@ -28,6 +30,7 @@ import { loadDrafts, saveDrafts } from './draftStorage.ts'
 import { WorkspacesScreen } from './screens/WorkspacesScreen.tsx'
 import type { ComposerAnswer } from './blocks/useComposerActions.ts'
 import { useLiveTranscripts } from './useLiveTranscripts.ts'
+import { useLiveUploads } from './useLiveUploads.ts'
 import {
   useWorkspacesActions,
   useWorkspacesUi,
@@ -98,6 +101,7 @@ export function WorkspacesPage() {
     uiRef.current = ui
   })
   const { data, transcripts } = useLiveTranscripts(import.meta.env.DEV && live, state.data)
+  const files = useLiveUploads(import.meta.env.DEV && live)
   // The sends and stops in flight, by chat: a pane keeps its own guard only while it shows, so a chat opened again while
   // its send or stop is pending must not post a second one. `once` answers `false` (nothing sent) meanwhile. A send and a
   // clear of the chat's terminal input go one after the other: no send starts while a clear is pending, as the clear
@@ -142,8 +146,11 @@ export function WorkspacesPage() {
           ? Promise.resolve(false)
           : once(`send:${chat}`, () => {
               const liveChat = liveChatOf(chat)
-              if (liveChat !== undefined)
-                return viaLive((m) => m.sendPrompt(liveChat, text)).then((answer) => {
+              if (liveChat !== undefined) {
+                const attached = files.readyOf(chat)
+                return viaLive((m) => m.sendPrompt(liveChat, text, attached)).then((answer) => {
+                  if (answer === true) files.sent(chat, attached)
+                  else if (typeof answer === 'object' && answer.uploadConflict === true) files.conflict(chat, attached)
                   // A clear of the terminal input is one at a time for the chat, as its send is, in any pane that shows it.
                   if (typeof answer !== 'object' || answer.clearInput === undefined) return answer
                   const clearInput = answer.clearInput
@@ -153,6 +160,7 @@ export function WorkspacesPage() {
                     clearInput: () => once(`clear:${chat}`, () => sending().then(clearInput, clearInput)),
                   }
                 })
+              }
               return send(chat, text).then(
                 () => true,
                 (error: unknown) => {
@@ -162,6 +170,7 @@ export function WorkspacesPage() {
               )
             })
       }
+      filesOf={(chat) => files.filesOf(chat, liveChatOf(chat))}
       onStop={(chat) => {
         const liveChat = liveChatOf(chat)
         return liveChat === undefined

@@ -15,7 +15,7 @@
 import { SplitPanes } from '@eshelton328/component-library-1701'
 import type { ResizePart, WorkbenchPane, WorkspacesData, WorkspacesUi } from '../types.ts'
 import type { CopyReply } from './ChatEntryView.tsx'
-import { ChatPane, type TranscriptWatch } from './ChatPane.tsx'
+import { ChatPane, type ChatFiles, type TranscriptWatch } from './ChatPane.tsx'
 import type { DraftBook } from './draftBook.ts'
 import { EmptyPane } from './EmptyPane.tsx'
 import { PaneDropZone } from './PaneDropZone.tsx'
@@ -54,6 +54,8 @@ export type WorkbenchPanesProps = {
   onSend?: ((chat: string, text: string) => Promise<ComposerAnswer>) | undefined
   /** Stops a chat: its running composer's Stop (ChatPane `onStop`). */
   onStop?: ((chat: string) => Promise<ComposerAnswer>) | undefined
+  /** A live Claude chat's files (W1b), by chat id; none for a sample chat, a Codex chat or a shell (ChatPane `files`). */
+  filesOf?: ((chat: string) => ChatFiles | undefined) | undefined
   /** Reads each live chat's transcript while its pane shows (ChatPane); fixtures have none. */
   transcripts?: TranscriptWatch | undefined
   /** A reply's Copy: the page writes the clipboard, and the button shows the result (audit P-4). */
@@ -68,6 +70,7 @@ export function WorkbenchPanes({
   drafts,
   onSend,
   onStop,
+  filesOf,
   transcripts,
   onCopy,
 }: WorkbenchPanesProps) {
@@ -154,6 +157,7 @@ export function WorkbenchPanes({
             drafts={drafts}
             onSend={onSend && ((text) => onSend(pane.id, text))}
             onStop={onStop && (() => onStop(pane.id))}
+            files={filesOf?.(pane.id)}
             skills={{
               label: data.skillsLabel,
               matching: data.skillsMatching,

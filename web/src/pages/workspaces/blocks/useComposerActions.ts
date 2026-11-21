@@ -27,6 +27,8 @@ export type ComposerAnswer =
        * empty, else the line of the miss. Only a send's line has it.
        */
       readonly clearInput?: (() => Promise<ComposerAnswer>) | undefined
+      /** The server refused the send's files (409 upload-conflict): the page fails their chips. */
+      readonly uploadConflict?: boolean
     }
 
 type Problem = {
@@ -54,10 +56,22 @@ export type ComposerActionsOptions = {
    * pane, where the owner changed or emptied it. The text this pane last held when not set.
    */
   readonly draftNow?: (() => string) | undefined
+  /** The composer has files ready to send (W1b): a send with no text goes. */
+  readonly withFiles?: boolean | undefined
 }
 
-export function useComposerActions({ text, onSend, onStop, clear, draftNow }: ComposerActionsOptions) {
+export function useComposerActions({
+  text,
+  onSend,
+  onStop,
+  clear,
+  draftNow,
+  withFiles = false,
+}: ComposerActionsOptions) {
   const [problem, setProblem] = useState<Problem>()
+  // Shown as state too, so Send is off while a send of files with no text is pending (the library's own pending
+  // state covers only the sends it starts).
+  const [sending, setSending] = useState(false)
   // Refs, not state: a second tap or Enter in the same frame must see the first one's send.
   const sendingRef = useRef(false)
   const stoppingRef = useRef(false)
@@ -72,21 +86,25 @@ export function useComposerActions({ text, onSend, onStop, clear, draftNow }: Co
   const send = (submitted: string): boolean | Promise<boolean> => {
     // While a clear of the terminal input is pending, its answer sends the draft: a Send meanwhile keeps it.
     if (submitted.length > maxPromptChars || sendingRef.current || clearingRef.current) return false
+    if (!/\S/.test(submitted) && !withFiles) return false
     if (onSend === undefined) {
       clear(submitted)
       return true
     }
     sendingRef.current = true
+    setSending(true)
     setProblem(undefined)
     return onSend(submitted).then(
       (answer) => {
         sendingRef.current = false
+        setSending(false)
         if (answer === true) clear(submitted)
         else if (answer !== false) setProblem({ ...answer, action: 'send' })
         return answer === true
       },
       () => {
         sendingRef.current = false
+        setSending(false)
         return false
       },
     )
@@ -118,7 +136,7 @@ export function useComposerActions({ text, onSend, onStop, clear, draftNow }: Co
         clearingRef.current = false
         if (answer === true) {
           const kept = draftNow?.() ?? textRef.current
-          if (/\S/.test(kept)) void send(kept)
+          if (/\S/.test(kept) || withFiles) void send(kept)
         } else if (answer !== false) setProblem({ line: answer.line, retry: answer.retry, action: 'clear', clearInput })
       },
       () => {
@@ -137,12 +155,16 @@ export function useComposerActions({ text, onSend, onStop, clear, draftNow }: Co
               runClear(clearAgain)
             }
           : () => {
-              if (/\S/.test(text)) void send(text)
+              if (/\S/.test(text) || withFiles) void send(text)
             }
   const offered = problem?.action === 'send' ? problem.clearInput : undefined
   return {
     send,
     stop,
+    /** A send is pending. */
+    sending,
+    /** The text is over the server's limit: Send is off. */
+    tooLong: over > 0,
     /** The line under the composer: the text's length over the limit first, else the last miss; none when not set. */
     line: over > 0 ? tooLongLine(over) : problem?.line,
     /** Retry of the line; none for the too-long line or a miss that will not work again. */

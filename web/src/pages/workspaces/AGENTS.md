@@ -74,6 +74,26 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   requests go through the typed RPC client with the chat ID URL-encoded
   once, and the bodies are the contract's `SendPromptRequest` and
   `StopChatRequest` (backend #297).
+- A live Claude chat takes files (W1b, `liveUploads.ts`, `useLiveUploads.ts`):
+  the paperclip opens a hidden file input with no `accept` and no
+  `capture` (a phone offers Photos, Camera and Files), and a drop on the
+  composer or a paste of files adds them too. Each file starts at once:
+  start, its chunks in order through XMLHttpRequest (60 s each, a miss on
+  the network, a 5xx but 507, a 408 or a 429 goes again twice), then
+  complete, at most two files at once; the chip shows the bytes sent.
+  Retry goes on from the failed chunk with the same upload, or starts
+  again after a 409 or a 404. Over 1 GiB fails on the page with no
+  request, and the files past 10 are not added. Remove aborts and sends
+  DELETE. Send is off while a file uploads or failed and while the text
+  is over the limit; a send names the ready uploads in the chips' order
+  and may have no text. The chips belong to the chat that added them. A
+  line says "Not attached — <why>"; report() gets only a 5xx and an
+  unexpected answer, with the step, kind and status, never a file name
+  (`app/WorkspacesAttachments.test.tsx`, fake: `lib/fakeUploadServer.ts`).
+  A sample chat keeps its drawn chips and a paperclip that does nothing; a
+  live Codex chat and a shell have no paperclip. The calls go through
+  the typed RPC client with each ID URL-encoded once, and the bodies are
+  the contract's (backend #307 to #309).
 - A live chat opens at its newest entry and stays there as entries come
   in, unless the reader scrolled up; back at the end, it follows again
   (`blocks/usePinnedEnd.ts`, `app/WorkspacesTranscriptScroll.test.tsx`).

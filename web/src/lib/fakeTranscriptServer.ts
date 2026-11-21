@@ -27,6 +27,12 @@
 // 204, or the test's answer (`answerClears`). A chat the test marks with
 // `dropSubmits` refuses each send with 409 chat-not-ready `notSubmitted`, as
 // the server does when Claude Code did not take the typed text.
+//
+// W1b: it has the upload routes of lib/fakeUploadServer.ts (`uploads`), and
+// a send may name complete uploads of its chat (`attachments`), with an
+// empty text when it has one; one that is not complete, or of another chat,
+// answers 409 upload-conflict and sends nothing, as the server does
+// (backend #309).
 import {
   ClearInputRequest,
   ErrorBody,
@@ -37,6 +43,7 @@ import {
   type TranscriptEntry,
   TranscriptResponse,
 } from '@bridge/contract'
+import { type FakeUploadOptions, fakeUploadServer } from './fakeUploadServer.ts'
 
 type Route = 'prompt' | 'stop' | 'clear'
 
@@ -70,9 +77,12 @@ const readBody = (init: RequestInit | undefined): unknown => {
 export type FakeTranscriptOptions = {
   /** `open`: the stream route answers; `missing`: it answers 404, as before backend 3b-3. */
   readonly streams?: 'open' | 'missing'
+  /** The upload routes' options, such as a small chunk size. */
+  readonly uploads?: FakeUploadOptions
 }
 
-export function fakeTranscriptServer({ streams: mode = 'open' }: FakeTranscriptOptions = {}) {
+export function fakeTranscriptServer({ streams: mode = 'open', uploads: uploadOptions }: FakeTranscriptOptions = {}) {
+  const uploads = fakeUploadServer(uploadOptions)
   const encoder = new TextEncoder()
   const transcripts = new Map<string, TranscriptEntry[]>()
   const earlier = new Map<string, boolean>()
@@ -86,8 +96,8 @@ export function fakeTranscriptServer({ streams: mode = 'open' }: FakeTranscriptO
   /** An answer in place of the stream's, while set: such as a 500. */
   let streamAnswer: (() => Response) | undefined
   let seq = 0
-  /** Each send the server took, in order: the chat and the text. */
-  const prompts: { chat: string; text: string }[] = []
+  /** Each send the server took, in order: the chat, the text and the files it named. */
+  const prompts: { chat: string; text: string; attachments?: readonly string[] }[] = []
   /** The chat of each stop the server took, in order. */
   const stops: string[] = []
   /** The chat of each clear of the terminal input the server took, in order. */
@@ -138,8 +148,10 @@ export function fakeTranscriptServer({ streams: mode = 'open' }: FakeTranscriptO
         409,
       )
     if (route === 'prompt') {
-      const text = SendPromptRequest.parse(body).text
-      prompts.push({ chat, text })
+      const { text, attachments } = SendPromptRequest.parse(body)
+      if (attachments !== undefined && !uploads.takeAttachments(chat, attachments))
+        return errorAnswer({ kind: 'upload-conflict', message: 'Conflict', requestId: 'r-409' }, 409)
+      prompts.push(attachments === undefined ? { chat, text } : { chat, text, attachments })
     } else stops.push(chat)
     return new Response(null, { status: 204 })
   }
@@ -179,6 +191,8 @@ export function fakeTranscriptServer({ streams: mode = 'open' }: FakeTranscriptO
   }
 
   return {
+    /** The upload routes (W1b): their records and switches, and the XMLHttpRequest a test stubs for the chunks. */
+    uploads,
     reads,
     opens,
     prompts,
@@ -283,6 +297,8 @@ export function fakeTranscriptServer({ streams: mode = 'open' }: FakeTranscriptO
     },
     /** The answer to a request for `path`, or undefined when it is not a transcript, send, stop or clear route. */
     handle: (path: string, init?: RequestInit): Response | Promise<Response> | undefined => {
+      const upload = uploads.handle(path, init)
+      if (upload !== undefined) return upload
       const action = /^\/api\/chats\/([^/]+)\/(prompt|stop|input\/clear)$/.exec(path)
       if (action !== null && init?.method === 'POST') {
         paths.push(path)
