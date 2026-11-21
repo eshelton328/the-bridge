@@ -54,6 +54,16 @@
 // test set for the chat (`setSkills`) in the order it gave, as the server
 // sorts them by name. It records each read's chat in `skillReads`, and
 // `answerSkills` answers in its place, such as a 503 or one that waits.
+//
+// Backend #369: a send may carry the page's `sendId`. The fake records it
+// (`sendIds`) and keeps its result: `pending` until the send's answer, then
+// `sent`, `notSubmitted`, `notSent` or `unknown` as the server's `resultOf`
+// maps it. The same ID again to the same chat answers 409 chat-not-ready
+// `duplicateSend` and sends nothing. `GET /api/chats/:chat/sends/:send`
+// answers the contract's `SendResultResponse`, or 404 not-found for a
+// result it does not keep (`forgetSends`, as after a restart); the test can
+// set a result (`setSendResult`) or answer the read itself
+// (`answerSendResults`). Each read's send ID is in `resultReads`.
 import {
   type ChatSkill,
   ChatSkillsResponse,
@@ -62,6 +72,8 @@ import {
   ErrorBody,
   maxTranscriptEntries,
   SendPromptRequest,
+  type SendResult,
+  SendResultResponse,
   StopChatRequest,
   TranscriptChangedEvent,
   type TranscriptEntry,
@@ -158,6 +170,64 @@ export function fakeTranscriptServer({ streams: mode = 'open', uploads: uploadOp
   const dropping = new Set<string>()
   /** The chats whose input box the server cannot find now: each send, command and clear answers 409 inputUnreadable. */
   const hidden = new Set<string>()
+  /** The send ID of each send that carried one, taken or not, in order. */
+  const sendIds: string[] = []
+  /** The result of each send with an ID, by chat and ID. */
+  const results = new Map<string, SendResult>()
+  const resultKey = (chat: string, send: string) => `${chat} ${send}`
+  /** The send ID of each result read, in order. */
+  const resultReads: string[] = []
+  let resultAnswer: ((chat: string, send: string) => Response | Promise<Response>) | undefined
+
+  /** The result of a send's answer, as the server's `resultOf` maps its outcome. */
+  const resultOfAnswer = async (res: Response): Promise<SendResult> => {
+    if (res.status === 204) return 'sent'
+    const body = ErrorBody.safeParse(
+      await res
+        .clone()
+        .json()
+        .catch(() => undefined),
+    )
+    const error = body.success ? body.data.error : undefined
+    if (error?.kind === 'chat-not-ready') {
+      if (error.state === 'notSubmitted') return 'notSubmitted'
+      if (error.state === 'inputNotEmpty' || error.state === 'inputUnreadable') return 'unknown'
+      return 'notSent'
+    }
+    if (error?.kind === 'not-found' || error?.kind === 'upload-conflict') return 'notSent'
+    return 'unknown'
+  }
+
+  /** A send with an ID: refused as a duplicate, or recorded as pending until its answer gives its result. */
+  const withSendId = (chat: string, sendId: string, answer: () => Response | Promise<Response>) => {
+    sendIds.push(sendId)
+    const key = resultKey(chat, sendId)
+    if (results.has(key))
+      return errorAnswer(
+        { kind: 'chat-not-ready', state: 'duplicateSend', message: 'Duplicate send', requestId: 'r-409' },
+        409,
+      )
+    results.set(key, 'pending')
+    return Promise.resolve(answer()).then(async (res) => {
+      // A result the test set meanwhile stays.
+      const result = await resultOfAnswer(res)
+      if (results.get(key) === 'pending') results.set(key, result)
+      return res
+    })
+  }
+
+  /** The result read of a send: the test's answer, the kept result, or 404 not-found. */
+  const resultRead = (path: string, chat: string, send: string) => {
+    resultReads.push(send)
+    if (resultAnswer !== undefined) return resultAnswer(chat, send)
+    const result = results.get(resultKey(chat, send))
+    if (result === undefined)
+      return errorAnswer({ kind: 'not-found', path, message: 'no result', requestId: 'r-404' }, 404)
+    return new Response(JSON.stringify(SendResultResponse.parse({ result })), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    })
+  }
 
   /** The 409 of a chat whose input box the server cannot find on its screen. */
   const unreadable = () =>
@@ -166,8 +236,15 @@ export function fakeTranscriptServer({ streams: mode = 'open', uploads: uploadOp
       409,
     )
 
-  /** A send, a stop or a clear: the contract's checks, then the test's answer or 204. */
-  const act = (chat: string, route: Route, init: RequestInit | undefined) => {
+  /** A send, a stop or a clear: the contract's checks, then the test's answer or 204; a send ID keeps its result. */
+  const act = (chat: string, route: Route, init: RequestInit | undefined): Response | Promise<Response> => {
+    const sent = route === 'prompt' ? SendPromptRequest.safeParse(readBody(init)) : undefined
+    const sendId = sent?.success === true ? sent.data.sendId : undefined
+    if (sendId !== undefined) return withSendId(chat, sendId, () => actNow(chat, route, init))
+    return actNow(chat, route, init)
+  }
+
+  const actNow = (chat: string, route: Route, init: RequestInit | undefined) => {
     posts.push({ chat, route })
     const json = new Headers(init?.headers).get('content-type') === 'application/json'
     const body = readBody(init)
@@ -281,6 +358,21 @@ export function fakeTranscriptServer({ streams: mode = 'open', uploads: uploadOp
     reads,
     opens,
     prompts,
+    sendIds,
+    resultReads,
+    /** Sets the kept result of the send `send` to `chat`; undefined forgets it, so its read answers 404. */
+    setSendResult: (chat: string, send: string, result: SendResult | undefined) => {
+      if (result === undefined) results.delete(resultKey(chat, send))
+      else results.set(resultKey(chat, send), result)
+    },
+    /** Forgets every kept result, as a server restart does: each read answers 404. */
+    forgetSends: () => {
+      results.clear()
+    },
+    /** Answers each result read with `answer` until it is set to undefined; the read is still recorded. */
+    answerSendResults: (answer: ((chat: string, send: string) => Response | Promise<Response>) | undefined) => {
+      resultAnswer = answer
+    },
     stops,
     clears,
     posts,
@@ -425,6 +517,9 @@ export function fakeTranscriptServer({ streams: mode = 'open', uploads: uploadOp
         skillReads.push(chat)
         return skillsAnswer?.(chat) ?? skillList(chat)
       }
+      const sendRead = /^\/api\/chats\/([^/]+)\/sends\/([^/]+)$/.exec(path)
+      if (sendRead !== null && (init?.method ?? 'GET') === 'GET')
+        return resultRead(path, decodeURIComponent(sendRead[1] ?? ''), decodeURIComponent(sendRead[2] ?? ''))
       const posted = /^\/api\/chats\/([^/]+)\/command$/.exec(path)
       if (posted !== null && init?.method === 'POST') {
         paths.push(path)

@@ -92,6 +92,20 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   typed meanwhile (`DraftBook.restore`); a pane that stops showing the
   chat (a chat switch, a /clear) drops it. Neither the text nor a file
   name goes to report() or a log (`app/WorkspacesPendingSend.test.tsx`).
+  Each Send, a Retry and the send after a clear too, carries a new
+  `sendId` (backend #369; the server refuses an ID it has seen with 409
+  duplicateSend). Until its answer or its entry comes, the send stays in
+  sessionStorage beside the drafts (`draftStorage.ts`: chat, server chat
+  ID, send ID, text, file names, time; never a file's bytes). A reload
+  meanwhile reads `GET /api/chats/:chat/sends/:send` on load
+  (`keptSends.ts`): `pending` reads again 1.5 s later, at most 5 times;
+  `sent` forgets it; `notSent` and `notSubmitted` put the text back before
+  any newer draft with the miss's line; `unknown`, a 404, 5 pending reads
+  or a send older than 10 min (no read) put it back with "This message may
+  have been sent". A read with no answer keeps it for the next time its
+  chat opens or the next load. The line is the chat's notice in
+  `livePending.ts` until its next send. The page never sends it again
+  itself, and the read reports nothing (`app/WorkspacesSendReload.test.tsx`).
   The status shows when the workspace events bring it. The composer shows Stop only while
   the chat works. One send and one stop are in flight at a time, a text
   over `maxPromptChars` is not sent, and a miss puts the text back and shows
@@ -324,9 +338,9 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
 - Each transcript and terminal renders in a `BlockBoundary` keyed by its
   chat or pane id, so one bad entry keeps the chat on screen
   (`TranscriptBoundary.test.tsx`, audit P-1).
-- `WorkspacesPage` saves the composer drafts in sessionStorage by chat id
-  (`draftStorage.ts`) and reads them back on load, so Reload app keeps
-  them; never localStorage (`app/WorkspacesRouteRecovery.test.tsx`,
+- `WorkspacesPage` saves the composer drafts, and the live sends with no
+  answer yet, in sessionStorage by chat id (`draftStorage.ts`) and reads
+  them back on load, so Reload app keeps them; never localStorage (`app/WorkspacesRouteRecovery.test.tsx`,
   audit W-10).
 - `workspacesStore.ts` holds the owner's changes to the shown state's
   `ui`, so a page visit keeps them, and drops them when another

@@ -129,7 +129,12 @@ export type ChatPending = {
   readonly subscribe: (listener: () => void) => () => void
   /** The pending sends to draw now, in the order sent: those whose entry the transcript does not show yet. */
   readonly view: () => readonly PendingSendView[]
+  /** The line under the composer about a send before the last reload, until the next send; none when not set. */
+  readonly notice?: (() => ComposerNotice | undefined) | undefined
 }
+
+/** A line under the composer that the page gives, with Retry when `retry`: a send's miss found after a reload. */
+export type ComposerNotice = { readonly line: string; readonly retry: boolean }
 
 const noSubscribe = () => () => undefined
 const noView = () => undefined
@@ -139,6 +144,11 @@ const noPendingView = () => noPending
 /** `pending`'s sends now; none without it. */
 function usePendingViews(pending: ChatPending | undefined): readonly PendingSendView[] {
   return useSyncExternalStore(pending?.subscribe ?? noSubscribe, pending?.view ?? noPendingView)
+}
+
+/** `pending`'s notice now, or none. */
+function usePendingNotice(pending: ChatPending | undefined): ComposerNotice | undefined {
+  return useSyncExternalStore(pending?.subscribe ?? noSubscribe, pending?.notice ?? noView)
 }
 
 /** `files`' view now, or none; the caller renders again only when this chat's files change. */
@@ -464,6 +474,7 @@ export function ChatPane(props: ChatPaneProps) {
   // paperclip's closed-keyboard place on the next tap (R29, useKeyboardFirst.ts).
   const keyboardFirst = useKeyboardFirst(attachLabel)
   const pendingViews = usePendingViews(pending)
+  const notice = usePendingNotice(pending)
   // The box is controlled, so the composer never empties it: a sent message empties it here.
   const actions = useComposerActions({
     text,
@@ -482,6 +493,7 @@ export function ChatPane(props: ChatPaneProps) {
     },
     withFiles: filesView !== undefined && filesView.ready > 0,
     filesHeld: filesView?.blocked === true,
+    notice,
   })
   // A chat that cannot send yet (d-117, a Codex chat until W8): its disabled composer sends nothing.
   const send = (submitted: string): boolean | Promise<boolean> =>

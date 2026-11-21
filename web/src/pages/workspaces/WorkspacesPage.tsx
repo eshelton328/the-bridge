@@ -13,7 +13,9 @@
 // files upload as the owner adds them (useLiveUploads.ts, W1b), and its send names the ones ready, in the chips'
 // order: a send that goes through takes them out of the composer, and a 409 upload-conflict fails them.
 // A live Claude chat's send shows at once as a pending bubble with its file chips, until the transcript stream brings
-// its entry; a miss removes it, and the composer puts the text back (useLivePending.ts, livePending.ts).
+// its entry; a miss removes it, and the composer puts the text back (useLivePending.ts, livePending.ts). Each send has
+// a new send ID and is kept beside the drafts until its answer or its entry comes, so a reload meanwhile reads its result
+// and puts the text back when it did not reach the chat (keptSends.ts, backend #369).
 // The composer drafts are saved in sessionStorage as they change and read
 // back on load, so Reload app keeps them; a sent chat's draft leaves it
 // (draftStorage.ts). They live in a draft book (blocks/draftBook.ts), so a keystroke never renders this page (R28).
@@ -35,7 +37,7 @@ import { workspacesSources } from './loadWorkspacesState.ts'
 import { createDraftBook } from './blocks/draftBook.ts'
 import { layoutsSeenOf, withLoadedLayouts } from './blocks/workspaceLayout.ts'
 import { followTab, withShownTabs } from './shownTabs.ts'
-import { loadDrafts, saveDrafts } from './draftStorage.ts'
+import { dropSend, keepSend, loadDrafts, newSendId, saveDrafts } from './draftStorage.ts'
 import { chatPanesOf, paneMoves, withMovedChats } from './paneFollow.ts'
 import { WorkspacesScreen } from './screens/WorkspacesScreen.tsx'
 import type { ComposerAnswer } from './blocks/useComposerActions.ts'
@@ -143,7 +145,7 @@ export function WorkspacesPage() {
   // A tab the workbench follows a moved chat to (W2d) shows in place of herdr's active tab, drawn from each layout read.
   const { data, ui: shownUi } = useMemo(() => withShownTabs(liveData, ui), [liveData, ui])
   const files = useLiveUploads(import.meta.env.DEV && live)
-  const pendings = useLivePending(import.meta.env.DEV && live)
+  const pendings = useLivePending(import.meta.env.DEV && live, search.state, drafts)
   // Each live Claude chat's "/" list, read from the server each time it opens (review R34).
   const skillLists = useLiveSkills(import.meta.env.DEV && live)
   const layoutWrites = useLayoutWrites(import.meta.env.DEV && live, data, (workspace, chat, tab) => {
@@ -211,14 +213,26 @@ export function WorkspacesPage() {
               const liveChat = liveChatOf(chat)
               if (liveChat !== undefined) {
                 const attached = files.readyOf(chat)
-                const bubble = pendings.start(liveChat, text, files.sending(attached))
-                const posted = viaLive((m) => m.sendPrompt(liveChat, text, attached))
+                const names = files.sending(attached)
+                // A new ID for each send: the server refuses one it has seen (409 duplicateSend).
+                const sendId = newSendId()
+                const settled = () => {
+                  dropSend(search.state, sendId)
+                }
+                keepSend(search.state, { chat, liveChat, sendId, text, files: [...names], at: Date.now() })
+                const bubble = pendings.start(liveChat, text, names, settled)
+                const posted = viaLive((m) => m.sendPrompt(liveChat, text, attached, sendId))
+                // Any answer settles the kept send: a miss puts the text back in the draft, which is saved.
                 void posted.then(
                   (answer) => {
+                    settled()
                     if (answer === true) bubble?.sent()
                     else bubble?.missed()
                   },
-                  () => bubble?.missed(),
+                  () => {
+                    settled()
+                    bubble?.missed()
+                  },
                 )
                 // A file removed while the send is pending is deleted only when the send did not go through.
                 void posted.then(

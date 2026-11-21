@@ -48,14 +48,16 @@ import {
   ChatCommandRequest,
   ClearInputRequest,
   ErrorBody,
+  type SendResult,
   SendPromptRequest,
+  SendResultResponse,
   StopChatRequest,
   type UploadId,
 } from '@bridge/contract'
 import { report } from '../../errors/reporter.ts'
 import { api } from '../../lib/api.ts'
 import type { ComposerAnswer } from './blocks/useComposerActions.ts'
-import { liveReadTimeoutMs, readJson } from './liveWorkspaces.ts'
+import { liveReadTimeoutMs, readChecked, readJson } from './liveWorkspaces.ts'
 
 /** What the page posts: a send, a stop, a clear of the terminal input, or a /compact or /clear (W5). */
 type Action = 'send' | 'stop' | 'clear' | 'compact' | 'clearContext'
@@ -184,11 +186,20 @@ async function post(
 }
 
 /**
- * Sends `text` with the complete uploads `attachments` to the live chat `chat` (its server ID). A body the contract
- * refuses is not sent: the composer stops it first, so this answers `false` with no line.
+ * Sends `text` with the complete uploads `attachments` to the live chat `chat` (its server ID), as the send `sendId`. A
+ * body the contract refuses is not sent: the composer stops it first, so this answers `false` with no line.
  */
-export function sendPrompt(chat: string, text: string, attachments: readonly UploadId[] = []): Promise<ComposerAnswer> {
-  const body = SendPromptRequest.safeParse(attachments.length === 0 ? { text } : { text, attachments })
+export function sendPrompt(
+  chat: string,
+  text: string,
+  attachments: readonly UploadId[] = [],
+  sendId?: string,
+): Promise<ComposerAnswer> {
+  const body = SendPromptRequest.safeParse({
+    text,
+    ...(attachments.length === 0 ? {} : { attachments }),
+    ...(sendId === undefined ? {} : { sendId }),
+  })
   if (!body.success) return Promise.resolve(false)
   return post(
     'send',
@@ -235,4 +246,28 @@ export function sendCommand(chat: string, command: ChatCommandRequest): Promise<
       ),
     () => clearInput(chat),
   )
+}
+
+/**
+ * What became of the send `sendId` to the live chat `chat` (its server ID): its result, `gone` when the server keeps
+ * none (404: a restart, or older than `sendResultMs`), or `failed` when the read got no answer it can use, to try
+ * again later. Nothing goes to report().
+ */
+export async function readSendResult(chat: string, sendId: string): Promise<SendResult | 'gone' | 'failed'> {
+  try {
+    const read = await readChecked(
+      (signal) =>
+        api.api.chats[':chat'].sends[':send'].$get(
+          { param: { chat: encodeURIComponent(chat), send: encodeURIComponent(sendId) } },
+          { init: { signal } },
+        ),
+      (body) => SendResultResponse.parse(body),
+      AbortSignal.timeout(liveReadTimeoutMs),
+    )
+    if (read.ok) return read.value.result
+    return read.error.kind === 'status' && read.error.status === 404 ? 'gone' : 'failed'
+  } catch {
+    // A reply the contract refuses, or a body that is not JSON.
+    return 'failed'
+  }
 }
