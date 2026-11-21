@@ -465,4 +465,164 @@ describe("a live chat's transcript (slice 3b)", () => {
     expect(server.opens).toEqual([])
     expect(server.reads).toEqual([])
   })
+
+  // The served log of 2026-11-21: iOS closes the stream of a page in the background, and the page saw that close as
+  // an outage when it showed again ("ended", 0.4 to 1.5 s before the page read its workspaces again). The page now
+  // connects again quietly once it shows; a miss after that connection is an outage, reported once.
+  describe('back from the background', () => {
+    /** Makes the page hidden (`hidden` true) or visible again, with the events Safari sends. */
+    function setHidden(hidden: boolean) {
+      Object.defineProperty(document, 'visibilityState', {
+        configurable: true,
+        get: () => (hidden ? 'hidden' : 'visible'),
+      })
+      Object.defineProperty(document, 'hidden', { configurable: true, get: () => hidden })
+      if (hidden) window.dispatchEvent(new PageTransitionEvent('pagehide', { persisted: true }))
+      document.dispatchEvent(new Event('visibilitychange'))
+      if (!hidden) window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }))
+    }
+    afterEach(() => {
+      Reflect.deleteProperty(document, 'visibilityState')
+      Reflect.deleteProperty(document, 'hidden')
+    })
+
+    /** Hides the page, closes plan's stream as iOS does, and shows the page again. */
+    async function closedInBackground(server: FakeTranscriptServer) {
+      await expect.poll(() => server.openStreams()).toContain(plan)
+      setHidden(true)
+      server.close(plan)
+      await expect.poll(() => server.openStreams()).not.toContain(plan)
+      setHidden(false)
+    }
+
+    for (const device of sizes)
+      it(`connects again quietly while hidden, with no line and no report, on ${device.name}`, async () => {
+        const server = withPlan()
+        await openPlan(device.size)
+        await expect.poll(() => server.openStreams()).toContain(plan)
+        const reads = server.reads.length
+        // The page's clock moves only when the test moves it (lib/holdTimers.ts).
+        const release = holdTimers()
+        setHidden(true)
+        server.close(plan)
+        await expect.poll(() => server.openStreams()).not.toContain(plan)
+        // Hidden, it connects again after the retry time (100 ms in the fake), as a desktop tab in the background does.
+        vi.advanceTimersByTime(200)
+        await expect.poll(() => server.openStreams()).toContain(plan)
+        await expect.poll(() => server.reads.length).toBe(reads + 1)
+        release()
+        await expect.element(page.getByText(outageLine)).not.toBeInTheDocument()
+        setHidden(false)
+        await expect.element(page.getByText('Looking at the build now.')).toBeVisible()
+        await expect.element(page.getByText(outageLine)).not.toBeInTheDocument()
+        await expect.element(page.getByRole('button', { name: 'Retry' })).not.toBeInTheDocument()
+        expect(getReports()).toEqual([])
+        // The stream it opened works: a pushed change shows.
+        server.push(plan, [reply('a2', 'The build passes.')])
+        await expect.element(page.getByText('The build passes.')).toBeVisible()
+      })
+
+    for (const device of sizes)
+      it(`connects again at once and quietly when the close shows only after the page is back, on ${device.name}`, async () => {
+        const server = withPlan()
+        await openPlan(device.size)
+        await expect.poll(() => server.openStreams()).toContain(plan)
+        const reads = server.reads.length
+        // iOS: the page cannot run in the background, so it sees the closed stream only once it shows again.
+        setHidden(true)
+        setHidden(false)
+        // The clock stands still: a connection on the retry time (100 ms in the fake) would never come.
+        const release = holdTimers()
+        server.close(plan)
+        await expect.poll(() => server.openStreams()).toContain(plan)
+        await expect.poll(() => server.reads.length).toBe(reads + 1)
+        release()
+        await expect.element(page.getByText('Looking at the build now.')).toBeVisible()
+        await expect.element(page.getByText(outageLine)).not.toBeInTheDocument()
+        await expect.element(page.getByRole('button', { name: 'Retry' })).not.toBeInTheDocument()
+        expect(getReports()).toEqual([])
+      })
+
+    it('reports once when the stream fails again after the page showed and connected again, on the phone', async () => {
+      const server = withPlan()
+      await openPlan([390, 844])
+      const reads = server.reads.length
+      await closedInBackground(server)
+      await expect.poll(() => server.openStreams()).toContain(plan)
+      await expect.poll(() => server.reads.length).toBe(reads + 1)
+      expect(getReports()).toEqual([])
+      // The page is visible, and the connection it made after it showed drops: an outage.
+      server.drop(plan)
+      const chat = chatRegion('plan the slice')
+      await expect.element(chat.getByText('Transcript updates lost — connecting again')).toBeVisible()
+      await expect.poll(() => getReports().length).toBe(1)
+      expect(getReports().map((r) => r.error.message)).toEqual([
+        'A chat transcript stream missed: ended (chat mac-mini/c1)',
+      ])
+      // It connects again after the retry time.
+      await expect.poll(() => server.reads.length).toBe(reads + 2)
+      await expect.element(chat.getByText('Transcript updates lost — connecting again')).not.toBeInTheDocument()
+      expect(getReports()).toHaveLength(1)
+    })
+
+    it('reports a read that answers a 502 that is not JSON while the page is hidden, on the phone', async () => {
+      const server = withPlan()
+      await openPlan([390, 844])
+      await expect.poll(() => server.openStreams()).toContain(plan)
+      // The proxy answers for a server that is down: an answer, not the background's close.
+      server.answerReads(() => new Response('Bad Gateway', { status: 502 }))
+      setHidden(true)
+      server.close(plan)
+      await expect.poll(() => getReports().length).toBe(1)
+      expect(getReports().map((r) => r.error.message)).toEqual([
+        'A chat transcript read missed: unreachable 502 (chat mac-mini/c1)',
+      ])
+    })
+
+    it("reports the stream's error event even when the read then gets no answer while hidden, on the phone", async () => {
+      const server = withPlan()
+      await openPlan([390, 844])
+      await expect.poll(() => server.openStreams()).toContain(plan)
+      // The next read waits until the test ends it with no answer.
+      let endRead: (() => void) | undefined
+      server.answerReads(
+        () =>
+          new Promise<Response>((_, reject) => {
+            endRead = () => {
+              reject(new TypeError('Load failed'))
+            }
+          }),
+      )
+      setHidden(true)
+      server.close(plan)
+      // Hidden, it connects again on the retry time and waits for the read.
+      await expect.poll(() => endRead).toBeDefined()
+      await expect.poll(() => server.openStreams()).toContain(plan)
+      // The server's watch fails first, then the read gets no answer.
+      server.fail(plan, 'internal')
+      endRead?.()
+      await expect.poll(() => getReports().length).toBe(1)
+      expect(getReports().map((r) => r.error.message)).toEqual([
+        'A chat transcript stream missed: ended internal (chat mac-mini/c1)',
+      ])
+    })
+
+    it('reports a server error on the connection made after the page showed, once, on the phone', async () => {
+      const server = withPlan()
+      await openPlan([390, 844])
+      server.answerStreams(
+        () =>
+          new Response(JSON.stringify({ error: { kind: 'internal', message: 'server broke', requestId: 'r-500' } }), {
+            status: 500,
+          }),
+      )
+      await closedInBackground(server)
+      const chat = chatRegion('plan the slice')
+      await expect.element(chat.getByText('Transcript updates lost — connecting again')).toBeVisible()
+      await expect.poll(() => server.opens.length).toBeGreaterThan(3)
+      expect(getReports().map((r) => r.error.message)).toEqual([
+        'A chat transcript stream missed: status 500 (chat mac-mini/c1)',
+      ])
+    })
+  })
 })

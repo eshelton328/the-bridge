@@ -123,8 +123,8 @@ export function fakeTranscriptServer({ streams: mode = 'open', uploads: uploadOp
   const reads: string[] = []
   /** The chat IDs of each stream open, in order. */
   const opens: string[] = []
-  /** An answer in place of the read's, while set: such as a 503 with an error body. */
-  let readAnswer: (() => Response) | undefined
+  /** An answer in place of the read's, while set: such as a 503 with an error body, or one the test settles later. */
+  let readAnswer: (() => Response | Promise<Response>) | undefined
   /** An answer in place of the stream's, while set: such as a 500. */
   let streamAnswer: (() => Response) | undefined
   let seq = 0
@@ -369,6 +369,13 @@ export function fakeTranscriptServer({ streams: mode = 'open', uploads: uploadOp
         s.control.error(new TypeError('network error'))
       }
     },
+    /** Ends each open stream of `chat` with no event, as iOS closes the connections of a page in the background. */
+    close: (chat: string) => {
+      for (const s of open.filter((o) => o.chat === chat)) {
+        open.splice(open.indexOf(s), 1)
+        s.control.close()
+      }
+    },
     /**
      * Ends each open stream of `chat` as the server does when its herdr watch fails (backend 3b-3): one `error` event
      * with an ErrorBody of `kind`, then the end of the stream.
@@ -400,7 +407,7 @@ export function fakeTranscriptServer({ streams: mode = 'open', uploads: uploadOp
       }
     },
     /** Answers each read with `answer` until it is set to undefined. */
-    answerReads: (answer: (() => Response) | undefined) => {
+    answerReads: (answer: (() => Response | Promise<Response>) | undefined) => {
       readAnswer = answer
     },
     /** Answers each stream open with `answer` until it is set to undefined. */

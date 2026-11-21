@@ -43,7 +43,15 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   each outage of a shown chat, with the miss kind, the HTTP status and
   the chat ID only, never transcript text, a tool target or the server's
   message (`liveTranscript.test.ts`, `app/WorkspacesLiveTranscript.test.tsx`;
-  the server fake is `lib/fakeTranscriptServer.ts`). A prompt sent
+  the server fake is `lib/fakeTranscriptServer.ts`). iOS closes the
+  stream of a page in the background: a stream that ends or drops, or a
+  stream or read with no answer, while the page is hidden, after it hid
+  during the connection or within 5 s after it showed again, gives no
+  line and no report (`pageResume.ts`). Hidden, the page connects again
+  after the retry time; shown, at once. A visible page takes one such
+  quiet miss for each trip to the background, none if a miss came while
+  hidden, and an answer from the server is never quiet
+  (`app/WorkspacesLiveTranscript.test.tsx`, `pageResume.test.ts`). A prompt sent
   with files (`UserEntry.files`) shows a chip for each name above its
   text, and a prompt of files alone the chips with no bubble
   (`blocks/ChatEntryView.tsx`, `app/WorkspacesEntryFiles.test.tsx`). A
