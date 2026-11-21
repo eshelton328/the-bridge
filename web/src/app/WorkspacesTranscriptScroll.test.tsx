@@ -499,6 +499,29 @@ describe('the end of a live transcript after Send, the background and a reconnec
     expect(planPane.scrollTop).toBe(place)
   })
 
+  it('lets a mouse text selection scroll up past the top of the transcript, on the desktop', async () => {
+    const server = withLong()
+    await tapWorkspaces([1512, 982])
+    await userEvent.click(page.getByRole('button', { name: 'Hide the workspace sidebar' }))
+    await expect.element(page.getByText('plan question 39', { exact: true })).toBeInTheDocument()
+    const planPane = paneScroller('plan the slice')
+    await expectAtEnd(planPane)
+    await expect.poll(() => server.openStreams()).toContain(plan)
+    // The owner presses on an entry's text and drags up past the pane's top: the browser scrolls the pane up.
+    const text = page.getByText('plan question 39', { exact: true }).element()
+    text.dispatchEvent(new PointerEvent('pointerdown', { pointerType: 'mouse', button: 0, bubbles: true }))
+    for (let i = 0; i < 4; i += 1) {
+      const scrolled = new Promise((resolve) => {
+        planPane.addEventListener('scroll', resolve, { once: true })
+      })
+      planPane.scrollTop -= 150
+      await scrolled
+      await afterRendering()
+    }
+    expect(fromEnd(planPane)).toBeGreaterThanOrEqual(590)
+    window.dispatchEvent(new PointerEvent('pointerup', { pointerType: 'mouse', button: 0 }))
+  })
+
   it('keeps the first entry in view for a reader who scrolled up, through the background and a reconnect, on the phone', async () => {
     const server = withLong()
     await tapWorkspaces([390, 844])

@@ -12,10 +12,11 @@
 // One rule decides the pin (screen review R33): only the reader leaves the
 // end. A scroll counts as the reader's while a finger moves on the transcript
 // (and a moment after it lifts, for the fling), after a wheel turn or a
-// scroll key, while a mouse drags the scroll bar, or after the focus moves
-// into the transcript (Tab, a link or a screen reader's next item).
-// Once the reader has left the end, no scroll is moved back: a fling's
-// scroll events after the finger lifts keep the place. Any other scroll away
+// scroll key, while a mouse button is down in the transcript (a drag of its
+// scroll bar, or a text selection that scrolls past its edge), or after the
+// focus moves into it (Tab, a link or a screen reader's next item). Once the
+// reader has left the end, no scroll is moved back: a fling's scroll events
+// after the finger lifts keep the place. Any other scroll away
 // from the end while pinned, such as one iOS makes after Send closes the
 // keyboard (its trace shows a scroll to an old place 1.3 s after Send with no
 // touch), goes back to the end in the same frame, before the browser paints.
@@ -58,7 +59,7 @@ export function usePinnedEnd(enabled: boolean, key: string) {
     if (!enabled || scroller === null) return undefined
     pinnedRef.current = true
     const view = scroller.ownerDocument.defaultView ?? window
-    // The reader's input: a finger that moves on the transcript, a mouse on its scroll bar, and the time of the
+    // The reader's input: a finger that moves on the transcript, a mouse button down in it, and the time of the
     // last wheel turn, scroll key, lifted finger or focus move into the transcript.
     const reader = { touching: false, dragging: false, last: Number.NEGATIVE_INFINITY }
     const readerScrolls = () => reader.touching || reader.dragging || performance.now() - reader.last < readerScrollMs
@@ -86,9 +87,10 @@ export function usePinnedEnd(enabled: boolean, key: string) {
     const onKey = (event: KeyboardEvent) => {
       if (scrollKeys.has(event.key) && !typing(event.target)) reader.last = performance.now()
     }
-    // A press on the scroller itself, not on an entry, is on its scroll bar.
+    // A mouse press in the transcript: on its scroll bar, or the start of a text selection, which scrolls the
+    // transcript when the drag passes its top or bottom edge.
     const onPointerDown = (event: PointerEvent) => {
-      if (event.target === scroller && event.pointerType === 'mouse') reader.dragging = true
+      if (event.pointerType === 'mouse') reader.dragging = true
     }
     const onPointerUp = () => {
       if (!reader.dragging) return
