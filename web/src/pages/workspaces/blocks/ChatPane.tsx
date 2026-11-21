@@ -29,7 +29,8 @@
 // shows, draws the earlier line over the entries, the empty line when it has
 // none and the problem line with Retry under them; it opens at the newest entry
 // and stays there as entries come in, unless the reader scrolled up
-// (`usePinnedEnd`). A live Claude chat's files (W1b, `files`): the
+// (`usePinnedEnd`); more than a screen up, a button over the composer scrolls
+// back to the newest entry (`NewestButton`). A live Claude chat's files (W1b, `files`): the
 // paperclip opens the device's file picker (a hidden input with no type
 // filter and no capture, so a phone offers Photos, Camera and Files), and a
 // drop on the composer or a paste of files adds them too; Send is off while
@@ -64,6 +65,7 @@ import type { ChatEntry, ComposerState, Skill } from '../types.ts'
 import type { CopyReply } from './ChatEntryView.tsx'
 import { ComposerLine } from './ComposerLine.tsx'
 import { type DraftBook, restoredDraft, useDraft } from './draftBook.ts'
+import { NewestButton } from './NewestButton.tsx'
 import { NotLive } from './NotLive.tsx'
 import { PendingEntry } from './PendingEntry.tsx'
 import { frameRegion } from './frameRegion.ts'
@@ -365,7 +367,7 @@ export function ChatPane(props: ChatPaneProps) {
     [liveChat, transcripts],
   )
   // A live chat opens at its newest entry and follows new ones while the reader is at the end.
-  const pinRef = usePinnedEnd(liveChat !== undefined, chatId)
+  const { ref: pinRef, newest } = usePinnedEnd(liveChat !== undefined, chatId, entries.at(-1))
   const label = props.label
   const footerRef = useCallback(
     (el: HTMLDivElement | null) => {
@@ -619,6 +621,7 @@ export function ChatPane(props: ChatPaneProps) {
             }
           />
         )}
+        {liveChat === undefined ? null : <NewestButton newest={newest} />}
       </>
     ) : (
       <NotLive text={notLive} />

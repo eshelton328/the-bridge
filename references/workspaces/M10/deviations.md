@@ -79,4 +79,13 @@ the skill list keeps /writer alone under `data.skillsMatching`.
   `ui.keyboardOpen` comes from the state. Attach, Stop, Send and a pick in
   the skill list draw only, as in M03. Typing filters the list by the word
   before the caret that starts with "/".
+- **Scroll to the newest message (Erik's request, 2026-11-21).** Erik
+  asked for "a button to scroll you all the way down to the bottom of the
+  chat ... centered in the width and above the message box". Figma draws
+  no such button. In a live chat, more than a screen above the end of the
+  transcript, an icon-only library button with a down arrow floats 8 above
+  the transcript's bottom, centred on its width, with a dot when new entries
+  came in; a tap scrolls to the end and hides it (`blocks/NewestButton.tsx`,
+  LIBRARY_GAPS.md: Scroll to newest). This frame's fixture chats are not
+  live and sit at their own scroll, so its render does not change.
 - **No exceptions.**
