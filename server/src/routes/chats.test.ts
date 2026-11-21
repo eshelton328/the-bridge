@@ -592,3 +592,24 @@ describe('POST /api/chats (slice W3)', () => {
     expect((await start(app, { kind: 'claude', place: beside, args: ['--model', 'opus'] })).status).toBe(400)
   })
 })
+
+describe('POST /api/chats/:chat/effort (slice W10)', () => {
+  const effort = (app: ReturnType<typeof createApp>, chat: string, body: unknown) =>
+    app.request(`/api/chats/${encodeURIComponent(chat)}/effort`, {
+      method: 'POST',
+      headers: { ...local, 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+
+  it('answers 204 for an idle Claude chat, 409 working, 404 unknown, and 400 for max', async () => {
+    const agents = createFakeAgents(machine)
+    const app = createApp({ agents, owner, log: memoryLogger().log })
+    agents.setStatus(ChatId.parse(themes), 'idle')
+    expect((await effort(app, themes, { effort: 'high' })).status).toBe(204)
+    agents.setStatus(ChatId.parse(themes), 'working')
+    const busy = await effort(app, themes, { effort: 'low' })
+    expect([busy.status, ErrorBody.parse(await busy.json()).error]).toMatchObject([409, { state: 'working' }])
+    expect((await effort(app, 'test-mac/no-such-chat', { effort: 'low' })).status).toBe(404)
+    expect((await effort(app, themes, { effort: 'max' })).status).toBe(400)
+  })
+})

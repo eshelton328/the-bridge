@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { boxKeys, inputBoxOf, promptKey } from './claudeInput.ts'
+import { boxKeys, inputBoxOf, promptKey, effortKeys, effortOf } from './claudeInput.ts'
 import { claudeScreen } from './fakeHerdrSocket.ts'
 
 const esc = String.fromCharCode(27)
@@ -67,5 +67,26 @@ describe('boxKeys', () => {
 
   it('gives no key for a box with more than 12 line ends', () => {
     expect(keys(Array.from({ length: 14 }, (_, at) => String(at)).join('\n'))).toEqual([])
+  })
+})
+
+describe('effortOf and effortKeys', () => {
+  const rule = '─'.repeat(40)
+  const screen = (top: string, above = '') =>
+    ['Claude Code v2.1', above, top, '❯ ', rule, '  ⏵⏵ auto mode on'].join('\r\n')
+
+  it('reads the effort mark on or above the top rule, and none when the box shows no mark', () => {
+    expect(effortOf(screen(`${rule} ◐ medium · /effort  eff1 ─`))).toBe('medium')
+    expect(effortOf(screen(rule, '                ◉ xhigh · /effort'))).toBe('xhigh')
+    expect(effortOf(screen(`${rule} eff1 ─`))).toBe('none')
+    expect(effortOf('a dialog with no box')).toBeNull()
+  })
+
+  it('steps from a shown level, and from no mark goes down to low first', () => {
+    expect(effortKeys('medium', 'xhigh')).toEqual(['shift+up', 'shift+up'])
+    expect(effortKeys('high', 'low')).toEqual(['shift+down', 'shift+down'])
+    expect(effortKeys('high', 'high')).toEqual([])
+    expect(effortKeys('none', 'high')).toEqual(['shift+down', 'shift+down', 'shift+down', 'shift+up', 'shift+up'])
+    expect(effortKeys('max', 'low')).toEqual(['shift+down', 'shift+down', 'shift+down'])
   })
 })

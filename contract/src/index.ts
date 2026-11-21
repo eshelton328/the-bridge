@@ -33,6 +33,8 @@ export {
   SendResultResponse,
   sendResultMs,
   StopChatRequest,
+  KeyEffort,
+  SetEffortRequest,
 } from './prompts.ts'
 export {
   CompleteUploadRequest,

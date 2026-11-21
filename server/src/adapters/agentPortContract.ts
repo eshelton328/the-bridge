@@ -190,6 +190,16 @@ export function describeAgentPort(name: string, setup: () => Promise<ContractSet
       expect(await port.sendCommand(none, { command: 'compact' })).toEqual({ ok: true, value: 'notFound' })
     })
 
+    it('sets no effort for a shell or a chat that the machine does not have', async () => {
+      const { port, expected } = await setup()
+      const { shell } = await chatsToUse(port, expected)
+      expect(await port.setEffort(shell, 'high')).toEqual({ ok: true, value: 'shell' })
+      expect(await port.setEffort(ChatId.parse(`${port.machine}/no-such-chat`), 'low')).toEqual({
+        ok: true,
+        value: 'notFound',
+      })
+    })
+
     it('writes no layout of a chat that the machine does not have, and swaps no chat with itself', async () => {
       const { port, expected } = await setup()
       const { chat } = await chatsToUse(port, expected)

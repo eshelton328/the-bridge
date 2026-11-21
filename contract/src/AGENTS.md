@@ -45,7 +45,8 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
   a file, and goes to the chat and nowhere else. A command request is
   `compact` with at most one line of instructions, or `clear`; the
   instructions go to the chat as a prompt's text does (`prompts.test.ts`).
-  A prompt may carry the page's `sendId`; its `SendResult` (`pending`,
+  An effort request (slice W10) is `{ effort }` with a `KeyEffort`
+  (not `max`, which the keys do not reach). A prompt may carry the page's `sendId`; its `SendResult` (`pending`,
   `sent`, `notSubmitted`, `notSent` or `unknown`) holds no text.
 - A start request (slice W3, `newChats.ts`) is a strict object: kind
   `claude`, a name of herdr's form, a `ModelAlias` and a place (beside

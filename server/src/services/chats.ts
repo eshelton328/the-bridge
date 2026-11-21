@@ -1,6 +1,6 @@
 // The chats service: what the server reads of one chat, its stop and its
 // input clear and its commands. A prompt goes through sendPromptWithFiles in uploads.ts.
-import type { ChatId, ChatSkillsResponse, TranscriptResponse } from '@bridge/contract'
+import type { ChatId, ChatSkillsResponse, KeyEffort, TranscriptResponse } from '@bridge/contract'
 import { ok, type Result } from '@bridge/shared'
 import type {
   AgentPort,
@@ -9,6 +9,7 @@ import type {
   ChatCommand,
   ClearOutcome,
   CommandOutcome,
+  EffortOutcome,
 } from './agentPort.ts'
 
 /** The last entries of `chat`'s transcript; `null` when this machine has no such chat. */
@@ -43,6 +44,15 @@ export function sendCommand(
   command: ChatCommand,
 ): Promise<Result<CommandOutcome, AgentPortError>> {
   return agents.sendCommand(chat, command)
+}
+
+/** Sets the effort of `chat` for its session only, with Claude Code's effort keys (slice W10). */
+export function setEffort(
+  agents: AgentPort,
+  chat: ChatId,
+  effort: KeyEffort,
+): Promise<Result<EffortOutcome, AgentPortError>> {
+  return agents.setEffort(chat, effort)
 }
 
 /** Stops the work of `chat`, when it works. */

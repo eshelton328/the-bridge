@@ -29,7 +29,8 @@ export const ErrorKind = z.discriminatedUnion('kind', [
    * goes to a tab that shows only one pane (`zoomedTab`), or a prompt's `sendId` was used for this chat before
    * (`duplicateSend`; read its result instead), a new chat's folder is not under the server's chat root
    * (`folderNotAllowed`), another chat has the new chat's name (`nameTaken`), or a start with the same `createId`
-   * is in progress or failed part way (`duplicateCreate`; read the chat list instead).
+   * is in progress or failed part way (`duplicateCreate`; read the chat list instead), or the chat's screen did not
+   * show the asked effort after the effort keys (`effortNotConfirmed`; look at the chat).
    */
   z.object({
     kind: z.literal('chat-not-ready'),
@@ -51,6 +52,7 @@ export const ErrorKind = z.discriminatedUnion('kind', [
       'folderNotAllowed',
       'nameTaken',
       'duplicateCreate',
+      'effortNotConfirmed',
     ]),
     ...common,
   }),

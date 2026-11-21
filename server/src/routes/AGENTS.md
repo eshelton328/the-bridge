@@ -93,6 +93,12 @@ Thin Hono sub-apps, one file for each area, named after the area
   its own tab, 409 `zoomedTab` for a zoomed tab, and 404 for a tab of
   another workspace or a `beside` chat of another tab. The page reads the layout again on
   the `layout.changed` event.
+- `POST /api/chats/:chat/effort` (slice W10) takes `{ effort }` (`low`,
+  `medium`, `high` or `xhigh`; `max` is 400) and sets an idle
+  Claude chat's effort for its session only: 204, or 409 as a command
+  (`working`, `needsYou`, `noCommands`, `inputNotEmpty`,
+  `inputUnreadable`), or 409 `effortNotConfirmed` when the screen does
+  not show the level after the keys (`chats.test.ts`).
 - `POST /api/chats` (slice W3) takes a `StartChatRequest` and starts a
   Claude chat beside a chat or in a new tab: 201 with the pane, the chat
   and the state (`ready`, `needsYou` or `starting`), or 200 with the

@@ -8,9 +8,11 @@
 // uploads.ts); the server adds each file's path below the text, and the
 // chat reads the file with its own tools. `POST /api/chats/:chat/command`
 // sends one Claude Code command to a Claude chat (slice W5): `/compact`,
-// with the owner's instructions if any, or `/clear`.
+// with the owner's instructions if any, or `/clear`. `POST
+// /api/chats/:chat/effort` sets a Claude chat's effort for its session only (slice W10).
 import { z } from 'zod'
 import { SendId, UploadId } from './ids.ts'
+import { ChatEffort } from './workspaces.ts'
 
 /** The most characters in one prompt. */
 export const maxPromptChars = 32_768
@@ -85,3 +87,14 @@ export const ChatCommandRequest = z.discriminatedUnion('command', [
   z.strictObject({ command: z.literal('clear') }),
 ])
 export type ChatCommandRequest = z.infer<typeof ChatCommandRequest>
+
+/** The effort levels that Claude Code's effort keys reach (shift+up and shift+down stop below `max`). */
+export const KeyEffort = ChatEffort.exclude(['max'])
+export type KeyEffort = z.infer<typeof KeyEffort>
+
+/**
+ * The body of `POST /api/chats/:chat/effort` (slice W10): the effort for the chat's session only, set with Claude
+ * Code's effort keys on an idle Claude chat with an empty input box, never with `/effort`, which saves the default.
+ */
+export const SetEffortRequest = z.strictObject({ effort: KeyEffort })
+export type SetEffortRequest = z.infer<typeof SetEffortRequest>

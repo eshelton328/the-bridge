@@ -6,6 +6,7 @@ import {
   maxPromptChars,
   SendPromptRequest,
   StopChatRequest,
+  SetEffortRequest,
 } from './prompts.ts'
 
 const upload = 'AAAAAAAAAAAAAAAAAAAAAA'
@@ -82,5 +83,14 @@ describe('the send ID of a prompt', () => {
     ).toBe(true)
     expect(SendPromptRequest.safeParse({ text: 'Reply OK.', sendId: '../etc' }).success).toBe(false)
     expect(SendPromptRequest.safeParse({ text: 'Reply OK.', sendId: 'short' }).success).toBe(false)
+  })
+})
+
+describe('SetEffortRequest', () => {
+  it('takes a level that the effort keys reach, and nothing else', () => {
+    for (const effort of ['low', 'medium', 'high', 'xhigh'])
+      expect(SetEffortRequest.safeParse({ effort }).success).toBe(true)
+    for (const body of [{ effort: 'max' }, { effort: 'auto' }, {}, { effort: 'low', save: true }])
+      expect(SetEffortRequest.safeParse(body).success).toBe(false)
   })
 })

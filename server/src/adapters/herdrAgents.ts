@@ -44,7 +44,15 @@ import type {
   PromptOutcome,
 } from '../services/agentPort.ts'
 import { type SocketFailure, type HerdrStream, herdrRequest, herdrSubscribe } from './herdrSocket.ts'
-import { boxKeys, type InputBox, inputBoxOf, promptKey, switchModelDialogOf } from './claudeInput.ts'
+import {
+  boxKeys,
+  effortKeys,
+  effortOf,
+  type InputBox,
+  inputBoxOf,
+  promptKey,
+  switchModelDialogOf,
+} from './claudeInput.ts'
 import { readClaudeTranscript } from './claudeTranscript.ts'
 import { readClaudeSkills } from './claudeSkills.ts'
 import { readCompactWindows } from './claudeSettings.ts'
@@ -94,6 +102,8 @@ const SplitReply = z.object({ pane: z.object({ terminal_id: LocalIdPart }) })
 const NewPane = z.object({ pane_id: z.string(), terminal_id: LocalIdPart })
 const StartSplitReply = z.object({ pane: NewPane })
 const StartTabReply = z.object({ root_pane: NewPane })
+/** The waits before each read of the screen after the effort keys, about 1.5 s in all. */
+const effortReadGapsMs = [100, 200, 400, 800]
 /** How often and how far apart a start tries again while herdr says the new pane's shell is busy (starting). */
 const busyTries = 10
 const busyGapMs = 200
@@ -925,6 +935,36 @@ export function createHerdrAgents({
       // whose state herdr cannot tell may work too, so only an idle or done chat takes a command.
       if (status !== 'idle' && status !== 'done') return ok('working')
       return submit(pane, claude, commandText(command))
+    },
+    async setEffort(chat, effort) {
+      const target = await agentPane(chat)
+      if (!target.ok) return target
+      if (typeof target.value === 'string') return ok(target.value)
+      const { pane, status, claude } = target.value
+      if (!claude) return ok('noCommands')
+      if (status === 'needsYou') return ok('needsYou')
+      // The keys go only to an idle chat at an empty prompt: in a box with text they would join the owner's draft.
+      if (status !== 'idle' && status !== 'done') return ok('working')
+      const screen = await screenOf(pane)
+      if (!screen.ok) return screen
+      const box = inputBoxOf(screen.value)
+      if (box === null) return ok('inputUnreadable')
+      if (box.text !== '') return ok('inputNotEmpty')
+      const keys = effortKeys(effortOf(screen.value), effort)
+      if (keys.length > 0) {
+        const sent = await input('agent.send_keys', { target: pane, keys })
+        if (!sent.ok) return sent
+        if (sent.value === 'needsYou') return ok('needsYou')
+      }
+      // Claude Code can hide the mark at low, so no mark with a box counts as low.
+      for (const gap of effortReadGapsMs) {
+        await new Promise((resolve) => setTimeout(resolve, gap))
+        const after = await screenOf(pane)
+        if (!after.ok) return after
+        const shown = effortOf(after.value)
+        if (shown === effort || (effort === 'low' && shown === 'none')) return ok('set')
+      }
+      return ok('effortNotConfirmed')
     },
     async clearInputBox(chat) {
       const target = await agentPane(chat)
