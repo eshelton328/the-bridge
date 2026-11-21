@@ -207,9 +207,13 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   /api/chats/:chat/move` with `{ tab, direction, beside? }`. The phone and
   the tablet have none. The pane moves when the layout read after
   `layout.changed` shows it, and when the moved chat was the focused
-  pane the workbench shows the tab it went to (`showMovedChat`), until
-  herdr's next layout change of the workspace shows its active tab
-  again. 409 sameTab reads the layout again quietly, 409 zoomedTab with
+  pane the workbench shows the tab it went to (`ui.shownTabs`,
+  `shownTabs.ts`): each layout read draws that tab, which the screen
+  gets as `active` (herdr's own flag in `herdrActive`, which a focus
+  reads), so its splits, swaps and ratios work as in herdr's active tab.
+  It shows herdr's active tab again once that tab changes or the shown
+  tab closes. Move stays off while the chosen pane has left the tab.
+  409 sameTab reads the layout again quietly, 409 zoomedTab with
   "Not moved — that tab is zoomed", a 404 reads the list, and any other
   miss says "Not moved — <kind>" in the status bar
   (`app/WorkspacesLayoutMove.test.tsx`).

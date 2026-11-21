@@ -320,6 +320,33 @@ describe('Move to tab… (W2d)', () => {
     await expect.poll(() => [...drawn()].sort()).toEqual(['review notes', 'spare chat'])
   })
 
+  it('keeps drawing the tab it followed the pane to from each event: a swap shows, and a resize goes to that tab', async () => {
+    const fakes = withChats()
+    await showPanes()
+    await pickTab('review notes', 'tab 3')
+    await userEvent.click(page.getByRole('button', { name: 'Move', exact: true }))
+    await expect.poll(drawn).toEqual(['spare chat', 'review notes'])
+    // Herdr's active tab is still tab 1; the workbench draws tab 3 from each layout read, so a swap in it shows.
+    expect(fakes.list.tabs(live).map((t) => t.chats)).toEqual([[plan], [notes, draft], [spare, review]])
+    await userEvent.click(actionsButton('review notes'))
+    await userEvent.click(page.getByRole('menuitem', { name: 'Swap with…' }))
+    await userEvent.click(page.getByRole('menuitem', { name: 'spare chat' }))
+    await expect.poll(() => fakes.list.tabs(live)[2]?.chats).toEqual([review, spare])
+    await expect.poll(drawn).toEqual(['review notes', 'spare chat'])
+    // A resize of the tab drawn goes to that tab, not to herdr's active one.
+    const columns = page.getByRole('separator', { name: 'Resize columns' }).element()
+    if (columns instanceof HTMLElement) columns.focus()
+    for (let i = 0; i < 3; i += 1) await userEvent.keyboard('{ArrowLeft}')
+    await expect.poll(() => writesOf(fakes).filter((w) => w.action === 'ratio')).toHaveLength(1)
+    expect(writesOf(fakes).find((w) => w.action === 'ratio')).toMatchObject({
+      chat: live,
+      body: { tab: `${live}:t3`, path: [], ratio: 0.47 },
+    })
+    await quiet()
+    expect(drawn()).toEqual(['review notes', 'spare chat'])
+    expect(getReports()).toEqual([])
+  })
+
   it('offers no Move to tab… on the phone or the tablet', async () => {
     const fakes = withChats()
     for (const size of [phone, tablet]) {

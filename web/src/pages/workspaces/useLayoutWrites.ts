@@ -13,9 +13,7 @@
 // the status bar ("Not zoomed — herdr-unavailable"), and a close's shows in
 // its dialog. A move of the open pane (`follow`) shows the tab it went to
 // once a layout read has the chat there: `onFollow` gets the workspace, the
-// chat and the page's layout of that tab, and the page's ui takes it until
-// herdr's next layout change of the workspace, as a chat opened from the
-// sidebar does.
+// chat and that tab's ID, and the page shows that tab (`shownTabs.ts`).
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { report } from '../../errors/reporter.ts'
 import {
@@ -27,10 +25,10 @@ import {
   tabOf,
 } from './blocks/layoutActions.ts'
 import type { WriteAnswer } from './liveLayoutWrites.ts'
-import type { WorkspaceLayout, WorkspacesData } from './types.ts'
+import type { WorkspacesData } from './types.ts'
 
-/** Shows the tab a moved chat went to: its workspace (the page's ID), the chat and the page's layout of that tab. */
-export type FollowMove = (workspace: string, chat: string, layout: WorkspaceLayout) => void
+/** Shows the tab a moved chat went to: its workspace (the page's ID), the chat and the tab's server ID. */
+export type FollowMove = (workspace: string, chat: string, tab: string) => void
 
 /** A move of the open pane that the workbench follows: the tab it left and the tab it goes to (server IDs). */
 type Follow = { readonly from: string | undefined; readonly to: string }
@@ -83,11 +81,7 @@ export function useLayoutWrites(live: boolean, data: WorkspacesData, onFollow?: 
       followsRef.current.delete(chat)
       const there = found?.tab.id === f.to ? found : undefined
       if (there === undefined) continue
-      const { workspace, tab } = there
-      void import('./liveLayout.ts').then((m) => {
-        const layout = m.layoutOfLiveTab(tab, chat)
-        if (aliveRef.current && layout !== undefined) followRef.current?.(workspace, chat, layout)
-      })
+      if (aliveRef.current) followRef.current?.(there.workspace, chat, f.to)
     }
   }, [])
   // Ends the wait of `key`: of the write `entry` only, when given, as a newer ratio may have taken its place.

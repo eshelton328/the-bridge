@@ -64,10 +64,13 @@ export function tabOf(
   return undefined
 }
 
-/** Herdr focuses `chat` now: its tab is the active one and its pane the focused one. */
+/**
+ * Herdr focuses `chat` now: its tab is herdr's active one (not only the tab the page shows, `herdrActive`) and its
+ * pane the focused one.
+ */
 export function herdrFocuses(data: Pick<WorkspacesData, 'liveTabs'>, chat: string): boolean {
   const found = tabOf(data, chat)
-  return found !== undefined && found.tab.active && found.tab.focused === chat
+  return found !== undefined && (found.tab.herdrActive ?? found.tab.active) && found.tab.focused === chat
 }
 
 /** The active tab of `workspace` when herdr zooms it, else none. */

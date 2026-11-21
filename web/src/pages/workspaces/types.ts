@@ -207,6 +207,8 @@ export const LiveTab = z.object({
   id: TabId.optional(),
   label: z.string().optional(),
   root: LayoutNode.optional(),
+  /** Herdr's own active flag when the page shows another tab of the workspace (`shownTabs.ts`), which is `active`. */
+  herdrActive: z.boolean().optional(),
   active: z.boolean(),
   chats: z.array(z.string()),
   focused: z.string(),
@@ -979,6 +981,11 @@ export const WorkspacesUi = z.object({
   commandFor: z.string().nullable().optional(),
   /** The herdr tab (its server ID) that the Move to tab… dialog of the chat in `commandFor` moves it to (W2d). */
   moveToTab: z.string().nullable().optional(),
+  /**
+   * The herdr tab the workbench shows in place of the active one, by workspace id (W2d, `shownTabs.ts`): the tab a
+   * moved open pane went to (`tab`), while herdr's active tab is still `over`.
+   */
+  shownTabs: z.record(z.string(), z.object({ tab: z.string(), over: z.string() })).optional(),
   /** The list of the chat's folders is open over the composer (D4). */
   foldersOpen: z.boolean().optional(),
   /** The folder picker shows beside the main chat, in place of the side chat (D4). */
