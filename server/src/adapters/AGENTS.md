@@ -78,9 +78,12 @@ client of a socket or a file sits beside them.
   in `plugins/installed_plugins.json` of scope `user`, or one whose
   `projectPath` is a folder from the chat's folder up to its root, that
   the last settings file to name it turns on (the owner's
-  `settings.json`, then each `.claude/settings.json` and
-  `settings.local.json` from the root down); both files are only read
-  (`claudeSkills.test.ts`).
+  `settings.json`, then each `.claude/settings.json` from the root
+  down, then the `settings.local.json` of the root, which in a worktree
+  is the main checkout's). The prefix is the manifest's `name`
+  (`.claude-plugin/plugin.json`), else the entry name; its `skills`
+  paths add to `skills/`, and its `commands` replace `commands/`.
+  The files are only read (`claudeSkills.test.ts`).
 - A Claude chat's `contextUsed` is its last request's input and cache
   tokens over the model's auto-compact window when Claude Code's
   settings set one (`modelSettings["<model>"].autoCompactWindow`, as

@@ -3,7 +3,7 @@
 // the chat's folder and that the settings turn on. Both files are only read,
 // never written, and each is read again only when its size or change time moves.
 import { readFile, stat } from 'node:fs/promises'
-import { dirname, isAbsolute, join } from 'node:path'
+import { dirname, isAbsolute, join, resolve, sep } from 'node:path'
 import { z } from 'zod'
 
 const Install = z.object({
@@ -14,10 +14,53 @@ const Install = z.object({
 const Installed = z.object({ plugins: z.record(z.string(), z.array(z.unknown())) })
 const Settings = z.object({ enabledPlugins: z.record(z.string(), z.unknown()).optional() })
 /** A plugin's optional `.claude-plugin/plugin.json`; its `name` is what its skills and commands go by. */
-const Manifest = z.object({ name: z.string().min(1).optional() })
+const Paths = z.union([z.string(), z.array(z.string())])
+const Manifest = z.object({
+  name: z.string().min(1).optional(),
+  skills: Paths.optional(),
+  commands: z
+    .union([Paths, z.record(z.string(), z.object({ source: z.string().optional(), content: z.string().optional() }))])
+    .optional(),
+})
+
+/** A place of a plugin's commands: a `.md` file or a folder, or one command of the manifest's map by its name. */
+export type CommandPlace =
+  | { readonly path: string }
+  | { readonly name: string; readonly path?: string; readonly content?: string }
 
 /** A plugin that the chat loads: the name its skills go by ("name:skill") and its folder. */
-export type PluginFolder = { readonly name: string; readonly path: string }
+export type PluginFolder = {
+  readonly name: string
+  /** The `skills` folders: the default one, and those the manifest adds. */
+  readonly skills: readonly string[]
+  /** The default `commands` folder, or the manifest's places, which replace it. */
+  readonly commands: readonly CommandPlace[]
+}
+
+/** A manifest path ("./x") inside the plugin's folder, as an absolute path; undefined for any other path. */
+function inside(root: string, path: string): string | undefined {
+  if (!path.startsWith('./')) return undefined
+  const full = resolve(root, path)
+  return full === root || full.startsWith(root + sep) ? full : undefined
+}
+
+/** The skill folders and command places of the plugin in `root` with the manifest `manifest`. */
+function placesOf(root: string, manifest: z.infer<typeof Manifest> | undefined) {
+  const list = (paths: z.infer<typeof Paths>) => (typeof paths === 'string' ? [paths] : paths)
+  const paths = (value: z.infer<typeof Paths>) => list(value).flatMap((p) => inside(root, p) ?? [])
+  const skills = [join(root, 'skills'), ...(manifest?.skills === undefined ? [] : paths(manifest.skills))]
+  const declared = manifest?.commands
+  let commands: CommandPlace[]
+  if (declared === undefined) commands = [{ path: join(root, 'commands') }]
+  else if (typeof declared === 'string' || Array.isArray(declared)) commands = paths(declared).map((path) => ({ path }))
+  else
+    commands = Object.entries(declared).flatMap(([name, { source, content }]): CommandPlace[] => {
+      const path = source === undefined ? undefined : inside(root, source)
+      if (path !== undefined) return [{ name, path }]
+      return content === undefined ? [] : [{ name, content }]
+    })
+  return { skills, commands }
+}
 
 const files = new Map<string, { size: number; mtimeMs: number; value: unknown }>()
 
@@ -96,9 +139,10 @@ export async function readPluginFolders(claudeDir: string, folders: readonly str
       .find(({ scope, projectPath }) => scope === 'user' || (projectPath !== undefined && places.includes(projectPath)))
     if (install === undefined) continue
     // The settings name the marketplace entry ("<entry>@<marketplace>"); the components go by the manifest's name.
-    const manifest = Manifest.safeParse(await jsonOf(join(install.installPath, '.claude-plugin', 'plugin.json')))
-    const name = (manifest.success ? manifest.data.name : undefined) ?? key.split('@')[0] ?? ''
-    if (name !== '') found.push({ name, path: install.installPath })
+    const parsed = Manifest.safeParse(await jsonOf(join(install.installPath, '.claude-plugin', 'plugin.json')))
+    const manifest = parsed.success ? parsed.data : undefined
+    const name = manifest?.name ?? key.split('@')[0] ?? ''
+    if (name !== '') found.push({ name, ...placesOf(resolve(install.installPath), manifest) })
   }
   return found
 }

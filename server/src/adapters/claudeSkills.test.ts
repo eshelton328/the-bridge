@@ -130,6 +130,40 @@ describe('Claude skills', () => {
     expect(skills.filter((s) => s.source === 'plugin').map((s) => s.name)).toEqual(['deploy-tools:audit'])
   })
 
+  it("adds the manifest's skill folders to skills/, and lets its commands replace commands/", async () => {
+    const home = join(root, 'paths')
+    const claude = join(home, '.claude')
+    const base = 'paths/.claude/plugins/cache/market/kit/1.0.0'
+    const path = join(root, base)
+    put(`${base}/skills/audit/SKILL.md`, skill('audit', 'Audits the repo'))
+    put(`${base}/extra/lint/SKILL.md`, skill('lint', 'Lints the repo'))
+    put(`${base}/single/SKILL.md`, skill('single', 'One skill in its folder'))
+    put(`${base}/commands/old.md`, '---\ndescription: Left out by the manifest\n---\nbody')
+    put(`${base}/cmds/new.md`, '---\ndescription: Listed by the manifest\n---\nbody')
+    put(`${base}/../../outside.md`, '---\ndescription: Outside the plugin\n---\nbody')
+    put(
+      `${base}/.claude-plugin/plugin.json`,
+      JSON.stringify({ name: 'kit', skills: ['./extra', './single'], commands: ['./cmds/new.md', '../../outside.md'] }),
+    )
+    put(
+      'paths/.claude/plugins/installed_plugins.json',
+      JSON.stringify({ version: 2, plugins: { 'kit@market': [{ scope: 'user', installPath: path }] } }),
+    )
+    put('paths/.claude/settings.json', JSON.stringify({ enabledPlugins: { 'kit@market': true } }))
+    const plugin = async () =>
+      (await readClaudeSkills(undefined, claude, home)).filter((s) => s.source === 'plugin').map((s) => s.name)
+    expect(await plugin()).toEqual(['kit:audit', 'kit:lint', 'kit:new', 'kit:single'])
+    // A map names each command; its text is a file of the plugin or inline.
+    put(
+      `${base}/.claude-plugin/plugin.json`,
+      JSON.stringify({
+        name: 'kit',
+        commands: { ship: { source: './cmds/new.md' }, hello: { content: '---\ndescription: Hi\n---\nSay hi' } },
+      }),
+    )
+    expect(await plugin()).toEqual(['kit:audit', 'kit:hello', 'kit:ship'])
+  })
+
   it("gives at most the contract's number of entries", async () => {
     for (let n = 0; n < 510; n += 1) put(`many/.claude/skills/s${String(n)}/SKILL.md`, skill(`s${String(n)}`, 'One'))
     const skills = await readClaudeSkills(undefined, join(root, 'many', '.claude'), join(root, 'many'))
