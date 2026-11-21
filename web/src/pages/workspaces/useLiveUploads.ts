@@ -22,6 +22,10 @@ export type LiveFiles = {
   readonly sent: (chat: string, sent: readonly UploadId[]) => void
   /** The server refused the send's files (409 upload-conflict): those chips fail. */
   readonly conflict: (chat: string, sent: readonly UploadId[]) => void
+  /** A send names `ids`: a chip of them removed meanwhile keeps its file until `settled`. */
+  readonly sending: (ids: readonly UploadId[]) => void
+  /** The send that named `ids` ended, `wentThrough` or not: a file removed meanwhile is deleted only if not. */
+  readonly settled: (ids: readonly UploadId[], wentThrough: boolean) => void
 }
 
 export function useLiveUploads(on: boolean): LiveFiles {
@@ -65,5 +69,7 @@ export function useLiveUploads(on: boolean): LiveFiles {
     readyOf: (chat) => shown?.uploadViews().get(chat)?.ready ?? [],
     sent: (chat, sent) => shown?.sentFiles(chat, sent),
     conflict: (chat, sent) => shown?.conflictFiles(chat, sent),
+    sending: (ids) => shown?.sendingFiles(ids),
+    settled: (ids, wentThrough) => shown?.settledFiles(ids, wentThrough),
   }
 }

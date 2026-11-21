@@ -148,7 +148,18 @@ export function WorkspacesPage() {
               const liveChat = liveChatOf(chat)
               if (liveChat !== undefined) {
                 const attached = files.readyOf(chat)
-                return viaLive((m) => m.sendPrompt(liveChat, text, attached)).then((answer) => {
+                files.sending(attached)
+                const posted = viaLive((m) => m.sendPrompt(liveChat, text, attached))
+                // A file removed while the send is pending is deleted only when the send did not go through.
+                void posted.then(
+                  (answer) => {
+                    files.settled(attached, answer === true)
+                  },
+                  () => {
+                    files.settled(attached, false)
+                  },
+                )
+                return posted.then((answer) => {
                   if (answer === true) files.sent(chat, attached)
                   else if (typeof answer === 'object' && answer.uploadConflict === true) files.conflict(chat, attached)
                   // A clear of the terminal input is one at a time for the chat, as its send is, in any pane that shows it.

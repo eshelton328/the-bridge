@@ -555,6 +555,36 @@ describe("a live Claude chat's files (W1b)", () => {
     await expect.element(box('plan the slice')).toHaveValue('')
   })
 
+  const pendingSends = [
+    { name: 'goes through', end: () => new Response(null, { status: 204 }), deletes: 0 },
+    {
+      name: 'misses',
+      end: () => errorAnswer({ kind: 'herdr-unavailable', message: 'down', requestId: 'r-1' }, 503),
+      deletes: 1,
+    },
+  ]
+  for (const send of pendingSends)
+    it(`removes a chip while its send is pending, and the send ${send.name}: ${send.deletes === 0 ? 'keeps' : 'deletes'} the file, on the phone`, async () => {
+      const fake = withChats()
+      await openChat(phone, 'plan the slice')
+      await pick('plan the slice', [file()])
+      await expect.poll(() => fake.uploads.complete().length).toBe(1)
+      await userEvent.fill(box('plan the slice'), secret)
+      const answer = held()
+      fake.answerPrompts(answer.answer)
+      await userEvent.click(sendButton('plan the slice'))
+      await expect.poll(() => fake.posts.length).toBe(1)
+      // The prompt names the file: the server may have given Claude its path already.
+      await userEvent.click(chatOf('plan the slice').getByRole('button', { name: `Remove ${fileName}` }))
+      const deletes = () => fake.uploads.calls.filter((c) => c.method === 'DELETE').length
+      await new Promise((resolve) => setTimeout(resolve, 200))
+      expect(deletes()).toBe(0)
+      answer.end(send.end())
+      await expect.poll(deletes).toBe(send.deletes)
+      await new Promise((resolve) => setTimeout(resolve, 200))
+      expect(deletes()).toBe(send.deletes)
+    })
+
   it('keeps the files through a clear of the terminal input, and the send after the clear names them, on the phone', async () => {
     const fake = withChats()
     const reports = watchReports()

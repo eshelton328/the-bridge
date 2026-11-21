@@ -165,6 +165,10 @@ const noUploads: ChatUploads = { chips: [], blocked: false, ready: [], line: und
 let uploads: Upload[] = []
 /** The line of files past the limit, by chat, until the chat's next add or remove. */
 const limitLines = new Map<string, string>()
+// The attachments a pending send names. A chip removed meanwhile keeps its upload (by attachment) until the send
+// ends: the server may have given the chat its path already, so only a send that missed deletes it.
+const inSend = new Set<UploadId>()
+const removedInSend = new Map<UploadId, UploadId>()
 let seq = 0
 let views = new Map<string, ChatUploads>()
 const listeners = new Set<() => void>()
@@ -445,7 +449,9 @@ export function removeFile(chat: string, key: string) {
   if (u === undefined) return
   u.removed = true
   u.abort?.()
-  if (u.upload !== undefined) forget(u.upload)
+  if (u.attachment !== undefined && u.upload !== undefined && inSend.has(u.attachment))
+    removedInSend.set(u.attachment, u.upload)
+  else if (u.upload !== undefined) forget(u.upload)
   uploads = uploads.filter((f) => f !== u)
   limitLines.delete(chat)
   changed()
@@ -481,6 +487,21 @@ export function conflictFiles(chat: string, sent: readonly UploadId[]) {
   changed()
 }
 
+/** A send names `ids`: a chip of them removed before the send ends keeps its upload until then. */
+export function sendingFiles(ids: readonly UploadId[]) {
+  for (const id of ids) inSend.add(id)
+}
+
+/** The send that named `ids` ended: a file removed meanwhile is deleted only when the send did not go through. */
+export function settledFiles(ids: readonly UploadId[], wentThrough: boolean) {
+  for (const id of ids) {
+    inSend.delete(id)
+    const upload = removedInSend.get(id)
+    removedInSend.delete(id)
+    if (upload !== undefined && !wentThrough) forget(upload)
+  }
+}
+
 /** Ends every upload, for a test's cleanup (`resetAllStores`): aborts each request in flight. */
 function resetUploads() {
   for (const u of uploads) {
@@ -489,6 +510,8 @@ function resetUploads() {
   }
   uploads = []
   limitLines.clear()
+  inSend.clear()
+  removedInSend.clear()
   changed()
 }
 
