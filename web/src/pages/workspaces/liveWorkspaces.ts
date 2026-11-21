@@ -581,18 +581,43 @@ const shownWorkspaces = new Set<string>()
 let reload: ((key?: QueryKey) => void) | undefined
 
 /**
- * When the page reads the list again after a /clear it sent, in ms. The server answers the /clear before herdr lists
- * the chat's new session ID, and it sends no event when that ID changes on its pane (W5 real run), so the page reads
- * the list a few times on its own to follow the pane (`paneFollow.ts`).
+ * The waits before each read of the list after a /clear the page sent, in ms. The server answers the /clear before
+ * herdr lists the chat's new session ID, and it sends no event when that ID changes on its pane (W5 real run).
  */
-const clearReadsMs = [300, 1000, 2500] as const
+const clearReadsMs = [300, 700, 1500, 2500] as const
 
-/** Reads the list again at each of `clearReadsMs`, through the open watcher; with no watcher it does nothing. */
-export function readAfterClear(): void {
-  for (const ms of clearReadsMs)
-    setTimeout(() => {
+export type ClearReadDeps = {
+  /** Reads the server's list; `signal` ends the read. */
+  readonly read?: (signal: AbortSignal) => Promise<Result<WorkspacesResponse, LiveMiss>>
+  /** Waits `ms`. */
+  readonly wait?: (ms: number) => Promise<void>
+}
+
+const waitMs = (ms: number) =>
+  new Promise<void>((resolve) => {
+    setTimeout(resolve, ms)
+  })
+
+/**
+ * After a /clear of `chat` (its server ID) that the page sent: reads the server's list, one read after another, after
+ * each wait of `clearReadsMs`, until `chat` has left it, then has the open watcher load the page again, so the pane
+ * follow (`paneFollow.ts`) moves the open chat to the new ID. A read is its own request, never one the page's loads
+ * share, so a load that started before herdr listed the new ID cannot answer it. Answers whether `chat` left the list.
+ */
+export async function readAfterClear(
+  chat: string,
+  { read = fetchWorkspaces, wait = waitMs }: ClearReadDeps = {},
+): Promise<boolean> {
+  for (const ms of clearReadsMs) {
+    await wait(ms)
+    const answer = await read(AbortSignal.timeout(liveReadTimeoutMs))
+    if (answer.ok && !answer.value.workspaces.some((w) => w.chats.some((c) => c.id === chat))) {
       reload?.()
-    }, ms)
+      return true
+    }
+  }
+  reload?.()
+  return false
 }
 
 /** Opens the event stream; `signal` aborts it. */

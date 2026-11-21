@@ -210,7 +210,7 @@ export function WorkspacesPage() {
                 // The server sends no event when the cleared chat gets its new ID: read the list until it shows.
                 if (answer === true && request.command === 'clear')
                   void import('./liveWorkspaces.ts').then((m) => {
-                    m.readAfterClear()
+                    m.readAfterClear(liveChat)
                   })
                 return answer
               }),

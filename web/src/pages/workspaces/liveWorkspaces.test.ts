@@ -13,6 +13,7 @@ import {
   liveReadTimeoutMs,
   livePanes,
   modelLabel,
+  readAfterClear,
   toWorkspaces,
   watchLiveWorkspaces,
   withLiveWorkspaces,
@@ -255,6 +256,35 @@ describe('the live mapper', () => {
       false,
       undefined,
     ])
+  })
+
+  it('reads the list after a /clear, one read after another, until the cleared chat has left it', async () => {
+    const listed = (id: string) =>
+      WorkspacesResponse.parse({
+        machine: 'mac-mini',
+        workspaces: [
+          {
+            id: 'mac-mini/w1',
+            label: 'w1',
+            chats: [chat(id, { kind: 'claude', title: 'a', model: 'claude-opus-5-5', status: 'idle' })],
+          },
+        ],
+      })
+    const answers = [listed('a'), listed('a'), listed('a-new')]
+    let reads = 0
+    let inFlight = 0
+    const read = async () => {
+      inFlight += 1
+      expect(inFlight).toBe(1)
+      await Promise.resolve()
+      inFlight -= 1
+      const answer = answers[reads] ?? listed('a-new')
+      reads += 1
+      return ok(answer)
+    }
+    const left = await readAfterClear('mac-mini/a', { read, wait: () => Promise.resolve() })
+    expect(left).toBe(true)
+    expect(reads).toBe(3)
   })
 
   it('writes model IDs as the app does', () => {
