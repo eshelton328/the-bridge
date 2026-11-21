@@ -239,11 +239,11 @@ function watchReports() {
   }
 }
 
-/** Counts each render in which the chat shows `text` both as the pending bubble and as an entry. */
-function watchDoubles(title: string, text: string) {
+/** Counts each render in which the chat shows `text` more often than the `sent` times it was sent: a bubble and its entry. */
+function watchDoubles(title: string, text: string, sent = 1) {
   let doubles = 0
   const observer = new MutationObserver(() => {
-    if (shownCount(title, text) > 1) doubles += 1
+    if (shownCount(title, text) > sent) doubles += 1
   })
   observer.observe(chatOf(title).element(), { childList: true, subtree: true, characterData: true })
   cleanups.push(() => {
@@ -381,6 +381,30 @@ describe('a live Claude chat shows a sent message at once (pending send)', () =>
     fake.push(plan, [reply('a9', 'done with the build'), user('u9', secret), reply('a10', 'on it')])
     await expect.poll(() => pendingOf('plan the slice').length).toBe(0)
     expect(shownCount('plan the slice', secret)).toBe(1)
+    expect(doubles()).toBe(0)
+  })
+
+  it('keeps a bubble for each of two sends until its own entry comes, even with the same text', async () => {
+    const fake = withChats()
+    await openChat(phone, 'plan the slice')
+    const doubles = watchDoubles('plan the slice', secret, 2)
+    // Two sends that went through, one after the other, before either entry came (a chat that works queues both).
+    await userEvent.fill(box('plan the slice'), secret)
+    await userEvent.click(sendButton('plan the slice'))
+    await expect.poll(() => fake.prompts.length).toBe(1)
+    await expect.element(chatOf('plan the slice').getByRole('status')).toHaveTextContent('')
+    await userEvent.fill(box('plan the slice'), secret)
+    await userEvent.click(sendButton('plan the slice'))
+    await expect.poll(() => fake.prompts.length).toBe(2)
+    await expect.poll(() => pendingOf('plan the slice').length).toBe(2)
+    expect(shownCount('plan the slice', secret)).toBe(2)
+    // The first entry takes the first bubble only.
+    fake.push(plan, [user('u9', secret)])
+    await expect.poll(() => pendingOf('plan the slice').length).toBe(1)
+    expect(shownCount('plan the slice', secret)).toBe(2)
+    fake.push(plan, [reply('a9', 'on it'), user('u10', secret)])
+    await expect.poll(() => pendingOf('plan the slice').length).toBe(0)
+    expect(shownCount('plan the slice', secret)).toBe(2)
     expect(doubles()).toBe(0)
   })
 

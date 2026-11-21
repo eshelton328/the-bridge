@@ -40,7 +40,7 @@ export function useLivePending(on: boolean): LivePendings {
       if (known !== undefined) return known
       const source: ChatPending = {
         subscribe: (listener) => shown.subscribePending(liveChat, listener),
-        view: () => shown.pendingView(liveChat),
+        view: () => shown.pendingViews(liveChat),
       }
       sources.set(liveChat, source)
       return source

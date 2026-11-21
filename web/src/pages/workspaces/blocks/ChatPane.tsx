@@ -102,6 +102,8 @@ export type ChatFiles = {
 
 /** What a pane draws of its chat's pending send: the text, the file names and whether "Sending…" shows. */
 export type PendingSendView = {
+  /** This send's key among the chat's pending sends. */
+  readonly key: string
   readonly text: string
   readonly files: readonly string[]
   readonly sending: boolean
@@ -114,16 +116,18 @@ export type PendingSendView = {
 export type ChatPending = {
   /** Calls `listener` after each change of the pending send or of the chat's transcript; the result stops it. */
   readonly subscribe: (listener: () => void) => () => void
-  /** The pending send to draw now; none when there is none or the transcript shows its entry. */
-  readonly view: () => PendingSendView | undefined
+  /** The pending sends to draw now, in the order sent: those whose entry the transcript does not show yet. */
+  readonly view: () => readonly PendingSendView[]
 }
 
 const noSubscribe = () => () => undefined
 const noView = () => undefined
+const noPending: readonly PendingSendView[] = []
+const noPendingView = () => noPending
 
-/** `pending`'s view now, or none. */
-function usePendingView(pending: ChatPending | undefined): PendingSendView | undefined {
-  return useSyncExternalStore(pending?.subscribe ?? noSubscribe, pending?.view ?? noView)
+/** `pending`'s sends now; none without it. */
+function usePendingViews(pending: ChatPending | undefined): readonly PendingSendView[] {
+  return useSyncExternalStore(pending?.subscribe ?? noSubscribe, pending?.view ?? noPendingView)
 }
 
 /** `files`' view now, or none; the caller renders again only when this chat's files change. */
@@ -440,7 +444,7 @@ export function ChatPane(props: ChatPaneProps) {
   // The paperclip's first tap with the phone's keyboard up only closes it, so iOS anchors its file menu at the
   // paperclip's closed-keyboard place on the next tap (R29, useKeyboardFirst.ts).
   const keyboardFirst = useKeyboardFirst(attachLabel)
-  const pendingView = usePendingView(pending)
+  const pendingViews = usePendingViews(pending)
   // The box is controlled, so the composer never empties it: a sent message empties it here.
   const actions = useComposerActions({
     text,
@@ -598,11 +602,11 @@ export function ChatPane(props: ChatPaneProps) {
     notLive === undefined ? (
       <>
         {earlier === undefined ? null : <span className={earlierLine}>{earlier}</span>}
-        {empty === undefined || pendingView !== undefined ? null : <span className={earlierLine}>{empty}</span>}
+        {empty === undefined || pendingViews.length > 0 ? null : <span className={earlierLine}>{empty}</span>}
         <TranscriptEntries chatId={chatId} entries={entries} figma={figma.entries} onCopy={onCopy} />
-        {pendingView === undefined ? null : (
-          <PendingEntry text={pendingView.text} files={pendingView.files} sending={pendingView.sending} />
-        )}
+        {pendingViews.map((view) => (
+          <PendingEntry key={view.key} text={view.text} files={view.files} sending={view.sending} />
+        ))}
         {problem === undefined ? null : (
           <TranscriptProblem
             text={problem}
