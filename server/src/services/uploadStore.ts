@@ -58,12 +58,6 @@ const keptMs = 7 * 24 * 60 * 60 * 1000
 export const expired = (startedAt: number, completedAt: number | null, now: number): boolean =>
   completedAt === null ? now - startedAt >= unfinishedMs : now - completedAt >= keptMs
 
-/** Whether a file name is a HEIC or HEIF photo, by its extension. */
-export const isHeic = (name: string): boolean => /\.(heic|heif)$/i.test(name)
-
-/** The name of a HEIC photo's JPEG copy: the same name with the extension .jpg. */
-export const jpegName = (name: string): string => name.replace(/\.[^.]*$/, '.jpg')
-
 /** How many chunks a file of `size` bytes has. */
 export const chunkCount = (size: number, chunkSize: number): number => Math.ceil(size / chunkSize)
 
@@ -72,14 +66,4 @@ export function chunkLength(size: number, chunkSize: number, n: number): number 
   const count = chunkCount(size, chunkSize)
   if (!Number.isInteger(n) || n < 0 || n >= count) return null
   return n === count - 1 ? size - n * chunkSize : chunkSize
-}
-
-/** A file name with no folder and only letters, digits and . _ -, at most 100 characters with its extension. */
-export function safeFileName(name: string): string {
-  const base = name.split(/[\\/]/).at(-1) ?? ''
-  const safe = base
-    .replace(/[^A-Za-z0-9._-]+/g, '_')
-    .replace(/^[._]+/, '')
-    .slice(-100)
-  return safe === '' ? 'file' : safe
 }
