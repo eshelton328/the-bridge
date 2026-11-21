@@ -1,11 +1,12 @@
-// The page's trips to the background, for the live transcript streams. iOS
-// closes a page's open connections while the phone keeps the page in the
-// background, and the page sees that close only when it shows again: a stream
-// that ends then is expected, not an outage (the served log of 2026-11-21:
-// each "ended" report came 0.4 to 1.5 s before the page read its workspaces
-// again, and the server logged no failure). `liveTranscript.ts` asks
-// `resumeMark()` when a connection starts and `fromBackground(mark)` when it
-// misses.
+// The page's trips to the background, for the live transcript streams and
+// the layout reads. iOS closes a page's open connections while the phone
+// keeps the page in the background, and the page sees that close only when it
+// shows again: a stream that ends then is expected, not an outage (the served
+// log of 2026-11-21: each "ended" report came 0.4 to 1.5 s before the page
+// read its workspaces again, and the server logged no failure; a layout read
+// "unreachable" with no status came 0.1 s after one such read).
+// `liveTranscript.ts` and `liveWorkspaces.ts` ask `resumeMark()` when a
+// connection or a read starts and `fromBackground(mark)` when it misses.
 
 /** How long after the page shows again a connection that starts still counts as part of the return. */
 export const resumeGraceMs = 5000
