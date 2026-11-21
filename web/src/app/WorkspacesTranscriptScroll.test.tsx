@@ -209,14 +209,69 @@ async function expectAtEnd(el: HTMLElement) {
   expect(el.scrollTop).toBeGreaterThan(0)
 }
 
-/** Scrolls `el` up to its top, as the reader does, and waits for the scroll event. */
-async function scrollUp(el: HTMLElement) {
+/**
+ * Scrolls `el` to `top` as the reader does, with a wheel turn on the transcript first (usePinnedEnd leaves the end
+ * only for the reader's scroll), and waits for the scroll event.
+ */
+async function scrollUp(el: HTMLElement, top = 0) {
   const scrolled = new Promise((resolve) => {
     el.addEventListener('scroll', resolve, { once: true })
   })
-  el.scrollTop = 0
+  el.dispatchEvent(new WheelEvent('wheel', { deltaY: -400, bubbles: true }))
+  el.scrollTop = top
   await scrolled
   await afterRendering()
+}
+
+/**
+ * Moves `el` to `top` with no input from the reader, as iOS did 1.3 s after Send closed the keyboard (screen review
+ * R33), and returns how far from the end the view was in each of the next frames, from the frame of that scroll on.
+ * A frame callback runs after the scroll event and before the paint, so it sees what the reader sees.
+ */
+async function strayScroll(el: HTMLElement, top: number, frames = 10): Promise<number[]> {
+  const seen: number[] = []
+  const done = new Promise<void>((resolve) => {
+    const frame = () => {
+      seen.push(fromEnd(el))
+      if (seen.length < frames) requestAnimationFrame(frame)
+      else resolve()
+    }
+    el.addEventListener(
+      'scroll',
+      () => {
+        requestAnimationFrame(frame)
+      },
+      { once: true },
+    )
+  })
+  el.scrollTop = top
+  await done
+  return seen
+}
+
+/** The transcript entry nearest the top of `el`'s view and how far below the view's top it starts, in px. */
+function firstShown(el: HTMLElement): { entry: Element; offset: number } {
+  const top = el.getBoundingClientRect().top
+  for (const child of el.children) {
+    const box = child.getBoundingClientRect()
+    if (box.bottom > top + 1) return { entry: child, offset: box.top - top }
+  }
+  throw new Error('no entry in view')
+}
+
+/** Makes the page hidden (`hidden` true) or visible again, with the events Safari sends. */
+function setHidden(hidden: boolean) {
+  Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => (hidden ? 'hidden' : 'visible') })
+  Object.defineProperty(document, 'hidden', { configurable: true, get: () => hidden })
+  if (hidden) window.dispatchEvent(new PageTransitionEvent('pagehide', { persisted: true }))
+  document.dispatchEvent(new Event('visibilitychange'))
+  if (!hidden) window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }))
+}
+
+/** Puts the page's own visibility back. */
+function restoreVisibility() {
+  Reflect.deleteProperty(document, 'visibilityState')
+  Reflect.deleteProperty(document, 'hidden')
 }
 
 const devices = [
@@ -294,6 +349,150 @@ describe("a live chat's transcript scroll", () => {
     await expect.element(page.getByText(/^Review moved on\./)).toBeInTheDocument()
     await expectAtEnd(reviewPane)
     expect(planPane.scrollTop).toBe(0)
+  })
+})
+
+/** Pushes `count` replies to `chat`, numbered from `from`; the last one's text is `Reply <from + count - 1> landed.`. */
+function pushReplies(server: FakeTranscriptServer, chat: string, from: number, count: number) {
+  for (let i = from; i < from + count; i += 1)
+    server.push(chat, [
+      reply(`late-${String(i)}`, `Reply ${String(i)} landed. ${'It ran the checks again. '.repeat(3)}`),
+    ])
+}
+
+/** Records the largest distance from the end of `el` in each frame until the result is called. */
+function watchFrames(el: HTMLElement): () => number {
+  let worst = 0
+  let on = true
+  const frame = () => {
+    worst = Math.max(worst, fromEnd(el))
+    if (on) requestAnimationFrame(frame)
+  }
+  requestAnimationFrame(frame)
+  return () => {
+    on = false
+    return worst
+  }
+}
+
+// Screen review R33: the owner sent a message from the end of a long Working chat; Send closed the keyboard, and
+// 1.3 s later the view jumped to entries from hours ago with no touch (the phone's keyboard trace has the scroll
+// 162 ms before the owner's finger came down). One rule now holds for open, Send, a page back from the background
+// and a stream that reconnects: a reader at the end sees the newest entry, with no frame at an old place; a reader
+// who scrolled up keeps the place.
+describe('the end of a live transcript after Send, the background and a reconnect (R33)', () => {
+  afterEach(() => {
+    restoreVisibility()
+  })
+
+  it('goes back to the end in the same frame when a scroll the reader did not make moves it after Send, on the phone', async () => {
+    const server = withLong()
+    await tapWorkspaces([390, 844])
+    const scroller = await tapChat('plan the slice')
+    await expectAtEnd(scroller)
+    await expect.poll(() => server.openStreams()).toEqual([plan])
+    const chat = page.getByRole('region', { name: 'plan the slice' })
+    await userEvent.click(chat.getByRole('textbox'))
+    await userEvent.keyboard('watch how far I scroll after this')
+    await userEvent.click(chat.getByRole('button', { name: 'Send', exact: true }))
+    await expect.element(chat.getByRole('textbox')).toHaveValue('')
+    pushReplies(server, plan, 1, 2)
+    await expect.element(page.getByText(/^Reply 2 landed\./)).toBeInTheDocument()
+    await expectAtEnd(scroller)
+    // The scroll iOS made with no touch: to a place a long way up.
+    const frames = await strayScroll(scroller, Math.round(scroller.scrollTop / 4))
+    expect(Math.max(...frames)).toBeLessThanOrEqual(2)
+    // It still follows: the next reply shows at the end.
+    pushReplies(server, plan, 3, 1)
+    await expect.element(page.getByText(/^Reply 3 landed\./)).toBeInTheDocument()
+    await expectAtEnd(scroller)
+    expect(getReports()).toEqual([])
+  })
+
+  it('goes back to the end in the same frame when a scroll the reader did not make moves a pane, on the desktop', async () => {
+    const server = withLong()
+    await tapWorkspaces([1512, 982])
+    await userEvent.click(page.getByRole('button', { name: 'Hide the workspace sidebar' }))
+    await expect.element(page.getByText('plan question 39', { exact: true })).toBeInTheDocument()
+    const planPane = paneScroller('plan the slice')
+    await expectAtEnd(planPane)
+    await expect.poll(() => [...server.openStreams()].sort()).toEqual([plan, review])
+    const frames = await strayScroll(planPane, 0)
+    expect(Math.max(...frames)).toBeLessThanOrEqual(2)
+    pushReplies(server, plan, 1, 1)
+    await expect.element(page.getByText(/^Reply 1 landed\./)).toBeInTheDocument()
+    await expectAtEnd(planPane)
+  })
+
+  it('shows the newest entry when the page comes back after entries came in while it was hidden, on the phone', async () => {
+    const server = withLong()
+    await tapWorkspaces([390, 844])
+    const scroller = await tapChat('plan the slice')
+    await expectAtEnd(scroller)
+    await expect.poll(() => server.openStreams()).toEqual([plan])
+    const worst = watchFrames(scroller)
+    setHidden(true)
+    // While the page is away the stream drops; entries come in, and the page connects again and reads them.
+    server.drop(plan)
+    pushReplies(server, plan, 1, 6)
+    await expect.element(page.getByText(/^Reply 6 landed\./)).toBeInTheDocument()
+    await new Promise((resolve) => setTimeout(resolve, 3000))
+    setHidden(false)
+    // Safari puts the view back at a place it kept from before, with no touch.
+    const frames = await strayScroll(scroller, Math.round(scroller.scrollTop / 2))
+    expect(Math.max(...frames)).toBeLessThanOrEqual(2)
+    expect(worst()).toBeLessThanOrEqual(2)
+    await expectAtEnd(scroller)
+  })
+
+  for (const device of [
+    { name: 'the phone', size: [390, 844] },
+    { name: 'the desktop', size: [1512, 982] },
+  ] as const) {
+    it(`keeps the newest entry in view through a stream that reconnects and reads the transcript again, on ${device.name}`, async () => {
+      const server = withLong()
+      await tapWorkspaces(device.size)
+      let scroller: HTMLElement
+      if (device.name === 'the phone') scroller = await tapChat('plan the slice')
+      else {
+        await userEvent.click(page.getByRole('button', { name: 'Hide the workspace sidebar' }))
+        await expect.element(page.getByText('plan question 39', { exact: true })).toBeInTheDocument()
+        scroller = paneScroller('plan the slice')
+      }
+      await expectAtEnd(scroller)
+      await expect.poll(() => server.openStreams()).toContain(plan)
+      const worst = watchFrames(scroller)
+      server.drop(plan)
+      pushReplies(server, plan, 1, 3)
+      await expect.element(page.getByText(/^Reply 3 landed\./)).toBeInTheDocument()
+      await expect.poll(() => server.reads.filter((chat) => chat === plan).length).toBeGreaterThanOrEqual(2)
+      await afterRendering()
+      expect(worst()).toBeLessThanOrEqual(2)
+      await expectAtEnd(scroller)
+    })
+  }
+
+  it('keeps the first entry in view for a reader who scrolled up, through the background and a reconnect, on the phone', async () => {
+    const server = withLong()
+    await tapWorkspaces([390, 844])
+    const scroller = await tapChat('plan the slice')
+    await expectAtEnd(scroller)
+    await expect.poll(() => server.openStreams()).toEqual([plan])
+    await scrollUp(scroller, Math.round(scroller.scrollHeight / 2))
+    const before = firstShown(scroller)
+    const text = before.entry.textContent
+    setHidden(true)
+    server.drop(plan)
+    pushReplies(server, plan, 1, 3)
+    await expect.poll(() => server.reads.filter((chat) => chat === plan).length).toBeGreaterThanOrEqual(2)
+    await expect.element(page.getByText(/^Reply 3 landed\./)).toBeInTheDocument()
+    setHidden(false)
+    await afterRendering()
+    const after = firstShown(scroller)
+    expect(after.entry.textContent).toBe(text)
+    // One line, 20 px at the transcript's text size, at most.
+    expect(Math.abs(after.offset - before.offset)).toBeLessThanOrEqual(20)
+    expect(fromEnd(scroller)).toBeGreaterThan(scroller.clientHeight)
   })
 })
 
