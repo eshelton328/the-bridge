@@ -152,6 +152,14 @@ describe('session file', () => {
     expect((await readClaudeSession(file('w2.jsonl', reply(200_000)), undefined, windows)).contextUsed).toBe(0.5)
     // At the compact point (and past it, before the compact ends) the bar is full.
     expect((await readClaudeSession(file('w3.jsonl', reply(410_000)), undefined, windows)).contextUsed).toBe(1)
+    // A window past the model's own window is capped there, as Claude Code does: Haiku 4.5 has 200K.
+    const haiku = JSON.stringify({
+      type: 'assistant',
+      message: { model: 'claude-haiku-4-5', usage: { input_tokens: 100_000 } },
+    })
+    expect(
+      (await readClaudeSession(file('w5.jsonl', haiku), undefined, { 'claude-haiku-4-5': 400_000 })).contextUsed,
+    ).toBe(0.5)
     // A setting for another model leaves this one on its own window.
     const other = { 'claude-sonnet-5-5': 100_000 }
     expect((await readClaudeSession(file('w4.jsonl', reply(200_000)), undefined, other)).contextUsed).toBe(0.2)

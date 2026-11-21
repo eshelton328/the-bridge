@@ -6,11 +6,10 @@
 import { stat, readFile } from 'node:fs/promises'
 import { z } from 'zod'
 
-const Settings = z.object({
-  modelSettings: z
-    .record(z.string(), z.object({ autoCompactWindow: z.number().int().positive().optional() }).loose())
-    .optional(),
-})
+// Each model's settings are read one by one, so a value this server does not take (such as "auto") for one model
+// drops only that model's window.
+const Settings = z.object({ modelSettings: z.record(z.string(), z.unknown()).optional() })
+const ModelWindow = z.object({ autoCompactWindow: z.number().int().positive() })
 
 /** The window of each model ID that sets one, in tokens; empty when the file is missing or cannot be read. */
 export type CompactWindows = Readonly<Record<string, number>>
@@ -31,8 +30,10 @@ export async function readCompactWindows(path: string): Promise<CompactWindows> 
     const parsed = Settings.safeParse(value)
     const windows: Record<string, number> = {}
     const models = parsed.success ? (parsed.data.modelSettings ?? {}) : {}
-    for (const [model, settings] of Object.entries(models))
-      if (settings.autoCompactWindow !== undefined) windows[model] = settings.autoCompactWindow
+    for (const [model, settings] of Object.entries(models)) {
+      const window = ModelWindow.safeParse(settings)
+      if (window.success) windows[model] = window.data.autoCompactWindow
+    }
     last = { path, size, mtimeMs, windows }
     return windows
   } catch {

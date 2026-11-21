@@ -73,8 +73,9 @@ client of a socket or a file sits beside them.
 - A Claude chat's `contextUsed` is its last request's input and cache
   tokens over the model's auto-compact window when Claude Code's
   settings set one (`modelSettings["<model>"].autoCompactWindow`, as
-  the chat compacts there), else over the model's context window, at
-  most 1; a model that `sessionFile.ts` has no window for gets `null`
+  the chat compacts there; capped at the model's own window, and a value
+  such as "auto" drops only that model's), else over the model's
+  context window, at most 1; a model that `sessionFile.ts` has no window for gets `null`
   (`sessionFile.test.ts`). `claudeSettings.ts` only reads the settings
   file (`BRIDGE_CLAUDE_SETTINGS`, else the `settings.json` beside the
   projects folder), again only when its size or change time moves

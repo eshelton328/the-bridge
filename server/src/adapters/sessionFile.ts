@@ -126,7 +126,10 @@ type Read = { reply: Reply | null; effort: ChatEffort | null }
 function contextUsedOf(reply: Reply, compactWindows: CompactWindows): number | null {
   // A dated ID, such as "claude-haiku-4-5-20251001", has the window of its alias.
   const model = reply.model.replace(/-\d{8}$/, '')
-  const window = compactWindows[model] ?? contextWindows[model]
+  // Claude Code caps an auto-compact window at the model's own window.
+  const own = contextWindows[model]
+  const compact = compactWindows[model]
+  const window = compact === undefined ? own : own === undefined ? compact : Math.min(compact, own)
   return window === undefined || reply.used === null ? null : Math.min(1, reply.used / window)
 }
 

@@ -21,6 +21,20 @@ describe('Claude settings', () => {
     expect(await readCompactWindows(path)).toEqual({ 'claude-opus-5-5': 300_000 })
   })
 
+  it('keeps the other models\' windows when one model sets a value it does not take, such as "auto"', async () => {
+    const path = join(dir, 'auto.json')
+    writeFileSync(
+      path,
+      JSON.stringify({
+        modelSettings: {
+          'claude-sonnet-5-5': { autoCompactWindow: 'auto' },
+          'claude-opus-5-5': { autoCompactWindow: 400_000 },
+        },
+      }),
+    )
+    expect(await readCompactWindows(path)).toEqual({ 'claude-opus-5-5': 400_000 })
+  })
+
   it('gives no windows for a missing file, a file that is not JSON, or one with no model settings', async () => {
     expect(await readCompactWindows(join(dir, 'missing.json'))).toEqual({})
     const broken = join(dir, 'broken.json')
