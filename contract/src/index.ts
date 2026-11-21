@@ -21,6 +21,7 @@ export {
   WorkspaceLayout,
   ZoomChatRequest,
 } from './layout.ts'
+export { ChatName, StartChatRequest, StartChatResponse, StartState } from './newChats.ts'
 export {
   ChatCommandRequest,
   ClearInputRequest,
