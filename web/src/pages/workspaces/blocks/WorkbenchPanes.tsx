@@ -118,7 +118,8 @@ export function WorkbenchPanes({
     const pending = layout?.pending.get(pane.id)
     const live = layout !== undefined && tab !== undefined ? layout : undefined
     const actions = withLayoutActions(data.paneMenu, data, live === undefined ? undefined : pane.id, 'pane').map((a) =>
-      pending !== undefined && (a.value === 'zoom' || a.value === 'unzoom' || a.value === 'swap' || a.value === 'close')
+      pending !== undefined &&
+      (a.value === 'focus' || a.value === 'zoom' || a.value === 'unzoom' || a.value === 'swap' || a.value === 'close')
         ? { ...a, disabled: true }
         : a,
     )
@@ -151,6 +152,10 @@ export function WorkbenchPanes({
           if (live !== undefined && (action === 'zoom' || action === 'unzoom')) {
             onUiChange?.({ menuFor: null, moveOpen: false })
             live.zoom(pane.id, action === 'zoom')
+          }
+          if (live !== undefined && action === 'focus') {
+            onUiChange?.({ menuFor: null, moveOpen: false })
+            live.focus(pane.id)
           }
           if (live !== undefined && action === 'close')
             onUiChange?.({ menuFor: null, moveOpen: false, chatDialog: 'close', commandFor: pane.id })

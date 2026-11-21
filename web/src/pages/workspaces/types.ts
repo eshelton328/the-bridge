@@ -223,6 +223,7 @@ export const PaneAction = z.object({
     'close',
     'compact',
     'clear',
+    'focus',
     'zoom',
     'unzoom',
     'swap',

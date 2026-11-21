@@ -299,7 +299,7 @@ function WorkspacesLayout({
         <ChatActionsMenu
           title={chat.head.title}
           actions={withCommands(
-            withLayoutActions(data.chatMenu, data, layoutWrites === undefined ? undefined : chat.id, 'chat'),
+            withLayoutActions(data.chatMenu, data, layoutWrites === undefined ? undefined : chat.id, 'desktopChat'),
             chat,
             data.chatCommands,
           )}
@@ -321,6 +321,10 @@ function WorkspacesLayout({
             if (action === 'rename') change({ menuFor: null, moveOpen: false, renaming: true })
             if (isChatCommand(action))
               change({ menuFor: null, moveOpen: false, chatDialog: action, commandFor: chat.id })
+            if (action === 'focus' && layoutWrites !== undefined) {
+              change({ menuFor: null, moveOpen: false })
+              layoutWrites.focus(chat.id)
+            }
             if (action === 'close' && layoutWrites !== undefined && tabOf(data, chat.id) !== undefined)
               change({ menuFor: null, moveOpen: false, chatDialog: 'close', commandFor: chat.id })
           }}

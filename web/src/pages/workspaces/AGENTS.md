@@ -142,7 +142,9 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   `confirm` (`blocks/CloseChatDialog.tsx`); a working chat gets Stop
   there. A focus moves the focus in the owner's real terminal, so it
   goes only for a tap on a desktop pane's or desktop chat's header
-  (`blocks/headerTap.ts`) or a Send there, never for a click in the
+  (`blocks/headerTap.ts`), its menu's Focus in terminal (the keyboard's
+  way, offered while herdr focuses another pane) or a Send there, never
+  for a click in the
   transcript or the composer, a scroll, a selection, or anything on
   the phone or the tablet's chat, and never to the chat herdr focuses
   already. No layout moves before `layout.changed` brings the new one:

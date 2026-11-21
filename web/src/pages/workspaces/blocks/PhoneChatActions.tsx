@@ -30,6 +30,7 @@ import {
   SortIcon,
   SparkleIcon,
   SplitIcon,
+  TerminalIcon,
   WorkspacesIcon,
 } from '@eshelton328/component-library-1701'
 import type { ReactElement, ReactNode } from 'react'
@@ -62,6 +63,7 @@ const icons: Record<PaneAction['value'], ReactNode> = {
   clear: <CloseCircleIcon size="20" />,
   // W2: the phone has no zoom or swap (one chat fills its screen); the record names every action. The library has no
   // unzoom or swap icon (LIBRARY_GAPS.md: Layout writes).
+  focus: <TerminalIcon size="20" />,
   zoom: <MaximizeIcon size="20" />,
   unzoom: <GridIcon size="20" />,
   swap: <SplitIcon size="20" />,

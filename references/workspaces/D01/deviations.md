@@ -103,8 +103,10 @@ What still differs from Figma after moving the Workbench onto the library's
   which adds the Toolkit (and Artifacts) item; the app draws the
   six-item navigation.
 - **Live layout writes (W2, Layout writes; not drawn in this frame).**
-  A live chat's pane menu adds Zoom pane (Unzoom pane on the pane herdr
-  zooms) and Swap with… before Close pane, after their own separator,
+  A live chat's pane menu adds Focus in terminal (while herdr focuses
+  another pane; the keyboard's way to a tap on the header), Zoom pane
+  (Unzoom pane on the pane herdr zooms) and Swap with… before Close
+  pane, after their own separator,
   and its Close pane reads "Close pane…", as it asks first. Swap with…
   opens the other chats of the pane's herdr tab as the row's `submenu`,
   as Move to workspace opens its list. Maximise zooms a live pane of a

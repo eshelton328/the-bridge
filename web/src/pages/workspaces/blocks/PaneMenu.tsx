@@ -6,7 +6,7 @@
 // pane. Both use the compact row pitch, and a state can set the highlighted
 // row and workspace. A live Claude chat's /compact and /clear come last,
 // after a separator, on only while it is idle or done (W5). A live chat's
-// pane adds Zoom pane or Unzoom pane and Swap with…, whose list of the other
+// pane adds Focus in terminal, Zoom pane or Unzoom pane and Swap with…, whose list of the other
 // chats of its herdr tab is the row's submenu, before Close pane… (W2,
 // layoutActions.ts). Props only.
 import {
@@ -27,6 +27,7 @@ import {
   SortIcon,
   SparkleIcon,
   SplitIcon,
+  TerminalIcon,
   WorkspacesIcon,
 } from '@eshelton328/component-library-1701'
 import type { ReactElement, ReactNode } from 'react'
@@ -54,6 +55,7 @@ const icons: Record<PaneAction['value'], ReactNode> = {
   compact: <SortIcon size="16" />,
   clear: <CloseCircleIcon size="16" />,
   // W2: the library has no unzoom (restore) or swap icon (LIBRARY_GAPS.md: Layout writes).
+  focus: <TerminalIcon size="16" />,
   zoom: <MaximizeIcon size="16" />,
   unzoom: <GridIcon size="16" />,
   swap: <SplitIcon size="16" />,
@@ -110,8 +112,11 @@ export function PaneMenu(props: PaneMenuProps) {
     else if (moveValues.has(value)) props.onMove?.(value)
     else props.onSelect?.(value)
   }
-  // A live chat's layout actions (W2) start their own group after a separator: Zoom or Unzoom, Swap with…, Close pane….
-  const layoutStart = actions.find((a) => a.value === 'zoom' || a.value === 'unzoom' || a.value === 'swap')?.value
+  // A live chat's layout actions (W2) start their own group after a separator: Focus in terminal, Zoom or Unzoom, Swap
+  // with…, Close pane….
+  const layoutStart = actions.find(
+    (a) => a.value === 'focus' || a.value === 'zoom' || a.value === 'unzoom' || a.value === 'swap',
+  )?.value
   const items: MenuEntry[] = actions.flatMap((a): MenuEntry[] => {
     const entry = {
       value: a.value,

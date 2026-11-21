@@ -63,22 +63,26 @@ export const swapTargets = (data: Pick<WorkspacesData, 'liveTabs'>, chat: string
 const closeLabel = 'Close pane…'
 
 /**
- * `actions` with a live chat's layout actions (W2). In the workbench (`pane`): Zoom pane or Unzoom pane when its tab has
- * more than one pane, Swap with… when the tab holds another chat, then Close pane…, in the place of the sample's Close
- * pane. In a chat's actions (`chat`: the chat beside the sidebar, the tablet's menu, the phone's sheet): Close pane…
- * last. Any other pane keeps `actions` as they are.
+ * `actions` with a live chat's layout actions (W2). In the workbench (`pane`): Focus in terminal while herdr focuses
+ * another pane, Zoom pane or Unzoom pane when its tab has more than one pane, Swap with… when the tab holds another
+ * chat, then Close pane…, in the place of the sample's Close pane. The chat beside the desktop's sidebar (`desktopChat`):
+ * Focus in terminal, then Close pane… last. The tablet's menu and the phone's sheet (`chat`): Close pane… last, as they
+ * never move herdr's focus. Focus in terminal is the keyboard's way to what a tap on the pane's header does. Any other
+ * pane keeps `actions` as they are.
  */
 export function withLayoutActions(
   actions: readonly PaneAction[],
   data: Pick<WorkspacesData, 'liveTabs'>,
   chat: string | undefined,
-  where: 'pane' | 'chat',
+  where: 'pane' | 'desktopChat' | 'chat',
 ): PaneAction[] {
   const found = chat === undefined ? undefined : tabOf(data, chat)
   if (chat === undefined || found === undefined) return [...actions]
   const close: PaneAction = { value: 'close', label: closeLabel }
   const rest = actions.filter((a) => a.value !== 'close')
   if (where === 'chat') return [...rest, close]
+  const focus: PaneAction[] = herdrFocuses(data, chat) ? [] : [{ value: 'focus', label: 'Focus in terminal' }]
+  if (where === 'desktopChat') return [...rest, ...focus, close]
   const { tab } = found
   const zoomed = tab.zoomed && tab.focused === chat
   const zoom: PaneAction[] =
@@ -86,5 +90,5 @@ export function withLayoutActions(
       ? [zoomed ? { value: 'unzoom', label: 'Unzoom pane' } : { value: 'zoom', label: 'Zoom pane' }]
       : []
   const swap: PaneAction[] = tab.chats.length > 1 ? [{ value: 'swap', label: 'Swap with…' }] : []
-  return [...rest, ...zoom, ...swap, close]
+  return [...rest, ...focus, ...zoom, ...swap, close]
 }

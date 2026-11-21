@@ -22,6 +22,7 @@ describe('withLayoutActions (W2)', () => {
   it("gives a pane of a tab of several Zoom, Swap with… and Close pane…, Unzoom for the tab's zoomed pane", () => {
     expect(values(withLayoutActions(sample, data, 'a', 'pane'))).toEqual([
       'rename:Rename chat',
+      'focus:Focus in terminal',
       'zoom:Zoom pane',
       'swap:Swap with…',
       'close:Close pane…',
@@ -29,7 +30,18 @@ describe('withLayoutActions (W2)', () => {
     expect(values(withLayoutActions(sample, data, 'b', 'pane'))).toContain('unzoom:Unzoom pane')
   })
 
+  it("offers Focus in terminal for a chat herdr does not focus, in the workbench and beside the desktop's sidebar only", () => {
+    expect(values(withLayoutActions(sample, data, 'b', 'pane'))).not.toContain('focus:Focus in terminal')
+    expect(values(withLayoutActions(sample, data, 'a', 'desktopChat'))).toEqual([
+      'rename:Rename chat',
+      'focus:Focus in terminal',
+      'close:Close pane…',
+    ])
+    expect(values(withLayoutActions(sample, data, 'a', 'chat'))).not.toContain('focus:Focus in terminal')
+  })
+
   it("gives a tab's only pane Close pane… alone, and a chat's actions Close pane… last", () => {
+    // herdr focuses e, its tab's only pane.
     expect(values(withLayoutActions(sample, data, 'e', 'pane'))).toEqual(['rename:Rename chat', 'close:Close pane…'])
     expect(values(withLayoutActions([{ value: 'fork', label: 'Fork' }], data, 'a', 'chat'))).toEqual([
       'fork:Fork',

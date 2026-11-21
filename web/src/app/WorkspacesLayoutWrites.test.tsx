@@ -306,6 +306,25 @@ describe('focus (W2)', () => {
     await expect.poll(() => writesOf(fakes)).toEqual([{ chat: review, action: 'focus', body: {} }])
   })
 
+  it('sends one focus from the keyboard with Focus in terminal, which the focused pane does not offer', async () => {
+    const fakes = withChats()
+    await showPanes()
+    await userEvent.click(actionsButton('plan the slice'))
+    await expect.element(page.getByRole('menuitem', { name: 'Rename chat' })).toBeVisible()
+    await expect.element(page.getByRole('menuitem', { name: 'Focus in terminal' })).not.toBeInTheDocument()
+    await userEvent.keyboard('{Escape}')
+    actionsButton('review notes').element().focus()
+    await userEvent.keyboard('{Enter}')
+    const row = page.getByRole('menuitem', { name: 'Focus in terminal' })
+    await expect.element(row).toBeVisible()
+    // The arrow keys move the menu's highlight down to the row, and Enter picks it.
+    for (let i = 0; i < 12 && !row.element().hasAttribute('data-highlighted'); i++)
+      await userEvent.keyboard('{ArrowDown}')
+    expect(row.element().hasAttribute('data-highlighted')).toBe(true)
+    await userEvent.keyboard('{Enter}')
+    await expect.poll(() => writesOf(fakes)).toEqual([{ chat: review, action: 'focus', body: {} }])
+  })
+
   it("opens a sidebar row's chat of a zoomed tab beside the sidebar, as of any tab", async () => {
     const fakes = withChats()
     await tapWorkspaces(desktop)
