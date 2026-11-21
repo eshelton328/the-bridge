@@ -156,7 +156,7 @@ export function NewChatDialog({ form, workspaces, open, onOpenChange, layers = d
           ))}
         </Grid>
       </FormField>
-      <FormField label={labels.workspace} hint={start?.place} figma={layers.fields.workspace}>
+      <FormField label={labels.workspace} hint={start?.placeOf(values.workspace)} figma={layers.fields.workspace}>
         <SelectField
           label={labels.workspace}
           options={workspaces.map((w) => ({ value: w.id, label: w.label }))}

@@ -22,8 +22,8 @@ export type NewChatStart = {
   readonly line?: string | undefined
   /** Retry sends the same start again; set with `line`. */
   readonly retry?: boolean | undefined
-  /** Where the chat starts, the workspace field's hint: a new tab. */
-  readonly place: string
+  /** Where the chat starts with `workspace` picked: a new tab, or beside the chat whose actions opened the form. */
+  readonly placeOf: (workspace: string) => string
   readonly onStart: (values: NewChatValues) => void
   readonly onRetry: () => void
 }
@@ -48,13 +48,26 @@ export type NewChatStarter = {
   readonly retry: () => void
 }
 
-/** The live form's side of `starter`, with the start's state in `ui`; none for a sample form. */
+/**
+ * The live form's side of `starter` with the start's state in `ui`: the chat starts beside the chat whose actions
+ * opened the form (`ui.newChatBeside`) while its workspace stays picked, else in a new tab of the picked workspace.
+ */
 export function startOf(
   starter: NewChatStarter | undefined,
-  data: Pick<WorkspacesData, 'newChat'>,
+  data: Pick<WorkspacesData, 'newChat' | 'panes'>,
   ui: WorkspacesUi,
 ): NewChatStart | undefined {
   const words = data.newChat?.live
   if (starter === undefined || words === undefined) return undefined
-  return { ...ui.newChatStart, place: words.newTab, onStart: starter.start, onRetry: starter.retry }
+  const state = ui.newChatStart ?? {}
+  const beside = data.panes.find((p) => p.id === ui.newChatBeside)
+  return {
+    ...state,
+    placeOf: (workspace) =>
+      beside !== undefined && beside.type !== 'empty' && workspace === ui.newChatWorkspace
+        ? words.beside.replace('{chat}', ui.names?.[beside.id] ?? beside.head.title)
+        : words.newTab,
+    onStart: starter.start,
+    onRetry: starter.retry,
+  }
 }

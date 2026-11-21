@@ -176,6 +176,17 @@ export function WorkbenchPanes({
         moveTarget={ui.moveTarget}
         onMoveTargetChange={(moveTarget) => onUiChange?.({ moveTarget })}
         onSelect={(action) => {
+          // D2b: a pane's menu holds the chat actions; a live chat's New chat starts beside it (W3). It needs no layout
+          // write, so it opens the form also while the workspace's layout read fails.
+          if (action === 'newChat' && data.newChat !== undefined)
+            onUiChange?.({
+              menuFor: null,
+              moveOpen: false,
+              newChatOpen: true,
+              newChatWorkspace: tabOf(data, pane.id)?.workspace ?? data.current,
+              newChatBeside: pane.id,
+              newChatStart: null,
+            })
           if (live !== undefined && (action === 'zoom' || action === 'unzoom')) {
             onUiChange?.({ menuFor: null, moveOpen: false })
             live.zoom(pane.id, action === 'zoom')

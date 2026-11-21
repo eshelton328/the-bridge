@@ -379,10 +379,10 @@ export const NewChatForm = z.object({
    */
   summary: z.string().optional(),
   /**
-   * A live form's words (W3): Start chat's label while the start runs, and the hint of the workspace field that says
-   * the chat starts in a new tab.
+   * A live form's words (W3): Start chat's label while the start runs, the hint of the workspace field for a new tab
+   * and for a pane beside a chat (`{chat}`).
    */
-  live: z.object({ starting: z.string(), newTab: z.string() }).optional(),
+  live: z.object({ starting: z.string(), newTab: z.string(), beside: z.string() }).optional(),
 })
 export type NewChatForm = z.infer<typeof NewChatForm>
 
@@ -1124,6 +1124,8 @@ export const WorkspacesUi = z.object({
   addedWorkspaces: z.array(z.object({ id: z.string(), label: z.string() })).optional(),
   /** The workspace New chat opens with, by id, in place of the form's own: the one New chat was picked for. */
   newChatWorkspace: z.string().nullable().optional(),
+  /** The chat New chat starts beside (W3), by pane id: the chat whose actions opened it; null for a new tab. */
+  newChatBeside: z.string().nullable().optional(),
   /**
    * The live start of New chat (W3): it runs (`busy`), the name field's error, or the miss's line, with Retry when the
    * same start may work again.

@@ -161,7 +161,7 @@ export function WorkspacesPhone({
   const actionsFor = data.workspaces.find((w) => w.id === ui.workspaceMenuFor)
   const pickWorkspaceAction = (workspace: string, label: string, action: string) => {
     if (action === 'newChat' && data.newChat !== undefined)
-      onUiChange({ newChatOpen: true, newChatWorkspace: workspace, newChatStart: null })
+      onUiChange({ newChatOpen: true, newChatWorkspace: workspace, newChatBeside: null, newChatStart: null })
     if (action === 'rename' && text.done !== undefined)
       onUiChange({ editing: true, renamingChats: {}, renamingWorkspaces: { [workspace]: label } })
     if (action === 'close' && text.closeWorkspace?.workspaces[workspace] !== undefined)
@@ -176,6 +176,7 @@ export function WorkspacesPhone({
           addMenuOpen: false,
           newChatOpen: true,
           newChatWorkspace: data.current,
+          newChatBeside: null,
           newChatStart: null,
         })
       return
@@ -222,7 +223,7 @@ export function WorkspacesPhone({
                 form={{ ...data.newChat, workspace: ui.newChatWorkspace ?? data.newChat.workspace }}
                 workspaces={data.workspaces}
                 onCancel={() => {
-                  onUiChange({ newChatOpen: false, keyboardOpen: false, newChatStart: null })
+                  onUiChange({ newChatOpen: false, keyboardOpen: false, newChatStart: null, newChatBeside: null })
                 }}
                 keyboardOpen={ui.keyboardOpen === true}
                 layers={data.layers?.newChatForm}
@@ -332,9 +333,16 @@ export function WorkspacesPhone({
     ui.refocusMessage === true ? { renaming: false, messageFocus: true, refocusMessage: false } : { renaming: false }
   // An action picked in the chat's actions, the phone's sheet (M4) or the tablet's menu (T2b).
   const pickChatAction = (action: string) => {
-    // T7: New chat opens in the current chat's workspace; a live chat starts in a new tab of it (W3).
+    // T7: New chat opens in the current chat's workspace; a live chat starts beside this one (W3).
     if (action === 'newChat' && data.newChat !== undefined)
-      onUiChange({ newChatOpen: true, newChatWorkspace: chatWorkspace, newChatStart: null })
+      onUiChange({
+        newChatOpen: true,
+        newChatWorkspace: chatWorkspace,
+        newChatBeside: layoutWrites === undefined ? null : ui.focusedPane,
+        newChatStart: null,
+        menuFor: null,
+        moveOpen: false,
+      })
     if (action === 'rename')
       onUiChange({ renaming: true, messageFocus: false, refocusMessage: ui.messageFocus === true })
     if (action === 'sideChat' && data.sideChat !== undefined) onUiChange({ sideChatOpen: true })
@@ -583,7 +591,7 @@ export function WorkspacesPhone({
             workspaces={data.workspaces}
             open={ui.newChatOpen === true}
             onOpenChange={(newChatOpen) => {
-              onUiChange(newChatOpen ? { newChatOpen } : { newChatOpen, newChatStart: null })
+              onUiChange(newChatOpen ? { newChatOpen } : { newChatOpen, newChatStart: null, newChatBeside: null })
             }}
             layers={data.layers?.newChatDialog}
             start={startOf(newChat, data, ui)}

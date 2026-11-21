@@ -115,7 +115,7 @@ export function NewChatFields({ form, workspaces, messageRef, nameRef, layers, l
           ))}
         </Stack>
       </FormField>
-      <FormField label={labels.workspace} hint={live?.start.place} figma={layers?.fields.workspace}>
+      <FormField label={labels.workspace} hint={live?.start.placeOf(workspace)} figma={layers?.fields.workspace}>
         <SelectField
           label={labels.workspace}
           options={workspaces.map((w) => ({ value: w.id, label: w.label }))}

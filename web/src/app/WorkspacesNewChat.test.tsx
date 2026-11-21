@@ -22,7 +22,7 @@ import { routeTree } from './routeTree.gen.ts'
 
 // W3: New chat starts a live Claude chat (backend #378 to #381). Each test
 // takes the owner's path: the app with no URL parameters, Workspaces, then
-// the phone's + or the desktop's tab +, with the contract-checked fakes
+// the phone's + or the desktop pane's menu, with the contract-checked fakes
 // as the server. The chat opens when the workspace list shows its pane, and
 // a first message goes to it once it is ready, with a send ID.
 document.documentElement.classList.add('dark')
@@ -51,8 +51,8 @@ const list = {
 
 type Fakes = { list: FakeWorkspacesServer; chats: FakeTranscriptServer }
 
-/** The fakes; with `hold`, each start's answer waits for it. */
-function withChats(hold?: Promise<void>): Fakes {
+/** The fakes; with `hold`, each start's answer waits for it, and with `noLayout` each layout read answers 502. */
+function withChats(hold?: Promise<void>, noLayout = false): Fakes {
   const chats = fakeTranscriptServer()
   for (const c of [plan, review]) chats.set(c, [])
   const workspaces = fakeWorkspacesServer(chats, list)
@@ -61,6 +61,7 @@ function withChats(hold?: Promise<void>): Fakes {
     vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
       const path = new URL(url, window.location.origin).pathname
+      if (noLayout && path.endsWith('/layout')) return Promise.resolve(new Response('Bad Gateway', { status: 502 }))
       if (hold !== undefined && path === '/api/chats')
         return hold.then(() => workspaces.handle(path, init) ?? Promise.reject(new TypeError('no start answer')))
       const answer = chats.handle(path, init) ?? workspaces.handle(path, init)
@@ -222,6 +223,44 @@ describe('New chat on the live page (W3)', () => {
     expect(typeof body === 'object' && body !== null && 'name' in body ? body.name : undefined).toMatch(
       /^chat-[0-9a-f]{6}$/,
     )
+  })
+
+  it('starts a chat beside a desktop pane from its menu, in its split', async () => {
+    const fakes = withChats()
+    await tapWorkspaces(desktop)
+    await userEvent.click(page.getByRole('button', { name: 'Hide the workspace sidebar' }))
+    await userEvent.click(page.getByRole('button', { name: 'plan the slice actions' }))
+    await userEvent.click(page.getByRole('menuitem', { name: 'New chat' }))
+    await expect.element(page.getByText('beside plan the slice')).toBeVisible()
+    await userEvent.click(page.getByRole('button', { name: 'MODEL: Default model' }))
+    await userEvent.click(page.getByRole('menuitemradio', { name: 'Sonnet' }))
+    await fill('look-here', 'look here')
+    await expect.element(page.getByRole('button', { name: 'Maximise look-here' })).toBeVisible()
+    expect(fakes.list.starts).toEqual([
+      {
+        kind: 'claude',
+        name: 'look-here',
+        model: 'sonnet',
+        place: { in: 'split', beside: plan, direction: 'row' },
+        createId: createIds(fakes)[0],
+      },
+    ])
+    expect(fakes.list.tabs(live).map((t) => t.chats)).toEqual([[plan, 'mac-mini/new1', review]])
+    await expect.poll(() => fakes.chats.prompts).toEqual([{ chat: 'mac-mini/new1', text: 'look here' }])
+    await expect.element(page.getByRole('dialog', { name: 'New chat' })).not.toBeInTheDocument()
+  })
+
+  it('starts a chat beside a desktop pane while the layout read fails', async () => {
+    const fakes = withChats(undefined, true)
+    await tapWorkspaces(desktop)
+    await userEvent.click(page.getByRole('button', { name: 'Hide the workspace sidebar' }))
+    await expect.element(page.getByText(/^Layout not live/)).toBeVisible()
+    await userEvent.click(page.getByRole('button', { name: 'plan the slice actions' }))
+    await userEvent.click(page.getByRole('menuitem', { name: 'New chat' }))
+    await expect.element(page.getByText('beside plan the slice')).toBeVisible()
+    await fill('no-layout', '')
+    await expect.poll(() => fakes.list.starts).toHaveLength(1)
+    expect(fakes.list.starts[0]).toMatchObject({ place: { in: 'split', beside: plan, direction: 'row' } })
   })
 
   it('opens a chat that needs the owner with its line, and keeps the first message in its box', async () => {

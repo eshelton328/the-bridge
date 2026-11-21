@@ -110,6 +110,7 @@ export function useNewChat(enabled: boolean, deps: NewChatDeps): NewChatStarter 
       phoneView: 'chat',
       newChatOpen: false,
       newChatStart: null,
+      newChatBeside: null,
       keyboardOpen: false,
     }
     // A chat in herdr's active tab shows that tab; one in another tab shows it in its place, as a moved chat does.
@@ -217,11 +218,18 @@ export function useNewChat(enabled: boolean, deps: NewChatDeps): NewChatStarter 
       // A blank name gets a random one here, so the page knows the chat by its name when the server's answer is lost
       // (duplicateCreate): another chat that starts in the workspace meanwhile has another name.
       const name = typed === '' ? `chat-${newSendId().slice(0, 6)}` : typed
+      const beside =
+        now.newChatBeside !== null && now.newChatBeside !== undefined && values.workspace === now.newChatWorkspace
+          ? now.newChatBeside
+          : undefined
       const request = StartChatRequest.safeParse({
         kind: 'claude',
         name,
         ...(values.model === 'default' ? {} : { model: values.model }),
-        place: { in: 'tab', workspace: `${machine}/${values.workspace}` },
+        place:
+          beside === undefined
+            ? { in: 'tab', workspace: `${machine}/${values.workspace}` }
+            : { in: 'split', beside: `${machine}/${beside}`, direction: 'row' },
         // A new create ID for each Start chat; Retry keeps it.
         createId: newSendId(),
       })

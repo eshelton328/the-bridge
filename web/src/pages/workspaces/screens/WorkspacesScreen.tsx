@@ -290,7 +290,7 @@ function DesktopNewChat({ data, ui, change, newChat }: DesktopNewChatProps) {
       workspaces={data.workspaces}
       open={ui.newChatOpen === true}
       onOpenChange={(open) => {
-        change(open ? { newChatOpen: true } : { newChatOpen: false, newChatStart: null })
+        change(open ? { newChatOpen: true } : { newChatOpen: false, newChatStart: null, newChatBeside: null })
       }}
       start={startOf(newChat, data, ui)}
     />
@@ -414,6 +414,16 @@ function WorkspacesLayout({
             change({ menuHighlight })
           }}
           onSelect={(action) => {
+            // D2b: New chat opens D3 in the chat's workspace; a live chat starts beside this one (W3).
+            if (action === 'newChat' && data.newChat !== undefined)
+              change({
+                menuFor: null,
+                moveOpen: false,
+                newChatOpen: true,
+                newChatWorkspace: shown.current,
+                newChatBeside: chat.id,
+                newChatStart: null,
+              })
             if (action === 'rename') change({ menuFor: null, moveOpen: false, renaming: true })
             if (isChatCommand(action))
               change({ menuFor: null, moveOpen: false, chatDialog: action, commandFor: chat.id })

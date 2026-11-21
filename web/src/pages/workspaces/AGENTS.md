@@ -306,10 +306,12 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
 - New chat (W3, backend #378 to #381, `useNewChat.ts`, `liveNewChat.ts`,
   `liveNewChatForm.ts`, `blocks/newChatStart.ts`): the live page's New
   chat is Figma's form (D3, T7, M7) with what the server can start
-  (references D03 and M07 `deviations.md`). The phone's + (M15), a
-  workspace's ⋯ (M14), the desktop's tab + (D1) and a chat's actions
-  (T2b) open it for a new tab of the workspace it shows, which the
-  WORKSPACE hint says. Start chat posts `POST /api/chats` with the contract's
+  (references D03 and M07 `deviations.md`). The phone's + (M15) and a
+  workspace's ⋯ (M14) and the desktop's tab + (D1) open it for a new tab
+  of that workspace; a chat's actions and a desktop pane's menu (D2b)
+  open it for a pane beside that chat (`ui.newChatBeside`, Split right's
+  `row`), while its workspace stays picked; the WORKSPACE hint says
+  which. Start chat posts `POST /api/chats` with the contract's
   `StartChatRequest` and a new create ID (`newSendId`); Retry sends the
   same start again. Start chat says "Starting…" and is off until the
   chat opens: the page opens it as a tap on its row does (the desktop
