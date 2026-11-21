@@ -11,7 +11,7 @@
 // its bytes only to join the chunks. A fault gives only its errno code,
 // as its message can hold a path with the file name.
 import { randomBytes } from 'node:crypto'
-import { chmod, type FileHandle, mkdir, open, readdir, readFile, rename, rm, writeFile } from 'node:fs/promises'
+import { chmod, type FileHandle, mkdir, open, readdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { ChatId, type UploadId, UploadId as UploadIdSchema } from '@bridge/contract'
 import { err, ok, type Result } from '@bridge/shared'
@@ -40,6 +40,15 @@ const State = z.object({
   file: z.string().nullable(),
 })
 type State = z.infer<typeof State>
+
+/** The state that the store wrote before it kept times (#303): `complete`, and no start or complete time. */
+const LegacyState = z.object({
+  chat: ChatId,
+  name: z.string(),
+  size: z.number().int().min(1),
+  received: z.array(z.number().int()),
+  complete: z.boolean(),
+})
 
 export type DiskUploadsOptions = {
   /** The folder of all uploads, such as ~/.local/share/the-bridge/uploads; made 0700 when missing. */
@@ -111,8 +120,15 @@ export function createDiskUploads({
       throw error
     })
     if (text === null) return null
-    const state = State.safeParse(JSON.parse(text))
-    return state.success ? state.data : null
+    const json: unknown = JSON.parse(text)
+    const state = State.safeParse(json)
+    if (state.success) return state.data
+    // An upload of the earlier store: its state file's time stands for its start and its complete.
+    const legacy = LegacyState.safeParse(json)
+    if (!legacy.success) return null
+    const { complete, ...rest } = legacy.data
+    const { mtimeMs } = await stat(statePath(upload))
+    return { ...rest, startedAt: mtimeMs, completedAt: complete ? mtimeMs : null, file: complete ? rest.name : null }
   }
   /** Replaces the state file in one rename, so a read sees the old state or the new one, never part of one. */
   const writeState = async (upload: UploadId, state: State) => {
@@ -127,8 +143,13 @@ export function createDiskUploads({
       const id = UploadIdSchema.safeParse(entry.name)
       if (!entry.isDirectory() || !id.success) continue
       const state = await readState(id.data).catch(() => null)
-      if (state !== null && expired(state.startedAt, state.completedAt, now()))
-        await inTurn(id.data, () => rm(folder(id.data), { recursive: true, force: true }))
+      if (state === null || !expired(state.startedAt, state.completedAt, now())) continue
+      // Read again in the upload's turn: a complete just before it may have made the upload new again.
+      await inTurn(id.data, async () => {
+        const current = await readState(id.data).catch(() => null)
+        if (current !== null && expired(current.startedAt, current.completedAt, now()))
+          await rm(folder(id.data), { recursive: true, force: true })
+      })
     }
   }
   /** Writes chunk `n` to a temporary file: its path, or null when its length is not `length` (the file is gone then). */

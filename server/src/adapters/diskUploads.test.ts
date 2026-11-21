@@ -1,5 +1,5 @@
 import { mkdirSync, mkdtempSync, readdirSync, statSync } from 'node:fs'
-import { copyFile, readFile, writeFile } from 'node:fs/promises'
+import { copyFile, readFile, utimes, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { basename, join } from 'node:path'
 import { ChatId } from '@bridge/contract'
@@ -129,6 +129,37 @@ describe('the disk upload store', () => {
     const working = createDiskUploads({ root, chunkSize: 4, convert: copying(true) })
     expect(await working.complete(upload.value)).toEqual({ ok: true, value: 'complete' })
     expect(readdirSync(join(root, upload.value, 'file')).sort()).toEqual(['a.heic', 'a.jpg'])
+  })
+})
+
+describe('the disk upload store with an upload of the earlier store', () => {
+  /** A complete upload whose state file has the earlier form: `complete` and no times. */
+  const legacyUpload = async (root: string) => {
+    const store = createDiskUploads({ root, chunkSize: 4, convert: copying(true) })
+    const upload = await store.start(chat, 'a.txt', 2)
+    if (!upload.ok) throw new Error(`the store failed: ${upload.error.reason}`)
+    await store.writeChunk(upload.value, 0, oneChunk('ab'))
+    await store.complete(upload.value)
+    const state = { chat, name: 'a.txt', size: 2, received: [0], complete: true }
+    await writeFile(join(root, upload.value, 'state.json'), JSON.stringify(state))
+    return { store, upload: upload.value }
+  }
+
+  it("gives the path of an earlier complete upload to its chat, with its state file's time", async () => {
+    const root = newRoot()
+    const { store, upload } = await legacyUpload(root)
+    const path = await store.attachment(upload, chat)
+    expect(path).toEqual({ ok: true, value: join(root, upload, 'file', 'a.txt') })
+    expect(await store.complete(upload)).toEqual({ ok: true, value: 'complete' })
+  })
+
+  it('removes an earlier complete upload whose state file is over 7 days old at the next start', async () => {
+    const root = newRoot()
+    const { store, upload } = await legacyUpload(root)
+    const old = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000)
+    await utimes(join(root, upload, 'state.json'), old, old)
+    await store.start(chat, 'b.txt', 1)
+    expect(readdirSync(root)).not.toContain(upload)
   })
 })
 
