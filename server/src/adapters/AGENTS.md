@@ -40,7 +40,10 @@ client of a socket or a file sits beside them.
   watch that fails ends the stream as `unreachable`.
 - A Claude chat's `contextUsed` is its last request's input and cache
   tokens over the model's context window; a model that `sessionFile.ts`
-  has no window for gets `null` (`sessionFile.test.ts`). Its `effort`
+  has no window for gets `null` (`sessionFile.test.ts`). The read starts
+  with the last 64 KB of the session file and reads four times as far
+  back each time it finds no reply, up to 16 MB, as Claude Code can
+  write lines of 80 KB and more after a reply. Its `effort`
   is the newest `perTurnEffort` (else `effort`) that a session line
   names, and its `modelId` the family of its model ID ("opus"); a Codex
   chat and a shell get `null` for both.

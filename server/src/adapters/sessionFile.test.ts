@@ -25,14 +25,15 @@ describe('session file', () => {
     expect((await readClaudeSession(path)).model).toBe('claude-opus-5-5')
   })
 
-  it('reads only the end of a long file', async () => {
-    const old = JSON.stringify({ type: 'assistant', message: { model: 'claude-haiku-5-5' } })
-    const filler = JSON.stringify({ type: 'user', message: { content: 'x'.repeat(70 * 1024) } })
-    expect(await readClaudeSession(file('b.jsonl', `${old}\n${filler}\n`))).toEqual({
-      model: null,
-      contextUsed: null,
-      effort: null,
-    })
+  it('reads further back past long lines after the reply, up to its limit', async () => {
+    const reply = JSON.stringify({ type: 'assistant', message: { model: 'claude-haiku-5-5' } })
+    const prompt = JSON.stringify({ type: 'user', perTurnEffort: 'low', message: { content: 'go' } })
+    // Claude Code writes lines of 80 KB and more (a prompt snapshot) after a reply.
+    const filler = JSON.stringify({ type: 'prompt_snapshot', text: 'x'.repeat(80 * 1024) })
+    const path = file('b.jsonl', [prompt, reply, filler, filler, filler].join('\n') + '\n')
+    expect(await readClaudeSession(path)).toEqual({ model: 'claude-haiku-5-5', contextUsed: null, effort: 'low' })
+    // A reply further back than the limit is not read.
+    expect(await readClaudeSession(path, 128 * 1024)).toEqual({ model: null, contextUsed: null, effort: null })
   })
 
   it('gives null for a file that is missing or has no assistant entry', async () => {

@@ -6,7 +6,13 @@ import { open } from 'node:fs/promises'
 import { ChatEffort, type ModelAlias } from '@bridge/contract'
 import { z } from 'zod'
 
+/** The first read from the end of a session file; each later read takes four times as much. */
 const tailBytes = 64 * 1024
+/**
+ * The most a read takes from the end of a session file. Claude Code can write lines of 80 KB and more (a prompt
+ * snapshot) after a reply, so a reply can be far from the end; a chat whose last reply is further back shows none.
+ */
+const maxSessionBytes = 16 * 1024 * 1024
 
 const Usage = z.object({
   input_tokens: z.number().nonnegative().optional(),
@@ -74,29 +80,15 @@ function effortOf(value: unknown): ChatEffort | null {
   return null
 }
 
-/** The model, context share and effort of the session file at `path`; each null when it cannot be read. */
-export async function readClaudeSession(path: string): Promise<ClaudeSession> {
-  let text: string
-  try {
-    const handle = await open(path, 'r')
-    try {
-      const { size } = await handle.stat()
-      const start = Math.max(0, size - tailBytes)
-      const buffer = Buffer.alloc(size - start)
-      await handle.read(buffer, 0, buffer.length, start)
-      text = buffer.toString('utf8')
-    } finally {
-      await handle.close()
-    }
-  } catch {
-    return unknownSession
-  }
+/** The model, context share and effort found in the lines of `text`, newest first; `found` is unset with no reply. */
+function scanSession(text: string): {
+  found?: { model: string; contextUsed: number | null }
+  effort: ChatEffort | null
+} {
   let effort: ChatEffort | null = null
-  let found: { model: string; contextUsed: number | null } | undefined
   // From the newest line back: the model and context of the newest model entry, and the newest effort, which can be
   // on an older line than that entry (a prompt names its turn's effort before the reply does).
   for (const line of text.split('\n').reverse()) {
-    if (found !== undefined && effort !== null) break
     let value: unknown
     try {
       value = JSON.parse(line)
@@ -104,7 +96,6 @@ export async function readClaudeSession(path: string): Promise<ClaudeSession> {
       continue
     }
     effort ??= effortOf(value)
-    if (found !== undefined) continue
     const entry = AssistantLine.safeParse(value)
     // Claude Code writes "<synthetic>" for an entry no model made, such as an interrupted turn; a side chain is a
     // subagent's own context.
@@ -116,9 +107,44 @@ export async function readClaudeSession(path: string): Promise<ClaudeSession> {
       ? (usage.input_tokens ?? 0) + (usage.cache_read_input_tokens ?? 0) + (usage.cache_creation_input_tokens ?? 0)
       : undefined
     const contextUsed = window === undefined || used === undefined ? null : Math.min(1, used / window)
-    found = { model, contextUsed }
+    // The effort of the reply's turn can be on an older line, so read on for it only within this text.
+    for (const older of text.slice(0, text.lastIndexOf(line)).split('\n').reverse()) {
+      if (effort !== null) break
+      try {
+        effort = effortOf(JSON.parse(older))
+      } catch {
+        continue
+      }
+    }
+    return { found: { model, contextUsed }, effort }
   }
-  return found === undefined ? { ...unknownSession, effort } : { ...found, effort }
+  return { effort }
+}
+
+/**
+ * The model, context share and effort of the session file at `path`; each null when it cannot be read. It reads from
+ * the end, and reads further back (at most `limit` bytes) while it finds no reply.
+ */
+export async function readClaudeSession(path: string, limit = maxSessionBytes): Promise<ClaudeSession> {
+  try {
+    const handle = await open(path, 'r')
+    try {
+      const { size } = await handle.stat()
+      for (let want = Math.min(tailBytes, limit); ; want = Math.min(want * 4, limit)) {
+        const start = Math.max(0, size - want)
+        const buffer = Buffer.alloc(size - start)
+        await handle.read(buffer, 0, buffer.length, start)
+        // A read that starts inside a line drops that part line, which is not JSON.
+        const { found, effort } = scanSession(buffer.toString('utf8'))
+        if (found !== undefined) return { ...found, effort }
+        if (start === 0 || want >= limit) return { ...unknownSession, effort }
+      }
+    } finally {
+      await handle.close()
+    }
+  } catch {
+    return unknownSession
+  }
 }
 
 /** Claude Code's folder name for a working directory: each character that is not a letter or digit becomes "-". */
