@@ -62,7 +62,7 @@ import { SideChatPanel } from '../blocks/SideChatPanel.tsx'
 import { WorkspaceSidebar } from '../blocks/WorkspaceSidebar.tsx'
 import { WorkspaceTabs } from '../blocks/WorkspaceTabs.tsx'
 import type { CopyReply } from '../blocks/ChatEntryView.tsx'
-import type { ChatFiles, TranscriptWatch } from '../blocks/ChatPane.tsx'
+import type { ChatFiles, ChatPending, TranscriptWatch } from '../blocks/ChatPane.tsx'
 import { createDraftBook, type DraftBook } from '../blocks/draftBook.ts'
 import { openableChats, openChat, shownView } from '../blocks/workspaceLayout.ts'
 import type { WorkspacesData, WorkspacesUi } from '../types.ts'
@@ -84,6 +84,8 @@ export type WorkspacesScreenProps = {
   onStop?: ((chat: string) => Promise<ComposerAnswer>) | undefined
   /** A live Claude chat's files (W1b), by chat id; none for a sample chat, a Codex chat or a shell (ChatPane `files`). */
   filesOf?: ((chat: string) => ChatFiles | undefined) | undefined
+  /** A live Claude chat's pending send, by chat id; none for a sample chat, a Codex chat or a shell (ChatPane `pending`). */
+  pendingOf?: ((chat: string) => ChatPending | undefined) | undefined
   /** Sends a live Claude chat's /compact or /clear from its dialog (W5); answers as `onSend` does. */
   onCommand?: ((chat: string, request: ChatCommandRequest) => Promise<ComposerAnswer>) | undefined
   /** Reads the live source again: the live-unavailable notice's Retry. */
@@ -110,6 +112,7 @@ export function WorkspacesScreen({
   onSend,
   onStop,
   filesOf,
+  pendingOf,
   onCommand,
   onRetry,
   transcripts,
@@ -193,6 +196,7 @@ export function WorkspacesScreen({
             onSend={onSend}
             onStop={onStop}
             filesOf={filesOf}
+            pendingOf={pendingOf}
             transcripts={transcripts}
             onCopy={onCopy}
             change={change}
@@ -226,6 +230,7 @@ function WorkspacesLayout({
   onSend,
   onStop,
   filesOf,
+  pendingOf,
   transcripts,
   onCopy,
   change,
@@ -271,6 +276,7 @@ function WorkspacesLayout({
         onSend={onSend}
         onStop={onStop}
         filesOf={filesOf}
+        pendingOf={pendingOf}
         transcripts={transcripts}
         onCopy={onCopy}
         notice={notice}
@@ -447,6 +453,7 @@ function WorkspacesLayout({
                   onSend={onSend}
                   onStop={onStop}
                   filesOf={filesOf}
+                  pendingOf={pendingOf}
                   transcripts={transcripts}
                   onCopy={onCopy}
                   layout={layoutWrites}
@@ -495,6 +502,7 @@ function WorkspacesLayout({
                   }
                   onStop={onStop && (() => onStop(chat.id))}
                   files={filesOf?.(chat.id)}
+                  pending={pendingOf?.(chat.id)}
                   transcripts={transcripts}
                   onCopy={onCopy}
                   onHeaderTap={
@@ -564,6 +572,7 @@ function WorkspacesLayout({
               onSend={onSend}
               onStop={onStop}
               filesOf={filesOf}
+              pendingOf={pendingOf}
               transcripts={transcripts}
               onCopy={onCopy}
               notice={notice}

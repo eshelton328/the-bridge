@@ -18,7 +18,7 @@
 // With `header` the ScrollFrame is the root, so the phone's chat puts it
 // straight in the AppShell detail, which docks the composer on the keyboard
 // (library beta.61, screen review R20). Send goes through `onSend` (library
-// beta.90): the box keeps the draft until the send succeeds. The entries are
+// beta.90). The entries are
 // memoised (TranscriptEntries, review R28), so a keystroke renders the composer
 // and not the transcript. Send and Stop
 // (W1, `useComposerActions`): one send and one stop in flight, and a miss
@@ -35,7 +35,10 @@
 // drop on the composer or a paste of files adds them too; Send is off while
 // a file uploads or failed, and with every file ready the composer sends
 // with no text (library beta.95). A
-// live Codex chat's composer has no paperclip. Props only.
+// live Codex chat's composer has no paperclip. The box empties as a send
+// starts, and a miss puts the text back; meanwhile a live Claude chat draws
+// its pending send after the entries (`pending`, `PendingEntry`), until the
+// entry the stream brings takes its place. Props only.
 import {
   Composer,
   type ComposerAttachment,
@@ -60,8 +63,9 @@ import { pickSkill, skillQuery } from '../../../lib/skillQuery.ts'
 import type { ChatEntry, ComposerState, Skill } from '../types.ts'
 import type { CopyReply } from './ChatEntryView.tsx'
 import { ComposerLine } from './ComposerLine.tsx'
-import { type DraftBook, useDraft } from './draftBook.ts'
+import { type DraftBook, restoredDraft, useDraft } from './draftBook.ts'
 import { NotLive } from './NotLive.tsx'
+import { PendingEntry } from './PendingEntry.tsx'
 import { frameRegion } from './frameRegion.ts'
 import { SkillPicker } from './SkillPicker.tsx'
 import { TranscriptEntries } from './TranscriptEntries.tsx'
@@ -96,8 +100,31 @@ export type ChatFiles = {
   readonly retry: (id: string) => void
 }
 
+/** What a pane draws of its chat's pending send: the text, the file names and whether "Sending…" shows. */
+export type PendingSendView = {
+  readonly text: string
+  readonly files: readonly string[]
+  readonly sending: boolean
+}
+
+/**
+ * A live chat's pending send (the page's livePending.ts): the pane reads it itself, so the bubble renders only this
+ * pane, never the page or another transcript entry.
+ */
+export type ChatPending = {
+  /** Calls `listener` after each change of the pending send or of the chat's transcript; the result stops it. */
+  readonly subscribe: (listener: () => void) => () => void
+  /** The pending send to draw now; none when there is none or the transcript shows its entry. */
+  readonly view: () => PendingSendView | undefined
+}
+
 const noSubscribe = () => () => undefined
 const noView = () => undefined
+
+/** `pending`'s view now, or none. */
+function usePendingView(pending: ChatPending | undefined): PendingSendView | undefined {
+  return useSyncExternalStore(pending?.subscribe ?? noSubscribe, pending?.view ?? noView)
+}
 
 /** `files`' view now, or none; the caller renders again only when this chat's files change. */
 function useFilesView(files: ChatFiles | undefined): ChatFilesView | undefined {
@@ -220,6 +247,8 @@ type ChatPaneBase = {
   folders?: ReactNode
   /** A live Claude chat's files (W1b); a sample chat shows the composer's own chips and a paperclip that does nothing. */
   files?: ChatFiles | undefined
+  /** A live Claude chat's pending send, drawn after the entries; a sample chat has none. */
+  pending?: ChatPending | undefined
   /** The size of Send's arrow: `12` in the side chat in a pane (D5 158:549); the library's 16 when not set. */
   sendIconSize?: '12' | '16' | undefined
   /** The composer's layout: `inline` is one row, as the side chat in a pane draws it (D5 158:545); `stacked` when not set. */
@@ -240,8 +269,8 @@ type ChatPaneBase = {
   drafts?: DraftBook | undefined
   /**
    * Sends the message: resolves `true` once it is sent, `false` when the send failed and the caller reported it, or
-   * the line to show under the composer (`ComposerAnswer`). The box empties only on `true`, and only when the owner has
-   * not typed on meanwhile, so a failed send keeps the draft. Not set, as in a side chat, the message counts as sent at
+   * the line to show under the composer (`ComposerAnswer`). The box empties as the send starts, and any answer but
+   * `true` puts the text back, before what the owner typed meanwhile, so a failed send keeps the draft. Not set, as in a side chat, the message counts as sent at
    * once.
    */
   onSend?: ((text: string) => Promise<ComposerAnswer>) | undefined
@@ -289,6 +318,7 @@ export function ChatPane(props: ChatPaneProps) {
     size = 'pane',
     folders,
     files,
+    pending,
     sendIconSize,
     layout,
     lead,
@@ -410,6 +440,7 @@ export function ChatPane(props: ChatPaneProps) {
   // The paperclip's first tap with the phone's keyboard up only closes it, so iOS anchors its file menu at the
   // paperclip's closed-keyboard place on the next tap (R29, useKeyboardFirst.ts).
   const keyboardFirst = useKeyboardFirst(attachLabel)
+  const pendingView = usePendingView(pending)
   // The box is controlled, so the composer never empties it: a sent message empties it here.
   const actions = useComposerActions({
     text,
@@ -421,6 +452,10 @@ export function ChatPane(props: ChatPaneProps) {
       // The page keeps the draft by chat: it empties it only if it still holds what was sent, and the box follows.
       if (drafts !== undefined) drafts.clear(chatId, submitted)
       else if (latestRef.current === submitted) onValueChange('')
+    },
+    restore: (submitted) => {
+      if (drafts !== undefined) drafts.restore(chatId, submitted)
+      else onValueChange(restoredDraft(latestRef.current, submitted))
     },
     withFiles: filesView !== undefined && filesView.ready > 0,
     filesHeld: filesView?.blocked === true,
@@ -563,8 +598,11 @@ export function ChatPane(props: ChatPaneProps) {
     notLive === undefined ? (
       <>
         {earlier === undefined ? null : <span className={earlierLine}>{earlier}</span>}
-        {empty === undefined ? null : <span className={earlierLine}>{empty}</span>}
+        {empty === undefined || pendingView !== undefined ? null : <span className={earlierLine}>{empty}</span>}
         <TranscriptEntries chatId={chatId} entries={entries} figma={figma.entries} onCopy={onCopy} />
+        {pendingView === undefined ? null : (
+          <PendingEntry text={pendingView.text} files={pendingView.files} sending={pendingView.sending} />
+        )}
         {problem === undefined ? null : (
           <TranscriptProblem
             text={problem}

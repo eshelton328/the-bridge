@@ -55,11 +55,25 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   entry labelled "Error" with its text.
 - A live Claude chat sends and stops (W1): `liveSend.ts` posts
   `POST /api/chats/:chat/prompt` with `{ text }` and `.../stop` with `{}`
-  to the chat whose composer sent it, read at send time, and a 204 empties
-  the box; the prompt shows when the transcript stream brings it, and the
-  status when the workspace events do. The composer shows Stop only while
+  to the chat whose composer sent it, read at send time. The box empties
+  as the send starts, and the text shows at once after the entries as a
+  pending bubble with its file chips and "Sending…" (`livePending.ts`,
+  `useLivePending.ts`, `blocks/PendingEntry.tsx`; the composer's chips of
+  the send move into it). The bubble is not a transcript entry: the
+  pane reads it itself (`ChatPending`), so it renders no other entry, and
+  it goes in the render that draws the stream's new `user` entry with the
+  same text (trimmed) and file names (`sentFileName`), so the text never
+  shows twice. A 204 drops "Sending…", and the bubble stays until the
+  entry comes, wherever it lands (a prompt queued while the chat works
+  comes after the replies meanwhile, backend #343), or until a transcript
+  read from 10 s after the 204.
+  A miss removes it and puts the text back in the box, before any text
+  typed meanwhile (`DraftBook.restore`); a pane that stops showing the
+  chat (a chat switch, a /clear) drops it. Neither the text nor a file
+  name goes to report() or a log (`app/WorkspacesPendingSend.test.tsx`).
+  The status shows when the workspace events bring it. The composer shows Stop only while
   the chat works. One send and one stop are in flight at a time, a text
-  over `maxPromptChars` is not sent, and a miss keeps the text and shows
+  over `maxPromptChars` is not sent, and a miss puts the text back and shows
   one quiet line under the composer by kind ("Not sent — herdr-unavailable",
   with Retry for a 5xx, no answer or a 429); a Stop that finds the chat not
   working is quiet (`blocks/useComposerActions.ts`). A send to a chat whose
@@ -245,9 +259,10 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   `touchstart`, and clicks Send on a touch that ends on it. Never disable
   the box while a send is pending; a disabled field closes the iOS
   keyboard (`app/WorkspacesSendKeepsFocus.test.tsx`).
-- A send that ends after the owner opened another chat changes only the
-  sent chat's draft, and only while it still holds the text sent
-  (`DraftBook.clear`). `WorkspacesPage` merges each ui change into the ui
+- A send empties only the sent chat's draft, and only while it still holds
+  the text sent (`DraftBook.clear`); a send that misses after the owner
+  opened another chat puts the text back in the sent chat's draft only
+  (`DraftBook.restore`). `WorkspacesPage` merges each ui change into the ui
   shown now, not the one of the render that sent it.
 - Every reply's Copy, sample or live, goes through the screen's `onCopy`
   to `WorkspacesPage`, which copies with `copyText`; the button

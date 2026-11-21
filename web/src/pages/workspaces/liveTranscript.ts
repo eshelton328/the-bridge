@@ -134,6 +134,12 @@ export function subscribeTranscripts(listener: () => void): () => void {
   }
 }
 
+/** How many reads of each chat's transcript have answered: a pending send that no entry matched goes on the next. */
+const readCounts = new Map<string, number>()
+
+/** How many reads of `chat`'s transcript have answered since the page loaded. */
+export const transcriptReads = (chat: string): number => readCounts.get(chat) ?? 0
+
 function setView(chat: string, view: TranscriptView | undefined): void {
   const next = new Map(views)
   if (view === undefined) next.delete(chat)
@@ -252,6 +258,7 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
       return false
     }
     const { entries, earlier } = answer.value
+    readCounts.set(chat, transcriptReads(chat) + 1)
     update(() => ({ loaded: true, entries, earlier, problem: undefined }))
     outages.delete(chat)
     return true

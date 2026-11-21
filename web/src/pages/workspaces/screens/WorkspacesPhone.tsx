@@ -73,7 +73,7 @@ import { PhoneWorkspaceList, RowMenuButton } from '../blocks/PhoneWorkspaceList.
 import { LiftedChatRow } from '../blocks/SidebarChatRow.tsx'
 import { SubtaskDialog } from '../blocks/SubtaskDialog.tsx'
 import type { CopyReply } from '../blocks/ChatEntryView.tsx'
-import type { ChatFiles, TranscriptWatch } from '../blocks/ChatPane.tsx'
+import type { ChatFiles, ChatPending, TranscriptWatch } from '../blocks/ChatPane.tsx'
 import type { DraftBook } from '../blocks/draftBook.ts'
 import { isChatCommand, withCommands } from '../blocks/chatCommands.ts'
 import { type LayoutWrites, tabOf, withLayoutActions } from '../blocks/layoutActions.ts'
@@ -99,6 +99,8 @@ export type WorkspacesPhoneProps = {
   onStop?: ((chat: string) => Promise<ComposerAnswer>) | undefined
   /** A live Claude chat's files (W1b), by chat id; none for a sample chat, a Codex chat or a shell (ChatPane `files`). */
   filesOf?: ((chat: string) => ChatFiles | undefined) | undefined
+  /** A live Claude chat's pending send, by chat id; none for a sample chat, a Codex chat or a shell (ChatPane `pending`). */
+  pendingOf?: ((chat: string) => ChatPending | undefined) | undefined
   /** Reads each live chat's transcript while its pane shows (ChatPane); fixtures have none. */
   transcripts?: TranscriptWatch | undefined
   /** A reply's Copy, sample or live: the page writes the clipboard, and the button shows the result (audit P-4). */
@@ -120,6 +122,7 @@ export function WorkspacesPhone({
   onSend,
   onStop,
   filesOf,
+  pendingOf,
   transcripts,
   onCopy,
   notice,
@@ -375,6 +378,7 @@ export function WorkspacesPhone({
                 onSend={onSend && ((message) => onSend(chat.id, message))}
                 onStop={onStop && (() => onStop(chat.id))}
                 files={filesOf?.(chat.id)}
+                pending={pendingOf?.(chat.id)}
                 transcripts={transcripts}
                 onCopy={onCopy}
                 rename={

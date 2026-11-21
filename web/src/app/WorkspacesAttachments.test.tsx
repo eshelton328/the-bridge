@@ -557,15 +557,15 @@ describe("a live Claude chat's files (W1b)", () => {
   })
 
   const pendingSends = [
-    { name: 'goes through', end: () => new Response(null, { status: 204 }), deletes: 0 },
+    { name: 'goes through', end: () => new Response(null, { status: 204 }), back: false },
     {
       name: 'misses',
       end: () => errorAnswer({ kind: 'herdr-unavailable', message: 'down', requestId: 'r-1' }, 503),
-      deletes: 1,
+      back: true,
     },
   ]
   for (const send of pendingSends)
-    it(`removes a chip while its send is pending, and the send ${send.name}: ${send.deletes === 0 ? 'keeps' : 'deletes'} the file, on the phone`, async () => {
+    it(`moves the chips into the pending bubble while the send is pending, and the send ${send.name}: ${send.back ? 'the chip comes back' : 'the chip is gone'} and the file stays, on the phone`, async () => {
       const fake = withChats()
       await openChat(phone, 'plan the slice')
       await pick('plan the slice', [file()])
@@ -575,15 +575,19 @@ describe("a live Claude chat's files (W1b)", () => {
       fake.answerPrompts(answer.answer)
       await userEvent.click(sendButton('plan the slice'))
       await expect.poll(() => fake.posts.length).toBe(1)
-      // The prompt names the file: the server may have given Claude its path already.
-      await userEvent.click(chatOf('plan the slice').getByRole('button', { name: `Remove ${fileName}` }))
+      // The prompt names the file: its chip shows in the pending bubble, and the composer has none to remove.
+      const remove = chatOf('plan the slice').getByRole('button', { name: `Remove ${fileName}` })
+      await expect.element(remove).not.toBeInTheDocument()
+      await expect
+        .element(chatOf('plan the slice').getByRole('group', { name: 'Files sent' }))
+        .toHaveTextContent(fileName)
       const deletes = () => fake.uploads.calls.filter((c) => c.method === 'DELETE').length
-      await new Promise((resolve) => setTimeout(resolve, 200))
-      expect(deletes()).toBe(0)
       answer.end(send.end())
-      await expect.poll(deletes).toBe(send.deletes)
+      if (send.back) await expect.element(remove).toBeVisible()
+      else await expect.element(box('plan the slice')).toHaveValue('')
       await new Promise((resolve) => setTimeout(resolve, 200))
-      expect(deletes()).toBe(send.deletes)
+      if (!send.back) await expect.element(remove).not.toBeInTheDocument()
+      expect(deletes()).toBe(0)
     })
 
   it('keeps the files through a clear of the terminal input, and the send after the clear names them, on the phone', async () => {

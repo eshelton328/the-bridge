@@ -12,6 +12,8 @@
 // page store's `send`, and a failed send is reported. A failed send keeps the composer's draft. A live Claude chat's
 // files upload as the owner adds them (useLiveUploads.ts, W1b), and its send names the ones ready, in the chips'
 // order: a send that goes through takes them out of the composer, and a 409 upload-conflict fails them.
+// A live Claude chat's send shows at once as a pending bubble with its file chips, until the transcript stream brings
+// its entry; a miss removes it, and the composer puts the text back (useLivePending.ts, livePending.ts).
 // The composer drafts are saved in sessionStorage as they change and read
 // back on load, so Reload app keeps them; a sent chat's draft leaves it
 // (draftStorage.ts). They live in a draft book (blocks/draftBook.ts), so a keystroke never renders this page (R28).
@@ -37,6 +39,7 @@ import { WorkspacesScreen } from './screens/WorkspacesScreen.tsx'
 import type { ComposerAnswer } from './blocks/useComposerActions.ts'
 import { useLiveTranscripts } from './useLiveTranscripts.ts'
 import { useLayoutWrites } from './useLayoutWrites.ts'
+import { useLivePending } from './useLivePending.ts'
 import { useLiveUploads } from './useLiveUploads.ts'
 import {
   useSeenPanes,
@@ -119,9 +122,11 @@ export function WorkspacesPage() {
   })
   const { data, transcripts } = useLiveTranscripts(import.meta.env.DEV && live, state.data)
   const files = useLiveUploads(import.meta.env.DEV && live)
+  const pendings = useLivePending(import.meta.env.DEV && live)
   const layoutWrites = useLayoutWrites(import.meta.env.DEV && live, data)
   // The file chips of a chat that left for a new ID on its pane go, as its draft stays behind: the server holds each
   // upload for the chat that started it, so the new chat's send could not name them.
+  // Its pending send goes as its pane stops reading its transcript (livePending.ts).
   useEffect(() => {
     for (const old of moves.keys()) files.drop(old)
   }, [moves, files])
@@ -172,8 +177,15 @@ export function WorkspacesPage() {
               const liveChat = liveChatOf(chat)
               if (liveChat !== undefined) {
                 const attached = files.readyOf(chat)
-                files.sending(attached)
+                const bubble = pendings.start(liveChat, text, files.sending(attached))
                 const posted = viaLive((m) => m.sendPrompt(liveChat, text, attached))
+                void posted.then(
+                  (answer) => {
+                    if (answer === true) bubble?.sent()
+                    else bubble?.missed()
+                  },
+                  () => bubble?.missed(),
+                )
                 // A file removed while the send is pending is deleted only when the send did not go through.
                 void posted.then(
                   (answer) => {
@@ -206,6 +218,7 @@ export function WorkspacesPage() {
             })
       }
       filesOf={(chat) => files.filesOf(chat, liveChatOf(chat))}
+      pendingOf={(chat) => pendings.pendingOf(liveChatOf(chat))}
       onStop={(chat) => {
         const liveChat = liveChatOf(chat)
         return liveChat === undefined

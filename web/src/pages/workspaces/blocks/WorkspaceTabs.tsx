@@ -13,7 +13,7 @@ import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { WorkspacesData, WorkspacesUi } from '../types.ts'
 import type { CopyReply } from './ChatEntryView.tsx'
-import type { ChatFiles, TranscriptWatch } from './ChatPane.tsx'
+import type { ChatFiles, ChatPending, TranscriptWatch } from './ChatPane.tsx'
 import type { DraftBook } from './draftBook.ts'
 import type { LayoutWrites } from './layoutActions.ts'
 import { WorkbenchPanes } from './WorkbenchPanes.tsx'
@@ -35,6 +35,8 @@ export type WorkspaceTabsProps = {
   onStop?: ((chat: string) => Promise<ComposerAnswer>) | undefined
   /** A live Claude chat's files (W1b), by chat id; none for a sample chat, a Codex chat or a shell (ChatPane `files`). */
   filesOf?: ((chat: string) => ChatFiles | undefined) | undefined
+  /** A live Claude chat's pending send, by chat id; none for a sample chat, a Codex chat or a shell (ChatPane `pending`). */
+  pendingOf?: ((chat: string) => ChatPending | undefined) | undefined
   /** Reads each live chat's transcript while its pane shows (ChatPane); fixtures have none. */
   transcripts?: TranscriptWatch | undefined
   /** A reply's Copy: the page writes the clipboard, and the button shows the result (audit P-4). */
@@ -63,6 +65,7 @@ export function WorkspaceTabs({
   onSend,
   onStop,
   filesOf,
+  pendingOf,
   transcripts,
   onCopy,
   notice,
@@ -90,6 +93,7 @@ export function WorkspaceTabs({
         onSend={onSend}
         onStop={onStop}
         filesOf={filesOf}
+        pendingOf={pendingOf}
         transcripts={transcripts}
         onCopy={onCopy}
         layout={layout}

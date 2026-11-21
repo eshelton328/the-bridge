@@ -182,7 +182,8 @@ const listeners = new Map<string, Set<() => void>>()
 let progressFrame: number | undefined
 
 function viewOf(chat: string): ChatUploads {
-  const mine = uploads.filter((u) => u.chat === chat)
+  // The files of a pending send show in its bubble, not in the composer, until the send ends.
+  const mine = uploads.filter((u) => u.chat === chat && (u.attachment === undefined || !inSend.has(u.attachment)))
   const failed = mine.filter((u) => u.status === 'failed')
   const limit = limitLines.get(chat)
   if (mine.length === 0 && limit === undefined) return noUploads
@@ -549,9 +550,15 @@ export function conflictFiles(chat: string, sent: readonly UploadId[]) {
   changed()
 }
 
-/** A send names `ids`: a chip of them removed before the send ends keeps its upload until then. */
-export function sendingFiles(ids: readonly UploadId[]) {
+/**
+ * A send names `ids`: their chips leave the composer until it ends, and one removed meanwhile (a pane follow) keeps its
+ * upload until then. The names of the files, in the order of `ids`, for the pending send's bubble.
+ */
+export function sendingFiles(ids: readonly UploadId[]): string[] {
   for (const id of ids) inSend.add(id)
+  const names = ids.flatMap((id) => uploads.find((u) => u.attachment === id)?.file.name ?? [])
+  changed()
+  return names
 }
 
 /** The send that named `ids` ended: a file removed meanwhile is deleted only when the send did not go through. */
@@ -562,6 +569,8 @@ export function settledFiles(ids: readonly UploadId[], wentThrough: boolean) {
     removedInSend.delete(id)
     if (upload !== undefined && !wentThrough) forget(upload)
   }
+  // A send that went through takes its chips out of the composer next (`sentFiles`); one that missed shows them again.
+  if (!wentThrough) changed()
 }
 
 /** Ends every upload, for a test's cleanup (`resetAllStores`): aborts each request in flight. */
