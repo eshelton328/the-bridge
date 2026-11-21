@@ -27,7 +27,12 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   keeps the first four chats as the panes, says "Layout not live — first
   4 chats" in the status bar until a load reads every layout, and calls
   `report()` once for each outage (d-115,
-  `app/WorkspacesLiveLayout.test.tsx`).
+  `app/WorkspacesLiveLayout.test.tsx`). A layout read with no answer at
+  all (no status) while the page is hidden, after it hid during the read
+  or within 5 s after it showed again is iOS closing it in the
+  background (`pageResume.ts`): no line and no report, and it reads
+  again once the page shows, at once if it does; one such miss for each
+  trip. An answer from the server, a 5xx too, is reported as before.
 - A live Claude chat's pane shows its transcript (slice 3b):
   `liveTranscript.ts` opens `GET /api/chats/:chat/transcript/events`,
   then reads `GET /api/chats/:chat/transcript`, and applies each

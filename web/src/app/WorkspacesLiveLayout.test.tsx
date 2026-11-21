@@ -18,6 +18,7 @@ import { markApp } from './appMarker.ts'
 import { routeTree } from './routeTree.gen.ts'
 import { stubLiveServer } from './liveServerStub.ts'
 import { answerLateServerReads } from '../lib/lateServerReads.ts'
+import { holdTimers } from '../lib/holdTimers.ts'
 
 // Slice 3a: the Workspaces page draws each live workspace's herdr layout,
 // its active tab (`GET /api/workspaces/:workspace/layout`). Each test takes
@@ -108,12 +109,15 @@ const other = 'mac-mini/w-other'
 const oneTab = (root: Node, focused: Chat) => () =>
   new Response(layoutBody(live, [{ label: 'main', active: true, root, focused }]), { status: 200 })
 
+/** A layout read's answer: a response, or a promise of one, which rejects for a read that gets no answer. */
+type LayoutAnswer = () => Response | Promise<Response>
+
 /**
  * The stubbed server: `GET /api/workspaces` gives the workspace "live work" with `listed`, and "other work" with
  * `review` when `two` is set; each workspace's layout read gets its answer from `layouts` by workspace ID, 404
  * not-found when it has none. The event stream opens with `open`, and `send` writes an event to every open stream.
  */
-function fakeServer(listed: readonly Chat[], first: Partial<Record<string, () => Response>>, two = false) {
+function fakeServer(listed: readonly Chat[], first: Partial<Record<string, LayoutAnswer>>, two = false) {
   let layouts = first
   const encoder = new TextEncoder()
   const streams: ReadableStreamDefaultController<Uint8Array>[] = []
@@ -179,7 +183,7 @@ function fakeServer(listed: readonly Chat[], first: Partial<Record<string, () =>
   return {
     layoutReads,
     listReads,
-    answer: (next: Partial<Record<string, () => Response>>) => {
+    answer: (next: Partial<Record<string, LayoutAnswer>>) => {
       layouts = next
     },
     send: (event: string, data: unknown) => {
@@ -630,4 +634,128 @@ describe('the herdr layout on the phone and the tablet, and with the fixtures (s
     expect(server.layoutReads).toEqual([])
     expect(server.listReads).toEqual([])
   })
+})
+
+// The served log of 2026-11-21: a layout read with no answer ("unreachable", no status) was reported 0.1 s after the
+// page, back from the background, read its workspaces again, and the server logged no failure. iOS closes the reads
+// of a page in the background; the page now reads that layout again once it shows, with no line and no report. An
+// answer from the server, such as the proxy's 502, is still reported once (pageResume.ts).
+describe('a layout read back from the background', () => {
+  /** Makes the page hidden (`hidden` true) or visible again, with the events Safari sends. */
+  function setHidden(hidden: boolean) {
+    Object.defineProperty(document, 'visibilityState', {
+      configurable: true,
+      get: () => (hidden ? 'hidden' : 'visible'),
+    })
+    Object.defineProperty(document, 'hidden', { configurable: true, get: () => hidden })
+    if (hidden) window.dispatchEvent(new PageTransitionEvent('pagehide', { persisted: true }))
+    document.dispatchEvent(new Event('visibilitychange'))
+    if (!hidden) window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }))
+  }
+  afterEach(() => {
+    Reflect.deleteProperty(document, 'visibilityState')
+    Reflect.deleteProperty(document, 'hidden')
+  })
+
+  /** A read that gets no answer at all, as fetch rejects when iOS closes it. */
+  const noAnswer = () => Promise.reject(new TypeError('Load failed'))
+  const layoutMisses = () => getReports().filter((r) => r.error.name === 'LayoutReadMissError')
+  const reportedLayoutMisses = () => layoutMisses().map((r) => r.error.message)
+  const liveReads = (server: ReturnType<typeof fakeServer>) => server.layoutReads.filter((id) => id === live).length
+  const twoPanes = oneTab(row(0.5, pane(plan), pane(review)), plan)
+  const withDrift = oneTab(row(0.5, pane(plan), pane(drift)), drift)
+
+  const devices = [
+    { name: 'the desktop', size: [1512, 982], panes: true },
+    { name: 'the phone', size: [390, 844], panes: false },
+  ] as const
+
+  /** Opens the app at `device` and taps Workspaces; on the desktop, hides the sidebar so the panes show. */
+  async function open(device: (typeof devices)[number]) {
+    if (device.panes) await showPanes()
+    else await tapWorkspaces(device.size)
+  }
+
+  /** On the desktop, the layout with drift is drawn and the status bar has no layout line. */
+  async function drawsDrift(device: (typeof devices)[number]) {
+    if (!device.panes) return
+    await expect.element(maximise(drift)).toBeVisible()
+    await expect.element(page.getByText('Layout not live — first 4 chats')).not.toBeInTheDocument()
+  }
+
+  for (const device of devices)
+    it(`reads a layout that got no answer while hidden again once the page shows, quietly, on ${device.name}`, async () => {
+      const server = fakeServer(chats, { [live]: twoPanes })
+      await open(device)
+      const reads = await settled(() => liveReads(server))
+      setHidden(true)
+      server.answer({ [live]: noAnswer })
+      server.send('layout.changed', { workspace: live })
+      await expect.poll(() => liveReads(server)).toBe(reads + 1)
+      // Hidden, the read waits for the page to show.
+      await new Promise((resolve) => setTimeout(resolve, 300))
+      expect(liveReads(server)).toBe(reads + 1)
+      server.answer({ [live]: withDrift })
+      // The page's clock stands still (lib/holdTimers.ts): the read goes again when the page shows, not on a timer.
+      const release = holdTimers()
+      setHidden(false)
+      await expect.poll(() => liveReads(server)).toBe(reads + 2)
+      release()
+      await drawsDrift(device)
+      await new Promise((resolve) => setTimeout(resolve, 300))
+      expect(reportedLayoutMisses()).toEqual([])
+    })
+
+  for (const device of devices)
+    it(`reads a layout with no answer just after the page showed again at once and quietly, on ${device.name}`, async () => {
+      const server = fakeServer(chats, { [live]: twoPanes })
+      await open(device)
+      const reads = await settled(() => liveReads(server))
+      // iOS: the page cannot run in the background, so its read misses only once the page shows again.
+      setHidden(true)
+      setHidden(false)
+      let tries = 0
+      server.answer({
+        [live]: () => {
+          tries += 1
+          return tries === 1 ? noAnswer() : withDrift()
+        },
+      })
+      const release = holdTimers()
+      server.send('layout.changed', { workspace: live })
+      // The event's settle time (100 ms) starts the load; nothing after it waits on the clock.
+      vi.advanceTimersByTime(100)
+      await expect.poll(() => liveReads(server)).toBe(reads + 2)
+      release()
+      await drawsDrift(device)
+      await new Promise((resolve) => setTimeout(resolve, 300))
+      expect(reportedLayoutMisses()).toEqual([])
+      // One quiet miss for each trip: a read with no answer after it is an outage, reported once.
+      server.answer({ [live]: noAnswer })
+      server.send('layout.changed', { workspace: live })
+      await expect.poll(() => layoutMisses().length).toBe(1)
+      expect(reportedLayoutMisses()).toEqual(['A workspace layout read missed: unreachable'])
+      expect(liveReads(server)).toBe(reads + 3)
+    })
+
+  for (const device of devices)
+    it(`reports a 502 answer once after a quiet miss around a hide, on ${device.name}`, async () => {
+      const server = fakeServer(chats, { [live]: twoPanes })
+      await open(device)
+      const reads = await settled(() => liveReads(server))
+      setHidden(true)
+      server.answer({ [live]: noAnswer })
+      server.send('layout.changed', { workspace: live })
+      await expect.poll(() => liveReads(server)).toBe(reads + 1)
+      // The proxy answers for a server that is down: an answer, not the background's close.
+      server.answer({ [live]: () => new Response('Bad Gateway', { status: 502 }) })
+      setHidden(false)
+      await expect.poll(() => layoutMisses().length).toBe(1)
+      expect(reportedLayoutMisses()).toEqual(['A workspace layout read missed: unreachable 502'])
+      if (device.panes) await expect.element(page.getByText('Layout not live — first 4 chats')).toBeVisible()
+      // The app client tries a 5xx twice more: still one report.
+      await expect.poll(() => liveReads(server)).toBeGreaterThanOrEqual(reads + 4)
+      await new Promise((resolve) => setTimeout(resolve, 300))
+      expect(layoutMisses()).toHaveLength(1)
+    })
 })

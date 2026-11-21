@@ -25,7 +25,12 @@
 // says "Layout not live — first 4 chats" until a load reads every layout,
 // and report() gets one LayoutReadMissError for each outage, not one for
 // each read again. A layout the contract refuses throws, as a list it
-// refuses does.
+// refuses does. A layout read that gets no answer at all (no status) while
+// the page is hidden, after it hid during the read or within 5 s after it
+// showed again is iOS closing it in the background (pageResume.ts): no
+// report and no line, and the read goes again once the page shows, at once
+// if it does; one such miss for each trip, as a transcript stream has. An
+// answer from the server (any status) is reported as before.
 // Review R34: the home's sample skills never reach the live page; each live
 // Claude chat's "/" list is read from the server when it opens (liveSkills.ts).
 import {
@@ -47,6 +52,15 @@ import { queryClient } from '../../lib/queryClient.ts'
 import type { ScreenState } from '../../lib/screenState.ts'
 import { maxPanes } from './blocks/workspaceLayout.ts'
 import { layoutOfTab, liveTabsOf } from './liveLayout.ts'
+import {
+  followPageVisibility,
+  fromBackground,
+  hidesSoFar,
+  isHidden,
+  type ResumeMark,
+  resumeMark,
+  whenVisible,
+} from './pageResume.ts'
 import type {
   LiveTab,
   PaneAction,
@@ -465,6 +479,28 @@ class LayoutReadMissError extends Error {
   }
 }
 
+/** A miss with no answer at all, no status: what iOS makes of a read it closes with the page in the background. */
+const noAnswer = (miss: LiveMiss) =>
+  miss.kind === 'timeout' || (miss.kind === 'unreachable' && miss.status === undefined)
+
+/** For each workspace (its server ID), the trip to the background whose quiet layout miss it has had (`hidesSoFar`). */
+const quietLayoutFor = new Map<string, number>()
+
+/**
+ * A layout read of `workspace` that started at `mark` and got no answer is the close of a trip to the background (as
+ * `liveTranscript.ts` takes a stream's): any such miss while the page is hidden, and the first one the visible page
+ * sees of a trip that had none while hidden. It is not reported and gives no line; the read goes again.
+ */
+function quietLayoutMiss(workspace: string, mark: ResumeMark): boolean {
+  if (isHidden()) {
+    quietLayoutFor.set(workspace, hidesSoFar())
+    return true
+  }
+  if (!fromBackground(mark) || quietLayoutFor.get(workspace) === hidesSoFar()) return false
+  quietLayoutFor.set(workspace, hidesSoFar())
+  return true
+}
+
 /** The status bar's line while a layout read misses: the page draws each such workspace's first chats. */
 const layoutMissLine = `Layout not live — first ${String(maxPanes)} chats`
 
@@ -564,6 +600,8 @@ function noticeOf(miss: LiveMiss): { title: string; description: string } {
       return { title, description: `The server answered ${String(miss.status)}${inBrackets(miss.errorKind, request)}.` }
   }
 }
+
+followPageVisibility()
 
 const queryKey = ['workspaces']
 /** A workspace's layout in the query cache, under the list's key, so whatever marks the list invalid marks it too. */
@@ -951,8 +989,17 @@ async function layoutsOf(
   const read =
     (id: WorkspaceId) =>
     async ({ signal: cancel }: { signal: AbortSignal }) => {
-      const before = [taken, layoutsTaken.get(id) ?? 0]
-      const answer = await fetch(id, AbortSignal.any([cancel, AbortSignal.timeout(liveReadTimeoutMs)]))
+      let before = [taken, layoutsTaken.get(id) ?? 0]
+      let mark = resumeMark()
+      let answer = await fetch(id, AbortSignal.any([cancel, AbortSignal.timeout(liveReadTimeoutMs)]))
+      // iOS closed the read with the page in the background: read again once the page shows, at once if it does.
+      while (!answer.ok && noAnswer(answer.error) && quietLayoutMiss(id, mark)) {
+        await whenVisible(cancel)
+        cancel.throwIfAborted()
+        before = [taken, layoutsTaken.get(id) ?? 0]
+        mark = resumeMark()
+        answer = await fetch(id, AbortSignal.any([cancel, AbortSignal.timeout(liveReadTimeoutMs)]))
+      }
       if (!answer.ok) throw new LiveMissError(answer.error)
       // An event during the read may be newer than its answer: read this layout again once the answer is cached.
       if (before[0] !== taken || before[1] !== (layoutsTaken.get(id) ?? 0))
