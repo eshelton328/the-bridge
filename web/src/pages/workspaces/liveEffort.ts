@@ -8,7 +8,7 @@
 //
 // A miss gives the chip one short line by reason: a chat that works (409
 // working), that needs the owner (needsYou), whose message box holds text
-// (inputNotEmpty), a chat that is gone (404), and "Could not change the
+// (inputNotEmpty), a chat whose model restart runs (restarting), a chat that is gone (404), and "Could not change the
 // effort" for anything else. report() gets a 5xx and an answer the page does
 // not expect, with the kind and the HTTP status only, never the chat ID or
 // the server's message. The chat ID is URL-encoded once, as the typed RPC
@@ -35,6 +35,7 @@ const effortLines = {
   working: 'Wait until the chat is idle',
   needsYou: 'The chat needs you on the Mac',
   inputNotEmpty: 'Clear the message box on the Mac first',
+  restarting: 'The chat is restarting',
   gone: 'That chat is gone',
   failed: 'Could not change the effort',
 } as const
@@ -55,6 +56,8 @@ async function missOf(res: Response): Promise<EffortAnswer> {
       if (error.state === 'working') return { line: effortLines.working }
       if (error.state === 'needsYou') return { line: effortLines.needsYou }
       if (error.state === 'inputNotEmpty') return { line: effortLines.inputNotEmpty }
+      // A model restart of the chat runs (W10): the server takes no other change meanwhile.
+      if (error.state === 'restarting') return { line: effortLines.restarting }
       // inputUnreadable, noCommands and effortNotConfirmed are states of the chat, not faults: no report.
       return { line: effortLines.failed }
     case 'not-found':

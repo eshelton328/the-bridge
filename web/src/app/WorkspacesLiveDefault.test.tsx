@@ -240,8 +240,14 @@ describe('Workspaces on the live source by default (d-117)', () => {
     await userEvent.click(page.getByRole('button', { name: 'plan the slice', exact: true }))
     await expect.element(page.getByRole('heading', { name: 'plan the slice' })).toBeVisible()
     await expect.element(page.getByText(planEntry)).toBeVisible()
-    // The sample transcript of the home's chat never shows.
-    await expect.element(page.getByText('Opus', { exact: true })).not.toBeInTheDocument()
+    // The sample transcript of the home's chat never shows. The live chip's closed menu stays in the page with its
+    // Opus row (W10's model half), so the check leaves the menu out.
+    expect(
+      page
+        .getByText('Opus', { exact: true })
+        .elements()
+        .filter((e) => e.closest('[role="menu"]') === null),
+    ).toHaveLength(0)
     await expect.element(page.getByText('Terminal not live yet')).not.toBeInTheDocument()
   })
 

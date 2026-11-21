@@ -137,3 +137,24 @@ hint shows one line beside the chip, which Figma does not draw
 (`blocks/EffortPicker.tsx`; LIBRARY_GAPS.md: Effort menu). It is a frame
 exception that bridge-workbench owns. This frame's fixture chat is a
 sample chat, so its chip and render do not change.
+
+## Model picker (W10)
+
+The server now restarts an idle live Claude chat with another model by
+resume (backend #386, #390, #391: `POST /api/chats/:chat/model`, the
+same session and chat ID), so the model chip (105:804) of a live Claude
+chat opens one menu with the model families first (Fable, Opus, Sonnet,
+Haiku, the list's family checked; no "Default") and then the effort
+levels as "low effort" to "xhigh effort", the list's level described
+"Current". The library's `ModelChip` passes one radio list with one
+checked value and no section headings (LIBRARY_GAPS.md: Effort menu), so
+both sections share that list and only the model has the check; bridge-
+workbench's decision of 2026-11-21. A model pick asks on its own row under
+the chip's row ("Restart the chat with Sonnet? It resumes the same
+conversation." with Restart and Cancel, `blocks/ModelConfirm.tsx`); while
+the restart runs the chip says "Restarting…". A restart that ended the
+chat and started none opens a library dialog with `claude --resume
+<session>` in a read-only field (`blocks/ModelRestartFailed.tsx`), as the
+chat's header leaves with the chat. Figma draws none of these. It is a
+frame exception that bridge-workbench owns. This frame's fixture chat is
+a sample chat, so its chip and render do not change.

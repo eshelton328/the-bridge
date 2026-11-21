@@ -202,7 +202,13 @@ describe("a live chat's model and effort (W5)", () => {
     await userEvent.click(page.getByRole('button', { name: 'Workspaces' }).first())
     await tapChat('review notes')
     await expect.element(chatRegion('review notes').getByText('Opus 5.5', { exact: true })).toBeVisible()
-    expect(page.getByText(/effort/).elements()).toHaveLength(0)
+    // The chip's closed menu stays in the page with its "low effort" to "xhigh effort" rows (W10's model half).
+    expect(
+      page
+        .getByText(/effort/)
+        .elements()
+        .filter((e) => e.closest('[role="menu"]') === null),
+    ).toHaveLength(0)
   })
 
   it("shows the effort in the pane's header on the desktop workbench", async () => {

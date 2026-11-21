@@ -73,7 +73,7 @@ export type ChatHeadProps = {
    * the phone's keyboard is up (M10 147:53).
    */
   meta?: string | undefined
-  /** A live Claude chat's effort (W10): the model chip opens the effort picker; none keeps the chip as the head says. */
+  /** A live Claude chat's chip (W10): it opens the model and effort menu; none keeps the chip as the head says. */
   effortPicker?: EffortControl | undefined
 }
 
@@ -93,6 +93,14 @@ export function ChatHead(props: ChatHeadProps) {
   } = props
   // The "context" label names the meter, so a chat with no context share (a live chat, d-117) has neither.
   const contextText = chat.context === undefined ? null : <span className={label}>{contextLabel}</span>
+  // What follows the model chip in the second row.
+  const rest = (
+    <>
+      {chat.context === undefined ? null : <ContextMeter value={chat.context} high={chat.context >= 75} />}
+      {props.extraAfterLabel === true && extra !== undefined && extra !== null ? contextText : null}
+      {extra ?? contextText}
+    </>
+  )
   return (
     <header
       data-figma={figma?.head ?? '105:785'}
@@ -117,26 +125,26 @@ export function ChatHead(props: ChatHeadProps) {
         )}
       </Inline>
       {meta === undefined ? (
-        <Inline gap="8" align="center">
-          {effortPicker === undefined ? (
-            // A live chat's model is read-only (d-101): with no effort picker its chip is text and opens no menu.
+        effortPicker === undefined ? (
+          <Inline gap="8" align="center">
+            {/* A live chat's model is read-only (d-101): with no picker its chip is text and opens no menu. */}
             <ModelChip
               model={chat.model}
               effort={chat.effort}
               options={chat.readOnlyModel === true ? undefined : [{ value: chat.model, label: chat.model }]}
               value={chat.model}
             />
-          ) : (
-            <EffortPicker
-              model={chat.model}
-              effort={effortPicker}
-              working={chat.status.tone === 'working' || chat.status.tone === 'running'}
-            />
-          )}
-          {chat.context === undefined ? null : <ContextMeter value={chat.context} high={chat.context >= 75} />}
-          {props.extraAfterLabel === true && extra !== undefined && extra !== null ? contextText : null}
-          {extra ?? contextText}
-        </Inline>
+            {rest}
+          </Inline>
+        ) : (
+          // A live Claude chat's chip opens its model and effort menu (W10); a model pick asks on a row under it.
+          <EffortPicker
+            model={chat.model}
+            effort={effortPicker}
+            working={chat.status.tone === 'working' || chat.status.tone === 'running'}
+            after={rest}
+          />
+        )
       ) : null}
     </header>
   )

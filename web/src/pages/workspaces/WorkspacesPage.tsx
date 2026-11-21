@@ -29,7 +29,9 @@
 // for the layout read after `layout.changed` to move a pane. A move of the open pane to another tab shows that tab
 // once the layout read has the chat there (W2d, `shownTabs.ts`). New chat starts a live Claude chat and opens it once
 // the workspace list shows it (useNewChat.ts, W3). A live Claude chat's model chip picks its effort for the session
-// (useLiveEffort.ts, W10), through the server's effort route only, never by sending /effort.
+// (useLiveEffort.ts, W10), through the server's effort route only, never by sending /effort. The same chip restarts
+// the chat with another model by resume (useLiveModel.ts), never by sending /model: while the restart runs the chat's
+// composer is off, and a restart that ended the chat and started none opens a dialog with the command to resume it.
 import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { report } from '../../errors/reporter.ts'
@@ -44,7 +46,9 @@ import { chatPanesOf, paneMoves, withMovedChats } from './paneFollow.ts'
 import { WorkspacesScreen } from './screens/WorkspacesScreen.tsx'
 import type { ComposerAnswer } from './blocks/useComposerActions.ts'
 import type { WorkspacesUi } from './types.ts'
+import { ModelRestartFailed } from './blocks/ModelRestartFailed.tsx'
 import { useLiveEffort } from './useLiveEffort.ts'
+import { useLiveModel, withRestarting } from './useLiveModel.ts'
 import { useLiveSkills } from './useLiveSkills.ts'
 import { useLiveTranscripts } from './useLiveTranscripts.ts'
 import { useLayoutWrites } from './useLayoutWrites.ts'
@@ -154,6 +158,9 @@ export function WorkspacesPage() {
   const skillLists = useLiveSkills(import.meta.env.DEV && live)
   // Each live Claude chat's effort (W10): a set level shows until the next list read.
   const efforts = useLiveEffort(import.meta.env.DEV && live, state.data)
+  // Each live Claude chat's model (W10): while a restart runs, the chat's composer is off and says so.
+  const models = useLiveModel(import.meta.env.DEV && live, state.data)
+  const screenData = withRestarting(data, models.isRestarting)
   const layoutWrites = useLayoutWrites(import.meta.env.DEV && live, data, (workspace, chat, tab) => {
     changeUi(followTab(liveData, uiRef.current, workspace, chat, tab))
   })
@@ -274,53 +281,64 @@ export function WorkspacesPage() {
     readList: () => void router.invalidate(),
   })
   return (
-    <WorkspacesScreen
-      push={push}
-      data={data}
-      ui={shownUi}
-      viewport="desktop"
-      drafts={drafts}
-      layoutWrites={layoutWrites}
-      onUiChange={changeUi}
-      onRetry={() => void router.invalidate()}
-      transcripts={transcripts}
-      skillLists={skillLists}
-      onCopy={copyReply}
-      onSend={onSend}
-      newChat={newChat}
-      filesOf={(chat) => files.filesOf(chat, liveChatOf(chat))}
-      pendingOf={(chat) => pendings.pendingOf(liveChatOf(chat))}
-      effortOf={(chat) => {
-        const pane = data.panes.find((p) => p.id === chat)
-        return efforts.of(chat, liveChatOf(chat), pane?.type === 'chat' ? pane.head.effortLevel : undefined)
-      }}
-      onStop={(chat) => {
-        const liveChat = liveChatOf(chat)
-        return liveChat === undefined
-          ? Promise.resolve(false)
-          : once(`stop:${chat}`, () => viaLive((m) => m.stopChat(liveChat)))
-      }}
-      onCommand={(chat, request) => {
-        const liveChat = liveChatOf(chat)
-        return liveChat === undefined
-          ? Promise.resolve(false)
-          : once(`command:${chat}`, () =>
-              viaLive((m) => m.sendCommand(liveChat, request)).then((answer) => {
-                // The server sends no event when the cleared chat gets its new ID: read the list until it shows.
-                if (answer === true && request.command === 'clear')
-                  void import('./liveWorkspaces.ts').then((m) => m.readAfterClear(liveChat))
-                return answer
-              }),
-            )
-      }}
-      onNavigate={(page) => {
-        // The tablet's More (the phone opens its drawer) goes to Toolkit, the one page behind More with a route
-        // (d-105), as the tablet has no rail.
-        if (page === 'more') void navigate({ to: '/toolkit' })
-        // Only the pages that have a route go somewhere; the others wait for theirs.
-        else if (page === 'inbox' || page === 'workspaces' || page === 'artifacts' || page === 'toolkit')
-          void navigate({ to: `/${page}` })
-      }}
-    />
+    <>
+      <WorkspacesScreen
+        push={push}
+        data={screenData}
+        ui={shownUi}
+        viewport="desktop"
+        drafts={drafts}
+        layoutWrites={layoutWrites}
+        onUiChange={changeUi}
+        onRetry={() => void router.invalidate()}
+        transcripts={transcripts}
+        skillLists={skillLists}
+        onCopy={copyReply}
+        onSend={onSend}
+        newChat={newChat}
+        filesOf={(chat) => files.filesOf(chat, liveChatOf(chat))}
+        pendingOf={(chat) => pendings.pendingOf(liveChatOf(chat))}
+        effortOf={(chat) => {
+          const pane = data.panes.find((p) => p.id === chat)
+          const head = pane?.type === 'chat' ? pane.head : undefined
+          const effort = efforts.of(chat, liveChatOf(chat), head?.effortLevel)
+          return effort === undefined
+            ? undefined
+            : { ...effort, model: models.of(chat, liveChatOf(chat), head?.modelId) }
+        }}
+        onStop={(chat) => {
+          const liveChat = liveChatOf(chat)
+          return liveChat === undefined
+            ? Promise.resolve(false)
+            : once(`stop:${chat}`, () => viaLive((m) => m.stopChat(liveChat)))
+        }}
+        onCommand={(chat, request) => {
+          const liveChat = liveChatOf(chat)
+          return liveChat === undefined
+            ? Promise.resolve(false)
+            : once(`command:${chat}`, () =>
+                viaLive((m) => m.sendCommand(liveChat, request)).then((answer) => {
+                  // The server sends no event when the cleared chat gets its new ID: read the list until it shows.
+                  if (answer === true && request.command === 'clear')
+                    void import('./liveWorkspaces.ts').then((m) => m.readAfterClear(liveChat))
+                  return answer
+                }),
+              )
+        }}
+        onNavigate={(page) => {
+          // The tablet's More (the phone opens its drawer) goes to Toolkit, the one page behind More with a route
+          // (d-105), as the tablet has no rail.
+          if (page === 'more') void navigate({ to: '/toolkit' })
+          // Only the pages that have a route go somewhere; the others wait for theirs.
+          else if (page === 'inbox' || page === 'workspaces' || page === 'artifacts' || page === 'toolkit')
+            void navigate({ to: `/${page}` })
+        }}
+      />
+      <ModelRestartFailed
+        session={models.failed}
+        onClose={models.dismissFailed}
+        onCopy={(text) => copyReply(text).then((copied) => copied.ok)}
+      />
+    </>
   )
 }

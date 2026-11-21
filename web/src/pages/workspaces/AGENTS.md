@@ -205,23 +205,52 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
 - A live chat's model is read-only (d-101, W5): the pane header shows
   "Opus 5.5 · high effort" as text (`PaneHead.effort`, `readOnlyModel`),
   the model alone when the effort is not known.
-- A live Claude chat's model chip in the chat header picks its effort (W10,
-  backend #382 and #384, `blocks/EffortPicker.tsx`, `useLiveEffort.ts`,
-  `liveEffort.ts`): it shows the list's model and level (`effortLevel`)
-  and opens a menu with low, medium, high and xhigh, the current one
-  checked. `max` shows on the chip but is not offered. A pick posts `POST
-  /api/chats/:chat/effort` with the contract's `SetEffortRequest`, for the
-  session only, never `/effort` or `/model` as a prompt; the menu stays
-  open with the pick "Setting…" until the answer. A 204 closes it and the
-  chip shows the level until the next list read, which gives the set
-  level. A miss closes it and shows one line beside the chip by reason
-  (working, needsYou, inputNotEmpty, a 404, else "Could not change the
-  effort"); every choice is off while the chat works, with "Wait until the
-  chat is idle". report() gets only a 5xx or an answer the page does not
-  expect, by kind and status. The model stays text until the restart route,
-  a Codex chat has no picker (W8), and the pane header keeps its text
-  (`app/WorkspacesEffort.test.tsx`; references D02 and M03
-  `deviations.md`; LIBRARY_GAPS.md: Effort menu).
+- A live Claude chat's model chip in the chat header picks its model and
+  its effort (W10, backend #382, #384 and #386 to #391,
+  `blocks/EffortPicker.tsx`, `useLiveEffort.ts`, `liveEffort.ts`,
+  `useLiveModel.ts`, `liveModel.ts`): it shows the list's model and level
+  (`modelId`, `effortLevel`) and opens one menu with the model families
+  (Fable, Opus, Sonnet, Haiku; no Default), the list's family checked,
+  then "low effort" to "xhigh effort", the list's level described
+  "Current": the library's chip takes one list with one check
+  (LIBRARY_GAPS.md: Effort menu). `max` shows on the chip but is not
+  offered. Never `/effort` or `/model` as a prompt: each writes the
+  owner's Claude Code settings.
+  - An effort pick posts `POST /api/chats/:chat/effort` with the
+    contract's `SetEffortRequest`, for the session only; the menu stays
+    open with the pick "Setting…" until the answer. A 204 closes it and
+    the chip shows the level until the next list read, which gives the
+    set level. A miss shows one line beside the chip by reason (working,
+    needsYou, inputNotEmpty, restarting, a 404, else "Could not change
+    the effort").
+  - A model pick closes the menu and asks on a row under the chip
+    ("Restart the chat with Sonnet? It resumes the same conversation.",
+    `blocks/ModelConfirm.tsx`); only Restart posts `POST
+    /api/chats/:chat/model` with `{ model, confirm }`, `confirm` the same
+    chat ID. The server ends the chat and resumes its session with the
+    new model in the same pane, so the chat ID, the open view, the draft
+    and the kept sends stay. While it runs the chip says "Restarting…",
+    and the chat's composer (`composer.notLive`) and every menu row are
+    off with "The chat is restarting", as the server answers every other
+    POST to the chat 409 restarting. A 200 `ready` shows the new family
+    on the chip until the next list read; `needsYou` adds "The chat needs
+    you on the Mac"; `starting` keeps "Restarting…" until a list read
+    after `workspaces.changed` shows the chat idle, done or needing the
+    owner (no read loop). A 502 `failed` ended the chat (its pane is a
+    shell from the next list on): a library dialog says "The chat stopped
+    and did not restart. On the Mac, run this in its pane:" over a
+    read-only field with `claude --resume <session>` and Copy
+    (`blocks/ModelRestartFailed.tsx`); the page tries nothing again. A 502
+    herdr-bad-reply says "The chat did not restart; it runs as before";
+    409 skipsPermissions, launchArgsUnknown, folderChanged, restarting,
+    working and needsYou and a 404 each have their line, and sameModel
+    does nothing.
+  - Every row is off while the chat works, with "Wait until the chat is
+    idle". report() gets only a 5xx or an answer the page does not
+    expect, by kind and status, never a session or a chat ID. A Codex
+    chat has no picker (W8), and the pane header keeps its text
+    (`app/WorkspacesEffort.test.tsx`, `app/WorkspacesModel.test.tsx`;
+    references D02 and M03 `deviations.md`).
 - A live Claude chat's actions end with Compact context… and Clear
   context… (W5, `blocks/chatCommands.ts`): in the pane menu, the chat
   actions, the tablet's menu and the phone's sheet, on only while the
@@ -247,7 +276,7 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   (off unless the chat is idle or done), whose pick opens the W5 dialog
   and takes the "/" word out of the box; /model and /effort never show,
   as sending them changes the owner's Claude Code settings (the model
-  chip sets the effort through its route, W10). A picked skill goes in the box as "/<name> ". The
+  chip sets the model and the effort through their routes, W10). A picked skill goes in the box as "/<name> ". The
   filter, case aside: names that start with the typed text, then names
   that hold it, then descriptions that hold it, in the server's order;
   none says "No match". A project's or a plugin's skill has a badge. An
