@@ -1792,6 +1792,51 @@ describe('herdr agents: the place of a chat while a list stream is open', () => 
     }
   })
 
+  it('sends to the new pane after a pane.moved event, and finds no chat after its pane.closed', async () => {
+    const at = (pane: string) => ({
+      ...results['agent.list'],
+      agents: results['agent.list'].agents.map((a) =>
+        a.pane_id === 'w17:p1' ? { ...a, agent_status: 'idle', pane_id: pane } : a,
+      ),
+    })
+    socket.set('agent.list', idle)
+    const ours = port()
+    const stream = ours.subscribe(
+      () => undefined,
+      () => undefined,
+    )
+    try {
+      await stream.ready
+      // The chat's pane moves: herdr lists it under a new pane ID and tells the stream.
+      socket.set('agent.list', at('w17:p9'))
+      socket.set('pane.read', paneRead('w17:p9', claudeScreen('')))
+      socket.push({ event: 'pane.moved', data: { pane_id: 'w17:p1', workspace_id: 'w17' } })
+      await new Promise((resolve) => setTimeout(resolve, 400))
+      const before = socket.requests().length
+      expect(await ours.sendPrompt(chat, 'Reply OK.')).toEqual({ ok: true, value: 'sent' })
+      const targets = socket
+        .requests()
+        .slice(before)
+        .filter((r) => r.method === 'agent.prompt')
+        .map((r) => field(r.params, 'target'))
+      expect(targets).toEqual(['w17:p9'])
+      // The pane closes: the chat leaves the list, and the prompt finds no chat, with nothing typed.
+      socket.set('agent.list', {
+        ...results['agent.list'],
+        agents: results['agent.list'].agents.filter((a) => a.pane_id !== 'w17:p1'),
+      })
+      socket.push({ event: 'pane.closed', data: { pane_id: 'w17:p9', workspace_id: 'w17' } })
+      await new Promise((resolve) => setTimeout(resolve, 400))
+      const prompts = typed()
+      expect(await ours.sendPrompt(chat, 'Reply OK.')).toEqual({ ok: true, value: 'notFound' })
+      expect(typed()).toBe(prompts)
+    } finally {
+      stream.close()
+      socket.set('agent.list', undefined)
+      socket.set('pane.read', undefined)
+    }
+  })
+
   it('keeps a status that an event gave when a second stream reads an older list', async () => {
     const blocked = {
       ...results['agent.list'],
