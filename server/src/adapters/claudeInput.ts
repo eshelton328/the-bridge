@@ -33,13 +33,14 @@ export function effortOf(screen: string): KeyLevel | 'max' | 'none' | null {
 
 /**
  * The effort keys that move a chat from `shown` to `effort`: the difference when the screen shows a level the keys
- * reach, else down to `low` first (the keys stop there) and then up.
+ * reach, else down to `low` first (the keys stop there; four presses from `max`) and then up.
  */
 export function effortKeys(shown: ReturnType<typeof effortOf>, effort: KeyLevel): string[] {
   const to = keyEfforts.indexOf(effort)
   const from = keyEfforts.findIndex((level) => level === shown)
+  // From `max` (above `xhigh`) or an unknown level, one press for each level reaches `low`; more stay there.
   if (from === -1)
-    return [...Array<string>(keyEfforts.length - 1).fill('shift+down'), ...Array<string>(to).fill('shift+up')]
+    return [...Array<string>(keyEfforts.length).fill('shift+down'), ...Array<string>(to).fill('shift+up')]
   return Array<string>(Math.abs(to - from)).fill(to > from ? 'shift+up' : 'shift+down')
 }
 

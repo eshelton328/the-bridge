@@ -86,7 +86,8 @@ describe('effortOf and effortKeys', () => {
     expect(effortKeys('medium', 'xhigh')).toEqual(['shift+up', 'shift+up'])
     expect(effortKeys('high', 'low')).toEqual(['shift+down', 'shift+down'])
     expect(effortKeys('high', 'high')).toEqual([])
-    expect(effortKeys('none', 'high')).toEqual(['shift+down', 'shift+down', 'shift+down', 'shift+up', 'shift+up'])
-    expect(effortKeys('max', 'low')).toEqual(['shift+down', 'shift+down', 'shift+down'])
+    const down = ['shift+down', 'shift+down', 'shift+down', 'shift+down']
+    expect(effortKeys('none', 'high')).toEqual([...down, 'shift+up', 'shift+up'])
+    expect(effortKeys('max', 'low')).toEqual(down)
   })
 })
