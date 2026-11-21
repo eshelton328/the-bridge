@@ -3,8 +3,11 @@
 // (D1 105:210 to 105:291), or a line that records an event, such as where a
 // fork starts (D16 417:718). A live message or reply whose text the server cut
 // shows a quiet line under it (`cut`, slice 3b). A message's and a reply's text
-// is Markdown (`EntryText`). The caller names the entry's Figma layer. Props only.
+// is Markdown (`EntryText`). The caller names the entry's Figma layer. Memoised by
+// the entry's identity (review R28), so a keystroke in the composer or another
+// entry's change does not render it again. Props only.
 import { Message, ProposalBlock, ProposalCommand, Stack, ToolLine } from '@eshelton328/component-library-1701'
+import { memo } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { CopyTextResult } from '../../../lib/copyText.ts'
 import type { ChatEntry } from '../types.ts'
@@ -32,7 +35,7 @@ export type ChatEntryViewProps = {
   onCopy?: CopyReply | undefined
 }
 
-export function ChatEntryView({ entry, figma, onAct, onCopy }: ChatEntryViewProps) {
+export const ChatEntryView = memo(function ChatEntryView({ entry, figma, onAct, onCopy }: ChatEntryViewProps) {
   switch (entry.type) {
     case 'user':
       return (
@@ -101,4 +104,4 @@ export function ChatEntryView({ entry, figma, onAct, onCopy }: ChatEntryViewProp
         </div>
       )
   }
-}
+})

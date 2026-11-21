@@ -1,6 +1,7 @@
 import '@fontsource-variable/geist'
 import '@fontsource-variable/geist-mono'
 import '../../index.css'
+import type { ComponentProps } from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { page } from 'vitest/browser'
 import { resetRetries } from '../../errors/retryGuard.ts'
@@ -16,10 +17,12 @@ const crash = vi.hoisted(() => ({ entry: false, terminal: false }))
 
 vi.mock('./blocks/ChatEntryView.tsx', async (importOriginal) => {
   const real = await importOriginal<typeof import('./blocks/ChatEntryView.tsx')>()
+  // ChatEntryView is memoised (review R28), so the stand-in renders it as an element.
+  const Real = real.ChatEntryView
   return {
-    ChatEntryView: (props: Parameters<typeof real.ChatEntryView>[0]) => {
+    ChatEntryView: (props: ComponentProps<typeof Real>) => {
       if (crash.entry) throw new Error('an entry crashed on purpose')
-      return real.ChatEntryView(props)
+      return <Real {...props} />
     },
   }
 })

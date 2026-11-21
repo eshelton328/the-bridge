@@ -14,7 +14,8 @@ import { routeTree } from './routeTree.gen.ts'
 // Audit W-10, on the owner's path. A route crash leaves the owner a way to another page (Go to Inbox), Retry
 // used up in one boundary leaves Retry in another, and the composer's draft outlives a reload. The library's
 // AppShell throws while `crash.shell` is set (the whole page, so RouteError), TerminalLines while `crash.terminal`
-// is set (the shell pane) and Message while `crash.message` is set (the chat panes).
+// is set (the shell pane) and Message while `crash.message` is set (the chat transcripts). The transcript entries are
+// memoised (review R28), so a keystroke renders a pane's composer and not its entries.
 const crash = vi.hoisted(() => ({ shell: false, terminal: false, message: false }))
 
 vi.mock('@eshelton328/component-library-1701', async (importOriginal) => {
@@ -89,15 +90,18 @@ describe('the Workspaces route after a crash (audit W-10)', () => {
     vi.spyOn(console, 'error').mockImplementation(() => undefined)
     await page.viewport(1512, 982)
     crash.terminal = true
-    view = await renderAt('/workspaces?state=threePanes')
-    // The shell pane crashes again on each retry; two failed retries use up its allowance.
-    await page.getByRole('button', { name: 'Retry' }).click()
-    await page.getByRole('button', { name: 'Retry' }).click()
-    await expect.element(page.getByRole('button', { name: 'Reload app' })).toBeVisible()
-    // Now a chat pane crashes when what the owner types renders it again.
+    // A keystroke no longer renders the entries, so the chat transcripts crash from the first render too.
     crash.message = true
-    await userEvent.type(page.getByRole('textbox').first(), 'a')
-    await expect.element(page.getByRole('button', { name: 'Retry' }).first()).toBeVisible()
+    view = await renderAt('/workspaces?state=threePanes')
+    const shell = page.getByRole('region', { name: 'brain git' })
+    const chat = page.getByRole('region', { name: 'bridge themes' })
+    // The shell pane crashes again on each retry; two failed retries use up its allowance.
+    await shell.getByRole('button', { name: 'Retry' }).click()
+    await shell.getByRole('button', { name: 'Retry' }).click()
+    await expect.element(shell.getByRole('button', { name: 'Reload app' })).toBeVisible()
+    // The chat's transcript keeps its own allowance: its Retry crashes again and still offers Retry.
+    await chat.getByRole('button', { name: 'Retry' }).click()
+    await expect.element(chat.getByRole('button', { name: 'Retry' })).toBeVisible()
     expect(page.getByRole('button', { name: 'Reload app' }).elements()).toHaveLength(1)
   })
 

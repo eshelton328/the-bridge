@@ -18,7 +18,9 @@
 // With `header` the ScrollFrame is the root, so the phone's chat puts it
 // straight in the AppShell detail, which docks the composer on the keyboard
 // (library beta.61, screen review R20). Send goes through `onSend` (library
-// beta.90): the box keeps the draft until the send succeeds. Send and Stop
+// beta.90): the box keeps the draft until the send succeeds. The entries are
+// memoised (TranscriptEntries, review R28), so a keystroke renders the composer
+// and not the transcript. Send and Stop
 // (W1, `useComposerActions`): one send and one stop in flight, and a miss
 // shows one quiet line under the composer, with Retry when it may work
 // later; a text over the server's limit is not sent and the line says so. A live chat
@@ -32,11 +34,11 @@ import { type KeyboardEvent, type ReactNode, useCallback, useEffect, useLayoutEf
 import { css, cx } from '../../../../styled-system/css/index.js'
 import { pickSkill, skillQuery } from '../../../lib/skillQuery.ts'
 import type { ChatEntry, ComposerState, Skill } from '../types.ts'
-import { BlockBoundary } from '../../../errors/BlockBoundary.tsx'
-import { ChatEntryView, type CopyReply } from './ChatEntryView.tsx'
+import type { CopyReply } from './ChatEntryView.tsx'
 import { NotLive } from './NotLive.tsx'
 import { frameRegion } from './frameRegion.ts'
 import { SkillPicker } from './SkillPicker.tsx'
+import { TranscriptEntries } from './TranscriptEntries.tsx'
 import { TranscriptProblem } from './TranscriptProblem.tsx'
 import { type ComposerAnswer, useComposerActions } from './useComposerActions.ts'
 import { usePinnedEnd } from './usePinnedEnd.ts'
@@ -443,16 +445,7 @@ export function ChatPane(props: ChatPaneProps) {
       <>
         {earlier === undefined ? null : <span className={earlierLine}>{earlier}</span>}
         {empty === undefined ? null : <span className={earlierLine}>{empty}</span>}
-        <BlockBoundary contentKey={chatId}>
-          {entries.map((entry, i) => (
-            <ChatEntryView
-              key={`${entry.type}-${String(i)}`}
-              entry={entry}
-              figma={figma.entries?.[i]}
-              onCopy={onCopy}
-            />
-          ))}
-        </BlockBoundary>
+        <TranscriptEntries chatId={chatId} entries={entries} figma={figma.entries} onCopy={onCopy} />
         {problem === undefined ? null : (
           <TranscriptProblem
             text={problem}
