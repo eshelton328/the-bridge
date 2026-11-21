@@ -9,8 +9,9 @@
 // message box. A press on a row leaves the focus in the box, so the phone's
 // keyboard stays up while the owner picks a skill (`onPick`). A long list
 // (a live chat's, review R34) scrolls inside the popover, which never grows
-// past the room above the composer (the library's `--available-height`), and
-// the highlighted row scrolls into view as the arrow keys move it. A
+// past the smaller of the room above the composer and the library's
+// `shell.pickerHeight` (`maxHeight="picker"`), so it never covers the chat
+// header, and the highlighted row scrolls into view as the arrow keys move it. A
 // project's or a plugin's skill names its source in a badge. A list with no
 // rows says so in one muted line. Props only.
 import { Badge, OptionList, Popover, PopoverSection } from '@eshelton328/component-library-1701'
@@ -96,6 +97,7 @@ export function SkillPicker({
       placement="top-start"
       width={width}
       density="compact"
+      maxHeight="picker"
       autoFocus={autoFocus}
       flip={false}
       trigger={children}

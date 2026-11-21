@@ -320,6 +320,39 @@ describe('the "/" list of a live Claude chat (review R34)', () => {
     expect(document.activeElement).toBe(box)
   })
 
+  it('caps 60 skills at the picker height below the chat header at 390 × 844, with the keyboard down and up', async () => {
+    const chats = withChats()
+    chats.setSkills(
+      plan,
+      Array.from({ length: 60 }, (_, i) => skill(`skill-${String(i).padStart(2, '0')}`, `Step ${String(i)}`)),
+    )
+    const keyboard = fakeKeyboard()
+    await tapWorkspaces(phone)
+    await tapChat('plan the slice')
+    const box = boxOf('plan the slice')
+    const header = box.closest('.scroll-frame__root')?.querySelector(':scope > .scroll-frame__header')
+    if (!(header instanceof HTMLElement)) throw new Error('no chat header')
+    // The library's picker cap (`shell.pickerHeight`, 288 px), the box's border included.
+    const cap = Number.parseFloat(
+      getComputedStyle(document.documentElement).getPropertyValue('--sizes-shell-picker-height'),
+    )
+    expect(cap).toBe(288)
+    for (const height of [844, 544]) {
+      await userEvent.click(box)
+      keyboard.move({ height })
+      await userEvent.keyboard('/')
+      await expect.poll(() => shownNames().length).toBe(62)
+      const list = listBox()
+      // The box stops at the cap and the rows scroll inside it; the chat header over it stays clear.
+      await expect.poll(() => list.getBoundingClientRect().height).toBeLessThanOrEqual(cap + 1)
+      expect(list.getBoundingClientRect().height).toBeGreaterThan(cap - 4)
+      expect(list.scrollHeight).toBeGreaterThan(list.clientHeight + 100)
+      expect(list.getBoundingClientRect().top).toBeGreaterThanOrEqual(header.getBoundingClientRect().bottom)
+      await userEvent.clear(box)
+      await expect.poll(skillGroup).toBeNull()
+    }
+  })
+
   it('filters by what the owner types: names that start with it, then names that hold it, then descriptions', async () => {
     withChats()
     await tapWorkspaces(phone)
