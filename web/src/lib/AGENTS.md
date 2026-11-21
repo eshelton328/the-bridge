@@ -32,6 +32,11 @@ state file and a page are in `screenState.ts` (d-082).
 - Before a check of where an Ark popover or menu sits, wait until its
   positioner has the `--y` zag sets: until zag places it, the positioner
   draws it 100vh above the window (`SkillListHeight.test.tsx`).
+- Wrap a call to React's `act()` in `inAct()` (`testRender.ts`), never
+  `act()` itself: `IS_REACT_ACT_ENVIRONMENT` stays off outside it. With it
+  always on, React wrote a warning with a component stack for each update
+  that a real click or key caused, 36 872 in one CI shard, and a click took
+  5 to 8 s (the-bridge #322, `testRender.test.tsx`).
 - An `afterEach` that changes the viewport first calls
   `await unmountRendered()` (`testRender.ts`): a resize with the app still
   mounted lays it all out again. `testSetup.ts` fails such a test
