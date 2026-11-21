@@ -367,7 +367,7 @@ export function ChatPane(props: ChatPaneProps) {
     [liveChat, transcripts],
   )
   // A live chat opens at its newest entry and follows new ones while the reader is at the end.
-  const { ref: pinRef, newest } = usePinnedEnd(liveChat !== undefined, chatId)
+  const { ref: pinRef, newest } = usePinnedEnd(liveChat !== undefined, chatId, entries.at(-1))
   const label = props.label
   const footerRef = useCallback(
     (el: HTMLDivElement | null) => {

@@ -113,11 +113,19 @@ const typing = (target: EventTarget | null) =>
 /**
  * Pins the transcript of the ScrollFrame around the element that gets the returned `ref` to its end while `enabled`.
  * A new `key` (another chat in the same pane) opens that chat at its end again. `newest` is the button's store.
+ * `last` is the transcript's newest entry: a new one while the reader is away dots the button, even when the
+ * transcript keeps its length and its entries' elements (at the entry limit).
  */
-export function usePinnedEnd(enabled: boolean, key: string): { ref: (el: HTMLElement | null) => void; newest: Newest } {
+export function usePinnedEnd(
+  enabled: boolean,
+  key: string,
+  last: unknown,
+): { ref: (el: HTMLElement | null) => void; newest: Newest } {
   const [scroller, setScroller] = useState<HTMLElement | null>(null)
   const [newest] = useState(newestStore)
   const pinnedRef = useRef(true)
+  // Marks new entries while the reader is away; set while the pin runs.
+  const cameRef = useRef<(() => void) | undefined>(undefined)
   const ref = useCallback((el: HTMLElement | null) => {
     const body = el?.closest('.scroll-frame__root')?.querySelector(':scope > .scroll-frame__body')
     setScroller(body instanceof HTMLElement ? body : null)
@@ -210,6 +218,11 @@ export function usePinnedEnd(enabled: boolean, key: string): { ref: (el: HTMLEle
       follow()
       show()
     })
+    cameRef.current = () => {
+      if (pinnedRef.current) return
+      unseen = true
+      show()
+    }
     newest.bind(() => {
       // The button asks for the end: what the reader did before it is over.
       reader.touching = false
@@ -255,6 +268,7 @@ export function usePinnedEnd(enabled: boolean, key: string): { ref: (el: HTMLEle
     return () => {
       stopSeeking()
       newest.bind(undefined)
+      cameRef.current = undefined
       newest.set(hidden)
       scroller.removeEventListener('scroll', onScroll)
       scroller.removeEventListener('touchmove', onTouchMove)
@@ -272,5 +286,9 @@ export function usePinnedEnd(enabled: boolean, key: string): { ref: (el: HTMLEle
       resize.disconnect()
     }
   }, [enabled, scroller, key, newest])
+  // After the pin's own effect, so a new chat (`key`) opens pinned and its entries dot nothing.
+  useLayoutEffect(() => {
+    cameRef.current?.()
+  }, [last])
   return { ref, newest }
 }

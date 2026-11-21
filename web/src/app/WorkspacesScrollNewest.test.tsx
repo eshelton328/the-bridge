@@ -308,6 +308,30 @@ describe('the button to the newest message', () => {
     await expect.poll(() => buttonIn(root)).not.toBeNull()
   })
 
+  // Codex review of #354: at the entry limit (500) a message and its reply shift the transcript by two, so each element
+  // keeps its type and React reuses it; no element is added, and the dot must still show.
+  it('dots the button for new entries at the entry limit, on the phone', async () => {
+    // Two past the limit, so the line about earlier entries shows from the start.
+    const server = stubLongChats(502)
+    view = await openWorkspaces([390, 844])
+    await userEvent.click(page.getByText('plan the slice', { exact: true }).first())
+    await markdownShown(500)
+    const root = page.getByRole('region', { name: 'plan the slice' }).element()
+    const scroller = scrollerIn(root)
+    await expectAtEnd(scroller)
+    await expect.poll(() => server.openStreams()).toContain(plan)
+    await scrollTo(scroller, 0)
+    await expect.poll(() => buttonIn(root)).not.toBeNull()
+    const before = scroller.children.length
+    server.push(plan, [
+      { type: 'user', id: 'limit-u', text: 'A question at the limit', cut: false },
+      reply('limit-a', 'An answer at the limit.'),
+    ])
+    await expect.element(page.getByText('An answer at the limit.')).toBeInTheDocument()
+    expect(scroller.children.length).toBe(before)
+    await expect.poll(() => buttonIn(root)?.hasAttribute('data-unseen')).toBe(true)
+  })
+
   // The pending bubble of a sent message (PendingEntry, #348) is part of the transcript's end: sent while the reader is
   // away it dots the button, and a tap brings it into view at the end.
   it('counts a pending sent message as part of the end, on the phone', async () => {
