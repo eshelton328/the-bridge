@@ -33,9 +33,11 @@ state file and a page are in `screenState.ts` (d-082).
   clock by the real time it takes. While a held timer must not fire, use
   a DOM event or `element.click()` and wait with `afterRendering()`
   (`InboxPhone.test.tsx`, the long touch that leaves the Inbox).
-- Before a check of where an Ark popover or menu sits, wait until its
-  positioner has the `--y` zag sets: until zag places it, the positioner
-  draws it 100vh above the window (`SkillListHeight.test.tsx`).
+- Before a check of where an Ark popover or menu sits, and before a
+  `{ force: true }` click into one just opened, wait with
+  `expect.poll(() => placed(el)).toBe(true)` (`popoverPlaced.ts`): until
+  zag places it, the positioner draws it 100vh above the window
+  (`SkillListHeight.test.tsx`, `WorkspacesLayoutMove.test.tsx`).
 - Wrap a call to React's `act()` in `inAct()` (`testRender.ts`), never
   `act()` itself: `IS_REACT_ACT_ENVIRONMENT` stays off outside it. With it
   always on, React wrote a warning with a component stack for each update
