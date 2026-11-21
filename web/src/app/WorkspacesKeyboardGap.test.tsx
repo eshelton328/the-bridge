@@ -96,7 +96,7 @@ const cases: GapCase[] = [
 
 describe('the Workspaces composer keeps its space over the keyboard (R36)', () => {
   for (const c of cases)
-    it(`ends ${c.gap} over the keyboard, and over the safe area with it closed: ${c.name}`, async () => {
+    it(`ends ${String(c.gap)} over the keyboard, and over the safe area with it closed: ${c.name}`, async () => {
       await page.viewport(c.viewport[0], c.viewport[1])
       const viewport = new FakeViewport()
       replaceVisualViewport(viewport)
