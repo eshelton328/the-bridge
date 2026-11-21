@@ -1,6 +1,6 @@
 // The chats service: what the server reads of one chat, its stop and its
 // input clear and its commands. A prompt goes through sendPromptWithFiles in uploads.ts.
-import type { ChatId, TranscriptResponse } from '@bridge/contract'
+import type { ChatId, ChatSkillsResponse, TranscriptResponse } from '@bridge/contract'
 import { ok, type Result } from '@bridge/shared'
 import type {
   AgentPort,
@@ -19,6 +19,16 @@ export async function readTranscript(
   const read = await agents.readTranscript(chat)
   if (!read.ok || read.value === null) return read.ok ? ok(null) : read
   return ok({ chat, entries: read.value.entries, earlier: read.value.earlier })
+}
+
+/** The "/" list of `chat`; `null` when this machine has no such chat. */
+export async function readSkills(
+  agents: AgentPort,
+  chat: ChatId,
+): Promise<Result<ChatSkillsResponse | null, AgentPortError>> {
+  const read = await agents.readSkills(chat)
+  if (!read.ok || read.value === null) return read.ok ? ok(null) : read
+  return ok({ chat, skills: read.value })
 }
 
 /** Empties the input box of `chat`; the text it removes goes nowhere. */

@@ -45,6 +45,7 @@ import type {
 import { type SocketFailure, type HerdrStream, herdrRequest, herdrSubscribe } from './herdrSocket.ts'
 import { boxKeys, type InputBox, inputBoxOf, promptKey } from './claudeInput.ts'
 import { readClaudeTranscript } from './claudeTranscript.ts'
+import { readClaudeSkills } from './claudeSkills.ts'
 import { claudeProjectFolder, modelAliasOf, readClaudeSession } from './sessionFile.ts'
 
 const HerdrStatus = z.enum(['idle', 'working', 'blocked', 'done', 'unknown'])
@@ -936,6 +937,14 @@ export function createHerdrAgents({
       const { path, working, cwd } = located.value
       if (path === undefined) return ok({ entries: [], earlier: false })
       return ok(await readClaudeTranscript(path, { working, cwd, home, uploads }))
+    },
+    async readSkills(chat) {
+      const located = await locate(chat)
+      if (!located.ok) return located
+      if (located.value === null) return ok(null)
+      const { claude, cwd } = located.value
+      // Claude Code's own folder holds the projects folder, the owner's skills and commands.
+      return ok(claude ? await readClaudeSkills(cwd, dirname(claudeProjects), home) : [])
     },
     watchTranscript(chat, onChange, onEnd) {
       let over = false

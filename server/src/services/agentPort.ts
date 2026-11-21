@@ -5,6 +5,7 @@
 // answerApproval, each with the contract suite in
 // adapters/agentPortContract.ts.
 import type {
+  ChatSkill,
   ChatId,
   ChatStatus,
   MachineId,
@@ -103,6 +104,11 @@ export type AgentPort = {
    * session, and only when called.
    */
   readTranscript(chat: ChatId): Promise<Result<TranscriptRead | null, AgentPortError>>
+  /**
+   * The "/" list of one chat: for a Claude chat the built-in commands the page sends, then its skills and commands
+   * by name; none for a Codex chat or a shell; `null` when this machine has no such chat. It reads only when called.
+   */
+  readSkills(chat: ChatId): Promise<Result<ChatSkill[] | null, AgentPortError>>
   /**
    * Watches one chat's transcript: `onChange` gets a call each time it may have changed (read it again with
    * `readTranscript`), until `close()`. It watches only that chat's session, with no timer (d-112). When the

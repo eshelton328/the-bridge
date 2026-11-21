@@ -27,6 +27,11 @@ Thin Hono sub-apps, one file for each area, named after the area
   ID with no machine is 400 `invalid-input` and an unknown chat 404
   `not-found`. Transcript text goes only into the 200 body, never into
   a log line or an `ErrorBody` (`app.test.ts`).
+- `GET /api/chats/:chat/skills` (R34) gives the chat's "/" list: the
+  built-in commands the page sends (`compact`, `clear`, `model`,
+  `effort`), then each skill and command by name, with a one-line
+  description and its source; none for a Codex chat or a shell. 400 and
+  404 as the transcript read (`chats.test.ts`).
 - `GET /api/chats/:chat/transcript/events` answers 400 or 404 as the
   read does, before it streams. Then it streams as `/api/events` does:
   each `transcript.changed` event holds only the entries that are new

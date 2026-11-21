@@ -9,6 +9,7 @@ import {
   maxCompactChars,
   maxPromptChars,
   TranscriptChangedEvent,
+  ChatSkillsResponse,
 } from '@bridge/contract'
 import { testClient } from 'hono/testing'
 import { describe, expect, it } from 'vitest'
@@ -505,5 +506,24 @@ describe('POST /api/chats/:chat/focus, /zoom, /swap and /close (W2)', () => {
       expect((await post(themes, write, body)).status).toBe(400)
     }
     expect(await tab()).toMatchObject({ focusedChat: themes, zoomed: false })
+  })
+})
+
+describe('GET /api/chats/:chat/skills', () => {
+  const skillsPath = (id: string) => `/api/chats/${encodeURIComponent(id)}/skills`
+
+  it('gives a chat\'s "/" list in the contract\'s shape, the built-in commands first', async () => {
+    const app = createApp({ agents: createFakeAgents(machine), owner, log: memoryLogger().log })
+    const res = await app.request(skillsPath(themes), { headers: local })
+    expect(res.status).toBe(200)
+    const body = ChatSkillsResponse.parse(await res.json())
+    expect(body.chat).toBe(themes)
+    expect(body.skills.map((s) => s.name)).toEqual(['compact', 'clear', 'model', 'effort', 'writer'])
+  })
+
+  it('answers 404 for an unknown chat and 400 for an ID with no machine', async () => {
+    const app = createApp({ agents: createFakeAgents(machine), owner, log: memoryLogger().log })
+    expect((await app.request(skillsPath('test-mac/nobody'), { headers: local })).status).toBe(404)
+    expect((await app.request(skillsPath('nobody'), { headers: local })).status).toBe(400)
   })
 })

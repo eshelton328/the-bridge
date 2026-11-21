@@ -37,6 +37,7 @@ export {
   StartUploadRequest,
   StartUploadResponse,
 } from './uploads.ts'
+export { ChatSkill, ChatSkillsResponse, maxSkillDescription, maxSkills, SkillSource } from './skills.ts'
 export { ChatStatusEvent, LayoutChangedEvent, LiveEvent, WorkspacesChangedEvent } from './liveEvents.ts'
 export {
   AssistantEntry,
