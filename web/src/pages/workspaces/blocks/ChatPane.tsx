@@ -225,9 +225,20 @@ const footer = css({ display: 'flex', flexDirection: 'column' })
 const earlierLine = css({ display: 'block', textStyle: 'small', color: 'fg.muted' })
 // With `header` the frame is the root: the body's padding of `sizes` moves onto the transcript and the composer, so the
 // header runs edge to edge and the parts sit where they did (M3 105:2784, T2 105:1894).
+// On the keyboard the library's ScrollFrame lifts its footer by `--scroll-frame-dock`, the keyboard's reach over the
+// frame (0 with the keyboard closed), so the footer ends on the keyboard's top. Figma keeps the composer off it: 8 over
+// the iPhone's form bar (M10: 147:79 ends at 456, the keyboard 147:97 starts at 464) and 16 over the iPad's keyboard
+// (T4: 105:2261 ends at 842, the keyboard 105:2293 starts at 858), screen review R36. The space under the composer
+// grows with the dock up to that, so with the keyboard closed it is 0 and the safe area stays under the composer.
 const framed = {
-  phone: { body: css({ px: '16', pt: '12' }), footer: css({ px: '16' }) },
-  tablet: { body: css({ px: '24', pt: '16' }), footer: css({ px: '24' }) },
+  phone: {
+    body: css({ px: '16', pt: '12' }),
+    footer: css({ px: '16', pb: '[min(token(spacing.8), var(--scroll-frame-dock, 0px))]' }),
+  },
+  tablet: {
+    body: css({ px: '24', pt: '16' }),
+    footer: css({ px: '24', pb: '[min(token(spacing.16), var(--scroll-frame-dock, 0px))]' }),
+  },
 }
 
 type ChatPaneBase = {
