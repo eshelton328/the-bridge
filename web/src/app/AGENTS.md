@@ -10,6 +10,9 @@ W-11).
 not-found components, so no route needs a boundary of its own (d-084).
 
 - Only this folder and page entries read stores (`web/src/structure.ts`).
+- [push/AGENTS.md](push/AGENTS.md): read before you change the service
+  worker's registration, the "seen" beat or how a notification opens a
+  chat (d-118).
 - Tests that render a page through the real route tree, loader and page
   store sit here; the Inbox ones share `inboxRouteHelpers.ts`.
 
