@@ -267,6 +267,27 @@ describe('the files sent with a prompt (UserEntry.files)', () => {
       expect(getReports()).toEqual([])
     })
 
+  for (const device of devices)
+    it(`opens a long name in full with a tap on its chip on ${device.name}`, async () => {
+      withPlan([sent('u1', 'Long one', [longName])])
+      await tapWorkspaces(device.size)
+      await tapChat('plan the slice')
+      const chat = chatRegion('plan the slice')
+      const chip = chat.getByRole('group', { name: 'Files sent' }).getByRole('button')
+      await userEvent.click(chip)
+      const full = page.getByRole('dialog', { name: 'File name' })
+      await expect.element(full).toBeVisible()
+      expect(full.element().textContent).toBe(longName)
+      // The whole name wraps inside the popover, and the popover stays on the screen.
+      const box = full.element().getBoundingClientRect()
+      expect(box.left).toBeGreaterThanOrEqual(0)
+      expect(box.right).toBeLessThanOrEqual(window.innerWidth)
+      expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth)
+      await userEvent.keyboard('{Escape}')
+      await expect.element(full).not.toBeInTheDocument()
+      expect(getReports()).toEqual([])
+    })
+
   it('shows the chips in the desktop workbench, and a long name inside its pane', async () => {
     withPlan([sent('u1', 'Desk files', [longName, 'c.txt']), sent('u2', '', ['only.md'])])
     await tapWorkspaces([1512, 982])

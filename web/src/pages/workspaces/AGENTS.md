@@ -47,8 +47,10 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   with files (`UserEntry.files`) shows a chip for each name above its
   text, and a prompt of files alone the chips with no bubble
   (`blocks/ChatEntryView.tsx`, `app/WorkspacesEntryFiles.test.tsx`). A
-  long name truncates in its chip. The library has no sent-file chip
-  yet, so the chips are `MetaChip` (LIBRARY_GAPS.md: Sent file chips).
+  long name truncates in its chip, and a tap on the chip opens the whole
+  name in a popover (`blocks/SentFileChip.tsx`). The library has no
+  sent-file chip yet, so each chip is a `MetaChipButton`
+  (LIBRARY_GAPS.md: Sent file chips).
   A slash command's error output (`ErrorEntry`) shows as an `event`
   entry labelled "Error" with its text.
 - A live Claude chat sends and stops (W1): `liveSend.ts` posts

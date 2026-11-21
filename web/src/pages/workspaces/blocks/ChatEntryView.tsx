@@ -5,26 +5,17 @@
 // shows a quiet line under it (`cut`, slice 3b). A message's and a reply's text
 // is Markdown (`EntryText`). The files sent with a message show as chips above
 // it, as the composer showed them, and a message of files alone shows only the
-// chips; the library has no sent-file chip, so each is a `MetaChip`
-// (LIBRARY_GAPS.md: Sent file chips). The caller names the entry's Figma layer. Memoised by
+// chips (`SentFileChip`). The caller names the entry's Figma layer. Memoised by
 // the entry's identity (review R28), so a keystroke in the composer or another
 // entry's change does not render it again. Props only.
-import {
-  ClipIcon,
-  Inline,
-  Message,
-  MetaChip,
-  ProposalBlock,
-  ProposalCommand,
-  Stack,
-  ToolLine,
-} from '@eshelton328/component-library-1701'
+import { Inline, Message, ProposalBlock, ProposalCommand, Stack, ToolLine } from '@eshelton328/component-library-1701'
 import { memo } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { CopyTextResult } from '../../../lib/copyText.ts'
 import type { ChatEntry } from '../types.ts'
 import { EntryText } from './EntryText.tsx'
 import { ReplyCopyButton } from './ReplyCopyButton.tsx'
+import { SentFileChip } from './SentFileChip.tsx'
 
 // The progress lines keep their leading spaces, as a terminal does.
 const progress = css({ textStyle: 'mono', color: 'fg.muted', whiteSpace: 'pre' })
@@ -70,7 +61,7 @@ export const ChatEntryView = memo(function ChatEntryView({ entry, figma, onAct, 
           <Inline gap="6" wrap role="group" aria-label="Files sent">
             {entry.files.map((name, i) => (
               // The same name may be sent twice; the order is fixed, so its place keys it.
-              <MetaChip key={`${String(i)}:${name}`} label={name} icon={<ClipIcon size="12" />} />
+              <SentFileChip key={`${String(i)}:${name}`} name={name} />
             ))}
           </Inline>
           {bubble}
