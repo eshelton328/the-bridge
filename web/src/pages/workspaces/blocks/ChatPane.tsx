@@ -53,6 +53,7 @@ import {
   useLayoutEffect,
   useRef,
   useState,
+  useSyncExternalStore,
 } from 'react'
 import { css, cx } from '../../../../styled-system/css/index.js'
 import { pickSkill, skillQuery } from '../../../lib/skillQuery.ts'
@@ -68,8 +69,8 @@ import { TranscriptProblem } from './TranscriptProblem.tsx'
 import { type ComposerAnswer, useComposerActions } from './useComposerActions.ts'
 import { usePinnedEnd } from './usePinnedEnd.ts'
 
-/** A live chat's attached files (W1b): the page uploads them, and the composer shows them as chips. */
-export type ChatFiles = {
+/** What a live chat's composer shows of its files now. */
+export type ChatFilesView = {
   readonly chips: readonly ComposerAttachment[]
   /** A file uploads or failed: Send is off. */
   readonly blocked: boolean
@@ -77,9 +78,28 @@ export type ChatFiles = {
   readonly ready: number
   /** The line under the composer about the files, such as "Not attached — too large"; none when not set. */
   readonly line: string | undefined
+}
+
+/**
+ * A live chat's attached files (W1b): the page uploads them, and the composer shows them as chips. The pane reads its
+ * own chat's view, so an upload's progress renders only this composer, never the page, a header or a transcript.
+ */
+export type ChatFiles = {
+  /** Calls `listener` after each change of this chat's files; the result stops it. */
+  readonly subscribe: (listener: () => void) => () => void
+  /** This chat's files now; one object until they change. */
+  readonly view: () => ChatFilesView
   readonly add: (files: File[]) => void
   readonly remove: (id: string) => void
   readonly retry: (id: string) => void
+}
+
+const noSubscribe = () => () => undefined
+const noView = () => undefined
+
+/** `files`' view now, or none; the caller renders again only when this chat's files change. */
+function useFilesView(files: ChatFiles | undefined): ChatFilesView | undefined {
+  return useSyncExternalStore(files?.subscribe ?? noSubscribe, files?.view ?? noView)
 }
 
 /** Reads a live chat's transcript while its pane shows (the page's liveTranscript.ts). */
@@ -380,6 +400,7 @@ export function ChatPane(props: ChatPaneProps) {
     if (step === 0) pick(highlighted)
     else setMoved(shown[(at + step + shown.length) % shown.length]?.name ?? highlighted)
   }
+  const filesView = useFilesView(files)
   // The box is controlled, so the composer never empties it: a sent message empties it here.
   const actions = useComposerActions({
     text,
@@ -392,14 +413,14 @@ export function ChatPane(props: ChatPaneProps) {
       if (drafts !== undefined) drafts.clear(chatId, submitted)
       else if (latestRef.current === submitted) onValueChange('')
     },
-    withFiles: files !== undefined && files.ready > 0,
-    filesHeld: files?.blocked === true,
+    withFiles: filesView !== undefined && filesView.ready > 0,
+    filesHeld: filesView?.blocked === true,
   })
   // A chat that cannot send yet (d-117, a Codex chat until W8): its disabled composer sends nothing.
   const send = (submitted: string): boolean | Promise<boolean> =>
     composer.notLive !== undefined ? false : actions.send(submitted)
   // With every file ready and no text, the composer submits '' (library beta.95).
-  const sendDisabled = actions.tooLong || actions.sending || files?.blocked === true
+  const sendDisabled = actions.tooLong || actions.sending || filesView?.blocked === true
   const onPicked = (event: ChangeEvent<HTMLInputElement>) => {
     const picked = Array.from(event.currentTarget.files ?? [])
     // Emptied, so the same file can be picked again.
@@ -410,7 +431,7 @@ export function ChatPane(props: ChatPaneProps) {
   const attachProps =
     files !== undefined
       ? {
-          attachments: files.chips,
+          attachments: filesView?.chips ?? [],
           onRemoveAttachment: files.remove,
           onRetryAttachment: files.retry,
           onAttach: () => {
@@ -512,8 +533,8 @@ export function ChatPane(props: ChatPaneProps) {
   const sendLine =
     actions.line !== undefined ? (
       <ComposerLine text={actions.line} onRetry={actions.retry} onClearInput={actions.clearInput} />
-    ) : files?.line !== undefined ? (
-      <ComposerLine text={files.line} />
+    ) : filesView?.line !== undefined ? (
+      <ComposerLine text={filesView.line} />
     ) : null
   // The device's file picker, which the paperclip opens: any type, and no capture, so a phone offers Photos, Camera and
   // Files.

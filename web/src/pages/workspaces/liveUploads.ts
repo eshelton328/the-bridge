@@ -17,6 +17,11 @@
 // files past `maxAttachments` are not added. Remove aborts the chunk in
 // flight and deletes the upload (a 404 is fine).
 //
+// Each chat's composers subscribe to that chat alone (`subscribeChat`,
+// `chatView`): a change tells only the chats whose view changed, and a
+// chunk's progress goes out at most once an animation frame, so an upload
+// never renders the page (the #329 flake).
+//
 // Each failed chip says why in the composer's line, "Not attached — <why>".
 // report() gets a ChatUploadMissError only for a 5xx and an answer the page
 // does not expect, with the step, the kind and the status: never the file's
@@ -171,7 +176,10 @@ const inSend = new Set<UploadId>()
 const removedInSend = new Map<UploadId, UploadId>()
 let seq = 0
 let views = new Map<string, ChatUploads>()
-const listeners = new Set<() => void>()
+/** The listeners of each chat's composer: a change tells only the chats whose view changed. */
+const listeners = new Map<string, Set<() => void>>()
+/** The animation frame that publishes the progress of the chunks on their way; none when none is due. */
+let progressFrame: number | undefined
 
 function viewOf(chat: string): ChatUploads {
   const mine = uploads.filter((u) => u.chat === chat)
@@ -193,18 +201,63 @@ function viewOf(chat: string): ChatUploads {
   }
 }
 
+const sameChip = (a: ComposerAttachment, b: ComposerAttachment | undefined) =>
+  a.id === b?.id && a.name === b.name && a.status === b.status && a.progress === b.progress && a.retry === b.retry
+
+/** Whether two views of a chat draw the same: a change keeps the earlier object, so its composer does not render. */
+const sameView = (a: ChatUploads, b: ChatUploads | undefined) =>
+  a.blocked === b?.blocked &&
+  a.line === b.line &&
+  a.chips.length === b.chips.length &&
+  a.chips.every((chip, i) => sameChip(chip, b.chips[i])) &&
+  a.ready.length === b.ready.length &&
+  a.ready.every((id, i) => id === b.ready[i])
+
+/** Publishes the uploads now: each chat whose view changed tells its composers, and no other chat's. */
 function changed() {
+  if (progressFrame !== undefined) cancelAnimationFrame(progressFrame)
+  progressFrame = undefined
+  const before = views
   const chats = new Set([...uploads.map((u) => u.chat), ...limitLines.keys()])
-  views = new Map([...chats].map((chat) => [chat, viewOf(chat)]))
-  for (const listener of listeners) listener()
+  views = new Map(
+    [...chats].map((chat) => {
+      const view = viewOf(chat)
+      const earlier = before.get(chat)
+      return [chat, earlier !== undefined && sameView(view, earlier) ? earlier : view]
+    }),
+  )
+  for (const chat of new Set([...before.keys(), ...views.keys()])) {
+    if (before.get(chat) === views.get(chat)) continue
+    for (const listener of [...(listeners.get(chat) ?? [])]) listener()
+  }
 }
 
-/** Calls `listener` on each change of any chat's uploads; the result stops it. */
-export function subscribeUploads(listener: () => void): () => void {
-  listeners.add(listener)
+/**
+ * A chunk's progress, published at most once an animation frame: a browser sends many progress events for each 8 MiB
+ * chunk, and each one rendered the composer. A status change publishes at once (`changed`), with the progress too.
+ */
+function progressed() {
+  if (progressFrame !== undefined) return
+  progressFrame = requestAnimationFrame(() => {
+    progressFrame = undefined
+    changed()
+  })
+}
+
+/** Calls `listener` on each change of `chat`'s uploads (its pane ID); the result stops it. */
+export function subscribeChat(chat: string, listener: () => void): () => void {
+  const forChat = listeners.get(chat) ?? new Set()
+  forChat.add(listener)
+  listeners.set(chat, forChat)
   return () => {
-    listeners.delete(listener)
+    forChat.delete(listener)
+    if (forChat.size === 0) listeners.delete(chat)
   }
+}
+
+/** `chat`'s uploads now; one object until they change. */
+export function chatView(chat: string): ChatUploads {
+  return views.get(chat) ?? noUploads
 }
 
 /** Each chat's uploads now, by its pane ID; one object until the next change. */
@@ -250,7 +303,7 @@ function putChunk(u: Upload, upload: UploadId, n: number, bytes: Blob): Promise<
     xhr.timeout = chunkTimeoutMs
     xhr.upload.onprogress = (event) => {
       u.sending = Math.min(event.loaded, bytes.size)
-      changed()
+      progressed()
     }
     let timedOut = false
     xhr.ontimeout = () => {
@@ -345,7 +398,8 @@ async function chunks(u: Upload, upload: UploadId): Promise<Miss | undefined> {
     if (miss !== undefined) return miss
     u.next = n + 1
     u.sent += bytes.size
-    changed()
+    // Only the chip's progress moved: it goes out with the next frame's.
+    progressed()
   }
   return undefined
 }

@@ -5,13 +5,21 @@
 // chat and a shell have none. The uploads outlive the page: a visit to
 // another page and back finds them where they were.
 import type { UploadId } from '@bridge/contract'
-import { useCallback, useEffect, useState, useSyncExternalStore } from 'react'
-import type { ChatFiles } from './blocks/ChatPane.tsx'
+import { useCallback, useEffect, useState } from 'react'
+import type { ChatFiles, ChatFilesView } from './blocks/ChatPane.tsx'
 import type * as LiveUploads from './liveUploads.ts'
 
-const noViews: ReadonlyMap<string, LiveUploads.ChatUploads> = new Map()
-const noSubscribe = () => () => undefined
-const getNoViews = () => noViews
+// The composer's view of each chat's uploads, made once for each change of them, so a pane's snapshot stays one object.
+const shownViews = new WeakMap<LiveUploads.ChatUploads, ChatFilesView>()
+// One source for each chat of the loaded module, so a pane does not subscribe again on each render.
+const sourcesOf = new WeakMap<typeof LiveUploads, Map<string, ChatFiles>>()
+const viewFor = (uploads: LiveUploads.ChatUploads): ChatFilesView => {
+  const known = shownViews.get(uploads)
+  if (known !== undefined) return known
+  const view = { chips: uploads.chips, blocked: uploads.blocked, ready: uploads.ready.length, line: uploads.line }
+  shownViews.set(uploads, view)
+  return view
+}
 
 export type LiveFiles = {
   /** The files of the composer of `chat` (its pane ID) whose server ID is `liveChat`; none when not live. */
@@ -43,16 +51,18 @@ export function useLiveUploads(on: boolean): LiveFiles {
     }
   }, [on])
   const shown = on ? live : undefined
-  const views = useSyncExternalStore(shown?.subscribeUploads ?? noSubscribe, shown?.uploadViews ?? getNoViews)
+  // The page never subscribes to the uploads: a change renders only the composers of its chat (the #329 flake).
   const filesOf = useCallback(
     (chat: string, liveChat: string | undefined): ChatFiles | undefined => {
       if (shown === undefined || liveChat === undefined) return undefined
-      const view = views.get(chat)
-      return {
-        chips: view?.chips ?? [],
-        blocked: view?.blocked ?? false,
-        ready: view?.ready.length ?? 0,
-        line: view?.line,
+      const key = `${chat}\n${liveChat}`
+      const sources = sourcesOf.get(shown) ?? new Map<string, ChatFiles>()
+      sourcesOf.set(shown, sources)
+      const known = sources.get(key)
+      if (known !== undefined) return known
+      const source: ChatFiles = {
+        subscribe: (listener) => shown.subscribeChat(chat, listener),
+        view: () => viewFor(shown.chatView(chat)),
         add: (files) => {
           shown.addFiles(chat, liveChat, files)
         },
@@ -63,8 +73,10 @@ export function useLiveUploads(on: boolean): LiveFiles {
           shown.retryFile(chat, id)
         },
       }
+      sources.set(key, source)
+      return source
     },
-    [shown, views],
+    [shown],
   )
   return {
     filesOf,
