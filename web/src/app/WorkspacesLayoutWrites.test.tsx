@@ -326,7 +326,7 @@ describe('focus (W2)', () => {
   })
 
   it("opens a sidebar row's chat of a zoomed tab beside the sidebar, as of any tab", async () => {
-    const fakes = withChats()
+    withChats()
     await tapWorkspaces(desktop)
     await userEvent.click(page.getByText('review notes', { exact: true }).first())
     await expect.element(page.getByRole('heading', { name: 'review notes' })).toBeVisible()
