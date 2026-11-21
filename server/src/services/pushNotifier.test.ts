@@ -49,6 +49,7 @@ function setup(stored: StoredSubscription[], answer: (s: PushSubscriptionRequest
     sent,
     seen,
     settle,
+    store,
     watches: () => watches,
     stored: () => list,
     later: (ms: number) => (time += ms),
@@ -123,6 +124,16 @@ describe('the push notifier', () => {
     expect(t.stored()).toEqual([])
     expect(t.agents.subscriptions()).toBe(0)
     t.notifier.close()
+  })
+
+  it('opens no watch when the last subscription is removed during the first list read', async () => {
+    const t = setup([sub(1)])
+    const first = t.notifier.refresh()
+    await t.store.remove(sub(1).endpoint)
+    await t.notifier.refresh()
+    await first
+    await t.settle()
+    expect(t.agents.subscriptions()).toBe(0)
   })
 
   it('holds no watch of the agents while no subscription is stored', async () => {

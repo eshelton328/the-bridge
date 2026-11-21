@@ -81,6 +81,9 @@ export function createPushNotifier({ agents, store, sender, seen, log, retryMs =
 
   const open = async () => {
     await learn()
+    // A remove during the list read leaves no subscription; then no watch opens.
+    const still = await store.subscriptions()
+    if (closed || !still.ok || still.value.length === 0) return
     watch = agents.subscribe(
       (event) => {
         if (event.type === 'workspacesChanged') {
@@ -111,6 +114,7 @@ export function createPushNotifier({ agents, store, sender, seen, log, retryMs =
       await opening
     }
     if (!wanted) {
+      await opening
       watch?.close()
       watch = undefined
     }
