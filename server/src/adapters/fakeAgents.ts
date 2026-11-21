@@ -100,6 +100,12 @@ export type FakeAgents = AgentPort & {
   readonly inputs: () => FakeInput[]
   /** Puts `text` in a chat's input box, as the owner typing in its terminal; '' empties the box. */
   readonly typeInput: (chat: ChatId, text: string) => void
+  /**
+   * The chat's next prompt stays in its box, as a lost Enter leaves it; the fake then answers as the port does. The
+   * fake keeps a box for a Codex chat as for a Claude chat, so the contract suite's chat (a Codex chat here) can hold
+   * text; the herdr adapter clears only a Claude chat's box (`noCommands`, `herdrAgents.test.ts`).
+   */
+  readonly dropNextEnter: (chat: ChatId) => void
 }
 
 /** The fake's layout of a workspace: one tab with its chats side by side, the first focused; null with no chat. */
@@ -162,6 +168,7 @@ export function createFakeAgents(
   const inputs: FakeInput[] = []
   /** The text in each chat's input box; the fake's stop puts no prompt back, as the real port clears it. */
   const drafts = new Map<ChatId, string>()
+  const dropEnter = new Set<ChatId>()
   const chatOf = (chat: ChatId) => (data ?? []).flatMap((w) => w.chats).find((c) => c.id === chat)
   const tell = (event: AgentEvent) => {
     for (const listener of [...listeners]) listener.onEvent(event)
@@ -250,8 +257,22 @@ export function createFakeAgents(
       if (found.kind === 'shell') return Promise.resolve(ok('shell'))
       if (found.status === 'needsYou') return Promise.resolve(ok('needsYou'))
       if ((drafts.get(chat) ?? '') !== '') return Promise.resolve(ok('inputNotEmpty'))
+      // The port removes a prompt that the chat did not take, so the box is empty again.
+      if (dropEnter.delete(chat)) return Promise.resolve(ok('notSubmitted'))
       inputs.push({ chat, text })
       return Promise.resolve(ok('sent'))
+    },
+    dropNextEnter: (chat) => {
+      dropEnter.add(chat)
+    },
+    clearInputBox(chat) {
+      if ('error' in answer) return Promise.resolve(err(answer.error))
+      const found = chatOf(chat)
+      if (found === undefined) return Promise.resolve(ok('notFound'))
+      if (found.kind === 'shell') return Promise.resolve(ok('shell'))
+      if (found.status === 'needsYou') return Promise.resolve(ok('needsYou'))
+      drafts.delete(chat)
+      return Promise.resolve(ok('cleared'))
     },
     cancel(chat) {
       if ('error' in answer) return Promise.resolve(err(answer.error))

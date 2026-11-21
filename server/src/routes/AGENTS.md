@@ -36,7 +36,10 @@ Thin Hono sub-apps, one file for each area, named after the area
   so the typed client knows the body; malformed JSON is 400, not a throw. A sent input is 204; an unknown chat is 404; a shell, a chat
   that waits for the owner, or a stop to a chat that does not work is
   409 `chat-not-ready` with that state; a prompt to a chat whose input box
-  holds text is 409 `inputNotEmpty`. The prompt text goes only to the
+  holds text is 409 `inputNotEmpty`, and a prompt the chat did not take
+  is 409 `notSubmitted` (or `inputNotEmpty` when its text stays). `POST /api/chats/:chat/input/clear` takes an
+  empty JSON object and empties the box: 204, or 409 `inputNotEmpty`
+  when text stays, `noCommands` for a Codex chat. The prompt text goes only to the
   port: never into a log line or an `ErrorBody`, whose issues name the
   field and the rule (`chats.test.ts`).
 - A route takes its services or ports as function arguments; it never

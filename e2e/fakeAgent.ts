@@ -13,10 +13,12 @@
 // <projects>/received/<title>.jsonl, so a test can read what the chat got
 // (receivedBy.ts). It draws an input box as Claude Code does (a rule, "❯"
 // and the text, a rule): an Escape puts the last prompt back in an empty
-// box, and ctrl+u deletes one line, or the line break before it. With no
+// box, and ctrl+u deletes one line, or the line break before it. When
+// <projects>/drop-enter/<title> is there, it takes the next Enter as lost
+// (the text stays in the box) and removes the file. With no
 // session it reports itself idle after an Escape, as a stopped turn ends.
 //   node e2e/fakeAgent.ts <claude projects folder> <session id | -> <title>
-import { appendFileSync, mkdirSync, writeFileSync } from 'node:fs'
+import { appendFileSync, existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import { createConnection } from 'node:net'
 import { join } from 'node:path'
 
@@ -121,6 +123,7 @@ drawBox('')
 const receivedFolder = join(projects, 'received')
 mkdirSync(receivedFolder, { recursive: true })
 const receivedFile = join(receivedFolder, `${encodeURIComponent(title)}.jsonl`)
+const dropFile = join(projects, 'drop-enter', encodeURIComponent(title))
 const record = (item: { readonly text: string } | { readonly stop: true }) => {
   appendFileSync(receivedFile, `${JSON.stringify(item)}\n`)
 }
@@ -143,6 +146,8 @@ process.stdin.on('data', (chunk: string) => {
       }
     } else if (key === '\x15') {
       typed = typed.endsWith('\n') ? typed.slice(0, -1) : typed.slice(0, typed.lastIndexOf('\n') + 1)
+    } else if ((key === '\r' || key === '\n') && existsSync(dropFile)) {
+      rmSync(dropFile)
     } else if (key === '\r' || key === '\n') {
       if (typed !== '') record({ text: typed })
       last = typed

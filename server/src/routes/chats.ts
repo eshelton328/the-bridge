@@ -7,9 +7,11 @@
 // POST /:chat/prompt sends the owner's prompt to that chat, and POST
 // /:chat/stop stops its work (slice W1); each answers 204. Both take only
 // JSON, so a cross-site form cannot post. The prompt text goes to the
-// port only, never into a log line or an ErrorBody.
+// port only, never into a log line or an ErrorBody. POST /:chat/input/clear
+// empties the chat's input box (204); the text it removes goes nowhere.
 import {
   ChatId,
+  ClearInputRequest,
   ErrorBody,
   maxPromptChars,
   SendPromptRequest,
@@ -25,8 +27,8 @@ import type { z } from 'zod'
 import { type SSEStreamingApi, streamSSE } from 'hono/streaming'
 import { type AppEnv, agentErrorBody, agentErrorJson, errorJson, internalMessage } from '../errors.ts'
 import type { Logger } from '../logger.ts'
-import type { AgentPort, AgentPortError, CancelOutcome, SendOutcome } from '../services/agentPort.ts'
-import { readTranscript, sendPrompt, stopChat } from '../services/chats.ts'
+import type { AgentPort, AgentPortError, CancelOutcome, ClearOutcome, PromptOutcome } from '../services/agentPort.ts'
+import { clearInput, readTranscript, sendPrompt, stopChat } from '../services/chats.ts'
 import { connectTranscript } from '../services/transcriptEvents.ts'
 
 const pingMs = 25_000
@@ -82,9 +84,10 @@ export function chatsRoutes(agents: AgentPort, log: Logger) {
       })
     })
   /** The answer to a send or a stop: 204 when sent; the chat's state when it cannot take it. */
-  const answer = (c: Context<AppEnv>, outcome: SendOutcome | CancelOutcome) => {
+  const answer = (c: Context<AppEnv>, outcome: PromptOutcome | CancelOutcome | ClearOutcome) => {
     switch (outcome) {
       case 'sent':
+      case 'cleared':
         return c.body(null, 204)
       case 'notFound':
         return notFound(c)
@@ -99,6 +102,16 @@ export function chatsRoutes(agents: AgentPort, log: Logger) {
         })
       case 'notWorking':
         return errorJson(c, 'chat-not-ready', { state: 'notWorking', message: 'the chat has no work to stop' })
+      case 'noCommands':
+        return errorJson(c, 'chat-not-ready', {
+          state: 'noCommands',
+          message: "the server cannot clear a Codex chat's input",
+        })
+      case 'notSubmitted':
+        return errorJson(c, 'chat-not-ready', {
+          state: 'notSubmitted',
+          message: 'the chat did not take the prompt, so the server removed it; send it again',
+        })
     }
   }
 
@@ -124,6 +137,12 @@ export function chatsRoutes(agents: AgentPort, log: Logger) {
       if (!id.success) return invalid(c)
       const stopped = await stopChat(agents, id.data)
       return stopped.ok ? answer(c, stopped.value) : failed(c, stopped.error)
+    })
+    .post('/:chat/input/clear', jsonOnly, body(ClearInputRequest), async (c) => {
+      const id = chatOf(c)
+      if (!id.success) return invalid(c)
+      const cleared = await clearInput(agents, id.data)
+      return cleared.ok ? answer(c, cleared.value) : failed(c, cleared.error)
     })
     .get('/:chat/transcript', async (c) => {
       const id = chatOf(c)

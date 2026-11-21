@@ -32,7 +32,16 @@ export type AgentEvent =
  * shell, which takes no prompt; `needsYou` when the chat waits for the owner's answer to a question;
  * `inputNotEmpty` when the chat's input box holds text, which the prompt would join, so nothing was sent.
  */
-export type SendOutcome = 'sent' | 'notFound' | 'shell' | 'needsYou' | 'inputNotEmpty'
+type SendOutcome = 'sent' | 'notFound' | 'shell' | 'needsYou' | 'inputNotEmpty'
+
+/** As a send, or `notSubmitted` when the chat did not take the typed prompt, so the port removed the text again. */
+export type PromptOutcome = SendOutcome | 'notSubmitted'
+
+/**
+ * What an input clear did: `cleared` when the box is empty now; as a send for a chat that cannot take it;
+ * `noCommands` for a Codex chat, whose box the port cannot read; `inputNotEmpty` when text stayed.
+ */
+export type ClearOutcome = Exclude<SendOutcome, 'sent'> | 'cleared' | 'noCommands'
 
 /** What a stop did: as a send, or `notWorking` when the chat has no work to stop, so nothing was sent. */
 export type CancelOutcome = Exclude<SendOutcome, 'needsYou' | 'inputNotEmpty'> | 'notWorking'
@@ -78,9 +87,17 @@ export type AgentPort = {
   /**
    * Sends `text` to one Claude or Codex chat as the owner's next prompt, as if typed and sent. It sends to that chat
    * only, and keeps no copy of the text. It sends nothing to a chat whose input box holds text, so two prompts never
-   * join.
+   * join. After the send it reads the box again: when the prompt stays there, the chat did not take it, so the port
+   * removes it and answers `notSubmitted`; when the box keeps text that it cannot remove, or cannot match to the
+   * prompt (such as a long one), it answers `inputNotEmpty`. A prompt that a working chat queues leaves the box, so
+   * it is `sent`.
    */
-  sendPrompt(chat: ChatId, text: string): Promise<Result<SendOutcome, AgentPortError>>
+  sendPrompt(chat: ChatId, text: string): Promise<Result<PromptOutcome, AgentPortError>>
+  /**
+   * Empties the input box of one Claude chat, for text that another client typed there and did not send. The text is
+   * lost, and the port never returns or logs it.
+   */
+  clearInputBox(chat: ChatId): Promise<Result<ClearOutcome, AgentPortError>>
   /**
    * Stops the work of one chat that is working, as one press of Escape in it; a chat that does not work gets nothing.
    * When the chat then puts the stopped prompt back in its input box, and that prompt is the last one this port sent

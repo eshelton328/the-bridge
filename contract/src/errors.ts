@@ -20,11 +20,13 @@ export const ErrorKind = z.discriminatedUnion('kind', [
   /**
    * The chat cannot take the request now (409): it is a shell, it waits for the owner's answer to a question
    * (`needsYou`), it has no work to stop (`notWorking`), its input box holds text that a prompt would join
-   * (`inputNotEmpty`, for a prompt only), or it takes no file (`noAttachments`, a Codex chat, for an upload).
+   * (`inputNotEmpty`, for a prompt, or text that stayed after an input clear), it takes no file (`noAttachments`, a
+   * Codex chat, for an upload), its input box cannot be cleared (`noCommands`, a Codex chat), or it did not take a
+   * prompt that the server typed, so the server removed the text again (`notSubmitted`).
    */
   z.object({
     kind: z.literal('chat-not-ready'),
-    state: z.enum(['shell', 'needsYou', 'notWorking', 'inputNotEmpty', 'noAttachments']),
+    state: z.enum(['shell', 'needsYou', 'notWorking', 'inputNotEmpty', 'noAttachments', 'noCommands', 'notSubmitted']),
     ...common,
   }),
   /** The file is larger than the server takes (413). */

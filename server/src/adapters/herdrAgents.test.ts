@@ -2,7 +2,7 @@ import { appendFileSync, existsSync, mkdirSync, mkdtempSync, statSync, watch, wr
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { ChatId, MachineId, WorkspaceId } from '@bridge/contract'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
 import type { AgentEvent } from '../services/agentPort.ts'
 import { describeAgentPort } from './agentPortContract.ts'
 import { claudeScreen, type FakeHerdrSocket, paneRead, startFakeHerdrSocket } from './fakeHerdrSocket.ts'
@@ -175,6 +175,9 @@ function chatInPane(sock: () => FakeHerdrSocket, list: AgentListReply, pane: str
   // The pane's input box, as Claude Code keeps it: a stop puts the last prompt back, and ctrl+u empties it.
   let box = ''
   let last = ''
+  let dropEnter = false
+  // The prompts whose Enter was lost, which the chat did not get.
+  const lost: string[] = []
   const show = (text: string) => {
     box = text
     sock().set('pane.read', paneRead(pane, claudeScreen(text)))
@@ -182,8 +185,15 @@ function chatInPane(sock: () => FakeHerdrSocket, list: AgentListReply, pane: str
   sock().onRequest((method, params) => {
     if (field(params, 'target') !== pane) return
     const keys = field(params, 'keys')
-    if (method === 'agent.prompt') last = String(field(params, 'text'))
-    else if (method === 'agent.send_keys' && Array.isArray(keys)) {
+    if (method === 'agent.prompt') {
+      last = String(field(params, 'text'))
+      // A lost Enter: the text stays in the box.
+      if (dropEnter) {
+        show(last)
+        lost.push(last)
+      }
+      dropEnter = false
+    } else if (method === 'agent.send_keys' && Array.isArray(keys)) {
       if (keys.includes('esc') && box === '') show(last)
       if (keys.includes('ctrl+u')) show('')
     }
@@ -196,6 +206,10 @@ function chatInPane(sock: () => FakeHerdrSocket, list: AgentListReply, pane: str
     },
     clearInput: () => {
       show('')
+      return Promise.resolve()
+    },
+    dropNextEnter: () => {
+      dropEnter = true
       return Promise.resolve()
     },
     setStatus: (status: 'working' | 'idle') => {
@@ -212,7 +226,10 @@ function chatInPane(sock: () => FakeHerdrSocket, list: AgentListReply, pane: str
           .requests()
           .filter((r) => field(r.params, 'target') === pane)
           .flatMap((r) => {
-            if (r.method === 'agent.prompt') return [`text:${String(field(r.params, 'text'))}`]
+            if (r.method === 'agent.prompt') {
+              const text = String(field(r.params, 'text'))
+              return lost.includes(text) ? [] : [`text:${text}`]
+            }
             const keys = field(r.params, 'keys')
             return r.method === 'agent.send_keys' && Array.isArray(keys)
               ? keys.map((k) => (k === 'esc' ? 'stop' : String(k)))
@@ -322,6 +339,14 @@ describe('herdr agents: input to a chat', () => {
   const chat = ChatId.parse('test-mac/session-a')
   const sentTo = (method: string) => socket.requests().filter((r) => r.method === method).length
 
+  it('clears no input box of a Codex chat, whose screen the adapter does not read, and of one that waits', async () => {
+    const keys = sentTo('agent.send_keys')
+    expect(await port().clearInputBox(ChatId.parse('test-mac/term_2'))).toEqual({ ok: true, value: 'noCommands' })
+    // The recorded list gives bridge-coord herdr's "blocked".
+    expect(await port().clearInputBox(chat)).toEqual({ ok: true, value: 'needsYou' })
+    expect(sentTo('agent.send_keys')).toBe(keys)
+  })
+
   it('sends no prompt to a chat that waits for the owner, and none when herdr says it is blocked', async () => {
     const before = sentTo('agent.prompt')
     // The recorded list gives bridge-coord herdr's "blocked".
@@ -396,6 +421,42 @@ describe('herdr agents: input to a chat', () => {
       socket.set('pane.read', undefined)
       socket.set('agent.list', undefined)
     }
+  })
+
+  describe('a prompt whose Enter the chat did not take', () => {
+    const idle = () => {
+      socket.set('agent.list', {
+        ...results['agent.list'],
+        agents: results['agent.list'].agents.map((a) => (a.pane_id === 'w17:p1' ? { ...a, agent_status: 'idle' } : a)),
+      })
+      socket.set('pane.read', paneRead('w17:p1', claudeScreen('')))
+    }
+    afterEach(() => {
+      socket.onRequest(undefined)
+      socket.set('pane.read', undefined)
+      socket.set('agent.list', undefined)
+    })
+
+    it('answers inputNotEmpty and sends no key when the box is too long to match to the prompt', async () => {
+      idle()
+      const text = Array.from({ length: 20 }, (_, n) => `step ${String(n)}`).join('\n')
+      socket.onRequest((method) => {
+        if (method === 'agent.prompt') socket.set('pane.read', paneRead('w17:p1', claudeScreen(text)))
+      })
+      const keys = sentTo('agent.send_keys')
+      expect(await port().sendPrompt(chat, text)).toEqual({ ok: true, value: 'inputNotEmpty' })
+      expect(sentTo('agent.send_keys')).toBe(keys)
+    })
+
+    it('answers inputNotEmpty when its ctrl+u leaves the prompt in the box', async () => {
+      idle()
+      socket.onRequest((method) => {
+        if (method === 'agent.prompt') socket.set('pane.read', paneRead('w17:p1', claudeScreen('Reply OK.')))
+      })
+      const keys = sentTo('agent.send_keys')
+      expect(await port().sendPrompt(chat, 'Reply OK.')).toEqual({ ok: true, value: 'inputNotEmpty' })
+      expect(sentTo('agent.send_keys')).toBe(keys + 1)
+    })
   })
 
   it('sends no prompt to a box that it cannot read, such as a draft with a line of "─"', async () => {

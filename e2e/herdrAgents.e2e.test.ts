@@ -6,6 +6,7 @@ import { describeAgentPort } from '../server/src/adapters/agentPortContract.ts'
 import { createHerdrAgents } from '../server/src/adapters/herdrAgents.ts'
 import { memoryLogger } from '../server/src/logger.ts'
 import { appendTranscript } from './appendTranscript.ts'
+import { dropNextEnter } from './dropEnter.ts'
 import { clearInput, typeInput } from './paneInput.ts'
 import { receivedBy } from './receivedBy.ts'
 import { renameTab } from './renameTab.ts'
@@ -36,6 +37,7 @@ describeAgentPort('herdr (real session)', () =>
     received: () => receivedBy(inject('statusChat').title),
     typeInput,
     clearInput,
+    dropNextEnter,
     unreachable: createHerdrAgents({
       socket: `${inject('herdrSocket')}.none`,
       machine,
