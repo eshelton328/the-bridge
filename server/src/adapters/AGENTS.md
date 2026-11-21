@@ -111,9 +111,14 @@ client of a socket or a file sits beside them.
   from its terminal; a ratio calls `layout.set_split_ratio` with the
   path as booleans (true for the second part), and herdr's
   `tab_not_found` and `split_not_found` are `notFound`
-  (`herdrAgents.test.ts`). `pane.move` inside one tab does
-  nothing (`same_tab`), so a pane goes to another place in its own tab
-  only by a swap.
+  (`herdrAgents.test.ts`). A move calls `pane.move` to a tab of the
+  chat's own workspace (the part of herdr's tab ID before the colon),
+  with no focus, split beside the `beside` chat's pane (else the tab's
+  focused pane); the moved pane takes the second part, its terminal and
+  agent run on, and a tab whose last pane moves out closes (probe in a
+  test herdr session, 2026-11-21). `pane.move` inside one tab does nothing
+  (`same_tab`), so the adapter answers `sameTab` with no call, and a
+  pane goes to another place in its own tab only by a swap.
 - An input clear empties a Claude chat's box with ctrl+u, for text that
   another client typed there, and reads it again: `cleared` or
   `inputNotEmpty`. A Codex chat gets `noCommands` and no key; the text

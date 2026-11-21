@@ -23,7 +23,8 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
   (`layout.test.ts`). `zoomed` says that the tab shows only its
   focused pane (slice W2). A layout write request is a strict object:
   focus is empty, zoom has `zoomed`, swap the other chat's ID, and close
-  a `confirm` that must be the closed chat's ID; a split has a
+  a `confirm` that must be the closed chat's ID; a move a tab, a
+  direction and an optional `beside` chat; a split has a
   direction, and a ratio request a tab, the path of parts to its split
   and a ratio from `minSplitRatio` to `maxSplitRatio` (0.1 to 0.9, as
   herdr keeps them) (`layout.test.ts`).

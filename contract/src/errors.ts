@@ -24,8 +24,9 @@ export const ErrorKind = z.discriminatedUnion('kind', [
    * on its screen, so it sent nothing (`inputUnreadable`: a dialog, or a box it does not know), it takes no file (`noAttachments`, a
    * Codex chat, for an upload), its input box cannot be cleared (`noCommands`, a Codex chat), or it did not take a
    * prompt that the server typed, so the server removed the text again (`notSubmitted`), it works or a state herdr
-   * cannot tell (`working`, for a command or a close), its tab has one pane, for a zoom (`singlePane`), or the
-   * other chat of a swap is in another tab (`otherTab`).
+   * cannot tell (`working`, for a command or a close), its tab has one pane, for a zoom (`singlePane`), the
+   * other chat of a swap is in another tab (`otherTab`), a move goes to the chat's own tab (`sameTab`), or a move
+   * goes to a tab that shows only one pane (`zoomedTab`).
    */
   z.object({
     kind: z.literal('chat-not-ready'),
@@ -41,6 +42,8 @@ export const ErrorKind = z.discriminatedUnion('kind', [
       'working',
       'singlePane',
       'otherTab',
+      'sameTab',
+      'zoomedTab',
     ]),
     ...common,
   }),

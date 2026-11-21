@@ -6,6 +6,7 @@ import {
   WorkspaceLayout,
   CloseChatRequest,
   FocusChatRequest,
+  MoveChatRequest,
   SwapChatsRequest,
   ZoomChatRequest,
   SetSplitRatioRequest,
@@ -112,6 +113,20 @@ describe('layout', () => {
 })
 
 describe('the layout write requests (W2)', () => {
+  it('takes a move to a tab with a direction, and a beside chat only as a chat ID', () => {
+    const tab = 'mac-mini/w1:t2'
+    expect(MoveChatRequest.parse({ tab, direction: 'column' })).toEqual({ tab, direction: 'column' })
+    expect(MoveChatRequest.safeParse({ tab, direction: 'row', beside: 'mac-mini/claude-1' }).success).toBe(true)
+    for (const body of [
+      { tab },
+      { tab, direction: 'left' },
+      { tab: 'w1:t2', direction: 'row' },
+      { tab, direction: 'row', beside: 'claude-1' },
+      { tab, direction: 'row', pane: 'w1:p1' },
+    ])
+      expect(MoveChatRequest.safeParse(body).success).toBe(false)
+  })
+
   it('takes only their own fields, and a close only with a chat ID as its confirm', () => {
     expect(FocusChatRequest.safeParse({}).success).toBe(true)
     expect(FocusChatRequest.safeParse({ chat: 'mac-mini/c1' }).success).toBe(false)

@@ -399,6 +399,13 @@ export function createFakeAgents(
       tell({ type: 'layoutChanged', workspace: workspace.id })
       return Promise.resolve(ok('done'))
     },
+    moveChat(chat, tab) {
+      if ('error' in answer) return Promise.resolve(err(answer.error))
+      const workspace = workspaceOf(chat)
+      if (workspace === undefined) return Promise.resolve(ok('notFound'))
+      // The fake's workspace has one tab, so the chat's own tab is the only tab it can name.
+      return Promise.resolve(ok(tab === `${workspace.id}:t1` ? 'sameTab' : 'notFound'))
+    },
     swapChats(chat, other) {
       if ('error' in answer) return Promise.resolve(err(answer.error))
       const workspace = workspaceOf(chat)

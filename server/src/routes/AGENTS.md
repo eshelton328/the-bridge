@@ -80,7 +80,11 @@ Thin Hono sub-apps, one file for each area, named after the area
   (`{ direction }`) puts a new shell pane beside the chat: 201 with its
   chat ID. `POST /api/workspaces/:workspace/layout/ratio` (`{ tab, path,
   ratio }`) sets one split's ratio: 204, or 404 for a tab of another
-  workspace or a path with no split. The page reads the layout again on
+  workspace or a path with no split. `POST /api/chats/:chat/move` (`{
+  tab, direction, beside? }`) puts the chat's pane in another tab of its
+  workspace, beside the `beside` chat there: 204, 409 `sameTab` for
+  its own tab, 409 `zoomedTab` for a zoomed tab, and 404 for a tab of
+  another workspace or a `beside` chat of another tab. The page reads the layout again on
   the `layout.changed` event.
 - The JSON checks of each POST route are in `jsonBody.ts`.
 - A route takes its services or ports as function arguments; it never

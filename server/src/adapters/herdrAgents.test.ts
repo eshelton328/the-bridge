@@ -131,6 +131,7 @@ const results = {
   'pane.zoom': { type: 'pane_zoom', zoom: { changed: true, zoomed: true, reason: null } },
   'pane.swap': { type: 'pane_swap', swap: { changed: true, reason: null } },
   'pane.close': { type: 'ok' },
+  'pane.move': { type: 'pane_move', move_result: { changed: true, reason: null } },
   // A shell that runs a job: the foreground group is not the shell's.
   'pane.process_info': {
     type: 'pane_process_info',
@@ -438,6 +439,36 @@ describe('herdr agents: input to a chat', () => {
       const before = sent('pane.swap').length
       expect(await port().swapChats(chat, shell)).toEqual({ ok: true, value: 'otherTab' })
       expect(sent('pane.swap')).toHaveLength(before)
+    })
+
+    it('moves a pane to another tab of its workspace, and none to its own tab, a zoomed tab or another workspace', async () => {
+      const tabs: Readonly<Record<string, string>> = { 'w17:p1': 'w17:t1', 'w17:p2': 'w17:t2' }
+      socket.set('pane.list', {
+        ...results['pane.list'],
+        panes: results['pane.list'].panes.map((p) => ({ ...p, tab_id: tabs[p.pane_id] ?? 'w18:t1' })),
+      })
+      const second = TabId.parse(`${machine}/w17:t2`)
+      expect(await port().moveChat(chat, second, 'column', codex)).toEqual({ ok: true, value: 'done' })
+      expect(sent('pane.move').at(-1)).toEqual({
+        pane_id: 'w17:p1',
+        destination: { type: 'tab', tab_id: 'w17:t2', split: 'down', target_pane_id: 'w17:p2' },
+        focus: false,
+      })
+      const before = sent('pane.move').length
+      expect(await port().moveChat(chat, TabId.parse(`${machine}/w17:t1`), 'row')).toEqual({
+        ok: true,
+        value: 'sameTab',
+      })
+      expect(await port().moveChat(chat, TabId.parse(`${machine}/w18:t1`), 'row')).toEqual({
+        ok: true,
+        value: 'notFound',
+      })
+      expect(await port().moveChat(chat, second, 'row', shell)).toEqual({ ok: true, value: 'notFound' })
+      expect(sent('pane.move')).toHaveLength(before)
+      socket.set('pane.move', { type: 'pane_move', move_result: { changed: false, reason: 'zoomed_tab' } })
+      expect(await port().moveChat(chat, second, 'row')).toEqual({ ok: true, value: 'zoomedTab' })
+      expect(sent('pane.move').at(-1)).toMatchObject({ destination: { split: 'right' } })
+      socket.set('pane.move', results['pane.move'])
     })
 
     it('closes an idle chat or a shell, never one that waits or works, and says when the pane is gone', async () => {

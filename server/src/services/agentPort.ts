@@ -69,6 +69,8 @@ export type PaneWriteOutcome = 'done' | 'notFound'
 export type ZoomOutcome = PaneWriteOutcome | 'singlePane'
 export type SwapOutcome = PaneWriteOutcome | 'otherTab' | 'samePane'
 export type CloseOutcome = PaneWriteOutcome | 'working' | 'needsYou'
+/** What a move did: as a write, or `sameTab` or `zoomedTab` when the tab cannot take the pane, so nothing moved. */
+export type MoveOutcome = PaneWriteOutcome | 'sameTab' | 'zoomedTab'
 /** What a split did: the chat of the new shell pane, or `notFound` when the chat has no pane. */
 export type SplitOutcome = { readonly chat: ChatId } | 'notFound'
 
@@ -150,6 +152,18 @@ export type AgentPort = {
    * the owner; the page asks the owner first, with the chat's name.
    */
   closeChat(chat: ChatId): Promise<Result<CloseOutcome, AgentPortError>>
+  /**
+   * Moves the pane of `chat` to `tab`, another tab of its workspace: the pane of `beside` (else the tab's
+   * focused pane) splits in `direction`, and the moved pane takes its second part. The pane's agent or shell runs
+   * on, and a tab whose last pane moves out closes.
+   * `notFound` for no such chat, tab or `beside` chat in that tab, or a tab of another workspace.
+   */
+  moveChat(
+    chat: ChatId,
+    tab: TabId,
+    direction: SplitDirection,
+    beside?: ChatId,
+  ): Promise<Result<MoveOutcome, AgentPortError>>
   /** Splits the pane of one chat in two, `row` with the new pane on the right, `column` below; the new pane is a shell. */
   splitChat(chat: ChatId, direction: SplitDirection): Promise<Result<SplitOutcome, AgentPortError>>
   /**
