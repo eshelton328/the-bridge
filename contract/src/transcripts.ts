@@ -11,6 +11,7 @@
 import { z } from 'zod'
 import { eventOf } from './events.ts'
 import { ChatId } from './ids.ts'
+import { maxAttachments } from './prompts.ts'
 
 /** The most characters of user or assistant text in one entry; the server cuts longer text and sets `cut`. */
 export const maxEntryText = 65_536
@@ -24,8 +25,19 @@ export type EntryId = z.infer<typeof EntryId>
 
 const Text = { text: z.string().max(maxEntryText), cut: z.boolean() }
 
-/** A prompt the owner sent, as written. */
-export const UserEntry = z.object({ type: z.literal('user'), id: EntryId, ...Text })
+/** The most characters of one attached file's name in a user entry. */
+export const maxEntryFileName = 255
+
+/**
+ * A prompt the owner sent, as written. A prompt sent with files has `files`: the name of each file, never its
+ * path; its text is the owner's own, without the lines that give the chat the paths.
+ */
+export const UserEntry = z.object({
+  type: z.literal('user'),
+  id: EntryId,
+  ...Text,
+  files: z.array(z.string().min(1).max(maxEntryFileName)).min(1).max(maxAttachments).optional(),
+})
 
 /** The agent's reply text, in Markdown, as written. */
 export const AssistantEntry = z.object({ type: z.literal('assistant'), id: EntryId, ...Text })

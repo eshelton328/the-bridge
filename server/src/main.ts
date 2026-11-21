@@ -28,9 +28,17 @@ const terminal: LogSink = {
 }
 const log = createLogger(teeSinks(dailyFiles(logDir), terminal), logLevel).child({ machine })
 handleProcessErrors(process, log)
-const agents = createHerdrAgents({ socket: herdrSocket, machine, log, claudeProjects, home: homedir() })
 // Uploads go beside the database, in a folder only the owner reads (slice W1b).
-const uploads = createDiskUploads({ root: join(dirname(dbFile), 'uploads'), convert: sipsConvert })
+const uploadsRoot = join(dirname(dbFile), 'uploads')
+const agents = createHerdrAgents({
+  socket: herdrSocket,
+  machine,
+  log,
+  claudeProjects,
+  home: homedir(),
+  uploads: uploadsRoot,
+})
+const uploads = createDiskUploads({ root: uploadsRoot, convert: sipsConvert })
 const server = serve(
   { fetch: createApp({ agents, owner, log, uploads }).fetch, port, hostname: '127.0.0.1' },
   (info) => {

@@ -30,7 +30,11 @@ client of a socket or a file sits beside them.
   tool call's name and target, never thinking, a tool's arguments or
   its result. A shell tool's target is its program names, a file tool's
   its path from the chat's folder or with "~", a web tool's its host
-  (`toolTarget.ts`). A line that is not JSON is skipped. Nothing logs
+  (`toolTarget.ts`). A prompt shows as the owner wrote it: the
+  `pasted_content` tags that Claude Code puts around a paste are
+  removed, and the file lines that `uploads.ts` adds below a prompt
+  with files become the entry's `files`, the name of each file only
+  (`claudeTranscript.test.ts`). A line that is not JSON is skipped. Nothing logs
   transcript text. A transcript watch is an `fs.watch` on the session
   file itself (on macOS a folder watch can lose a write as it starts, a
   file watch cannot), with no timer, and a herdr status stream for the

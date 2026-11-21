@@ -232,6 +232,8 @@ export type HerdrAgentsOptions = {
   readonly claudeProjects: string
   /** Starts a file system watch; a test can give one that loses events, as a macOS folder watch can. */
   readonly watch?: (path: string, listener: (event: string, name: string | null) => void) => FSWatcher
+  /** The folder of the owner's uploads; a transcript shows a prompt's files in it by name. */
+  readonly uploads?: string
   /** The owner's home folder: a transcript shows a path in it with "~". */
   readonly home: string
   /** Gets one warning for each herdr status the adapter does not know. */
@@ -264,6 +266,7 @@ export function createHerdrAgents({
   machine,
   claudeProjects,
   home,
+  uploads,
   log,
   watch: watchFs = (path, listener) => watch(path, listener),
   now = Date.now,
@@ -688,7 +691,7 @@ export function createHerdrAgents({
       if (located.value === null) return ok(null)
       const { path, working, cwd } = located.value
       if (path === undefined) return ok({ entries: [], earlier: false })
-      return ok(await readClaudeTranscript(path, { working, cwd, home }))
+      return ok(await readClaudeTranscript(path, { working, cwd, home, uploads }))
     },
     watchTranscript(chat, onChange, onEnd) {
       let over = false

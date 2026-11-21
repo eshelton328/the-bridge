@@ -24,7 +24,8 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
 - A transcript entry has an ID that is stable in its chat; a change
   event replaces the entry with that ID or adds it at the end. A tool
   entry has a name and a short target, never its arguments or its
-  result (`transcripts.test.ts`).
+  result. A user entry of a prompt sent with files has `files`: the
+  file names, never a path (`transcripts.test.ts`).
 - A prompt request holds only its text and at most `maxAttachments`
   upload IDs (a strict object, never a path), and a stop request and an
   input clear request are empty objects; the text may be empty only with

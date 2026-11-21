@@ -41,11 +41,11 @@ async function fileTaker(
   return ok(found.kind === 'claude' ? 'claude' : 'noAttachments')
 }
 
-/** The line before the paths. */
-const attachedLine = 'Attached files (read each one with your tools):'
+/** The line before the paths; the transcript reads it to show the files apart from the prompt's text. */
+export const attachedLine = 'Attached files (read each one with your tools):'
 
 /** The prompt's text with the paths of its files below it. */
-function withAttachments(text: string, paths: readonly string[]): string {
+export function withAttachments(text: string, paths: readonly string[]): string {
   const block = [attachedLine, ...paths.map((path) => `- ${path}`)].join('\n')
   return text.trim() === '' ? block : `${text.trimEnd()}\n\n${block}`
 }

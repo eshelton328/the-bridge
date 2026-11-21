@@ -31,6 +31,7 @@ export {
   TranscriptEntry,
   TranscriptResponse,
   UserEntry,
+  maxEntryFileName,
 } from './transcripts.ts'
 export {
   ChatEffort,

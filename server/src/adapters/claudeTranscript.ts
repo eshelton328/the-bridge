@@ -8,9 +8,16 @@
 // call's name and short target (toolTarget.ts): never thinking, a tool's
 // arguments or a tool's result. Nothing here logs.
 import { open } from 'node:fs/promises'
-import { maxEntryText, maxTranscriptEntries, type TranscriptEntry } from '@bridge/contract'
+import {
+  maxAttachments,
+  maxEntryFileName,
+  maxEntryText,
+  maxTranscriptEntries,
+  type TranscriptEntry,
+} from '@bridge/contract'
 import { z } from 'zod'
 import type { TranscriptRead } from '../services/agentPort.ts'
+import { attachedLine } from '../services/uploads.ts'
 import { type TargetContext, toolTarget } from './toolTarget.ts'
 
 const partBytes = 1024 * 1024
@@ -43,6 +50,35 @@ const textOf = (text: string) => {
 export type TranscriptOptions = TargetContext & {
   /** True when the chat's status is `working`; a tool call with no result is running only then. */
   readonly working: boolean
+  /** The folder of the owner's uploads: a prompt's file lines name files in it. None: a prompt keeps them as text. */
+  readonly uploads?: string | undefined
+}
+
+/** Claude Code's tags around pasted text, with the same ID on both; the text inside is the owner's. */
+const pasted = /<pasted_content id="([^"]{1,100})">\n?([\s\S]*?)\n?<\/pasted_content id="\1">/g
+
+/**
+ * A prompt as the owner wrote it: each paste's tags removed, and the file lines that the server adds below a
+ * prompt with files (`uploads.ts`) taken out, with the name of each file.
+ */
+function promptOf(raw: string, uploads: string | undefined): { text: string; files?: string[] } {
+  // Only blank lines go from the start, so a first line indented as code keeps its indent.
+  const text = raw
+    .replace(pasted, (_all, _id, inner: string) => inner)
+    .replace(/^(?:[ \t]*\n)+/, '')
+    .trimEnd()
+  const at = text.lastIndexOf(attachedLine)
+  if (at < 0 || (at > 0 && !text.slice(0, at).endsWith('\n\n'))) return { text }
+  const lines = text
+    .slice(at + attachedLine.length)
+    .split('\n')
+    .slice(1)
+  // Only paths in the uploads folder are the server's own lines; a prompt that only looks like one stays text.
+  const inUploads = (l: string) => uploads !== undefined && l.startsWith(`- ${uploads}/`)
+  if (lines.length === 0 || lines.length > maxAttachments || !lines.every(inUploads)) return { text }
+  const files = lines.map((l) => (l.split('/').at(-1) ?? '').slice(0, maxEntryFileName))
+  if (files.some((f) => f === '')) return { text }
+  return { text: text.slice(0, at).trimEnd(), files }
 }
 
 /** The entries of one session line, in order; `results` gets the IDs of the tool calls it answers. */
@@ -55,8 +91,9 @@ function entriesOf(value: unknown, options: TranscriptOptions, results: Set<stri
     .flatMap((b) => (b.success ? [b.data] : []))
   if (type === 'user') {
     for (const b of blocks) if (b.type === 'tool_result') results.add(b.tool_use_id)
-    const text = blocks.flatMap((b) => (b.type === 'text' ? [b.text] : [])).join('\n\n')
-    return text === '' ? [] : [{ type: 'user', id: uuid, ...textOf(text) }]
+    const prompt = promptOf(blocks.flatMap((b) => (b.type === 'text' ? [b.text] : [])).join('\n\n'), options.uploads)
+    if (prompt.text === '' && prompt.files === undefined) return []
+    return [{ type: 'user', id: uuid, ...textOf(prompt.text), ...(prompt.files && { files: prompt.files }) }]
   }
   return blocks.flatMap((b, i): TranscriptEntry[] => {
     if (b.type === 'text')

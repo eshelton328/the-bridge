@@ -43,7 +43,9 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   each outage of a shown chat, with the miss kind, the HTTP status and
   the chat ID only, never transcript text, a tool target or the server's
   message (`liveTranscript.test.ts`, `app/WorkspacesLiveTranscript.test.tsx`;
-  the server fake is `lib/fakeTranscriptServer.ts`).
+  the server fake is `lib/fakeTranscriptServer.ts`). A prompt sent
+  with files (`UserEntry.files`) shows a "Files:" line with each name
+  as inline code below its text, until the page draws them as chips.
 - A live Claude chat sends and stops (W1): `liveSend.ts` posts
   `POST /api/chats/:chat/prompt` with `{ text }` and `.../stop` with `{}`
   to the chat whose composer sent it, read at send time, and a 204 empties
