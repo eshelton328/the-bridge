@@ -268,12 +268,6 @@ function setHidden(hidden: boolean) {
   if (!hidden) window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }))
 }
 
-/** Puts the page's own visibility back. */
-function restoreVisibility() {
-  Reflect.deleteProperty(document, 'visibilityState')
-  Reflect.deleteProperty(document, 'hidden')
-}
-
 const devices = [
   { name: 'the phone', size: [390, 844] },
   { name: 'the tablet', size: [756, 1129] },
@@ -375,20 +369,35 @@ function watchFrames(el: HTMLElement): () => number {
   }
 }
 
+/** Shows the desktop workbench with no sidebar and returns the plan pane's transcript scroller. */
+async function planPane(): Promise<HTMLElement> {
+  await tapWorkspaces([1512, 982])
+  await userEvent.click(page.getByRole('button', { name: 'Hide the workspace sidebar' }))
+  await expect.element(page.getByText('plan question 39', { exact: true })).toBeInTheDocument()
+  return paneScroller('plan the slice')
+}
+
+/** Opens the plan chat on the phone and returns its transcript scroller. */
+async function openPlanOnPhone(): Promise<HTMLElement> {
+  await tapWorkspaces([390, 844])
+  return tapChat('plan the slice')
+}
+
 // Screen review R33: the owner sent a message from the end of a long Working chat; Send closed the keyboard, and
 // 1.3 s later the view jumped to entries from hours ago with no touch (the phone's keyboard trace has the scroll
 // 162 ms before the owner's finger came down). One rule now holds for open, Send, a page back from the background
 // and a stream that reconnects: a reader at the end sees the newest entry, with no frame at an old place; a reader
 // who scrolled up keeps the place.
 describe('the end of a live transcript after Send, the background and a reconnect (R33)', () => {
+  // The page's own visibility comes back after each test.
   afterEach(() => {
-    restoreVisibility()
+    Reflect.deleteProperty(document, 'visibilityState')
+    Reflect.deleteProperty(document, 'hidden')
   })
 
   it('goes back to the end in the same frame when a scroll the reader did not make moves it after Send, on the phone', async () => {
     const server = withLong()
-    await tapWorkspaces([390, 844])
-    const scroller = await tapChat('plan the slice')
+    const scroller = await openPlanOnPhone()
     await expectAtEnd(scroller)
     await expect.poll(() => server.openStreams()).toEqual([plan])
     const chat = page.getByRole('region', { name: 'plan the slice' })
@@ -411,23 +420,19 @@ describe('the end of a live transcript after Send, the background and a reconnec
 
   it('goes back to the end in the same frame when a scroll the reader did not make moves a pane, on the desktop', async () => {
     const server = withLong()
-    await tapWorkspaces([1512, 982])
-    await userEvent.click(page.getByRole('button', { name: 'Hide the workspace sidebar' }))
-    await expect.element(page.getByText('plan question 39', { exact: true })).toBeInTheDocument()
-    const planPane = paneScroller('plan the slice')
-    await expectAtEnd(planPane)
+    const pane = await planPane()
+    await expectAtEnd(pane)
     await expect.poll(() => [...server.openStreams()].sort()).toEqual([plan, review])
-    const frames = await strayScroll(planPane, 0)
+    const frames = await strayScroll(pane, 0)
     expect(Math.max(...frames)).toBeLessThanOrEqual(2)
     pushReplies(server, plan, 1, 1)
     await expect.element(page.getByText(/^Reply 1 landed\./)).toBeInTheDocument()
-    await expectAtEnd(planPane)
+    await expectAtEnd(pane)
   })
 
   it('shows the newest entry when the page comes back after entries came in while it was hidden, on the phone', async () => {
     const server = withLong()
-    await tapWorkspaces([390, 844])
-    const scroller = await tapChat('plan the slice')
+    const scroller = await openPlanOnPhone()
     await expectAtEnd(scroller)
     await expect.poll(() => server.openStreams()).toEqual([plan])
     const worst = watchFrames(scroller)
@@ -451,14 +456,7 @@ describe('the end of a live transcript after Send, the background and a reconnec
   ] as const) {
     it(`keeps the newest entry in view through a stream that reconnects and reads the transcript again, on ${device.name}`, async () => {
       const server = withLong()
-      await tapWorkspaces(device.size)
-      let scroller: HTMLElement
-      if (device.name === 'the phone') scroller = await tapChat('plan the slice')
-      else {
-        await userEvent.click(page.getByRole('button', { name: 'Hide the workspace sidebar' }))
-        await expect.element(page.getByText('plan question 39', { exact: true })).toBeInTheDocument()
-        scroller = paneScroller('plan the slice')
-      }
+      const scroller = device.name === 'the phone' ? await openPlanOnPhone() : await planPane()
       await expectAtEnd(scroller)
       await expect.poll(() => server.openStreams()).toContain(plan)
       const worst = watchFrames(scroller)
@@ -474,58 +472,51 @@ describe('the end of a live transcript after Send, the background and a reconnec
 
   it('keeps an older entry in view when the focus moves to it, as Tab or a link does, on the desktop', async () => {
     const server = withLong()
-    await tapWorkspaces([1512, 982])
-    await userEvent.click(page.getByRole('button', { name: 'Hide the workspace sidebar' }))
-    await expect.element(page.getByText('plan question 39', { exact: true })).toBeInTheDocument()
-    const planPane = paneScroller('plan the slice')
-    await expectAtEnd(planPane)
+    const pane = await planPane()
+    await expectAtEnd(pane)
     await expect.poll(() => server.openStreams()).toContain(plan)
     // The Copy of an early reply: focusing it scrolls it into view with no touch, wheel or scroll key.
-    const copy = planPane.querySelectorAll('button')[2]
+    const copy = pane.querySelectorAll('button')[2]
     if (!(copy instanceof HTMLButtonElement)) throw new Error('no Copy button in the transcript')
     copy.focus()
     await afterRendering()
     await afterRendering()
     const box = copy.getBoundingClientRect()
-    const view = planPane.getBoundingClientRect()
+    const view = pane.getBoundingClientRect()
     expect(box.top).toBeGreaterThanOrEqual(view.top)
     expect(box.bottom).toBeLessThanOrEqual(view.bottom)
-    expect(fromEnd(planPane)).toBeGreaterThan(planPane.clientHeight)
+    expect(fromEnd(pane)).toBeGreaterThan(pane.clientHeight)
     // An entry that comes in leaves the reader there.
-    const place = planPane.scrollTop
+    const place = pane.scrollTop
     pushReplies(server, plan, 1, 1)
     await expect.element(page.getByText(/^Reply 1 landed\./)).toBeInTheDocument()
     await afterRendering()
-    expect(planPane.scrollTop).toBe(place)
+    expect(pane.scrollTop).toBe(place)
   })
 
   it('lets a mouse text selection scroll up past the top of the transcript, on the desktop', async () => {
     const server = withLong()
-    await tapWorkspaces([1512, 982])
-    await userEvent.click(page.getByRole('button', { name: 'Hide the workspace sidebar' }))
-    await expect.element(page.getByText('plan question 39', { exact: true })).toBeInTheDocument()
-    const planPane = paneScroller('plan the slice')
-    await expectAtEnd(planPane)
+    const pane = await planPane()
+    await expectAtEnd(pane)
     await expect.poll(() => server.openStreams()).toContain(plan)
     // The owner presses on an entry's text and drags up past the pane's top: the browser scrolls the pane up.
     const text = page.getByText('plan question 39', { exact: true }).element()
     text.dispatchEvent(new PointerEvent('pointerdown', { pointerType: 'mouse', button: 0, bubbles: true }))
     for (let i = 0; i < 4; i += 1) {
       const scrolled = new Promise((resolve) => {
-        planPane.addEventListener('scroll', resolve, { once: true })
+        pane.addEventListener('scroll', resolve, { once: true })
       })
-      planPane.scrollTop -= 150
+      pane.scrollTop -= 150
       await scrolled
       await afterRendering()
     }
-    expect(fromEnd(planPane)).toBeGreaterThanOrEqual(590)
+    expect(fromEnd(pane)).toBeGreaterThanOrEqual(590)
     window.dispatchEvent(new PointerEvent('pointerup', { pointerType: 'mouse', button: 0 }))
   })
 
   it("keeps a fling's place: scroll events after the finger lifts are not moved back, on the phone", async () => {
     const server = withLong()
-    await tapWorkspaces([390, 844])
-    const scroller = await tapChat('plan the slice')
+    const scroller = await openPlanOnPhone()
     await expectAtEnd(scroller)
     await expect.poll(() => server.openStreams()).toEqual([plan])
     // The finger moves up and the view follows it, then the finger lifts.
@@ -564,8 +555,7 @@ describe('the end of a live transcript after Send, the background and a reconnec
 
   it('keeps the first entry in view for a reader who scrolled up, through the background and a reconnect, on the phone', async () => {
     const server = withLong()
-    await tapWorkspaces([390, 844])
-    const scroller = await tapChat('plan the slice')
+    const scroller = await openPlanOnPhone()
     await expectAtEnd(scroller)
     await expect.poll(() => server.openStreams()).toEqual([plan])
     await scrollUp(scroller, Math.round(scroller.scrollHeight / 2))
