@@ -645,7 +645,13 @@ export function ChatPane(props: ChatPaneProps) {
       <>
         {earlier === undefined ? null : <span className={earlierLine}>{earlier}</span>}
         {empty === undefined || pendingViews.length > 0 ? null : <span className={earlierLine}>{empty}</span>}
-        <TranscriptEntries chatId={chatId} entries={entries} figma={figma.entries} onCopy={onCopy} />
+        <TranscriptEntries
+          chatId={chatId}
+          entries={entries}
+          figma={figma.entries}
+          onCopy={onCopy}
+          working={composer.running}
+        />
         {pendingViews.map((view) => (
           <PendingEntry key={view.key} text={view.text} files={view.files} sending={view.sending} />
         ))}

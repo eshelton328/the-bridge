@@ -518,7 +518,16 @@ export function chatEntryOf(entry: TranscriptEntry, kind: AgentKind): ChatEntry 
     case 'assistant':
       return { type: 'assistant', kind, name: agentNames[kind], text: entry.text, copy: 'Copy', ...cut }
     case 'tool':
-      return { type: 'tool', name: entry.name, target: entry.target, running: entry.running }
+      // R32: the kind, title and label when the server sends them (backend #371); an older server's entry has none.
+      return {
+        type: 'tool',
+        name: entry.name,
+        target: entry.target,
+        running: entry.running,
+        ...(entry.kind === undefined ? {} : { kind: entry.kind }),
+        ...(entry.title === undefined ? {} : { title: entry.title }),
+        ...(entry.label === undefined ? {} : { label: entry.label }),
+      }
     case 'error':
       return { type: 'event', label: transcriptText.error, text: entry.text }
   }

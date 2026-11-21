@@ -64,6 +64,10 @@
 // result it does not keep (`forgetSends`, as after a restart); the test can
 // set a result (`setSendResult`) or answer the read itself
 // (`answerSendResults`). Each read's send ID is in `resultReads`.
+//
+// R32 (backend #371): `toolCall` makes a tool entry as the server sends it,
+// with its kind, its readable title and its label (the call's own
+// description, "" when it has none), checked against the contract.
 import {
   type ChatSkill,
   ChatSkillsResponse,
@@ -76,7 +80,8 @@ import {
   SendResultResponse,
   StopChatRequest,
   TranscriptChangedEvent,
-  type TranscriptEntry,
+  TranscriptEntry,
+  type ToolKind,
   TranscriptResponse,
 } from '@bridge/contract'
 import { type FakeUploadOptions, fakeUploadServer } from './fakeUploadServer.ts'
@@ -90,6 +95,24 @@ const notFound = (path: string) =>
     status: 404,
     headers: { 'content-type': 'application/json', 'X-Request-Id': 'r-404' },
   })
+
+/** A tool entry as a server with backend #371 sends it: `name` called as `kind`, shown as `title`, with its `label`. */
+export function toolCall(
+  id: string,
+  name: string,
+  call: { readonly kind: ToolKind; readonly title: string; readonly label?: string; readonly running?: boolean },
+): TranscriptEntry {
+  return TranscriptEntry.parse({
+    type: 'tool',
+    id,
+    name,
+    target: '',
+    running: call.running ?? false,
+    kind: call.kind,
+    title: call.title,
+    label: call.label ?? '',
+  })
+}
 
 /** An answer the test picks for a send, a stop or a clear: such as a 503, or one that waits until the test ends it. */
 type ActionAnswer = () => Response | Promise<Response>
