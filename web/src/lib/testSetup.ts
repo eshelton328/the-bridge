@@ -1,8 +1,10 @@
 // Setup for each web browser test file (vitest.config.ts). It wraps page.viewport() with the guard in
 // viewportGuard.ts, so an afterEach that resizes before it unmounts the test's views fails the test. It wraps fetch
-// with the guard in serverGuard.ts, so a test that reads the real server with no stub fails.
-import { afterEach, beforeEach } from 'vitest'
+// with the guard in serverGuard.ts, so a test that reads the real server with no stub fails. Before a file's tests it
+// loads every font face the file's CSS declares (loadFonts.ts), so no test measures text in a fallback font.
+import { afterEach, beforeAll, beforeEach } from 'vitest'
 import { page } from 'vitest/browser'
+import { loadDeclaredFonts } from './loadFonts.ts'
 import { serverReadError } from './serverGuard.ts'
 import { mountedViews } from './testRender.ts'
 import { viewportChangeError } from './viewportGuard.ts'
@@ -37,4 +39,9 @@ globalThis.fetch = (input: RequestInfo | URL, init?: RequestInit) => {
 afterEach(() => {
   const reads = serverReads.splice(0)
   if (reads.length > 0) throw new Error(reads.join('\n'))
+})
+
+// The test file's imports (its CSS and fonts) have run by now; its tests have not.
+beforeAll(async () => {
+  await loadDeclaredFonts()
 })
