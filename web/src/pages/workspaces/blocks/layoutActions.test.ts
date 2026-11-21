@@ -25,6 +25,8 @@ describe('withLayoutActions (W2)', () => {
       'focus:Focus in terminal',
       'zoom:Zoom pane',
       'swap:Swap with…',
+      'splitRight:Split right',
+      'splitDown:Split down',
       'close:Close pane…',
     ])
     expect(values(withLayoutActions(sample, data, 'b', 'pane'))).toContain('unzoom:Unzoom pane')
@@ -40,13 +42,27 @@ describe('withLayoutActions (W2)', () => {
     expect(values(withLayoutActions(sample, data, 'a', 'chat'))).not.toContain('focus:Focus in terminal')
   })
 
-  it("gives a tab's only pane Close pane… alone, and a chat's actions Close pane… last", () => {
+  it("gives a tab's only pane Split right, Split down and Close pane…, and a chat's actions Close pane… last", () => {
     // herdr focuses e, its tab's only pane.
-    expect(values(withLayoutActions(sample, data, 'e', 'pane'))).toEqual(['rename:Rename chat', 'close:Close pane…'])
+    expect(values(withLayoutActions(sample, data, 'e', 'pane'))).toEqual([
+      'rename:Rename chat',
+      'splitRight:Split right',
+      'splitDown:Split down',
+      'close:Close pane…',
+    ])
     expect(values(withLayoutActions([{ value: 'fork', label: 'Fork' }], data, 'a', 'chat'))).toEqual([
       'fork:Fork',
       'close:Close pane…',
     ])
+  })
+
+  it('turns the splits off while herdr zooms the tab, and offers them only in the workbench (W2c)', () => {
+    const split = (chat: string, where: 'pane' | 'desktopChat' | 'chat') =>
+      withLayoutActions(sample, data, chat, where).filter((a) => a.value === 'splitRight' || a.value === 'splitDown')
+    expect(split('a', 'pane').map((a) => a.disabled)).toEqual([true, true])
+    expect(split('e', 'pane').map((a) => a.disabled)).toEqual([undefined, undefined])
+    expect(split('a', 'desktopChat')).toEqual([])
+    expect(split('a', 'chat')).toEqual([])
   })
 
   it('keeps the actions of a chat with no live tab and of a fixture as they are', () => {

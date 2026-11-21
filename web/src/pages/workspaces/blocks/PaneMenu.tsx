@@ -7,9 +7,11 @@
 // row and workspace. A live Claude chat's /compact and /clear come last,
 // after a separator, on only while it is idle or done (W5). A live chat's
 // pane adds Focus in terminal, Zoom pane or Unzoom pane and Swap with…, whose list of the other
-// chats of its herdr tab is the row's submenu, before Close pane… (W2,
-// layoutActions.ts). Props only.
+// chats of its herdr tab is the row's submenu, then Split right and Split
+// down (W2c), before Close pane… (W2, layoutActions.ts). Props only.
 import {
+  ArrowDownIcon,
+  ArrowRightIcon,
   BranchIcon,
   Button,
   BubbleIcon,
@@ -59,6 +61,9 @@ const icons: Record<PaneAction['value'], ReactNode> = {
   zoom: <MaximizeIcon size="16" />,
   unzoom: <GridIcon size="16" />,
   swap: <SplitIcon size="16" />,
+  // W2c: the library has no split-right or split-down icon (LIBRARY_GAPS.md: Split and ratio).
+  splitRight: <ArrowRightIcon size="16" />,
+  splitDown: <ArrowDownIcon size="16" />,
 }
 
 /** The value of a chat in Swap with…'s list: it must differ from the menu's own values. */
@@ -115,7 +120,12 @@ export function PaneMenu(props: PaneMenuProps) {
   // A live chat's layout actions (W2) start their own group after a separator: Focus in terminal, Zoom or Unzoom, Swap
   // with…, Close pane….
   const layoutStart = actions.find(
-    (a) => a.value === 'focus' || a.value === 'zoom' || a.value === 'unzoom' || a.value === 'swap',
+    (a) =>
+      a.value === 'focus' ||
+      a.value === 'zoom' ||
+      a.value === 'unzoom' ||
+      a.value === 'swap' ||
+      a.value === 'splitRight',
   )?.value
   const items: MenuEntry[] = actions.flatMap((a): MenuEntry[] => {
     const entry = {

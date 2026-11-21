@@ -168,6 +168,21 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   status (`app/WorkspacesLayoutWrites.test.tsx`; a layout change of
   another workspace renders no transcript entry,
   `app/WorkspacesLayoutRenders.test.tsx`).
+- Split and ratio (W2c, backend #334): the desktop workbench's pane menu
+  adds Split right (`POST /api/chats/:chat/split` with `{ direction:
+  'row' }`) and Split down (`'column'`), off while herdr zooms the tab;
+  the phone and the tablet have none. The new shell pane shows when the
+  server's events bring it, and the page does not focus it. A live
+  split's handles send `POST /api/workspaces/:workspace/layout/ratio`
+  (`blocks/useRatioDrag.ts`): a drag moves the handle and the panes on
+  the page, and its end sends one ratio, when the pointer goes up or
+  400 ms after the last arrow key or double-click. `blocks/splitRatio.ts`
+  finds the herdr split the handle stands for (its path) and the ratio,
+  clamped to 0.1 to 0.9; a handle with no such split goes back to the
+  server's sizes. The page holds the sent sizes only while the write
+  waits. A 404 reads the layout again quietly; any other miss says "Not
+  split — <kind>" or "Not resized — <kind>" in the status bar
+  (`app/WorkspacesLayoutSplit.test.tsx`).
 - Pane follow (W5, `paneFollow.ts`): after a /clear, from the page or the
   terminal, the list drops the chat's ID and lists a new one on the same
   pane (`ChatSummary.pane`). The page store keeps the panes it last saw

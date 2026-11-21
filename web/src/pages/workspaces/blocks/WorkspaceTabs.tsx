@@ -5,7 +5,9 @@
 // bar has New chat alone. A click on a tab shows that workspace as the owner left
 // it, or its last chat alone in one pane (R6); each workspace keeps its own
 // layout in `ui.layouts` (blocks/workspaceLayout.ts). A live chat's layout
-// write that missed says so in the status bar's alert (W2). Props only.
+// write that missed says so in the status bar's alert (W2). A dragged handle
+// of a live split sends its ratio when the drag ends (W2c, useRatioDrag.ts).
+// Props only.
 import { Button, PanelIcon, PlusIcon, Workbench } from '@eshelton328/component-library-1701'
 import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
@@ -17,6 +19,7 @@ import type { LayoutWrites } from './layoutActions.ts'
 import { WorkbenchPanes } from './WorkbenchPanes.tsx'
 import { closeShownPane, resizeShown, shownView, shownWorkspace, switchTo } from './workspaceLayout.ts'
 import type { ComposerAnswer } from './useComposerActions.ts'
+import { useRatioDrag } from './useRatioDrag.ts'
 
 export type WorkspaceTabsProps = {
   data: WorkspacesData
@@ -45,6 +48,8 @@ export type WorkspaceTabsProps = {
   layout?: LayoutWrites | undefined
 }
 
+// The box that sees a press on a handle draws no box of its own: the panes lay out as they do without it.
+const handlesBox = css({ display: 'contents' })
 // With a notice: the notice over the panes, which take the height left.
 const withNotice = css({ display: 'flex', flexDirection: 'column', gap: '8', flex: '1', minH: '[0]' })
 const panesSlot = css({ display: 'flex', flexDirection: 'column', flex: '1', minH: '[0]' })
@@ -67,25 +72,29 @@ export function WorkspaceTabs({
   const current = data.workspaces.find((w) => w.id === shown)
   // The workbench draws a zoomed tab's focused pane alone (W2).
   const view = shownView(data, ui, true)
+  const drag = useRatioDrag(layout, data, view, shown)
   // A resize of the shown split goes to the shown workspace's layout; the rest of the change goes as it is.
   const report = (change: Partial<WorkspacesUi>) => {
     const { splitSizes, ...rest } = change
     onUiChange?.(splitSizes === undefined ? change : { ...rest, ...resizeShown(data, ui, splitSizes) })
   }
   const panes = (
-    <WorkbenchPanes
-      data={view.data}
-      ui={view.ui}
-      onUiChange={report}
-      onClosePane={(pane) => onUiChange?.(closeShownPane(data, ui, pane))}
-      drafts={drafts}
-      onSend={onSend}
-      onStop={onStop}
-      filesOf={filesOf}
-      transcripts={transcripts}
-      onCopy={onCopy}
-      layout={layout}
-    />
+    <div className={handlesBox} onPointerDownCapture={drag.onPointerDownCapture}>
+      <WorkbenchPanes
+        data={view.data}
+        ui={drag.ui}
+        onResize={drag.onResize}
+        onUiChange={report}
+        onClosePane={(pane) => onUiChange?.(closeShownPane(data, ui, pane))}
+        drafts={drafts}
+        onSend={onSend}
+        onStop={onStop}
+        filesOf={filesOf}
+        transcripts={transcripts}
+        onCopy={onCopy}
+        layout={layout}
+      />
+    </div>
   )
   const workbench = (
     <Workbench

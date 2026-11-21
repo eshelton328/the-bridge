@@ -15,7 +15,9 @@
 // Swap with… (the other chats of its herdr tab) and Close pane…, which opens
 // the close dialog; Maximise zooms, a tap on its header and a Send in it
 // focus the chat in herdr (`layout`). The panes move only when the new
-// layout comes.
+// layout comes. Split right and Split down (W2c) put a new shell pane
+// beside the chat or below it; with `onResize` (a live split) a dragged
+// handle's sizes go there, not to the ui.
 // Props only; `ui` says which pane is focused and which menu,
 // skill list or side chat is open.
 import { SplitPanes } from '@eshelton328/component-library-1701'
@@ -31,6 +33,7 @@ import { PaneFrame } from './PaneFrame.tsx'
 import { PaneMenu } from './PaneMenu.tsx'
 import { ResizeReadout } from './ResizeReadout.tsx'
 import { RowsSplit } from './RowsSplit.tsx'
+import type { SplitPart } from './splitRatio.ts'
 import { ShellPane } from './ShellPane.tsx'
 import { SideChatPanel } from './SideChatPanel.tsx'
 import type { ComposerAnswer } from './useComposerActions.ts'
@@ -49,6 +52,9 @@ const readoutPane: Record<ResizePart, { place: number; placement: 'end' | 'botto
   top: { place: 0, placement: 'end' },
   bottom: { place: 3, placement: 'end' },
 }
+
+// The layout actions that are off while a write of their pane waits (W2).
+const layoutValues = new Set(['focus', 'zoom', 'unzoom', 'swap', 'close', 'splitRight', 'splitDown'])
 
 export type WorkbenchPanesProps = {
   data: WorkspacesData
@@ -70,6 +76,8 @@ export type WorkbenchPanesProps = {
   onCopy?: CopyReply | undefined
   /** The live chats' layout writes (W2); none on a fixture. */
   layout?: LayoutWrites | undefined
+  /** Takes a dragged handle's sizes in place of `onUiChange` (a live split, W2c, useRatioDrag.ts). */
+  onResize?: ((part: SplitPart, sizes: number[]) => void) | undefined
 }
 
 export function WorkbenchPanes({
@@ -84,6 +92,7 @@ export function WorkbenchPanes({
   transcripts,
   onCopy,
   layout,
+  onResize,
 }: WorkbenchPanesProps) {
   const targets = data.workspaces.filter((w) => w.id !== data.current)
   const panes = data.layers?.panes ?? paneLayers
@@ -118,10 +127,7 @@ export function WorkbenchPanes({
     const pending = layout?.pending.get(pane.id)
     const live = layout !== undefined && tab !== undefined ? layout : undefined
     const actions = withLayoutActions(data.paneMenu, data, live === undefined ? undefined : pane.id, 'pane').map((a) =>
-      pending !== undefined &&
-      (a.value === 'focus' || a.value === 'zoom' || a.value === 'unzoom' || a.value === 'swap' || a.value === 'close')
-        ? { ...a, disabled: true }
-        : a,
+      pending !== undefined && layoutValues.has(a.value) ? { ...a, disabled: true } : a,
     )
     const menu = (
       <PaneMenu
@@ -152,6 +158,10 @@ export function WorkbenchPanes({
           if (live !== undefined && (action === 'zoom' || action === 'unzoom')) {
             onUiChange?.({ menuFor: null, moveOpen: false })
             live.zoom(pane.id, action === 'zoom')
+          }
+          if (live !== undefined && (action === 'splitRight' || action === 'splitDown')) {
+            onUiChange?.({ menuFor: null, moveOpen: false })
+            live.split(pane.id, action === 'splitRight' ? 'row' : 'column')
           }
           if (live !== undefined && action === 'focus') {
             onUiChange?.({ menuFor: null, moveOpen: false })
@@ -273,13 +283,20 @@ export function WorkbenchPanes({
     )
   }
   const shown = data.panes.map((pane, i) => ({ id: pane.id, content: render(pane, i) }))
+  // A live split's handle goes to `onResize` (W2c); a sample's to the ui.
+  const resized = (part: SplitPart, next: number[], change: Partial<WorkspacesUi>) => {
+    if (onResize === undefined) onUiChange?.(change)
+    else onResize(part, next)
+  }
   if (data.split === 'stack')
     return (
       <RowsSplit
         stack
         panes={shown}
         sizes={ui.splitSizes}
-        onSizeChange={(part, next) => onUiChange?.({ splitSizes: { ...ui.splitSizes, [part]: next } })}
+        onSizeChange={(part, next) => {
+          resized(part, next, { splitSizes: { ...ui.splitSizes, [part]: next } })
+        }}
       />
     )
   if (data.split === 'rows')
@@ -287,16 +304,18 @@ export function WorkbenchPanes({
       <RowsSplit
         panes={shown}
         sizes={sizes}
-        onSizeChange={(part, next) =>
-          onUiChange?.({ resize: { part, sizes: next }, splitSizes: { ...sizes, [part]: next } })
-        }
+        onSizeChange={(part, next) => {
+          resized(part, next, { resize: { part, sizes: next }, splitSizes: { ...sizes, [part]: next } })
+        }}
       />
     )
   return (
     <SplitPanes
       panes={shown}
       sizes={ui.splitSizes}
-      onSizeChange={(part, next) => onUiChange?.({ splitSizes: { ...ui.splitSizes, [part]: next } })}
+      onSizeChange={(part, next) => {
+        resized(part, next, { splitSizes: { ...ui.splitSizes, [part]: next } })
+      }}
     />
   )
 }

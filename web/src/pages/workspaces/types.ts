@@ -1,6 +1,7 @@
 // The Workspaces page's view models, display-ready, each from its Zod schema.
 // The Workbench (Figma page 89:2): workspace tabs over one to four split
 // panes, each a chat, a shell or an empty pane, and a status bar.
+import { LayoutNode, TabId } from '@bridge/contract'
 import { z } from 'zod'
 
 export const AgentKind = z.enum(['claude', 'codex', 'shell'])
@@ -199,9 +200,12 @@ export type WorkbenchPane = z.infer<typeof WorkbenchPane>
 /**
  * One herdr tab of a live workspace (slice W2), from its layout read: whether it is the tab the workspace shows, its
  * panes' chats by local id in tree order, the chat herdr focuses and whether herdr zooms that pane. The page draws only
- * the active tab; a zoomed tab draws only its focused pane.
+ * the active tab; a zoomed tab draws only its focused pane. Its server ID and split tree (server chat IDs) are what a
+ * dragged handle's ratio write names (W2c, `blocks/splitRatio.ts`).
  */
 export const LiveTab = z.object({
+  id: TabId.optional(),
+  root: LayoutNode.optional(),
   active: z.boolean(),
   chats: z.array(z.string()),
   focused: z.string(),
@@ -227,6 +231,8 @@ export const PaneAction = z.object({
     'zoom',
     'unzoom',
     'swap',
+    'splitRight',
+    'splitDown',
   ]),
   label: z.string(),
   /** `true`: the row shows and cannot be picked, such as /compact while the chat works (W5). */
