@@ -180,6 +180,14 @@ export function describeAgentPort(name: string, setup: () => Promise<ContractSet
       expect(await port.clearInputBox(none)).toEqual({ ok: true, value: 'notFound' })
     })
 
+    it('sends no command to a shell or to a chat that the machine does not have', async () => {
+      const { port, expected } = await setup()
+      const { shell } = await chatsToUse(port, expected)
+      expect(await port.sendCommand(shell, { command: 'clear' })).toEqual({ ok: true, value: 'shell' })
+      const none = ChatId.parse(`${port.machine}/no-such-chat`)
+      expect(await port.sendCommand(none, { command: 'compact' })).toEqual({ ok: true, value: 'notFound' })
+    })
+
     it('says the agents are unreachable to a prompt and a stop when they do not answer', async () => {
       const { unreachable } = await setup()
       const chat = ChatId.parse(`${unreachable.machine}/any-chat`)
@@ -187,6 +195,7 @@ export function describeAgentPort(name: string, setup: () => Promise<ContractSet
         await unreachable.sendPrompt(chat, 'Go on.'),
         await unreachable.cancel(chat),
         await unreachable.clearInputBox(chat),
+        await unreachable.sendCommand(chat, { command: 'clear' }),
       ])
         expect(answer).toMatchObject({ ok: false, error: { reason: 'unreachable' } })
     })

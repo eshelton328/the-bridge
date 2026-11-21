@@ -14,10 +14,14 @@ import {
   WorkspaceId,
 } from '@bridge/contract'
 import { err, ok } from '@bridge/shared'
-import type { AgentEvent, AgentPort, AgentPortError, TranscriptRead } from '../services/agentPort.ts'
+import type { ChatCommand, AgentEvent, AgentPort, AgentPortError, TranscriptRead } from '../services/agentPort.ts'
 
 /** What a chat of the fake got from the owner: a prompt's text, or a stop. */
-type FakeInput = { readonly chat: ChatId } & ({ readonly text: string } | { readonly stop: true })
+type FakeInput = { readonly chat: ChatId } & (
+  | { readonly text: string }
+  | { readonly stop: true }
+  | { readonly command: ChatCommand }
+)
 
 /** The fake's transcript of its working chat "bridge themes": a prompt, a tool call that runs and a reply. */
 export function fakeTranscript(): TranscriptRead {
@@ -186,6 +190,15 @@ export function createFakeAgents(
   const tell = (event: AgentEvent) => {
     for (const listener of [...listeners]) listener.onEvent(event)
   }
+  /** Gives a chat a new ID, as a new session does, and tells each subscription. */
+  const renew = (chat: ChatId, next: ChatId) => {
+    const found = chatOf(chat)
+    if (found === undefined) throw new Error(`the fake has no chat ${chat}`)
+    found.id = next
+    transcripts.delete(chat)
+    tell({ type: 'workspacesChanged' })
+  }
+  let clears = 0
   return {
     machine,
     reads: () => reads,
@@ -259,13 +272,7 @@ export function createFakeAgents(
     changeList() {
       tell({ type: 'workspacesChanged' })
     },
-    renewSession(chat, next) {
-      const found = chatOf(chat)
-      if (found === undefined) throw new Error(`the fake has no chat ${chat}`)
-      found.id = next
-      transcripts.delete(chat)
-      tell({ type: 'workspacesChanged' })
-    },
+    renewSession: renew,
     inputs: () => [...inputs],
     typeInput: (chat, text) => {
       drafts.set(chat, text)
@@ -280,6 +287,23 @@ export function createFakeAgents(
       // The port removes a prompt that the chat did not take, so the box is empty again.
       if (dropEnter.delete(chat)) return Promise.resolve(ok('notSubmitted'))
       inputs.push({ chat, text })
+      return Promise.resolve(ok('sent'))
+    },
+    sendCommand(chat, command) {
+      if ('error' in answer) return Promise.resolve(err(answer.error))
+      const found = chatOf(chat)
+      if (found === undefined) return Promise.resolve(ok('notFound'))
+      if (found.kind === 'shell') return Promise.resolve(ok('shell'))
+      if (found.kind === 'codex') return Promise.resolve(ok('noCommands'))
+      if (found.status === 'needsYou') return Promise.resolve(ok('needsYou'))
+      if (found.status === 'working') return Promise.resolve(ok('working'))
+      if ((drafts.get(chat) ?? '') !== '') return Promise.resolve(ok('inputNotEmpty'))
+      inputs.push({ chat, command: structuredClone(command) })
+      // /clear starts a new session, so the chat gets a new ID on the same pane.
+      if (command.command === 'clear') {
+        clears += 1
+        renew(chat, ChatId.parse(`${chat}-c${String(clears)}`))
+      }
       return Promise.resolve(ok('sent'))
     },
     dropNextEnter: (chat) => {

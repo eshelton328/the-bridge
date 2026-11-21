@@ -43,6 +43,17 @@ export type PromptOutcome = SendOutcome | 'notSubmitted'
  */
 export type ClearOutcome = Exclude<SendOutcome, 'sent'> | 'cleared' | 'noCommands'
 
+/**
+ * What a command did: as a prompt; `working` when the chat works, as Claude Code would only queue the command;
+ * `noCommands` for a Codex chat, which takes none from the port yet. Nothing was sent unless it is `sent`.
+ */
+type CommandOutcome = PromptOutcome | 'working' | 'noCommands'
+
+/** A Claude Code command: `/compact` with the owner's instructions if any, or `/clear`. */
+export type ChatCommand =
+  | { readonly command: 'compact'; readonly instructions?: string | undefined }
+  | { readonly command: 'clear' }
+
 /** What a stop did: as a send, or `notWorking` when the chat has no work to stop, so nothing was sent. */
 export type CancelOutcome = Exclude<SendOutcome, 'needsYou' | 'inputNotEmpty'> | 'notWorking'
 
@@ -98,6 +109,12 @@ export type AgentPort = {
    * lost, and the port never returns or logs it.
    */
   clearInputBox(chat: ChatId): Promise<Result<ClearOutcome, AgentPortError>>
+  /**
+   * Types one Claude Code command into a Claude chat that is idle, with the same input-box checks and answers as a
+   * prompt. `/clear` starts a new session, so the chat then has a new chat ID on the same pane. It keeps no copy of
+   * the instructions.
+   */
+  sendCommand(chat: ChatId, command: ChatCommand): Promise<Result<CommandOutcome, AgentPortError>>
   /**
    * Stops the work of one chat that is working, as one press of Escape in it; a chat that does not work gets nothing.
    * When the chat then puts the stopped prompt back in its input box, and that prompt is the last one this port sent

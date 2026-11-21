@@ -34,7 +34,7 @@ import {
 import { err, ok, type Result } from '@bridge/shared'
 import { z } from 'zod'
 import type { Logger } from '../logger.ts'
-import type { AgentEvent, AgentPort, AgentPortError } from '../services/agentPort.ts'
+import type { AgentEvent, AgentPort, AgentPortError, ChatCommand, PromptOutcome } from '../services/agentPort.ts'
 import { type SocketFailure, type HerdrStream, herdrRequest, herdrSubscribe } from './herdrSocket.ts'
 import { boxKeys, type InputBox, inputBoxOf, promptKey } from './claudeInput.ts'
 import { readClaudeTranscript } from './claudeTranscript.ts'
@@ -585,6 +585,46 @@ export function createHerdrAgents({
     return err(badReply(`herdr ${method}: ${reply.error.code}`))
   }
 
+  /**
+   * Types `text` into a chat's pane and sends it: nothing when a Claude chat's box holds text; after the send, a
+   * prompt that stays in the box is taken back (`notSubmitted`).
+   */
+  const submit = async (
+    pane: string,
+    claude: boolean,
+    text: string,
+  ): Promise<Result<PromptOutcome, AgentPortError>> => {
+    // The prompt would join text in the box: text the owner typed, or a prompt that a stop put back.
+    if (claude) {
+      const box = await inputBox(pane)
+      if (!box.ok) return box
+      // A screen whose box the adapter cannot read, such as a draft with a line of "─" in it, may hold text too.
+      if (box.value?.text !== '') return ok('inputNotEmpty')
+    }
+    const sent = await input('agent.prompt', { target: pane, text })
+    if (!sent.ok || sent.value !== 'sent') return sent
+    const key = hashOf(promptKey(text))
+    lastSent.set(pane, key)
+    if (!claude) return sent
+    // A lost Enter leaves the prompt in the box, where it would block each next send: take it back.
+    const left = await leftInBox(pane, key)
+    if (left === null) return sent
+    lastSent.delete(pane)
+    // Text the adapter cannot match to the prompt stays; the owner's input clear removes it.
+    if (!left.ours) return ok('inputNotEmpty')
+    const keys = await emptyBox(pane, left.box)
+    if (!keys.ok) return keys
+    const after = await inputBox(pane)
+    if (!after.ok) return after
+    return ok(after.value?.text === '' ? 'notSubmitted' : 'inputNotEmpty')
+  }
+
+  /** The text of a command as the owner would type it; one line, so one Enter sends it. */
+  const commandText = (command: ChatCommand) =>
+    command.command === 'clear'
+      ? '/clear'
+      : `/compact${command.instructions === undefined || command.instructions.trim() === '' ? '' : ` ${command.instructions.trim()}`}`
+
   return {
     machine,
     async sendPrompt(chat, text) {
@@ -593,29 +633,18 @@ export function createHerdrAgents({
       if (typeof target.value === 'string') return ok(target.value)
       const { pane, status, claude } = target.value
       if (status === 'needsYou') return ok('needsYou')
-      // The prompt would join text in the box: text the owner typed, or a prompt that a stop put back.
-      if (claude) {
-        const box = await inputBox(pane)
-        if (!box.ok) return box
-        // A screen whose box the adapter cannot read, such as a draft with a line of "─" in it, may hold text too.
-        if (box.value?.text !== '') return ok('inputNotEmpty')
-      }
-      const sent = await input('agent.prompt', { target: pane, text })
-      if (!sent.ok || sent.value !== 'sent') return sent
-      const key = hashOf(promptKey(text))
-      lastSent.set(pane, key)
-      if (!claude) return sent
-      // A lost Enter leaves the prompt in the box, where it would block each next send: take it back.
-      const left = await leftInBox(pane, key)
-      if (left === null) return sent
-      lastSent.delete(pane)
-      // Text the adapter cannot match to the prompt stays; the owner's input clear removes it.
-      if (!left.ours) return ok('inputNotEmpty')
-      const keys = await emptyBox(pane, left.box)
-      if (!keys.ok) return keys
-      const after = await inputBox(pane)
-      if (!after.ok) return after
-      return ok(after.value?.text === '' ? 'notSubmitted' : 'inputNotEmpty')
+      return submit(pane, claude, text)
+    },
+    async sendCommand(chat, command) {
+      const target = await agentPane(chat)
+      if (!target.ok) return target
+      if (typeof target.value === 'string') return ok(target.value)
+      const { pane, status, claude } = target.value
+      if (!claude) return ok('noCommands')
+      if (status === 'needsYou') return ok('needsYou')
+      // A working Claude Code queues a command behind its turn; the owner asked for it now, so it is refused.
+      if (status === 'working') return ok('working')
+      return submit(pane, claude, commandText(command))
     },
     async clearInputBox(chat) {
       const target = await agentPane(chat)
