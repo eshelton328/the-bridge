@@ -54,13 +54,17 @@ export function createPushNotifier({ agents, store, sender, seen, log, retryMs =
     }
     const title = list.ok ? (list.value.flatMap((w) => w.chats).find((c) => c.id === chat)?.title ?? '') : ''
     const payload = PushPayload.parse({ chat, name: title.slice(0, maxPushName), event })
-    await Promise.all(
+    const gone = await Promise.all(
       subscriptions.value.map(async (subscription) => {
         const sent = await sender.send(subscription, payload, keys.value)
         if (!sent.ok) log.warn('push failed', { event, code: sent.error.code })
-        else if (sent.value === 'gone') await store.remove(subscription.endpoint)
+        if (!sent.ok || sent.value !== 'gone') return false
+        await store.remove(subscription.endpoint)
+        return true
       }),
     )
+    // With the last subscription gone, the watch of the agents closes.
+    if (gone.includes(true)) await refresh()
   }
 
   // The status of each chat that the list shows and no event told yet, so its first change is known

@@ -114,6 +114,17 @@ describe('the push notifier', () => {
     t.notifier.close()
   })
 
+  it('closes the watch of the agents when the push service drops the last subscription', async () => {
+    const t = setup([sub(1)], () => 'gone')
+    await t.notifier.refresh()
+    expect(t.agents.subscriptions()).toBe(1)
+    t.agents.setStatus(chat, 'needsYou')
+    await t.settle()
+    expect(t.stored()).toEqual([])
+    expect(t.agents.subscriptions()).toBe(0)
+    t.notifier.close()
+  })
+
   it('holds no watch of the agents while no subscription is stored', async () => {
     const t = setup([])
     await t.notifier.refresh()
