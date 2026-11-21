@@ -383,6 +383,17 @@ describe('ratio (W2c)', () => {
     expect(writesOf(fakes)).toHaveLength(1)
   })
 
+  it('sends a keyboard resize to its own workspace when the owner switches tabs before the pause ends', async () => {
+    const fakes = withChats()
+    await showPanes()
+    const columns = handle('Resize columns')
+    if (columns instanceof HTMLElement) columns.focus()
+    for (let i = 0; i < 2; i += 1) await userEvent.keyboard('{ArrowRight}')
+    await userEvent.click(page.getByRole('tab', { name: /solo work/ }))
+    await expect.poll(() => writesOf(fakes)).toHaveLength(1)
+    expect(writesOf(fakes)[0]).toMatchObject({ chat: live, action: 'ratio', body: { tab, path: [], ratio: 0.52 } })
+  })
+
   it('reads the layout again, quietly, on a 404', async () => {
     const fakes = withChats()
     await showPanes()

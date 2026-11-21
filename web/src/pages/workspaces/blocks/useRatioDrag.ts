@@ -12,7 +12,7 @@
 // The sizes are this hook's state, never the page's `ui`, so a held ratio
 // never outlives the server's answer.
 import { type PointerEvent, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { ResizePart, type SplitSizes, type WorkspacesData, type WorkspacesUi } from '../types.ts'
+import { type LiveTab, ResizePart, type SplitSizes, type WorkspacesData, type WorkspacesUi } from '../types.ts'
 import { type LayoutWrites, ratioKey } from './layoutActions.ts'
 import { panelsOf, ratioWrite, type SplitPart } from './splitRatio.ts'
 
@@ -21,7 +21,16 @@ const keyPauseMs = 400
 
 type Held = { workspace: string; sizes: SplitSizes; phase: 'drag' | 'sent'; part: SplitPart }
 /** A handle's gesture: `mapped` when the server's layout gave the handle its sizes, so a ratio of them draws back. */
-type Gesture = { part: SplitPart; from: number[]; to: number[]; mapped: boolean }
+type Gesture = {
+  part: SplitPart
+  from: number[]
+  to: number[]
+  mapped: boolean
+  /** The workspace, its tab and the handle's panels when the gesture started: a tab switch before it ends keeps them. */
+  workspace: string
+  tab: LiveTab
+  panels: string[][]
+}
 
 const same = (a: readonly number[], b: readonly number[]) =>
   a.length === b.length && a.every((v, i) => Math.abs(v - (b[i] ?? 0)) < 0.01)
@@ -59,20 +68,16 @@ export function useRatioDrag(
     clearTimeout(timerRef.current)
     const g = gestureRef.current
     gestureRef.current = undefined
-    const { layout: writes, tab: live, view: shownView, shown: workspace } = nowRef.current
-    if (g === undefined || writes === undefined || live === undefined || workspace === null) return
+    const writes = nowRef.current.layout
+    if (g === undefined || writes === undefined) return
     // A handle the server's layout did not size (liveLayout.ts's nearest layout, equal shares) would draw its ratio
     // back at equal shares: it sends nothing and goes back at once.
     if (!g.mapped) {
       setHeld(undefined)
       return
     }
-    const ids = shownView.data.panes.map((p) => p.id)
-    const panels = panelsOf(shownView.data.split, ids.length, g.part).map((panel) =>
-      panel.flatMap((at) => (ids[at] === undefined ? [] : [ids[at]])),
-    )
-    const write = ratioWrite(live, g.part, panels, g.from, g.to)
-    if (write !== undefined && writes.ratio(workspace, write)) setHeld((h) => h && { ...h, phase: 'sent' })
+    const write = ratioWrite(g.tab, g.part, g.panels, g.from, g.to)
+    if (write !== undefined && writes.ratio(g.workspace, write)) setHeld((h) => h && { ...h, phase: 'sent' })
     else setHeld(undefined)
   }, [])
 
@@ -94,14 +99,22 @@ export function useRatioDrag(
 
   const onResize = useCallback(
     (part: SplitPart, next: number[]) => {
-      const { sizes: drawn, shown: workspace, mine: shownHeld } = nowRef.current
+      const { sizes: drawn, shown: workspace, mine: shownHeld, tab: live, view: shownView } = nowRef.current
       const was = drawn[part] ?? next.map(() => 100 / next.length)
       // The splitter tells back the sizes it was given; only the owner's gesture moves a handle.
-      if (workspace === null || same(next, was)) return
+      if (workspace === null || live === undefined || same(next, was)) return
       if (gestureRef.current !== undefined && gestureRef.current.part !== part) send()
       const sized = nowRef.current.view.ui.splitSizes?.[part]
       const base = sized ?? next.map(() => 100 / next.length)
-      gestureRef.current = { part, from: gestureRef.current?.from ?? base, to: next, mapped: sized !== undefined }
+      const ids = shownView.data.panes.map((p) => p.id)
+      const panels = panelsOf(shownView.data.split, ids.length, part).map((panel) =>
+        panel.flatMap((at) => (ids[at] === undefined ? [] : [ids[at]])),
+      )
+      const g = gestureRef.current
+      gestureRef.current =
+        g === undefined
+          ? { part, from: base, to: next, mapped: sized !== undefined, workspace, tab: live, panels }
+          : { ...g, to: next }
       setHeld({
         workspace,
         sizes: { ...shownHeld?.sizes, [part]: next },
