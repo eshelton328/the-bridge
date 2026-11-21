@@ -3,7 +3,12 @@
 // list below pass; any other token, a flag that skips a permission, or a
 // permission mode that skips one refuses the restart. A value with a space
 // in it reads as two tokens (the process table joins its arguments with
-// spaces), so it refuses too. Nothing here logs a token.
+// spaces), so it refuses too, unless each part is a valid token: a value
+// such as "/tmp/work --chrome" reads as `/tmp/work` and `--chrome`. macOS
+// gives no argument boundaries of another process without a native
+// helper. A skip flag or the bypass mode is refused wherever it shows,
+// so such a split can only move text between flags on the list. Nothing
+// here logs a token.
 import { ChatName } from '@bridge/contract'
 
 /** Flags the restart keeps, each with one value. */
