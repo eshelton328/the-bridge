@@ -560,6 +560,9 @@ describe('herdr agents: a reply the adapter does not read', () => {
   })
 })
 
+/** A pane ID as the adapter makes it: the machine, then 20 hex characters of a hash, with no herdr ID. */
+const opaquePane: unknown = expect.stringMatching(/^test-mac\/[0-9a-f]{20}$/)
+
 describe('herdr agents', () => {
   it("maps herdr's agents to chats in the app's terms", async () => {
     const read = await port().listWorkspaces()
@@ -575,18 +578,24 @@ describe('herdr agents', () => {
               kind: 'claude',
               title: 'bridge-coord',
               model: 'claude-opus-5-5',
+              modelId: 'opus',
+              effort: null,
               contextUsed: null,
               status: 'needsYou',
               parent: null,
+              pane: opaquePane,
             },
             {
               id: 'test-mac/term_2',
               kind: 'codex',
               title: 'drift',
               model: null,
+              modelId: null,
+              effort: null,
               contextUsed: null,
               status: 'idle',
               parent: null,
+              pane: opaquePane,
             },
           ],
         },
@@ -599,23 +608,50 @@ describe('herdr agents', () => {
               kind: 'shell',
               title: 'pnpm',
               model: 'pnpm',
+              modelId: null,
+              effort: null,
               contextUsed: null,
               status: 'working',
               parent: null,
+              pane: opaquePane,
             },
             {
               id: 'test-mac/term_5',
               kind: 'shell',
               title: 'brain git',
               model: 'pnpm',
+              modelId: null,
+              effort: null,
               contextUsed: null,
               status: 'unknown',
               parent: null,
+              pane: opaquePane,
             },
           ],
         },
       ],
     })
+  })
+
+  it('gives each pane its own opaque pane ID, with no herdr ID in it, that a new session keeps', async () => {
+    const first = await port().listWorkspaces()
+    const chats = first.ok ? first.value.flatMap((w) => w.chats) : []
+    const panes = chats.map((c) => c.pane)
+    expect(new Set(panes).size).toBe(4)
+    for (const pane of panes) expect(pane).not.toMatch(/term_|w1[78]/)
+    // After /clear, herdr shows the same terminal with a new session, so the chat ID changes and the pane ID stays.
+    const [agent, ...others] = results['agent.list'].agents
+    const session = { agent: 'claude', kind: 'id', source: 'herdr:claude', value: 'session-c' }
+    const fake = await startFakeHerdrSocket({
+      ...results,
+      'agent.list': { agents: [{ ...agent, agent_session: session }, ...others] },
+    })
+    const second = await createHerdrAgents({ socket: fake.path, machine, log, claudeProjects: projects, home })
+      .listWorkspaces()
+      .finally(() => fake.close())
+    const chat = second.ok ? second.value[0]?.chats[0] : undefined
+    expect(chat?.id).toBe('test-mac/session-c')
+    expect(chat?.pane).toBe(chats[0]?.pane)
   })
 
   it("gives each pane of a resumed session its terminal ID, and keeps the session's model", async () => {

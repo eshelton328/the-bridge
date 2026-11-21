@@ -40,6 +40,9 @@ const summary = (id: string, title: string) => ({
   title,
   model: 'claude-opus-5-5',
   contextUsed: null,
+  modelId: null,
+  effort: null,
+  pane: `${id}-pane`,
   status: 'working',
   parent: null,
 })

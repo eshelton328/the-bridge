@@ -7,6 +7,7 @@ import {
   type LayoutNode,
   type TranscriptEntry,
   type MachineId,
+  PaneId,
   TabId,
   type WorkspaceLayout,
   type WorkspaceSummary,
@@ -34,6 +35,7 @@ export function fakeTranscript(): TranscriptRead {
 /** The fake's default data: two workspaces of `machine`, one with a chat that needs the owner, one with a shell. */
 export function fakeWorkspaces(machine: MachineId): WorkspaceSummary[] {
   const chat = (local: string) => ChatId.parse(`${machine}/${local}`)
+  const pane = (local: string) => PaneId.parse(`${machine}/pane-${local}`)
   return [
     {
       id: WorkspaceId.parse(`${machine}/omni-brain`),
@@ -44,18 +46,24 @@ export function fakeWorkspaces(machine: MachineId): WorkspaceSummary[] {
           kind: 'claude',
           title: 'bridge themes',
           model: 'claude-opus-5-5',
+          modelId: 'opus',
+          effort: 'high',
           contextUsed: 0.42,
           status: 'working',
           parent: null,
+          pane: pane('bridge-themes'),
         },
         {
           id: chat('drift-check'),
           kind: 'codex',
           title: 'drift check',
           model: 'gpt-5.5',
+          modelId: null,
+          effort: null,
           contextUsed: 0.23,
           status: 'needsYou',
           parent: null,
+          pane: pane('drift-check'),
         },
       ],
     },
@@ -68,9 +76,12 @@ export function fakeWorkspaces(machine: MachineId): WorkspaceSummary[] {
           kind: 'shell',
           title: 'brain git',
           model: 'zsh',
+          modelId: null,
+          effort: null,
           contextUsed: null,
           status: 'idle',
           parent: null,
+          pane: pane('brain-git'),
         },
       ],
     },

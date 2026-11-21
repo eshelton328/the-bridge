@@ -26,6 +26,7 @@ import {
   type LayoutNode,
   LocalIdPart,
   type MachineId,
+  PaneId,
   splitId,
   WorkspaceId,
   WorkspaceLayout,
@@ -37,7 +38,7 @@ import type { AgentEvent, AgentPort, AgentPortError } from '../services/agentPor
 import { type SocketFailure, type HerdrStream, herdrRequest, herdrSubscribe } from './herdrSocket.ts'
 import { boxKeys, type InputBox, inputBoxOf, promptKey } from './claudeInput.ts'
 import { readClaudeTranscript } from './claudeTranscript.ts'
-import { claudeProjectFolder, readClaudeSession } from './sessionFile.ts'
+import { claudeProjectFolder, modelAliasOf, readClaudeSession } from './sessionFile.ts'
 
 const HerdrStatus = z.enum(['idle', 'working', 'blocked', 'done', 'unknown'])
 
@@ -320,21 +321,28 @@ export function createHerdrAgents({
     return id.success ? id.data : ChatId.parse(`${machine}/${agent.terminal_id}`)
   }
 
+  /** The pane's opaque ID: a hash of herdr's terminal ID, which stays the same for the pane's life (also over /clear). */
+  const paneIdOf = (terminal: string): PaneId => PaneId.parse(`${machine}/${hashOf(`pane:${terminal}`).slice(0, 20)}`)
+
   const chatOf = async (
     agent: HerdrAgent,
     kind: 'claude' | 'codex',
     shared: ReadonlySet<string>,
   ): Promise<ChatSummary> => {
     const path = kind === 'claude' ? sessionPath(agent) : undefined
-    const session = path === undefined ? { model: null, contextUsed: null } : await readClaudeSession(path)
+    const session =
+      path === undefined ? { model: null, contextUsed: null, effort: null } : await readClaudeSession(path)
     return {
       id: chatIdOf(agent, shared),
       kind,
       title: [agent.terminal_title_stripped, agent.name].find((t): t is string => Boolean(t)) ?? kind,
       model: session.model,
+      modelId: modelAliasOf(session.model),
+      effort: session.effort,
       contextUsed: session.contextUsed,
       status: statusOf(agent.agent_status),
       parent: null,
+      pane: paneIdOf(agent.terminal_id),
     }
   }
 
@@ -363,9 +371,12 @@ export function createHerdrAgents({
       // Never the terminal title: a shell sets it to the command line or to user@host:path.
       title: [pane.label, program].find((t): t is string => Boolean(t)) ?? 'shell',
       model: program,
+      modelId: null,
+      effort: null,
       contextUsed: null,
       status: statusOf(pane.agent_status),
       parent: null,
+      pane: paneIdOf(pane.terminal_id),
     }
   }
 

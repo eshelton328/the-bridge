@@ -23,8 +23,11 @@ import { WorkspacesState } from './types.ts'
 
 const chat = (local: string, rest: Record<string, unknown>) => ({
   id: `mac-mini/${local}`,
+  modelId: null,
+  effort: null,
   contextUsed: null,
   parent: null,
+  pane: `mac-mini/pane-${local}`,
   ...rest,
 })
 

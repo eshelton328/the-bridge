@@ -57,6 +57,7 @@ describe('herdr adapter on a real session', () => {
       id: 'e2e-mac/fake-e2e-session',
       kind: 'claude',
       model: 'claude-opus-5-5',
+      modelId: 'opus',
       status: 'idle',
     })
   })
