@@ -12,7 +12,9 @@
 // ends them (`gone`, #313) and each open event stream gets
 // `workspaces.changed`. A /clear from the terminal is that change alone; a
 // /clear the transcript fake takes makes it too, with the ID `<chat>-c<n>`, as
-// the server's fake agents name it.
+// the server's fake agents name it. With `eventOnClear: false` that /clear
+// changes the list with no event, as the server on herdr does today (the W5
+// real run): the page must read the list again by itself.
 import {
   ChatId,
   type ChatSummary,
@@ -26,7 +28,11 @@ import type { FakeTranscriptServer } from './fakeTranscriptServer.ts'
 const json = (body: unknown) =>
   new Response(JSON.stringify(body), { status: 200, headers: { 'content-type': 'application/json' } })
 
-export function fakeWorkspacesServer(transcripts: FakeTranscriptServer, list: unknown) {
+export function fakeWorkspacesServer(
+  transcripts: FakeTranscriptServer,
+  list: unknown,
+  { eventOnClear = true }: { readonly eventOnClear?: boolean } = {},
+) {
   const encoder = new TextEncoder()
   let response = WorkspacesResponse.parse(list)
   const streams: ReadableStreamDefaultController<Uint8Array>[] = []
@@ -81,25 +87,25 @@ export function fakeWorkspacesServer(transcripts: FakeTranscriptServer, list: un
     for (const s of streams) s.enqueue(encoder.encode(text))
   }
 
-  /** Changes the list with `change`, checked against the contract, and tells the event streams. */
-  const update = (change: (chat: ChatSummary) => ChatSummary) => {
+  /** Changes the list with `change`, checked against the contract, and tells the event streams unless `quiet`. */
+  const update = (change: (chat: ChatSummary) => ChatSummary, quiet = false) => {
     response = WorkspacesResponse.parse({
       ...response,
       workspaces: response.workspaces.map((w) => ({ ...w, chats: w.chats.map(change) })),
     })
-    changed()
+    if (!quiet) changed()
   }
 
   /** The list change of a /clear: `chat` leaves the list and `next` takes its place, on the same pane. */
-  const replaceChat = (chat: string, next: string) => {
+  const replaceChat = (chat: string, next: string, quiet = false) => {
     const id = ChatId.parse(next)
-    update((c) => (c.id === chat ? { ...c, id } : c))
+    update((c) => (c.id === chat ? { ...c, id } : c), quiet)
     transcripts.gone(chat)
   }
 
   transcripts.onClear((chat) => {
     clears += 1
-    replaceChat(chat, `${chat}-c${String(clears)}`)
+    replaceChat(chat, `${chat}-c${String(clears)}`, !eventOnClear)
   })
 
   return {

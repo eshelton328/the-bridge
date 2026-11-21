@@ -205,7 +205,16 @@ export function WorkspacesPage() {
         const liveChat = liveChatOf(chat)
         return liveChat === undefined
           ? Promise.resolve(false)
-          : once(`command:${chat}`, () => viaLive((m) => m.sendCommand(liveChat, request)))
+          : once(`command:${chat}`, () =>
+              viaLive((m) => m.sendCommand(liveChat, request)).then((answer) => {
+                // The server sends no event when the cleared chat gets its new ID: read the list until it shows.
+                if (answer === true && request.command === 'clear')
+                  void import('./liveWorkspaces.ts').then((m) => {
+                    m.readAfterClear()
+                  })
+                return answer
+              }),
+            )
       }}
       onNavigate={(page) => {
         // The tablet's More (the phone opens its drawer) goes to Toolkit, the one page behind More with a route

@@ -580,6 +580,21 @@ const shownWorkspaces = new Set<string>()
 /** The open watcher's way to mark the cache invalid (the list and every layout, or the query of `key`) and load again. */
 let reload: ((key?: QueryKey) => void) | undefined
 
+/**
+ * When the page reads the list again after a /clear it sent, in ms. The server answers the /clear before herdr lists
+ * the chat's new session ID, and it sends no event when that ID changes on its pane (W5 real run), so the page reads
+ * the list a few times on its own to follow the pane (`paneFollow.ts`).
+ */
+const clearReadsMs = [300, 1000, 2500] as const
+
+/** Reads the list again at each of `clearReadsMs`, through the open watcher; with no watcher it does nothing. */
+export function readAfterClear(): void {
+  for (const ms of clearReadsMs)
+    setTimeout(() => {
+      reload?.()
+    }, ms)
+}
+
 /** Opens the event stream; `signal` aborts it. */
 type OpenStream = (signal: AbortSignal) => Promise<Response>
 

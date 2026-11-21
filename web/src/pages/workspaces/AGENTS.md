@@ -121,6 +121,9 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   and moves the owner's ui changes from the old ID to the new one (open
   chat, phone view, saved panes and focus, names, menus) before the page
   draws the new list. The draft is not moved: it was for the old context.
+  The server sends no event when herdr gives the chat its new ID, so after
+  a /clear it sent the page reads the list again a few times
+  (`readAfterClear`, `clearReadsMs`).
   The route tests' list fake is `lib/fakeWorkspacesServer.ts`.
 - A live chat opens at its newest entry and stays there as entries come
   in, unless the reader scrolled up; back at the end, it follows again

@@ -78,11 +78,11 @@ const secret = 'keep the private branch notes'
 type Fakes = { chats: FakeTranscriptServer; list: FakeWorkspacesServer }
 
 /** The stubbed server: the fakes' routes, and a rejection for anything else. */
-function withChats(): Fakes {
+function withChats({ eventOnClear = true } = {}): Fakes {
   const chats = fakeTranscriptServer()
   chats.set(plan, [user('u1', 'Fix the build')])
   chats.set(review, [user('u2', 'Review the notes')])
-  const workspaces = fakeWorkspacesServer(chats, list)
+  const workspaces = fakeWorkspacesServer(chats, list, { eventOnClear })
   vi.stubGlobal(
     'fetch',
     vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
@@ -422,6 +422,19 @@ describe('/clear and the pane follow (W5)', () => {
     await expect.poll(() => chats.prompts).toEqual([{ chat: `${plan}-c1`, text: 'next' }])
     expect(reports.sunk).toEqual([])
     reports.expectNoText()
+  })
+
+  it('reads the list again after Clear when the server sends no event for the new ID, and follows the pane', async () => {
+    // The server on herdr answers the /clear and lists the new ID with no workspaces.changed (W5 real run).
+    const { chats } = withChats({ eventOnClear: false })
+    await tapWorkspaces(phone)
+    await tapChat('plan the slice')
+    await pick('plan the slice', 'Clear context…')
+    await userEvent.click(page.getByRole('alertdialog').getByRole('button', { name: 'Clear' }))
+    await expect.poll(() => chats.commands).toEqual([{ chat: plan, request: { command: 'clear' } }])
+    await expect.poll(() => chats.opens).toContain(`${plan}-c1`)
+    await expect.element(chatRegion('plan the slice').getByText('No messages yet')).toBeVisible()
+    expect(chatRegion('plan the slice').getByText('Fix the build').elements()).toHaveLength(0)
   })
 
   it('follows the pane in the desktop workbench after Clear', async () => {
