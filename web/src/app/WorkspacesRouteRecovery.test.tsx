@@ -14,8 +14,9 @@ import { routeTree } from './routeTree.gen.ts'
 // Audit W-10, on the owner's path. A route crash leaves the owner a way to another page (Go to Inbox), Retry
 // used up in one boundary leaves Retry in another, and the composer's draft outlives a reload. The library's
 // AppShell throws while `crash.shell` is set (the whole page, so RouteError), TerminalLines while `crash.terminal`
-// is set (the shell pane) and Message while `crash.message` is set (the chat panes).
-const crash = vi.hoisted(() => ({ shell: false, terminal: false, message: false }))
+// is set (the shell pane) and Composer while `crash.composer` is set (the chat panes). The transcript entries are
+// memoised (review R28), so a keystroke renders a pane's composer and not its entries.
+const crash = vi.hoisted(() => ({ shell: false, terminal: false, composer: false }))
 
 vi.mock('@eshelton328/component-library-1701', async (importOriginal) => {
   const real = await importOriginal<typeof import('@eshelton328/component-library-1701')>()
@@ -29,9 +30,9 @@ vi.mock('@eshelton328/component-library-1701', async (importOriginal) => {
       if (crash.terminal) throw new Error('the terminal crashed on purpose')
       return real.TerminalLines(props)
     },
-    Message: (props: Parameters<typeof real.Message>[0]) => {
-      if (crash.message) throw new Error('an entry crashed on purpose')
-      return real.Message(props)
+    Composer: (props: Parameters<typeof real.Composer>[0]) => {
+      if (crash.composer) throw new Error('the composer crashed on purpose')
+      return real.Composer(props)
     },
   }
 })
@@ -60,7 +61,7 @@ afterEach(async () => {
   view = undefined
   crash.shell = false
   crash.terminal = false
-  crash.message = false
+  crash.composer = false
   window.sessionStorage.clear()
   resetRetries()
   resetAllStores()
@@ -94,8 +95,8 @@ describe('the Workspaces route after a crash (audit W-10)', () => {
     await page.getByRole('button', { name: 'Retry' }).click()
     await page.getByRole('button', { name: 'Retry' }).click()
     await expect.element(page.getByRole('button', { name: 'Reload app' })).toBeVisible()
-    // Now a chat pane crashes when what the owner types renders it again.
-    crash.message = true
+    // Now a chat pane crashes when what the owner types renders its composer again.
+    crash.composer = true
     await userEvent.type(page.getByRole('textbox').first(), 'a')
     await expect.element(page.getByRole('button', { name: 'Retry' }).first()).toBeVisible()
     expect(page.getByRole('button', { name: 'Reload app' }).elements()).toHaveLength(1)

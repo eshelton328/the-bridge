@@ -7,8 +7,11 @@
 // more; a `javascript:` URL becomes empty) and opens in a new tab. An image
 // shows its alt text, so a transcript loads nothing from another site. The
 // text renders in its own BlockBoundary, so text that fails to render shows
-// an inline fallback in its entry. Props only.
+// an inline fallback in its entry. Memoised by the text (review R28): parsing
+// Markdown is the transcript's main cost, so it runs only when the text
+// changes. Props only.
 import { MarkdownView } from '@eshelton328/component-library-1701'
+import { memo } from 'react'
 import Markdown, { type Components } from 'react-markdown'
 import { css } from '../../../../styled-system/css/index.js'
 import { BlockBoundary } from '../../../errors/BlockBoundary.tsx'
@@ -30,7 +33,7 @@ export type EntryTextProps = {
   text: string
 }
 
-export function EntryText({ text }: EntryTextProps) {
+export const EntryText = memo(function EntryText({ text }: EntryTextProps) {
   return (
     <BlockBoundary contentKey={text}>
       <div className={inMessage}>
@@ -40,4 +43,4 @@ export function EntryText({ text }: EntryTextProps) {
       </div>
     </BlockBoundary>
   )
-}
+})
