@@ -336,6 +336,20 @@ describe('ratio (W2c)', () => {
     expect(writesOf(fakes)[1]).toMatchObject({ action: 'ratio', body: { tab, path: ['second'] } })
   })
 
+  it('sends no ratio for a handle the layout draws at equal shares, and puts it back', async () => {
+    const fakes = withChats()
+    await showPanes()
+    // row(plan, row(review, zsh)) has no pair layout: the page draws plan beside review over zsh, at equal shares.
+    await pickInMenu('review notes', 'Split right')
+    await expect.poll(drawn).toEqual(['plan the slice', 'review notes', 'zsh'])
+    const columns = handle('Resize columns')
+    const held = await drag(columns, 200, 0)
+    await held.release()
+    await quiet(600)
+    expect(writesOf(fakes).map((w) => w.action)).toEqual(['split'])
+    await expect.poll(() => valueOf(columns)).toBe(50)
+  })
+
   it('holds the sent sizes until the server answers, and reads the layout itself after 2.5 s with no event', async () => {
     const fakes = withChats()
     await showPanes()

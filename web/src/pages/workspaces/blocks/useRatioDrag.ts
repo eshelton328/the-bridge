@@ -5,7 +5,8 @@
 // it sent while the write waits (until `layout.changed`, the 2.5 s read
 // again, or a miss) and shows the server's sizes from then on. A handle
 // whose drag has no write (no split along its axis stands between its
-// panels) goes back to the server's sizes at once. The library's `Splitter`
+// panels, or the server's layout did not size it) goes back to the
+// server's sizes at once. The library's `Splitter`
 // has no end-of-resize callback (LIBRARY_GAPS.md, Split and ratio), so a
 // press on a handle (`data-part="resize-trigger"`) marks a pointer drag.
 // The sizes are this hook's state, never the page's `ui`, so a held ratio
@@ -19,7 +20,8 @@ import { panelsOf, ratioWrite, type SplitPart } from './splitRatio.ts'
 const keyPauseMs = 400
 
 type Held = { workspace: string; sizes: SplitSizes; phase: 'drag' | 'sent'; part: SplitPart }
-type Gesture = { part: SplitPart; from: number[]; to: number[] }
+/** A handle's gesture: `mapped` when the server's layout gave the handle its sizes, so a ratio of them draws back. */
+type Gesture = { part: SplitPart; from: number[]; to: number[]; mapped: boolean }
 
 const same = (a: readonly number[], b: readonly number[]) =>
   a.length === b.length && a.every((v, i) => Math.abs(v - (b[i] ?? 0)) < 0.01)
@@ -59,6 +61,12 @@ export function useRatioDrag(
     gestureRef.current = undefined
     const { layout: writes, tab: live, view: shownView, shown: workspace } = nowRef.current
     if (g === undefined || writes === undefined || live === undefined || workspace === null) return
+    // A handle the server's layout did not size (liveLayout.ts's nearest layout, equal shares) would draw its ratio
+    // back at equal shares: it sends nothing and goes back at once.
+    if (!g.mapped) {
+      setHeld(undefined)
+      return
+    }
     const ids = shownView.data.panes.map((p) => p.id)
     const panels = panelsOf(shownView.data.split, ids.length, g.part).map((panel) =>
       panel.flatMap((at) => (ids[at] === undefined ? [] : [ids[at]])),
@@ -91,8 +99,9 @@ export function useRatioDrag(
       // The splitter tells back the sizes it was given; only the owner's gesture moves a handle.
       if (workspace === null || same(next, was)) return
       if (gestureRef.current !== undefined && gestureRef.current.part !== part) send()
-      const base = nowRef.current.view.ui.splitSizes?.[part] ?? next.map(() => 100 / next.length)
-      gestureRef.current = { part, from: gestureRef.current?.from ?? base, to: next }
+      const sized = nowRef.current.view.ui.splitSizes?.[part]
+      const base = sized ?? next.map(() => 100 / next.length)
+      gestureRef.current = { part, from: gestureRef.current?.from ?? base, to: next, mapped: sized !== undefined }
       setHeld({
         workspace,
         sizes: { ...shownHeld?.sizes, [part]: next },
