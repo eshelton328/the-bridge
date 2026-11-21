@@ -10,10 +10,12 @@ import { createRateLimit } from './rateLimit.ts'
 import { chatsRoutes } from './routes/chats.ts'
 import { clientErrorsRoutes } from './routes/clientErrors.ts'
 import { eventsRoutes } from './routes/events.ts'
+import { pushRoutes } from './routes/push.ts'
 import { uploadsRoutes } from './routes/uploads.ts'
 import { workspacesRoutes } from './routes/workspaces.ts'
 import type { AgentPort } from './services/agentPort.ts'
 import { createLiveEvents } from './services/liveEvents.ts'
+import { createPushSeen, type PushSeen, type PushStore } from './services/push.ts'
 import { defaultChunkBytes, type UploadStore } from './services/uploadStore.ts'
 
 export type AppDeps = {
@@ -23,6 +25,10 @@ export type AppDeps = {
   readonly log: Logger
   /** Where uploaded files wait for a chat; with none, each upload route answers 500. main.ts gives the disk store. */
   readonly uploads?: UploadStore
+  /** The push keys and subscriptions (d-118); with none, each push route but `seen` answers 500. main.ts gives the disk store. */
+  readonly push?: PushStore
+  /** When a page of the owner was last visible; the push sender reads it. */
+  readonly seen?: PushSeen
 }
 
 /** The store of an app with none: each call fails, so an upload answers 500 and is logged. */
@@ -35,7 +41,22 @@ const noUploads: UploadStore = {
   attachment: () => Promise.resolve(err({ reason: 'failed', code: 'no-store' })),
 }
 
-export function createApp({ agents, owner, log, uploads = noUploads }: AppDeps) {
+/** The push store of an app with none: each call fails. */
+const noPush: PushStore = {
+  keys: () => Promise.resolve(err({ reason: 'failed', code: 'no-store' })),
+  subscriptions: () => Promise.resolve(err({ reason: 'failed', code: 'no-store' })),
+  save: () => Promise.resolve(err({ reason: 'failed', code: 'no-store' })),
+  remove: () => Promise.resolve(err({ reason: 'failed', code: 'no-store' })),
+}
+
+export function createApp({
+  agents,
+  owner,
+  log,
+  uploads = noUploads,
+  push = noPush,
+  seen = createPushSeen(),
+}: AppDeps) {
   return (
     new Hono<AppEnv>()
       // Each response carries an X-Request-Id, and the request's log line has the same ID (d-115).
@@ -67,6 +88,7 @@ export function createApp({ agents, owner, log, uploads = noUploads }: AppDeps) 
       .route('/api/chats', chatsRoutes(agents, log, uploads))
       .route('/api/uploads', uploadsRoutes(uploads, log))
       .route('/api/events', eventsRoutes(createLiveEvents(agents), log))
+      .route('/api/push', pushRoutes(push, seen, log))
       .route('/api/client-errors', clientErrorsRoutes(log, createRateLimit(60, 60_000)))
       .notFound((c) => errorJson(c, 'not-found', { path: c.req.path, message: 'no route has this path' }))
       // A throw that no route caught: the log gets the error and its causes, the client the request ID.
