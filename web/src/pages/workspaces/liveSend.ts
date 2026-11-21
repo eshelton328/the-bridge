@@ -22,12 +22,10 @@
 // and the HTTP status only: never the message text, the chat ID or the
 // server's message. The requests go through the typed RPC client (backend
 // #297), which puts the chat ID in the path as it is, so it is URL-encoded
-// here, once. The clear posts with `fetch` until the server's route is in the
-// RPC client's type (backend-coord's clear-input PR, lib/clearInputContract.ts).
-import { SendPromptRequest, StopChatRequest } from '@bridge/contract'
+// here, once.
+import { ClearInputRequest, ErrorBody, SendPromptRequest, StopChatRequest } from '@bridge/contract'
 import { report } from '../../errors/reporter.ts'
 import { api } from '../../lib/api.ts'
-import { ClearInputRequest, ErrorBody } from '../../lib/clearInputContract.ts'
 import type { ComposerAnswer } from './blocks/useComposerActions.ts'
 import { liveReadTimeoutMs, readJson } from './liveWorkspaces.ts'
 
@@ -155,14 +153,9 @@ export function sendPrompt(chat: string, text: string): Promise<ComposerAnswer> 
 
 /** Empties the terminal input of the live chat `chat` (its server ID): `true` once the server says it is empty. */
 export function clearInput(chat: string): Promise<ComposerAnswer> {
-  const body = JSON.stringify(ClearInputRequest.parse({}))
+  const json = ClearInputRequest.parse({})
   return post('clear', (signal) =>
-    fetch(`/api/chats/${encodeURIComponent(chat)}/input/clear`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body,
-      signal,
-    }),
+    api.api.chats[':chat'].input.clear.$post({ param: { chat: encodeURIComponent(chat) }, json }, { init: { signal } }),
   )
 }
 

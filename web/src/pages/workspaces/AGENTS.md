@@ -67,8 +67,7 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   cleared — …" by kind, with Retry (no second question) for a 5xx or no
   answer. A send that Claude Code did not take (409 notSubmitted) says
   "Not sent — the chat did not take the message" with Retry and no
-  report. Until backend-coord's clear-input PR merges, the request and the
-  two new states come from `lib/clearInputContract.ts`
+  report; the clear's body is the contract's `ClearInputRequest`
   (`app/WorkspacesClearInput.test.tsx`). report() gets only a
   5xx or an answer the page does not expect, with the action, kind and
   status, never the message text (`app/WorkspacesLiveSend.test.tsx`). The

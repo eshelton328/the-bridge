@@ -26,10 +26,10 @@
 // (`ClearInputRequest`), which empties the chat's terminal input and answers
 // 204, or the test's answer (`answerClears`). A chat the test marks with
 // `dropSubmits` refuses each send with 409 chat-not-ready `notSubmitted`, as
-// the server does when Claude Code did not take the typed text. Until
-// backend-coord's clear-input PR merges, the request and the error body are
-// checked against the local copy in `clearInputContract.ts`.
+// the server does when Claude Code did not take the typed text.
 import {
+  ClearInputRequest,
+  ErrorBody,
   maxTranscriptEntries,
   SendPromptRequest,
   StopChatRequest,
@@ -37,7 +37,6 @@ import {
   type TranscriptEntry,
   TranscriptResponse,
 } from '@bridge/contract'
-import { ClearInputRequest, ErrorBody } from './clearInputContract.ts'
 
 type Route = 'prompt' | 'stop' | 'clear'
 
