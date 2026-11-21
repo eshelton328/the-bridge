@@ -11,6 +11,7 @@ import { rootErrorOptions } from '../errors/rootErrorOptions.ts'
 import { RouteError } from '../errors/RouteError.tsx'
 import { resetRetries } from '../errors/retryGuard.ts'
 import { type FakeTranscriptServer, fakeTranscriptServer } from '../lib/fakeTranscriptServer.ts'
+import { holdTimers } from '../lib/holdTimers.ts'
 import { queryClient } from '../lib/queryClient.ts'
 import { setViewport } from '../lib/rendering.ts'
 import { testRender } from '../lib/testRender.ts'
@@ -257,10 +258,13 @@ describe("a live chat's transcript (slice 3b)", () => {
     await tapWorkspaces([390, 844])
     await tapChat('plan the slice')
     await expect.element(page.getByText('Looking at the build now.')).toBeVisible()
+    // "Copied" waits for the test's clock, not the runner's (lib/holdTimers.ts).
+    const release = holdTimers()
     await userEvent.click(chatRegion('plan the slice').getByRole('button', { name: 'Copy' }))
     await expect.poll(() => written).toEqual(['Looking at the build now.'])
     // The button says it copied, as a sample reply's does (audit P-4).
     await expect.element(chatRegion('plan the slice').getByRole('button', { name: 'Copied' })).toBeVisible()
+    release()
     expect(getReports()).toEqual([])
   })
 
@@ -272,8 +276,10 @@ describe("a live chat's transcript (slice 3b)", () => {
     await tapChat('plan the slice')
     const chat = chatRegion('plan the slice')
     await expect.element(page.getByText('Looking at the build now.')).toBeVisible()
+    const release = holdTimers()
     await userEvent.click(chat.getByRole('button', { name: 'Copy' }))
     await expect.element(chat.getByRole('button', { name: 'Copy failed' })).toBeVisible()
+    release()
     expect(getReports().map((r) => r.error)).toEqual([broken])
     expect(JSON.stringify(getReports().map((r) => [r.error.message, r.error.stack]))).not.toContain('Looking at')
     // The open ErrorTray shows the clipboard's error alone.

@@ -21,6 +21,10 @@ state file and a page are in `screenState.ts` (d-082).
   that stubs `fetch` in each test and removes it in `afterEach` calls
   `answerLateServerReads()` at its top (`lateServerReads.ts`): a page's
   router can read after its test ended (WorkspacesLiveUnavailable).
+- A check of a label that shows for a few seconds ("Copied" for 2 s)
+  starts `holdTimers()` (`holdTimers.ts`) before the click and moves the
+  clock itself: a busy runner can spend the 2 s in one click
+  (`ArtifactsCopyLink.test.tsx`).
 - Before a check of where an Ark popover or menu sits, wait until its
   positioner has the `--y` zag sets: until zag places it, the positioner
   draws it 100vh above the window (`SkillListHeight.test.tsx`).

@@ -2,13 +2,14 @@ import '@fontsource-variable/geist'
 import '@fontsource-variable/geist-mono'
 import '../index.css'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
-import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
+import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
 import { ErrorTray } from '../errors/ErrorTray.tsx'
 import { clearReports, getReports } from '../errors/reporter.ts'
 import { rootErrorOptions } from '../errors/rootErrorOptions.ts'
 import { RouteError } from '../errors/RouteError.tsx'
 import { resetRetries } from '../errors/retryGuard.ts'
+import { holdTimers } from '../lib/holdTimers.ts'
 import { queryClient } from '../lib/queryClient.ts'
 import { setViewport } from '../lib/rendering.ts'
 import { testRender } from '../lib/testRender.ts'
@@ -125,13 +126,17 @@ describe("a sample reply's Copy on the Workspaces home", () => {
       await openHome(layout.size[0], layout.size[1])
       await layout.open()
       const button = await replyCopy()
+      // "Copied" waits for the test's clock, not the runner's (lib/holdTimers.ts).
+      const release = holdTimers()
       await button.click()
       await expect.poll(() => copied).toEqual([reply])
       await expect.element(await replyCopy('Copied')).toBeVisible()
       // The polite live region beside the button says it too.
       await expect.poll(liveText).toContain('Copied')
-      // It reads Copy again after a while.
-      await expect.element(await replyCopy('Copy'), { timeout: 5000 }).toBeVisible()
+      // It reads Copy again 2 s after the press.
+      vi.advanceTimersByTime(2000)
+      await expect.element(await replyCopy('Copy')).toBeVisible()
+      release()
       expect(getReports()).toEqual([])
     })
 
@@ -141,10 +146,12 @@ describe("a sample reply's Copy on the Workspaces home", () => {
       rejectingClipboard(broken)
       await openHome(layout.size[0], layout.size[1])
       await layout.open()
+      const release = holdTimers()
       await (await replyCopy()).click()
       await expect.element(await replyCopy('Copy failed')).toBeVisible()
       // The polite live region beside the button says it too.
       await expect.poll(liveText).toContain('Copy failed')
+      release()
       expect(getReports().map((r) => r.error)).toEqual([broken])
       // Neither the report nor the ErrorTray holds the reply's text.
       expect(JSON.stringify(getReports().map((r) => [r.error.message, r.error.stack, r.componentStack]))).not.toContain(
@@ -175,8 +182,10 @@ describe("a sample reply's Copy on the Workspaces home", () => {
     })
     await openHome(390, 844)
     await tapChat('bridge themes')
+    const release = holdTimers()
     await (await replyCopy()).click()
     await expect.element(await replyCopy('Copy failed')).toBeVisible()
+    release()
     expect(getReports()).toEqual([])
   })
 })
