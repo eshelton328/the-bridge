@@ -16,11 +16,19 @@
 // scroll bar, or a text selection that scrolls past its edge), or after the
 // focus moves into it (Tab, a link or a screen reader's next item). Once the
 // reader has left the end, no scroll is moved back: a fling's scroll events
-// after the finger lifts keep the place. Any other scroll away
-// from the end while pinned, such as one iOS makes after Send closes the
-// keyboard (its trace shows a scroll to an old place 1.3 s after Send with no
-// touch), goes back to the end in the same frame, before the browser paints.
-// A scroll of any kind that reaches the end pins again.
+// after the finger lifts keep the place. A scroll away from the end that no
+// input explains goes back to the end in the same frame, before the browser
+// paints, only while the page itself has just moved the layout: within
+// `layoutScrollMs`, or `layoutSteps` rendering steps when frames run slow,
+// of a resize of the transcript or the composer, a
+// visualViewport or window resize (the keyboard), an entry added or removed,
+// or the page back on screen. iOS made such a scroll after Send closed the
+// keyboard (R33): its trace has the scroll 1.29 s after Send, 1.25 s after the
+// keyboard closed and 0.59 s after the cleared draft shrank the composer.
+// Any other scroll away from the end unpins, as the reader's does: VoiceOver's
+// three-finger swipe, Find in page and other assistive or browser scrolls send
+// no input this hook sees. A scroll of any kind that reaches the end pins
+// again.
 //
 // Scroll to the newest message (the owner's request, 2026-11-21): `newest`
 // says whether the reader is more than one screen above the end, and whether
@@ -43,6 +51,20 @@ const endSlack = 2
  * scroll still counts as theirs.
  */
 const readerScrollMs = 500
+
+/**
+ * How long, in ms, after the page moved the layout (see the header) a scroll away from the end with no input still
+ * counts as the browser's and goes back to the end. The R33 trace's stray scroll came 591 ms after the composer's last
+ * resize and 1248 ms after the keyboard closed; 1500 ms covers both, since either may be what iOS answered.
+ */
+const layoutScrollMs = 1500
+
+/**
+ * How many rendering steps after the page moved the layout a scroll with no input still goes back to the end, however
+ * long those steps take: a busy device can hold a frame past `layoutScrollMs`, and the scroll the layout change itself
+ * makes comes in the next steps.
+ */
+const layoutSteps = 3
 
 /** The keys that scroll a focused scroller. */
 const scrollKeys = new Set(['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '])
@@ -121,23 +143,43 @@ export function usePinnedEnd(
   key: string,
   last: unknown,
 ): { ref: (el: HTMLElement | null) => void; newest: Newest } {
-  const [scroller, setScroller] = useState<HTMLElement | null>(null)
+  const [frame, setFrame] = useState<{ scroller: HTMLElement; footer: HTMLElement } | null>(null)
+  const scroller = frame?.scroller ?? null
+  const footer = frame?.footer ?? null
   const [newest] = useState(newestStore)
   const pinnedRef = useRef(true)
   // Marks new entries while the reader is away; set while the pin runs.
   const cameRef = useRef<(() => void) | undefined>(undefined)
   const ref = useCallback((el: HTMLElement | null) => {
     const body = el?.closest('.scroll-frame__root')?.querySelector(':scope > .scroll-frame__body')
-    setScroller(body instanceof HTMLElement ? body : null)
+    setFrame((now) => {
+      if (el === null || !(body instanceof HTMLElement)) return null
+      return now?.scroller === body && now.footer === el ? now : { scroller: body, footer: el }
+    })
   }, [])
   useLayoutEffect(() => {
-    if (!enabled || scroller === null) return undefined
+    if (!enabled || scroller === null || footer === null) return undefined
     pinnedRef.current = true
     const view = scroller.ownerDocument.defaultView ?? window
     // The reader's input: a finger that moves on the transcript, a mouse button down in it, and the time of the
     // last wheel turn, scroll key, lifted finger or focus move into the transcript.
     const reader = { touching: false, dragging: false, last: Number.NEGATIVE_INFINITY }
     const readerScrolls = () => reader.touching || reader.dragging || performance.now() - reader.last < readerScrollMs
+    // When the page last moved the layout, and how many rendering steps ran since; the chat's opening counts.
+    let laidOut = Number.NEGATIVE_INFINITY
+    let steps = layoutSteps
+    let stepFrame: number | undefined
+    const step = () => {
+      steps += 1
+      stepFrame = steps < layoutSteps ? view.requestAnimationFrame(step) : undefined
+    }
+    const layoutMoved = () => {
+      laidOut = performance.now()
+      steps = 0
+      stepFrame ??= view.requestAnimationFrame(step)
+    }
+    const layoutScrolls = () => steps < layoutSteps || performance.now() - laidOut < layoutScrollMs
+    layoutMoved()
     // New entries came in while the reader was away from the end.
     let unseen = false
     // The button's smooth scroll to the end runs: pinned, but not snapped to the end on each step.
@@ -163,8 +205,11 @@ export function usePinnedEnd(
         pinnedRef.current = false
         stopSeeking()
       }
-      // Pinned, and the reader did not move it: back to the end before the browser paints this frame.
-      else follow()
+      // Pinned, the reader did not move it and the page just moved the layout: back to the end before the browser
+      // paints this frame. The button's glide to the end (`seeking`) is not moved back.
+      else if (pinnedRef.current && (seeking || layoutScrolls())) follow()
+      // A scroll no input and no layout change explains, such as VoiceOver's or Find in page's: the reader's.
+      else pinnedRef.current = false
       show()
     }
     const onTouchMove = () => {
@@ -194,15 +239,22 @@ export function usePinnedEnd(
     }
     // Back from the background: entries may have come in while the page could not draw them.
     const onShow = () => {
-      if (scroller.ownerDocument.visibilityState === 'visible') follow()
+      if (scroller.ownerDocument.visibilityState !== 'visible') return
+      layoutMoved()
+      follow()
     }
     // A size change, such as the keyboard opening or a shrunk pane, can carry the reader past a screen from the end.
-    const resize = new ResizeObserver(() => {
+    // The transcript's or the composer's own box moving is the page's layout change; an entry that grows as its text
+    // streams in is not, so a reader's VoiceOver scroll during a reply is not moved back.
+    const resize = new ResizeObserver((sizes) => {
+      if (sizes.some((size) => size.target === scroller || size.target === footer)) layoutMoved()
       follow()
       show()
     })
+    // Observed once: observing again reports the size again, which would read as a layout change on each entry.
+    resize.observe(scroller)
+    resize.observe(footer)
     const observeAll = () => {
-      resize.observe(scroller)
       for (const child of scroller.children) resize.observe(child)
     }
     const mutation = new MutationObserver((records) => {
@@ -210,6 +262,8 @@ export function usePinnedEnd(
         (r) => !ours(r.target) && !(r.target === scroller && [...r.addedNodes, ...r.removedNodes].every(ours)),
       )
       if (real.length === 0) return
+      if (real.some((r) => r.target === scroller && [...r.addedNodes, ...r.removedNodes].some((n) => !ours(n))))
+        layoutMoved()
       if (!pinnedRef.current && real.some((r) => r.target === scroller && [...r.addedNodes].some((n) => !ours(n))))
         unseen = true
       observeAll()
@@ -265,7 +319,11 @@ export function usePinnedEnd(
     view.addEventListener('keydown', onKey, { capture: true, passive: true })
     view.addEventListener('pageshow', onShow)
     scroller.ownerDocument.addEventListener('visibilitychange', onShow)
+    // The keyboard opening or closing, before the transcript's box follows it.
+    view.addEventListener('resize', layoutMoved, passive)
+    view.visualViewport?.addEventListener('resize', layoutMoved, passive)
     return () => {
+      if (stepFrame !== undefined) view.cancelAnimationFrame(stepFrame)
       stopSeeking()
       newest.bind(undefined)
       cameRef.current = undefined
@@ -282,10 +340,12 @@ export function usePinnedEnd(
       view.removeEventListener('keydown', onKey, { capture: true })
       view.removeEventListener('pageshow', onShow)
       scroller.ownerDocument.removeEventListener('visibilitychange', onShow)
+      view.removeEventListener('resize', layoutMoved)
+      view.visualViewport?.removeEventListener('resize', layoutMoved)
       mutation.disconnect()
       resize.disconnect()
     }
-  }, [enabled, scroller, key, newest])
+  }, [enabled, scroller, footer, key, newest])
   // After the pin's own effect, so a new chat (`key`) opens pinned and its entries dot nothing.
   useLayoutEffect(() => {
     cameRef.current?.()
