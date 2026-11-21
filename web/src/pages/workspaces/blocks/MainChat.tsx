@@ -9,7 +9,7 @@ import type { SidebarLayers, Skill, WorkbenchPane } from '../types.ts'
 import { ChatHead } from './ChatHead.tsx'
 import type { CopyReply } from './ChatEntryView.tsx'
 import { ChatPane, type TranscriptWatch } from './ChatPane.tsx'
-import { withDraft } from './chatDraft.ts'
+import type { DraftBook } from './draftBook.ts'
 import type { ComposerAnswer } from './useComposerActions.ts'
 
 // The detail slot is a flex column; the chat fills it.
@@ -40,10 +40,8 @@ export type MainChatProps = {
   above?: ReactNode
   /** Drawn over the whole chat, header included, such as the drop zone of a dragged chat (D6 158:1025). */
   overlay?: ReactNode
-  /** The owner's draft in the composer, in place of the data's text (`ui.drafts`). */
-  draft?: string | undefined
-  /** Called with the composer's text as the owner types. */
-  onTextChange?: ((text: string, sent?: string) => void) | undefined
+  /** The page's drafts by chat (draftBook.ts): the composer starts from its chat's draft and sets it as the owner types. */
+  drafts?: DraftBook | undefined
   /** Sends the composer's message; resolves `true` once sent, else `false` or the composer's line (ChatPane `onSend`). */
   onSend?: ((text: string) => Promise<ComposerAnswer>) | undefined
   /** Stops the chat: the running composer's Stop (ChatPane `onStop`). */
@@ -67,8 +65,7 @@ export function MainChat(props: MainChatProps) {
     rename,
     above,
     overlay,
-    draft,
-    onTextChange,
+    drafts,
     onSend,
     onStop,
     transcripts,
@@ -102,8 +99,8 @@ export function MainChat(props: MainChatProps) {
         earlier={pane.earlier}
         empty={pane.empty}
         problem={pane.problem}
-        composer={withDraft(pane.composer, draft)}
-        onTextChange={onTextChange}
+        composer={pane.composer}
+        drafts={drafts}
         onSend={onSend}
         onStop={onStop}
         skills={skills}

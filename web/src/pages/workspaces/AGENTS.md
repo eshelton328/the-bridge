@@ -83,8 +83,13 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
 - `workspacesStore.ts` holds the owner's changes to the shown state's
   `ui`, so a page visit keeps them, and drops them when another
   `?state=` is shown (`app/WorkspacesRoute.test.tsx`).
-- A composer's text lives in `ui.drafts` by chat id (`blocks/chatDraft.ts`),
-  so a pane that unmounts keeps its draft. Key each `ChatPane` by its
+- A composer's text lives in the page's draft book by chat id
+  (`blocks/draftBook.ts`), outside the `ui`, so a pane that unmounts keeps
+  its draft and a keystroke renders only its composer, never the page, a
+  header or a transcript (review R28,
+  `app/WorkspacesTypingRenders.test.tsx`). `WorkspacesPage` makes the book
+  for the shown state and keeps it in the page store's drafts; a screen
+  without one starts its own from `ui.drafts`. Key each `ChatPane` by its
   pane's id, so a switch mounts that chat's own draft.
 - The transcript entries are memoised (`blocks/TranscriptEntries.tsx`,
   `ChatEntryView`, `EntryText`, review R28): keep their props stable, so
@@ -93,7 +98,8 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
 - A sample chat's Send goes to the store's `send` through the library's
   `onSend`; a failed send keeps the draft (`WorkspacesSendDraft.test.tsx`).
 - A send that ends after the owner opened another chat changes only the
-  sent chat's draft: `WorkspacesPage` merges each ui change into the ui
+  sent chat's draft, and only while it still holds the text sent
+  (`DraftBook.clear`). `WorkspacesPage` merges each ui change into the ui
   shown now, not the one of the render that sent it.
 - Every reply's Copy, sample or live, goes through the screen's `onCopy`
   to `WorkspacesPage`, which copies with `copyText`; the button

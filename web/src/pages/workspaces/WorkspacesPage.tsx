@@ -11,7 +11,8 @@
 // page store's `send`, and a failed send is reported. A failed send keeps the composer's draft.
 // The composer drafts are saved in sessionStorage as they change and read
 // back on load, so Reload app keeps them; a sent chat's draft leaves it
-// (draftStorage.ts). Every reply's Copy, sample or live, writes the clipboard
+// (draftStorage.ts). They live in a draft book (blocks/draftBook.ts), so a keystroke never renders this page (R28).
+// Every reply's Copy, sample or live, writes the clipboard
 // here through copyText, and its button shows Copied or Copy failed; a fault
 // is reported with the clipboard's error only, never the reply's text (audit P-4).
 import { getRouteApi, useRouter } from '@tanstack/react-router'
@@ -20,14 +21,30 @@ import { report } from '../../errors/reporter.ts'
 import { copyText } from '../../lib/copyText.ts'
 import { readsLive } from '../../lib/dataSource.ts'
 import { workspacesSources } from './loadWorkspacesState.ts'
+import { createDraftBook, type DraftBook } from './blocks/draftBook.ts'
 import { layoutsSeenOf, withLoadedLayouts } from './blocks/workspaceLayout.ts'
 import { loadDrafts, saveDrafts } from './draftStorage.ts'
 import { WorkspacesScreen } from './screens/WorkspacesScreen.tsx'
 import type { ComposerAnswer } from './blocks/useComposerActions.ts'
 import { useLiveTranscripts } from './useLiveTranscripts.ts'
-import { useWorkspacesActions, useWorkspacesUi } from './workspacesStore.ts'
+import { useWorkspacesActions, useWorkspacesUi, workspacesDrafts, type WorkspacesStateKey } from './workspacesStore.ts'
 
 const route = getRouteApi('/workspaces')
+
+/**
+ * The drafts of `state`: those saved before the last reload, then those the page store kept over a page visit, which
+ * are newer. Each change is saved in sessionStorage first, so a keystroke that crashes the page is kept for Reload app.
+ */
+const draftsFor = (
+  state: WorkspacesStateKey,
+  setDrafts: (state: WorkspacesStateKey, drafts: Readonly<Record<string, string>>) => void,
+): { state: WorkspacesStateKey; drafts: DraftBook } => ({
+  state,
+  drafts: createDraftBook({ ...loadDrafts(state), ...workspacesDrafts(state) }, (drafts) => {
+    saveDrafts(state, drafts)
+    setDrafts(state, drafts)
+  }),
+})
 
 /** The live module's send or stop, loaded when first used; a module that fails to load is reported. */
 const viaLive = (use: (live: typeof import('./liveSend.ts')) => Promise<ComposerAnswer>): Promise<ComposerAnswer> =>
@@ -49,7 +66,7 @@ export function WorkspacesPage() {
   const search = route.useSearch()
   const navigate = route.useNavigate()
   const changed = useWorkspacesUi(search.state)
-  const { setUi, showState, send } = useWorkspacesActions()
+  const { setUi, showState, send, setDrafts } = useWorkspacesActions()
   const router = useRouter()
   useEffect(() => {
     showState(search.state)
@@ -68,15 +85,13 @@ export function WorkspacesPage() {
       stop?.()
     }
   }, [router, live])
-  // The drafts saved before the last reload, read once; what the owner types after it wins.
-  const [saved] = useState(() => loadDrafts(search.state))
+  // The drafts of the shown state, made once for it: another `?state=` gets its own.
+  const [book, setBook] = useState(() => draftsFor(search.state, setDrafts))
+  if (book.state !== search.state) setBook(draftsFor(search.state, setDrafts))
   // One object per change, so the screen starts again from the merged ui only when the store changes. A loaded layout
   // newer than the owner's change, such as a herdr layout read again, replaces his (withLoadedLayouts).
   const current = state.data.current
-  const ui = useMemo(() => {
-    const merged = withLoadedLayouts(state.ui, changed, current)
-    return Object.keys(saved).length === 0 ? merged : { ...merged, drafts: { ...saved, ...merged.drafts } }
-  }, [state.ui, changed, current, saved])
+  const ui = useMemo(() => withLoadedLayouts(state.ui, changed, current), [state.ui, changed, current])
   // The ui now, also for a change that comes after a later render: a send that ends after the owner opened another
   // chat clears its draft, and must keep the layouts and focus he sees then, not the ones of the render that sent it.
   const uiRef = useRef(ui)
@@ -106,9 +121,8 @@ export function WorkspacesPage() {
       data={data}
       ui={ui}
       viewport="desktop"
+      drafts={book.drafts}
       onUiChange={(change) => {
-        // Saved before the render, so a keystroke that crashes the page is kept for Reload app.
-        if (change.drafts !== undefined) saveDrafts(search.state, change.drafts)
         // Each change keeps the layouts and focus the owner sees now, and which loaded layouts he saw, so a newer one
         // replaces only what he changed before it came.
         const now = uiRef.current

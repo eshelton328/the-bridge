@@ -71,6 +71,7 @@ import { LiftedChatRow } from '../blocks/SidebarChatRow.tsx'
 import { SubtaskDialog } from '../blocks/SubtaskDialog.tsx'
 import type { CopyReply } from '../blocks/ChatEntryView.tsx'
 import type { TranscriptWatch } from '../blocks/ChatPane.tsx'
+import type { DraftBook } from '../blocks/draftBook.ts'
 import type { PhoneText, WorkspacesData, WorkspacesUi } from '../types.ts'
 import type { ComposerAnswer } from '../blocks/useComposerActions.ts'
 
@@ -84,8 +85,8 @@ export type WorkspacesPhoneProps = {
   ui: WorkspacesUi
   onNavigate?: ((page: string) => void) | undefined
   onUiChange: (change: Partial<WorkspacesUi>) => void
-  /** Sets a chat's draft (`ui.drafts`), merged into the latest drafts, so a send that ends late clears only its chat. */
-  onDraftChange: (chat: string, text: string, sent?: string) => void
+  /** The composer drafts by chat (draftBook.ts): a chat's composer starts from its draft and sets it as the owner types. */
+  drafts: DraftBook
   /** Sends a chat's message; resolves `false` when the send failed, and the composer keeps the draft (ChatPane). */
   onSend?: ((chat: string, text: string) => Promise<ComposerAnswer>) | undefined
   /** Stops a chat: its running composer's Stop (ChatPane `onStop`). */
@@ -105,7 +106,7 @@ export function WorkspacesPhone({
   ui,
   onNavigate,
   onUiChange,
-  onDraftChange,
+  drafts,
   onSend,
   onStop,
   transcripts,
@@ -337,10 +338,7 @@ export function WorkspacesPhone({
                 }}
                 meta={meta}
                 focusMessage={ui.messageFocus}
-                draft={ui.drafts?.[chat.id]}
-                onTextChange={(draft, sent) => {
-                  onDraftChange(chat.id, draft, sent)
-                }}
+                drafts={drafts}
                 onSend={onSend && ((message) => onSend(chat.id, message))}
                 onStop={onStop && (() => onStop(chat.id))}
                 transcripts={transcripts}

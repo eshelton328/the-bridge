@@ -21,7 +21,7 @@ import type { SidebarLayers, Skill, WorkbenchPane } from '../types.ts'
 import { ChatHead } from './ChatHead.tsx'
 import type { CopyReply } from './ChatEntryView.tsx'
 import { ChatPane, type TranscriptWatch } from './ChatPane.tsx'
-import { withDraft } from './chatDraft.ts'
+import type { DraftBook } from './draftBook.ts'
 import type { ComposerAnswer } from './useComposerActions.ts'
 
 // Figma draws the back chevron and the ⋯ bare, 20 and 18 px (105:2750, 105:2765): the back in the accent colour, as a
@@ -76,10 +76,8 @@ export type PhoneChatProps = {
   device?: 'phone' | 'tablet' | undefined
   /** The frame's Figma layers. */
   layers?: SidebarLayers | undefined
-  /** The owner's draft in the composer, in place of the data's text (`ui.drafts`), so Back and a tap on the chat keep it. */
-  draft?: string | undefined
-  /** Called with the composer's text as the owner types. */
-  onTextChange?: ((text: string, sent?: string) => void) | undefined
+  /** The page's drafts by chat (draftBook.ts): the composer starts from its chat's draft, so Back and a tap on the chat keep it. */
+  drafts?: DraftBook | undefined
   /** Sends the composer's message; resolves `true` once sent, else `false` or the composer's line (ChatPane `onSend`). */
   onSend?: ((text: string) => Promise<ComposerAnswer>) | undefined
   /** Stops the chat: the running composer's Stop (ChatPane `onStop`). */
@@ -110,8 +108,7 @@ export function PhoneChat(props: PhoneChatProps) {
     rename,
     device = 'phone',
     layers,
-    draft,
-    onTextChange,
+    drafts,
     onSend,
     onStop,
     transcripts,
@@ -179,8 +176,8 @@ export function PhoneChat(props: PhoneChatProps) {
       earlier={pane.earlier}
       empty={pane.empty}
       problem={pane.problem}
-      composer={withDraft(pane.composer, draft)}
-      onTextChange={onTextChange}
+      composer={pane.composer}
+      drafts={drafts}
       onSend={onSend}
       onStop={onStop}
       skills={skills}

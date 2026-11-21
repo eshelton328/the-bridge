@@ -7,8 +7,8 @@
 // readout over the pane before it; with `stack` the panes are one above the
 // other. Each handle's sizes are in `ui.splitSizes`.
 // The empty pane's Close pane reports the pane closed (`onClosePane`).
-// A chat's composer starts from the owner's draft (`ui.drafts`) and reports what
-// he types, so the draft outlives the pane: a page visit, a closed pane. Its
+// A chat's composer starts from the owner's draft (`drafts`, draftBook.ts) and sets
+// it as he types, so the draft outlives the pane: a page visit, a closed pane. Its
 // Send goes to `onSend` with the chat's id.
 // Props only; `ui` says which pane is focused and which menu,
 // skill list or side chat is open.
@@ -16,7 +16,7 @@ import { SplitPanes } from '@eshelton328/component-library-1701'
 import type { ResizePart, WorkbenchPane, WorkspacesData, WorkspacesUi } from '../types.ts'
 import type { CopyReply } from './ChatEntryView.tsx'
 import { ChatPane, type TranscriptWatch } from './ChatPane.tsx'
-import { withDraft } from './chatDraft.ts'
+import type { DraftBook } from './draftBook.ts'
 import { EmptyPane } from './EmptyPane.tsx'
 import { PaneDropZone } from './PaneDropZone.tsx'
 import { PaneFrame } from './PaneFrame.tsx'
@@ -48,8 +48,8 @@ export type WorkbenchPanesProps = {
   onUiChange?: ((change: Partial<WorkspacesUi>) => void) | undefined
   /** Called with a pane's id when the owner closes it with the empty pane's Close pane (D13). */
   onClosePane?: ((pane: string) => void) | undefined
-  /** Sets a chat's draft (`ui.drafts`), merged into the latest drafts, so a send that ends late clears only its chat. */
-  onDraftChange: (chat: string, text: string, sent?: string) => void
+  /** The page's drafts by chat (draftBook.ts): the composer starts from its chat's draft and sets it as the owner types. */
+  drafts?: DraftBook | undefined
   /** Sends a chat's message; resolves `false` when the send failed, and the composer keeps the draft (ChatPane). */
   onSend?: ((chat: string, text: string) => Promise<ComposerAnswer>) | undefined
   /** Stops a chat: its running composer's Stop (ChatPane `onStop`). */
@@ -65,7 +65,7 @@ export function WorkbenchPanes({
   ui,
   onUiChange,
   onClosePane,
-  onDraftChange,
+  drafts,
   onSend,
   onStop,
   transcripts,
@@ -150,10 +150,8 @@ export function WorkbenchPanes({
             earlier={pane.earlier}
             empty={pane.empty}
             problem={pane.problem}
-            composer={withDraft(pane.composer, ui.drafts?.[pane.id])}
-            onTextChange={(text, sent) => {
-              onDraftChange(pane.id, text, sent)
-            }}
+            composer={pane.composer}
+            drafts={drafts}
             onSend={onSend && ((text) => onSend(pane.id, text))}
             onStop={onStop && (() => onStop(pane.id))}
             skills={{

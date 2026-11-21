@@ -35,6 +35,7 @@ import { css, cx } from '../../../../styled-system/css/index.js'
 import { pickSkill, skillQuery } from '../../../lib/skillQuery.ts'
 import type { ChatEntry, ComposerState, Skill } from '../types.ts'
 import type { CopyReply } from './ChatEntryView.tsx'
+import { type DraftBook, useDraft } from './draftBook.ts'
 import { NotLive } from './NotLive.tsx'
 import { frameRegion } from './frameRegion.ts'
 import { SkillPicker } from './SkillPicker.tsx'
@@ -170,12 +171,13 @@ type ChatPaneBase = {
   /** Put the focus in the message box when the chat shows, as the phone's chat does with the skills open (M3). */
   autoFocus?: boolean | undefined
   /**
-   * Called with the message box's text as the owner types, so the caller can keep the draft when the pane unmounts.
-   * After a send went through it is called with `''` and the text sent (`sent`): the caller empties the chat's saved
-   * draft only if it still holds that text, as the pane may have unmounted and the chat opened again with a newer draft.
-   * The box follows a draft the caller changes this way (`composer.text`).
+   * The page's drafts by chat (review R28): the box starts from this chat's draft (`composer.text` when it has none),
+   * sets it as the owner types and follows a change made elsewhere, such as a send that went through after the pane
+   * opened again. A keystroke tells only this chat's composers, so the page, the header and the transcript do not
+   * render. A send that went through empties the draft only if it still holds the text sent. Not set, as in a side
+   * chat, the box keeps its text itself.
    */
-  onTextChange?: ((text: string, sent?: string) => void) | undefined
+  drafts?: DraftBook | undefined
   /**
    * Sends the message: resolves `true` once it is sent, `false` when the send failed and the caller reported it, or
    * the line to show under the composer (`ComposerAnswer`). The box empties only on `true`, and only when the owner has
@@ -232,7 +234,7 @@ export function ChatPane(props: ChatPaneProps) {
     lead,
     above,
     autoFocus = false,
-    onTextChange,
+    drafts,
     onSend,
     onStop,
   } = props
@@ -240,19 +242,21 @@ export function ChatPane(props: ChatPaneProps) {
   const typedRef = useRef(false)
   const areaRef = useRef<HTMLDivElement>(null)
   // What the owner has typed from the "/": the list keeps the skills that start with it.
-  const [query, setQuery] = useState(() => skillQuery(composer.text, composer.text.length))
+  // The chat's draft in the page's drafts, else the data's text; it changes only for this chat (draftBook.ts).
+  const draft = useDraft(drafts, chatId, composer.text)
+  const [query, setQuery] = useState(() => skillQuery(draft, draft.length))
   // The message box's text: a picked skill goes into it.
-  const [text, setText] = useState(composer.text)
+  const [text, setText] = useState(draft)
   // The text as typed now, for a send that ends after the owner typed on: the box empties only if it still holds what
   // was sent, as the library's own composer does with its uncontrolled text.
-  const latestRef = useRef(composer.text)
-  // A draft the caller changed, such as one a send emptied after this pane opened again: the box follows it.
+  const latestRef = useRef(draft)
+  // A draft changed elsewhere, such as one a send emptied after this pane opened again: the box follows it.
   useEffect(() => {
-    if (composer.text === latestRef.current) return
-    latestRef.current = composer.text
-    setText(composer.text)
-    setQuery(skillQuery(composer.text, composer.text.length))
-  }, [composer.text])
+    if (draft === latestRef.current) return
+    latestRef.current = draft
+    setText(draft)
+    setQuery(skillQuery(draft, draft.length))
+  }, [draft])
   // The skill the arrow keys moved the highlight to, while the list is open.
   const [moved, setMoved] = useState<string | null>(null)
   // Where the caret goes once a picked skill is in the box.
@@ -293,7 +297,7 @@ export function ChatPane(props: ChatPaneProps) {
   const onValueChange = (next: string) => {
     latestRef.current = next
     setText(next)
-    onTextChange?.(next)
+    drafts?.set(chatId, next)
     const caret = textArea()?.selectionStart ?? next.length
     const word = skillQuery(next, caret)
     setQuery(word)
@@ -318,7 +322,7 @@ export function ChatPane(props: ChatPaneProps) {
     caretRef.current = next.caret
     latestRef.current = next.text
     setText(next.text)
-    onTextChange?.(next.text)
+    drafts?.set(chatId, next.text)
     setQuery(null)
     setMoved(null)
     typedRef.current = false
@@ -343,8 +347,8 @@ export function ChatPane(props: ChatPaneProps) {
     onSend,
     onStop,
     clear: (submitted) => {
-      // The caller keeps the draft by chat: it empties it only if it still holds what was sent, and the box follows.
-      if (onTextChange !== undefined) onTextChange('', submitted)
+      // The page keeps the draft by chat: it empties it only if it still holds what was sent, and the box follows.
+      if (drafts !== undefined) drafts.clear(chatId, submitted)
       else if (latestRef.current === submitted) onValueChange('')
     },
   })
