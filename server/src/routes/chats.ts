@@ -11,11 +11,15 @@
 // port only, never into a log line or an ErrorBody. POST /:chat/input/clear
 // empties the chat's input box (204); the text it removes goes nowhere.
 // POST /:chat/uploads starts the upload of a file for that chat (slice
-// W1b, routes/uploads.ts).
+// W1b, routes/uploads.ts). POST /:chat/command types /compact or /clear
+// into an idle Claude chat (slice W5, 204); the compact instructions go to
+// the port only, as a prompt's text.
 import {
+  ChatCommandRequest,
   ChatId,
   ClearInputRequest,
   ErrorBody,
+  maxCompactChars,
   maxPromptChars,
   SendPromptRequest,
   StartUploadRequest,
@@ -30,8 +34,8 @@ import { bodyLimit } from 'hono/body-limit'
 import { type SSEStreamingApi, streamSSE } from 'hono/streaming'
 import { type AppEnv, agentErrorBody, agentErrorJson, errorJson, internalMessage } from '../errors.ts'
 import type { Logger } from '../logger.ts'
-import type { AgentPort, AgentPortError, CancelOutcome, ClearOutcome } from '../services/agentPort.ts'
-import { clearInput, readTranscript, stopChat } from '../services/chats.ts'
+import type { AgentPort, AgentPortError, CancelOutcome, ClearOutcome, CommandOutcome } from '../services/agentPort.ts'
+import { clearInput, readTranscript, sendCommand, stopChat } from '../services/chats.ts'
 import type { UploadStore } from '../services/uploadStore.ts'
 import { type FilePromptOutcome, sendPromptWithFiles, startUpload } from '../services/uploads.ts'
 import { jsonBody, jsonOnly, smallJson } from './jsonBody.ts'
@@ -46,6 +50,8 @@ const retryMs = 5_000
  * which is more than its UTF-8 bytes (at most 4).
  */
 const maxPromptBytes = maxPromptChars * 6 + 1024
+/** The largest command body: the longest instructions with each character as a JSON escape, and room for the rest. */
+const maxCommandBytes = maxCompactChars * 6 + 1024
 
 const sendError = (stream: SSEStreamingApi, body: ErrorBody) =>
   stream.writeSSE({ event: 'error', data: JSON.stringify(ErrorBody.parse(body)) })
@@ -64,7 +70,7 @@ export function chatsRoutes(agents: AgentPort, log: Logger, uploads: UploadStore
   const notFound = (c: Context<AppEnv>) =>
     errorJson(c, 'not-found', { path: c.req.path, message: 'no chat has this ID' })
   /** The answer to a send or a stop: 204 when sent; the chat's state when it cannot take it. */
-  const answer = (c: Context<AppEnv>, outcome: FilePromptOutcome | CancelOutcome | ClearOutcome) => {
+  const answer = (c: Context<AppEnv>, outcome: FilePromptOutcome | CancelOutcome | ClearOutcome | CommandOutcome) => {
     switch (outcome) {
       case 'sent':
       case 'cleared':
@@ -91,7 +97,12 @@ export function chatsRoutes(agents: AgentPort, log: Logger, uploads: UploadStore
       case 'noCommands':
         return errorJson(c, 'chat-not-ready', {
           state: 'noCommands',
-          message: "the server cannot clear a Codex chat's input",
+          message: 'the server sends no command or input clear to a Codex chat yet',
+        })
+      case 'working':
+        return errorJson(c, 'chat-not-ready', {
+          state: 'working',
+          message: 'the chat works now; send the command when it is idle',
         })
       case 'notSubmitted':
         return errorJson(c, 'chat-not-ready', {
@@ -147,6 +158,22 @@ export function chatsRoutes(agents: AgentPort, log: Logger, uploads: UploadStore
       const stopped = await stopChat(agents, id.data)
       return stopped.ok ? answer(c, stopped.value) : failed(c, stopped.error)
     })
+    .post(
+      '/:chat/command',
+      bodyLimit({
+        maxSize: maxCommandBytes,
+        onError: (c: Context<AppEnv>) =>
+          errorJson(c, 'invalid-input', { message: 'the command is too long', issues: ['the body is too large'] }),
+      }),
+      jsonOnly,
+      jsonBody(ChatCommandRequest),
+      async (c) => {
+        const id = chatOf(c)
+        if (!id.success) return invalid(c)
+        const sent = await sendCommand(agents, id.data, c.req.valid('json'))
+        return sent.ok ? answer(c, sent.value) : failed(c, sent.error)
+      },
+    )
     .post('/:chat/input/clear', smallJson, jsonOnly, jsonBody(ClearInputRequest), async (c) => {
       const id = chatOf(c)
       if (!id.success) return invalid(c)

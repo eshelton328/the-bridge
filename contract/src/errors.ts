@@ -26,7 +26,16 @@ export const ErrorKind = z.discriminatedUnion('kind', [
    */
   z.object({
     kind: z.literal('chat-not-ready'),
-    state: z.enum(['shell', 'needsYou', 'notWorking', 'inputNotEmpty', 'noAttachments', 'noCommands', 'notSubmitted']),
+    state: z.enum([
+      'shell',
+      'needsYou',
+      'notWorking',
+      'inputNotEmpty',
+      'noAttachments',
+      'noCommands',
+      'notSubmitted',
+      'working',
+    ]),
     ...common,
   }),
   /** The file is larger than the server takes (413). */

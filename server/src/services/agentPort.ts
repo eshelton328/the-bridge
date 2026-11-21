@@ -47,7 +47,7 @@ export type ClearOutcome = Exclude<SendOutcome, 'sent'> | 'cleared' | 'noCommand
  * What a command did: as a prompt; `working` when the chat works, as Claude Code would only queue the command;
  * `noCommands` for a Codex chat, which takes none from the port yet. Nothing was sent unless it is `sent`.
  */
-type CommandOutcome = PromptOutcome | 'working' | 'noCommands'
+export type CommandOutcome = PromptOutcome | 'working' | 'noCommands'
 
 /** A Claude Code command: `/compact` with the owner's instructions if any, or `/clear`. */
 export type ChatCommand =
