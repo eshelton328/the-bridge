@@ -1,13 +1,14 @@
-// The skills and commands of a Claude chat's "/" list, from the SKILL.md
-// files that Claude Code reads (R34): the owner's (~/.claude/skills and
-// ~/.claude/commands), each folder from the chat's folder up to its repository
-// root (.claude/skills), and each folder just below the chat's folder, whose
-// skills Claude Code names "<folder>:<skill>". Only the front matter of a file
-// is read (its first 16 KB), never the rest; a folder and a file are read
-// again only when their change time or size moves.
+// The skills and commands of a Claude chat's "/" list, from the files that
+// Claude Code reads when a session starts (R34): the owner's (~/.claude/skills
+// and ~/.claude/commands) and each folder's from the chat's folder up to its
+// repository root (.claude/skills, .claude/commands). Not the skills of a
+// folder below the chat's folder: Claude Code loads those only once it works
+// there. Only the front matter of a file is read (its first 16 KB), never the
+// rest; a folder and a file are read again only when their change time or
+// size moves.
 import { readdir, stat, open } from 'node:fs/promises'
 import { basename, dirname, join } from 'node:path'
-import { ChatSkill, type SkillSource } from '@bridge/contract'
+import { ChatSkill, maxSkills, type SkillSource } from '@bridge/contract'
 
 /** The commands that the page sends itself; each one goes through `POST /api/chats/:chat/command` or the chat bar. */
 export const builtinCommands: readonly ChatSkill[] = [
@@ -21,8 +22,8 @@ export const builtinCommands: readonly ChatSkill[] = [
 const descriptionChars = 80
 /** The most bytes read from a file for its front matter. */
 const headBytes = 16 * 1024
-/** The most folders below the chat's folder that are looked at. */
-const maxChildren = 200
+/** How deep a `commands` folder's subfolders go into a command's name ("frontend:component"). */
+const maxCommandDepth = 3
 
 type Head = { name?: string; description: string; hidden: boolean }
 
@@ -35,7 +36,9 @@ export function oneLine(text: string): string {
   return `${(space > descriptionChars / 2 ? cut.slice(0, space) : cut).trimEnd()}…`
 }
 
-const unquote = (value: string) => value.replace(/^(["'])([\s\S]*)\1$/, '$2')
+/** A YAML value: a quoted one without its quotes, a plain one without a `# comment` at its end. */
+const unquote = (value: string) =>
+  /^["']/.test(value) ? value.replace(/^(["'])([\s\S]*)\1$/, '$2') : value.replace(/\s+#.*$/, '')
 
 /** The name, description and `user-invocable` of a file's YAML front matter; null for a file with none. */
 export function frontMatterOf(text: string): Head | null {
@@ -78,7 +81,8 @@ async function headOf(path: string): Promise<Head | null> {
     try {
       const buffer = Buffer.alloc(Math.min(size, headBytes))
       await handle.read(buffer, 0, buffer.length, 0)
-      const head = frontMatterOf(buffer.toString('utf8'))
+      // A file with no front matter still counts, by its folder's or file's name.
+      const head = frontMatterOf(buffer.toString('utf8')) ?? { description: '', hidden: false }
       heads.set(path, { size, mtimeMs, head })
       return head
     } finally {
@@ -129,18 +133,18 @@ async function skillsIn(folder: string, source: SkillSource, prefix = ''): Promi
   return found.flat()
 }
 
-/** The commands of one `commands` folder (`<command>.md`). */
-async function commandsIn(folder: string, source: SkillSource): Promise<ChatSkill[]> {
+/** The commands of one `commands` folder (`<command>.md`); a subfolder's go by "<subfolder>:<command>". */
+async function commandsIn(folder: string, source: SkillSource, prefix = '', depth = 0): Promise<ChatSkill[]> {
   const found = await Promise.all(
-    (await namesIn(folder))
-      .filter((n) => n.endsWith('.md'))
-      .map(async (entry) => {
-        const head = await headOf(join(folder, entry))
-        if (head?.hidden === true) return []
-        const name = basename(entry, '.md')
-        const skill = ChatSkill.safeParse({ name, description: head?.description ?? '', source })
-        return skill.success ? [skill.data] : []
-      }),
+    (await namesIn(folder)).map(async (entry): Promise<ChatSkill[]> => {
+      if (!entry.endsWith('.md'))
+        return depth < maxCommandDepth ? commandsIn(join(folder, entry), source, `${prefix}${entry}:`, depth + 1) : []
+      const head = await headOf(join(folder, entry))
+      if (head === null || head.hidden) return []
+      const name = `${prefix}${basename(entry, '.md')}`
+      const skill = ChatSkill.safeParse({ name, description: head.description, source })
+      return skill.success ? [skill.data] : []
+    }),
   )
   return found.flat()
 }
@@ -156,23 +160,19 @@ async function upToRoot(cwd: string, home: string): Promise<string[]> {
 }
 
 /**
- * The "/" list of a Claude chat in `cwd`: the built-in commands, then each skill and command by name. A name that
- * comes twice keeps its first place: the chat's folders before the owner's.
+ * The "/" list of a Claude chat in `cwd`: the built-in commands, then each skill and command by name, at most
+ * `maxSkills` in all. A name that comes twice keeps the one Claude Code runs: the owner's before the chat's folders.
  */
 export async function readClaudeSkills(cwd: string | undefined, claudeDir: string, home: string): Promise<ChatSkill[]> {
   const local = cwd === undefined ? [] : await upToRoot(cwd, home)
-  const children =
-    cwd === undefined ? [] : (await namesIn(cwd)).filter((n) => n !== 'node_modules').slice(0, maxChildren)
   const groups = await Promise.all([
-    ...local.map((folder) => skillsIn(join(folder, '.claude', 'skills'), 'project')),
-    ...local.map((folder) => commandsIn(join(folder, '.claude', 'commands'), 'project')),
-    ...children.map((child) =>
-      cwd === undefined ? [] : skillsIn(join(cwd, child, '.claude', 'skills'), 'project', `${child}:`),
-    ),
     skillsIn(join(claudeDir, 'skills'), 'user'),
     commandsIn(join(claudeDir, 'commands'), 'user'),
+    ...local.map((folder) => skillsIn(join(folder, '.claude', 'skills'), 'project')),
+    ...local.map((folder) => commandsIn(join(folder, '.claude', 'commands'), 'project')),
   ])
   const seen = new Set(builtinCommands.map((c) => c.name))
   const skills = groups.flat().filter((s) => !seen.has(s.name) && seen.add(s.name))
-  return [...builtinCommands, ...skills.sort((a, b) => a.name.localeCompare(b.name))]
+  const sorted = skills.sort((a, b) => a.name.localeCompare(b.name))
+  return [...builtinCommands, ...sorted.slice(0, maxSkills - builtinCommands.length)]
 }

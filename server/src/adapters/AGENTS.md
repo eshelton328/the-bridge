@@ -66,9 +66,9 @@ client of a socket or a file sits beside them.
   or of the projects folder, and each status change look for it; a
   watch that fails ends the stream as `unreachable`.
 - A Claude chat's "/" list (`claudeSkills.ts`, R34): the built-in
-  commands, then the owner's skills and commands, those of each folder
-  from the chat's folder up to its repository root (not home), and of
-  each folder just below it ("<folder>:<skill>"). Only front matter is
+  commands, then the owner's skills and commands (the owner's win a
+  shared name), then those of each folder from the chat's folder up to
+  its repository root (not home), at most 500. Only front matter is
   read (16 KB), again only when a change time moves; no plugins yet.
 - A Claude chat's `contextUsed` is its last request's input and cache
   tokens over the model's context window; a model that `sessionFile.ts`
