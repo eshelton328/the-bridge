@@ -12,6 +12,7 @@ import {
   maxAttachments,
   maxEntryFileName,
   maxEntryText,
+  maxErrorText,
   maxTranscriptEntries,
   type TranscriptEntry,
 } from '@bridge/contract'
@@ -58,19 +59,26 @@ export type TranscriptOptions = TargetContext & {
 /** The tags of a slash command's own lines: the command, its words and its args, then its output. */
 const commandName = /^<command-name>\/?([^<]{1,100})<\/command-name>/
 const commandArgs = /<command-args>([\s\S]*?)<\/command-args>/
-const commandOutput = /^<local-command-(?:stdout|stderr)>/
+const commandStderr = /^<local-command-stderr>([\s\S]*?)(?:<\/local-command-stderr>)?$/
+/** Terminal colour codes that a command's output can hold. */
+const colour = new RegExp(`${String.fromCharCode(27)}\\[[0-9;]*m`, 'g')
 
 /**
- * A slash command's lines as the owner typed them: the command with its args (`/compact keep the plan`) for its
- * own line, null for its output line, and undefined for any other text.
+ * A slash command's lines: its own line as the owner typed it (`/compact keep the plan`), its error output as an
+ * error's text, nothing for its other output, and undefined for any other text.
  */
-function commandOf(text: string): string | null | undefined {
+function commandOf(text: string): { command: string } | { error: string } | null | undefined {
   const trimmed = text.trim()
-  if (commandOutput.test(trimmed)) return null
+  if (trimmed.startsWith('<local-command-stdout>')) return null
+  const stderr = commandStderr.exec(trimmed)
+  if (stderr !== null) {
+    const error = (stderr[1] ?? '').replace(colour, '').trim()
+    return error === '' ? null : { error }
+  }
   const name = commandName.exec(trimmed)
   if (name?.[1] === undefined) return undefined
   const args = commandArgs.exec(trimmed)?.[1]?.trim() ?? ''
-  return `/${name[1].trim()}${args === '' ? '' : ` ${args}`}`
+  return { command: `/${name[1].trim()}${args === '' ? '' : ` ${args}`}` }
 }
 
 /** Claude Code's tags around pasted text, with the same ID on both; the text inside is the owner's. */
@@ -115,7 +123,11 @@ function entriesOf(value: unknown, options: TranscriptOptions, results: Set<stri
     const raw = blocks.flatMap((b) => (b.type === 'text' ? [b.text] : [])).join('\n\n')
     const command = commandOf(raw)
     if (command === null) return []
-    if (command !== undefined) return [{ type: 'user', id: uuid, ...textOf(command) }]
+    if (command !== undefined && 'error' in command) {
+      const cut = command.error.length > maxErrorText
+      return [{ type: 'error', id: uuid, text: command.error.slice(0, maxErrorText), cut }]
+    }
+    if (command !== undefined) return [{ type: 'user', id: uuid, ...textOf(command.command) }]
     const prompt = promptOf(raw, options.uploads)
     if (prompt.text === '' && prompt.files === undefined) return []
     return [{ type: 'user', id: uuid, ...textOf(prompt.text), ...(prompt.files && { files: prompt.files }) }]

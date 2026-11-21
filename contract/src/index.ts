@@ -23,6 +23,8 @@ export {
 export { ChatStatusEvent, LayoutChangedEvent, LiveEvent, WorkspacesChangedEvent } from './liveEvents.ts'
 export {
   AssistantEntry,
+  ErrorEntry,
+  maxErrorText,
   EntryId,
   maxEntryText,
   maxTranscriptEntries,

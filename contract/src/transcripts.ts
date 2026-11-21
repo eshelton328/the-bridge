@@ -57,7 +57,18 @@ export const ToolEntry = z.object({
 })
 
 /** One entry of a transcript, picked by its `type`. */
-export const TranscriptEntry = z.discriminatedUnion('type', [UserEntry, AssistantEntry, ToolEntry])
+/** The most characters of an error entry's text; the server cuts longer text and sets `cut`. */
+export const maxErrorText = 500
+
+/** A slash command's error output, such as a /compact that failed: its text only, at most `maxErrorText`. */
+export const ErrorEntry = z.object({
+  type: z.literal('error'),
+  id: EntryId,
+  text: z.string().min(1).max(maxErrorText),
+  cut: z.boolean(),
+})
+
+export const TranscriptEntry = z.discriminatedUnion('type', [UserEntry, AssistantEntry, ToolEntry, ErrorEntry])
 export type TranscriptEntry = z.infer<typeof TranscriptEntry>
 
 /** A list of entries with no ID twice. */

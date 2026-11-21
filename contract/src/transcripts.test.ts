@@ -3,6 +3,7 @@ import { maxAttachments } from './prompts.ts'
 import {
   maxEntryFileName,
   maxEntryText,
+  maxErrorText,
   maxTranscriptEntries,
   TranscriptChangedEvent,
   TranscriptEntry,
@@ -57,6 +58,13 @@ describe('transcripts', () => {
       UserEntry.safeParse({ ...entry, files: Array.from({ length: maxAttachments + 1 }, () => 'a.png') }).success,
     ).toBe(false)
     expect(UserEntry.safeParse({ ...entry, files: ['a'.repeat(maxEntryFileName + 1)] }).success).toBe(false)
+  })
+
+  it('takes an error entry of text only, and refuses empty or long text', () => {
+    const error = { type: 'error', id: 'e1', text: 'Error: compact failed', cut: false }
+    expect(TranscriptEntry.safeParse(error).success).toBe(true)
+    expect(TranscriptEntry.safeParse({ ...error, text: '' }).success).toBe(false)
+    expect(TranscriptEntry.safeParse({ ...error, text: 'x'.repeat(maxErrorText + 1) }).success).toBe(false)
   })
 
   it('refuses an unknown kind, a chat ID without its machine and an entry with no ID', () => {

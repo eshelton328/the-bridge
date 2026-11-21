@@ -96,7 +96,7 @@ describe('Claude transcript', () => {
     ])
   })
 
-  it('shows a slash command as the owner typed it, and drops its output and the compact summary', async () => {
+  it('shows a slash command as the owner typed it, its error output as an error, and drops its other output and the compact summary', async () => {
     const command = (name: string, args: string) =>
       `<command-name>/${name}</command-name>\n<command-message>${name}</command-message>\n<command-args>${args}</command-args>`
     const path = file([
@@ -110,6 +110,7 @@ describe('Claude transcript', () => {
     expect((await readClaudeTranscript(path, options)).entries).toEqual([
       { type: 'user', id: 'k1', text: '/compact keep the plan', cut: false },
       { type: 'user', id: 'k4', text: '/clear', cut: false },
+      { type: 'error', id: 'k5', text: 'Error: no such command', cut: false },
       { type: 'user', id: 'k6', text: 'Why does <command-name> show up here?', cut: false },
     ])
   })

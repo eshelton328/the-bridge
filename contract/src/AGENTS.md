@@ -25,7 +25,9 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
   event replaces the entry with that ID or adds it at the end. A tool
   entry has a name and a short target, never its arguments or its
   result. A user entry of a prompt sent with files has `files`: the
-  file names, never a path (`transcripts.test.ts`).
+  file names, never a path. An error entry is a slash command's error
+  output, text only, at most `maxErrorText` (500) characters
+  (`transcripts.test.ts`).
 - A prompt request holds only its text and at most `maxAttachments`
   upload IDs (a strict object, never a path), and a stop request and an
   input clear request are empty objects; the text may be empty only with
