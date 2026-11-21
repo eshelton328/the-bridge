@@ -288,10 +288,14 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   Only the reader leaves the end: a moving finger on the transcript, a
   wheel turn, a scroll key, a mouse drag (its scroll bar, a text
   selection) or a focus moved
-  into an entry (Tab, a link). Any other scroll
-  away from the end goes back in the same frame, such as the one iOS made
-  after Send closed the keyboard (review R33); the page back from the
-  background follows too.
+  into an entry (Tab, a link). Another scroll away from the end goes back
+  in the same frame only within 1.5 s of a layout change the page made (a
+  resize of the transcript or the composer, the keyboard, an entry added
+  or removed, the page back on screen), such as the one iOS made after
+  Send closed the keyboard (review R33); the page back from the
+  background follows too. Later, such a scroll is the reader's:
+  VoiceOver's three-finger swipe and Find in page leave the end and keep
+  their place (`app/WorkspacesTranscriptQuietScroll.test.tsx`).
   Fixture chats keep their scroll, so the fidelity frames do not move.
   More than a screen above the end, a button labelled "Scroll to the
   newest message" sticks 8 above the transcript's bottom, centred on it,
