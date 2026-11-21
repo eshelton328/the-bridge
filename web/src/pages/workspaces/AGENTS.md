@@ -303,6 +303,31 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   "Not moved — that tab is zoomed", a 404 reads the list, and any other
   miss says "Not moved — <kind>" in the status bar
   (`app/WorkspacesLayoutMove.test.tsx`).
+- New chat (W3, backend #378 to #381, `useNewChat.ts`, `liveNewChat.ts`,
+  `liveNewChatForm.ts`, `blocks/newChatStart.ts`): the live page's New
+  chat is Figma's form (D3, T7, M7) with what the server can start
+  (references D03 and M07 `deviations.md`). The phone's + (M15), a
+  workspace's ⋯ (M14), the desktop's tab + (D1) and a chat's actions
+  (T2b) open it for a new tab of the workspace it shows, which the
+  WORKSPACE hint says. Start chat posts `POST /api/chats` with the contract's
+  `StartChatRequest` and a new create ID (`newSendId`); Retry sends the
+  same start again. Start chat says "Starting…" and is off until the
+  chat opens: the page opens it as a tap on its row does (the desktop
+  shows its tab, `followTab`) once the workspace list shows its pane
+  ready or needing the owner, with no focus change in herdr. A ready
+  chat gets the first message through the composer's send (a new send
+  ID); a chat that needs the owner gets "This chat needs you on the Mac"
+  under its composer and the message in its box. `starting`, and a
+  `duplicateCreate` (matched by a pane the workspace did not list when
+  the start began, and the name), wait for `workspaces.changed`; no read
+  loop. nameTaken and a name that does not fit `ChatName` show under the
+  name; folderNotAllowed, a 404 ("That chat or workspace is gone", the
+  form stays open so the owner can pick again) and a 5xx, 429 or no
+  answer ("Could not start the chat", with Retry) show a line in the
+  form. Cancel ends the wait. report() gets only a 5xx or an answer the
+  page does not expect, by kind and status, never a name or a message
+  (`app/WorkspacesNewChat.test.tsx`; the fake is
+  `lib/fakeWorkspacesServer.ts`).
 - Pane follow (W5, `paneFollow.ts`): after a /clear, from the page or the
   terminal, the list drops the chat's ID and lists a new one on the same
   pane (`ChatSummary.pane`). The page store keeps the panes it last saw

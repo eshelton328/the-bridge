@@ -150,6 +150,17 @@ export function WorkspaceTabs({
           iconOnly
           aria-label={shown === null ? 'New chat' : `New chat in ${current?.label ?? shown}`}
           data-figma={data.layers?.newChat ?? '150:2'}
+          // D1: + starts a new chat in the shown workspace, as in herdr: a live one in a new tab (W3).
+          onClick={
+            data.newChat === undefined || shown === null
+              ? undefined
+              : () =>
+                  onUiChange?.({
+                    newChatOpen: true,
+                    newChatWorkspace: shown,
+                    newChatStart: null,
+                  })
+          }
         >
           <PlusIcon size="16" />
         </Button>

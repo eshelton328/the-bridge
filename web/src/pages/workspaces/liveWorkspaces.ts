@@ -55,6 +55,7 @@ import { queryClient } from '../../lib/queryClient.ts'
 import type { ScreenState } from '../../lib/screenState.ts'
 import { maxPanes } from './blocks/workspaceLayout.ts'
 import { layoutOfTab, liveTabsOf } from './liveLayout.ts'
+import { liveNewChatForm } from './liveNewChatForm.ts'
 import {
   followPageVisibility,
   fromBackground,
@@ -293,6 +294,18 @@ function liveOnly(
       chatCommands,
       liveTabs: Object.fromEntries(tabs),
       liveMachine: machine,
+      // W3: New chat starts a live Claude chat in a new tab: from the phone's + and a workspace's ⋯ (M15, M14), the
+      // desktop's tab + (D1) and a chat's actions.
+      newChat: liveNewChatForm(current ?? ''),
+      ...(data.phone === undefined
+        ? {}
+        : {
+            phone: {
+              ...data.phone,
+              addMenu: { newChat: 'New chat' },
+              workspaceMenu: [{ value: 'newChat', label: 'New chat in {workspace}' }],
+            },
+          }),
     },
     ui: {
       ...state.ui,
