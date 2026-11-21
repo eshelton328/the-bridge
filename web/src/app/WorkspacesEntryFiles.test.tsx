@@ -33,37 +33,21 @@ document.documentElement.dataset.pandaTheme = 'viewscreen'
 
 const workspace = 'mac-mini/w-live'
 const plan = 'mac-mini/c1'
-const review = 'mac-mini/c2'
-const drift = 'mac-mini/c3'
-const logs = 'mac-mini/c4'
-
-const summary = (id: string, kind: 'claude' | 'codex' | 'shell', title: string) => ({
-  id,
-  kind,
-  title,
-  model: kind === 'codex' ? 'gpt-5.5' : kind === 'shell' ? 'zsh' : 'claude-opus-5-5',
-  contextUsed: null,
-  modelId: null,
-  effort: null,
-  pane: `${id}-pane`,
-  status: 'working',
-  parent: null,
-})
+// One live Claude chat, alone in its workspace's layout.
 const chats = [
-  summary(plan, 'claude', 'plan the slice'),
-  summary(review, 'claude', 'review notes'),
-  summary(drift, 'codex', 'drift check'),
-  summary(logs, 'shell', 'tail logs'),
+  {
+    id: plan,
+    kind: 'claude',
+    title: 'plan the slice',
+    model: 'claude-opus-5-5',
+    contextUsed: null,
+    modelId: null,
+    effort: null,
+    pane: `${plan}-pane`,
+    status: 'working',
+    parent: null,
+  },
 ]
-const split = (direction: 'row' | 'column', first: unknown, second: unknown) => ({
-  kind: 'split',
-  direction,
-  ratio: 0.5,
-  first,
-  second,
-})
-const pane = (chat: string) => ({ kind: 'pane', chat })
-
 const layout = JSON.stringify({
   workspace,
   tabs: [
@@ -71,15 +55,13 @@ const layout = JSON.stringify({
       id: 'mac-mini/w-live:t1',
       label: 'main',
       active: true,
-      // Rows first: plan and review on top, drift and logs under them.
-      root: split('column', split('row', pane(plan), pane(review)), split('row', pane(drift), pane(logs))),
+      root: { kind: 'pane', chat: plan },
       focusedChat: plan,
       chats,
     },
   ],
 })
 
-const user = (id: string, text: string): TranscriptEntry => ({ type: 'user', id, text, cut: false })
 const sent = (id: string, text: string, files: string[]): TranscriptEntry => ({
   type: 'user',
   id,
@@ -182,11 +164,10 @@ const devices = [
   { name: 'the tablet', size: [756, 1129] },
 ] as const
 
-/** A transcript fake with plan's transcript as `entries`, and review's with one prompt. */
+/** A transcript fake with plan's transcript as `entries`. */
 function withPlan(entries: TranscriptEntry[]) {
   const server = fakeTranscriptServer()
   server.set(plan, entries)
-  server.set(review, [user('u9', 'Review the notes')])
   fakeServer(server)
   return server
 }
