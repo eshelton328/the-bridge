@@ -3,7 +3,7 @@
 // the chat's folder and that the settings turn on. Both files are only read,
 // never written, and each is read again only when its size or change time moves.
 import { readFile, stat } from 'node:fs/promises'
-import { join } from 'node:path'
+import { dirname, isAbsolute, join } from 'node:path'
 import { z } from 'zod'
 
 const Install = z.object({
@@ -39,19 +39,42 @@ async function jsonOf(path: string): Promise<unknown> {
 }
 
 /**
+ * The folder of the chat's own `settings.local.json`: its repository root, and for a worktree (a `.git` file
+ * that points into `<main>/.git/worktrees/`) the main checkout's root, as Claude Code keeps the file there. Outside a
+ * repository it is the chat's folder. `folders` end at the root when it has `.git`.
+ */
+async function localSettingsFolder(folders: readonly string[]): Promise<string | undefined> {
+  const root = folders.at(-1)
+  if (root === undefined) return undefined
+  let git: string
+  try {
+    if ((await stat(join(root, '.git'))).isDirectory()) return root
+    git = await readFile(join(root, '.git'), 'utf8')
+  } catch {
+    return folders[0]
+  }
+  const gitdir = /^gitdir:\s*(.+)$/m.exec(git)?.[1]?.trim()
+  if (gitdir === undefined) return root
+  const full = isAbsolute(gitdir) ? gitdir : join(root, gitdir)
+  const at = full.lastIndexOf(join('.git', 'worktrees'))
+  return at > 0 ? dirname(full.slice(0, at + '.git'.length)) : root
+}
+
+/**
  * The plugins a Claude chat loads: `folders` are the chat's folder up to its repository root, nearest first. A
  * plugin is on when the last settings file that names it says `true`: the owner's `settings.json`, then from the
- * root down to the chat's folder each `.claude/settings.json` and `.claude/settings.local.json`. Its install
+ * root down to the chat's folder each `.claude/settings.json`, then the one `.claude/settings.local.json` of
+ * `localSettingsFolder`. Its install
  * applies when its scope is `user`, or when its `projectPath` is one of `folders`.
  */
 export async function readPluginFolders(claudeDir: string, folders: readonly string[]): Promise<PluginFolder[]> {
   const installed = Installed.safeParse(await jsonOf(join(claudeDir, 'plugins', 'installed_plugins.json')))
   if (!installed.success) return []
+  const local = await localSettingsFolder(folders)
   const settingsFiles = [
     join(claudeDir, 'settings.json'),
-    ...[...folders]
-      .reverse()
-      .flatMap((folder) => [join(folder, '.claude', 'settings.json'), join(folder, '.claude', 'settings.local.json')]),
+    ...[...folders].reverse().map((folder) => join(folder, '.claude', 'settings.json')),
+    ...(local === undefined ? [] : [join(local, '.claude', 'settings.local.json')]),
   ]
   const enabled = new Map<string, boolean>()
   for (const settings of await Promise.all(settingsFiles.map(jsonOf))) {
@@ -59,6 +82,7 @@ export async function readPluginFolders(claudeDir: string, folders: readonly str
     for (const [key, on] of Object.entries(parsed.success ? (parsed.data.enabledPlugins ?? {}) : {}))
       enabled.set(key, on === true)
   }
+  const places = local === undefined ? folders : [...folders, local]
   const found: PluginFolder[] = []
   for (const [key, installs] of Object.entries(installed.data.plugins)) {
     if (enabled.get(key) !== true) continue
@@ -67,9 +91,7 @@ export async function readPluginFolders(claudeDir: string, folders: readonly str
         const parsed = Install.safeParse(entry)
         return parsed.success ? [parsed.data] : []
       })
-      .find(
-        ({ scope, projectPath }) => scope === 'user' || (projectPath !== undefined && folders.includes(projectPath)),
-      )
+      .find(({ scope, projectPath }) => scope === 'user' || (projectPath !== undefined && places.includes(projectPath)))
     const name = key.split('@')[0] ?? ''
     if (install !== undefined && name !== '') found.push({ name, path: install.installPath })
   }

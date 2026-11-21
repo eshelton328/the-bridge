@@ -91,6 +91,27 @@ describe('Claude skills', () => {
     ])
   })
 
+  it("reads a worktree chat's settings.local.json from the main checkout, as Claude Code does", async () => {
+    const home = join(root, 'wt')
+    const claude = join(home, '.claude')
+    const tools = join(claude, 'plugins', 'cache', 'market', 'tools', '1.0.0')
+    put('wt/.claude/plugins/cache/market/tools/1.0.0/skills/audit/SKILL.md', skill('audit', 'Audits the repo'))
+    put(
+      'wt/.claude/plugins/installed_plugins.json',
+      JSON.stringify({ version: 2, plugins: { 'tools@market': [{ scope: 'user', installPath: tools }] } }),
+    )
+    put('wt/main/.git/HEAD', 'ref: refs/heads/main')
+    put('wt/main/.claude/settings.local.json', JSON.stringify({ enabledPlugins: { 'tools@market': true } }))
+    put('wt/main-worktrees/feature/.git', `gitdir: ${join(home, 'main', '.git', 'worktrees', 'feature')}\n`)
+    // The worktree's own local file is not the one Claude Code reads.
+    put(
+      'wt/main-worktrees/feature/.claude/settings.local.json',
+      JSON.stringify({ enabledPlugins: { 'tools@market': false } }),
+    )
+    const skills = await readClaudeSkills(join(home, 'main-worktrees', 'feature'), claude, home)
+    expect(skills.filter((s) => s.source === 'plugin').map((s) => s.name)).toEqual(['tools:audit'])
+  })
+
   it("gives at most the contract's number of entries", async () => {
     for (let n = 0; n < 510; n += 1) put(`many/.claude/skills/s${String(n)}/SKILL.md`, skill(`s${String(n)}`, 'One'))
     const skills = await readClaudeSkills(undefined, join(root, 'many', '.claude'), join(root, 'many'))
