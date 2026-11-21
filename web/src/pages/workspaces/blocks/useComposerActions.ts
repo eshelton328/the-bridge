@@ -10,7 +10,9 @@
 // line then offers "Clear the terminal input", and once the owner confirms
 // it, a clear that went through sends the kept draft again; one clear is in
 // flight at a time, and a clear that missed shows its own line, with Retry
-// when it may work later (R28 part B). Props only: the caller passes what
+// when it may work later (R28 part B). With no miss of its own, the line is
+// the caller's `notice` (a send before a reload that did not reach the chat),
+// whose Retry sends the box's text. Props only: the caller passes what
 // sends, stops and clears.
 import { maxPromptChars } from '@bridge/contract'
 import { useLayoutEffect, useRef, useState } from 'react'
@@ -31,6 +33,8 @@ export type ComposerAnswer =
       readonly clearInput?: (() => Promise<ComposerAnswer>) | undefined
       /** The server refused the send's files (409 upload-conflict): the page fails their chips. */
       readonly uploadConflict?: boolean
+      /** No answer came (the request failed or timed out): the server may have taken it. */
+      readonly noAnswer?: boolean
     }
 
 type Problem = {
@@ -70,6 +74,8 @@ export type ComposerActionsOptions = {
    * none goes without it.
    */
   readonly filesHeld?: boolean | undefined
+  /** The line to show when this composer has none of its own, as a send's miss: one found after a reload. */
+  readonly notice?: { readonly line: string; readonly retry: boolean } | undefined
 }
 
 export function useComposerActions({
@@ -81,8 +87,10 @@ export function useComposerActions({
   draftNow,
   withFiles = false,
   filesHeld = false,
+  notice,
 }: ComposerActionsOptions) {
-  const [problem, setProblem] = useState<Problem>()
+  const [own, setOwn] = useState<Problem>()
+  const problem: Problem | undefined = own ?? (notice === undefined ? undefined : { ...notice, action: 'send' })
   // Shown as state too, so Send is off while a send of files with no text is pending (the library's own pending
   // state covers only the sends it starts).
   const [sending, setSending] = useState(false)
@@ -108,7 +116,7 @@ export function useComposerActions({
     }
     sendingRef.current = true
     setSending(true)
-    setProblem(undefined)
+    setOwn(undefined)
     // The box empties as the send starts, and a miss puts the text back.
     if (restore !== undefined) clear(submitted)
     return onSend(submitted).then(
@@ -119,7 +127,7 @@ export function useComposerActions({
           if (restore === undefined) clear(submitted)
         } else {
           restore?.(submitted)
-          if (answer !== false) setProblem({ ...answer, action: 'send' })
+          if (answer !== false) setOwn({ ...answer, action: 'send' })
         }
         return answer === true
       },
@@ -137,11 +145,11 @@ export function useComposerActions({
       : () => {
           if (stoppingRef.current) return
           stoppingRef.current = true
-          setProblem((shown) => (shown?.action === 'stop' ? undefined : shown))
+          setOwn((shown) => (shown?.action === 'stop' ? undefined : shown))
           void onStop().then(
             (answer) => {
               stoppingRef.current = false
-              if (typeof answer === 'object') setProblem({ ...answer, action: 'stop' })
+              if (typeof answer === 'object') setOwn({ ...answer, action: 'stop' })
             },
             () => {
               stoppingRef.current = false
@@ -152,14 +160,14 @@ export function useComposerActions({
   const runClear = (clearInput: () => Promise<ComposerAnswer>) => {
     if (clearingRef.current) return
     clearingRef.current = true
-    setProblem(undefined)
+    setOwn(undefined)
     void clearInput().then(
       (answer) => {
         clearingRef.current = false
         if (answer === true) {
           const kept = draftNow?.() ?? textRef.current
           if (/\S/.test(kept) || withFiles) void send(kept)
-        } else if (answer !== false) setProblem({ line: answer.line, retry: answer.retry, action: 'clear', clearInput })
+        } else if (answer !== false) setOwn({ line: answer.line, retry: answer.retry, action: 'clear', clearInput })
       },
       () => {
         clearingRef.current = false

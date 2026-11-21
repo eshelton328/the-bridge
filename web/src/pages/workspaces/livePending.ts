@@ -20,12 +20,17 @@
 // /clear gave the pane a new chat) drops its pending sends: the transcript read
 // when it shows again holds the prompt, or the composer holds the text.
 //
+// After a reload, a send that had no answer and did not reach the chat puts
+// its text back in the box (keptSends.ts) with a line under the composer: the
+// chat's notice here, which the pane reads with its pending sends, until its
+// next send.
+//
 // Nothing here goes to report(), a log or the console: the bubble holds the
 // owner's text and file names.
 import type { TranscriptEntry } from '@bridge/contract'
 import { sentFileName } from '@bridge/shared'
 import { registerReset } from '../../state/resetStores.ts'
-import type { PendingSendView } from './blocks/ChatPane.tsx'
+import type { ComposerNotice, PendingSendView } from './blocks/ChatPane.tsx'
 import { subscribeTranscripts, transcriptReads, type TranscriptView, transcriptViews } from './liveTranscript.ts'
 
 /** How long after the 204 a read of the transcript without the prompt's entry still keeps the bubble. */
@@ -47,6 +52,8 @@ type Pending = {
   quietAt: number | undefined
   timer: ReturnType<typeof setTimeout> | undefined
   view: PendingSendView
+  /** Called when the transcript shows the prompt's entry. */
+  readonly onEntry: (() => void) | undefined
 }
 
 /**
@@ -55,6 +62,8 @@ type Pending = {
  */
 const pendings = new Map<string, readonly Pending[]>()
 const listeners = new Map<string, Set<() => void>>()
+/** The line under each chat's composer about a send before the last reload, by its server ID. */
+const notices = new Map<string, ComposerNotice>()
 /** The key of the last send, so each bubble keeps its own while others come and go. */
 let seq = 0
 
@@ -126,10 +135,10 @@ subscribeTranscripts(() => {
     const still = shown(chat, sends, view, taken)
     // An entry an ended send took stays taken for the sends that wait on.
     for (const pending of still) for (const id of taken) pending.before.add(id)
-    end(
-      chat,
-      sends.filter((pending) => !still.includes(pending)),
-    )
+    const ended = sends.filter((pending) => !still.includes(pending))
+    end(chat, ended)
+    // A send whose chat still shows ended as its entry came (or after the quiet time, which keeps its 204).
+    if (view !== undefined) for (const pending of ended) pending.onEntry?.()
   }
 })
 
@@ -141,8 +150,12 @@ export type PendingSend = {
   readonly missed: () => void
 }
 
-/** Shows `text` with the files `files` (their names as chipped) as the pending send of the live chat `chat`. */
-export function startPending(chat: string, text: string, files: readonly string[]): PendingSend {
+/**
+ * Shows `text` with the files `files` (their names as chipped) as the pending send of the live chat `chat`, and drops
+ * the chat's notice. `onEntry` runs when the transcript shows the prompt's entry.
+ */
+export function startPending(chat: string, text: string, files: readonly string[], onEntry?: () => void): PendingSend {
+  notices.delete(chat)
   const view = transcriptViews().get(chat)
   const pending: Pending = {
     match: { text: promptText(text), files: files.map(sentFileName) },
@@ -152,6 +165,7 @@ export function startPending(chat: string, text: string, files: readonly string[
     quietAt: undefined,
     timer: undefined,
     view: { key: String(++seq), text, files: [...files], sending: true },
+    onEntry,
   }
   pendings.set(chat, [...(pendings.get(chat) ?? []), pending])
   tell(chat)
@@ -187,6 +201,17 @@ export function pendingViews(chat: string): readonly PendingSendView[] {
   return next
 }
 
+/** Shows `notice` under the composer of the live chat `chat` until its next send. */
+export function showNotice(chat: string, notice: ComposerNotice): void {
+  notices.set(chat, notice)
+  tell(chat)
+}
+
+/** The line under `chat`'s composer about a send before the last reload; none when it has none. */
+export function noticeOf(chat: string): ComposerNotice | undefined {
+  return notices.get(chat)
+}
+
 /** Calls `listener` after each change of `chat`'s pending send or of its transcript; the result stops it. */
 export function subscribePending(chat: string, listener: () => void): () => void {
   const forChat = listeners.get(chat) ?? new Set()
@@ -204,6 +229,7 @@ function resetPending() {
   for (const sends of pendings.values()) for (const pending of sends) clearTimeout(pending.timer)
   pendings.clear()
   lastViews.clear()
+  notices.clear()
 }
 
 registerReset(resetPending)

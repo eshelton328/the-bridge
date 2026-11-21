@@ -3,9 +3,11 @@
 // and gives each live Claude chat's pane its pending send (`ChatPending`),
 // which the pane reads itself, so a send's bubble renders only that pane,
 // never the page or another transcript entry. A build and the fixtures have
-// none.
+// none. Once loaded, it reads the result of each send a reload cut off
+// (keptSends.ts) into the page's drafts.
 import { useCallback, useEffect, useState } from 'react'
 import type { ChatPending } from './blocks/ChatPane.tsx'
+import type { DraftBook } from './blocks/draftBook.ts'
 import type * as LivePending from './livePending.ts'
 
 // One source for each chat of the loaded module, so a pane does not subscribe again on each render.
@@ -14,11 +16,20 @@ const sourcesOf = new WeakMap<typeof LivePending, Map<string, ChatPending>>()
 export type LivePendings = {
   /** The pending send of the live chat `liveChat`, for its pane; none when not live. */
   readonly pendingOf: (liveChat: string | undefined) => ChatPending | undefined
-  /** Shows the send of `text` with the files `files` (their names) to `liveChat` until it settles; none when not live. */
-  readonly start: (liveChat: string, text: string, files: readonly string[]) => LivePending.PendingSend | undefined
+  /**
+   * Shows the send of `text` with the files `files` (their names) to `liveChat` until it settles; none when not live.
+   * `onEntry` runs when the transcript shows its entry.
+   */
+  readonly start: (
+    liveChat: string,
+    text: string,
+    files: readonly string[],
+    onEntry?: () => void,
+  ) => LivePending.PendingSend | undefined
 }
 
-export function useLivePending(on: boolean): LivePendings {
+/** Shows each live chat's pending sends; `drafts` of the page state `state` get the text of a send a reload cut off. */
+export function useLivePending(on: boolean, state: string | undefined, drafts: DraftBook): LivePendings {
   const [live, setLive] = useState<typeof LivePending>()
   useEffect(() => {
     if (!on) return
@@ -30,6 +41,16 @@ export function useLivePending(on: boolean): LivePendings {
       gone = true
     }
   }, [on])
+  useEffect(() => {
+    if (!on) return
+    let gone = false
+    void import('./keptSends.ts').then((kept) => {
+      if (!gone) kept.recoverSends(state, drafts)
+    })
+    return () => {
+      gone = true
+    }
+  }, [on, state, drafts])
   const shown = on ? live : undefined
   const pendingOf = useCallback(
     (liveChat: string | undefined): ChatPending | undefined => {
@@ -41,6 +62,7 @@ export function useLivePending(on: boolean): LivePendings {
       const source: ChatPending = {
         subscribe: (listener) => shown.subscribePending(liveChat, listener),
         view: () => shown.pendingViews(liveChat),
+        notice: () => shown.noticeOf(liveChat),
       }
       sources.set(liveChat, source)
       return source
@@ -48,7 +70,8 @@ export function useLivePending(on: boolean): LivePendings {
     [shown],
   )
   const start = useCallback(
-    (liveChat: string, text: string, files: readonly string[]) => shown?.startPending(liveChat, text, files),
+    (liveChat: string, text: string, files: readonly string[], onEntry?: () => void) =>
+      shown?.startPending(liveChat, text, files, onEntry),
     [shown],
   )
   return { pendingOf, start }
