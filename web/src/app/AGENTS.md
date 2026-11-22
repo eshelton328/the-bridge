@@ -3,11 +3,19 @@
 The app's start: `main.ts` calls `mountApp()` (`mountApp.ts`), which
 installs the global error handlers, creates the React root with the root
 error hooks (`errors/rootErrorOptions.ts`) and renders `AppBoundary` >
-`RouterProvider`, with the dev `ErrorTray` beside `AppBoundary` so it
-still shows a crash that replaces the app (`mountApp.test.ts`, audit W-9,
-W-11).
-`router.ts` sets `RouteError` and `NotFound` as the default error and
-not-found components, so no route needs a boundary of its own (d-084).
+`InboxFeedProvider` > `RouterProvider`, with the dev `ErrorTray` beside
+`AppBoundary` so it still shows a crash that replaces the app
+(`mountApp.test.ts`, audit W-9, W-11).
+
+- `InboxFeedProvider` is the app's live Inbox badge (only in the app that
+  reads the live server, never in a test): one event stream, one
+  `GET /api/inbox` per `inbox.changed` burst and per stream open, no
+  timer. A page entry reads it with `useInboxBadge` (`lib/inboxFeed.ts`)
+  and passes the count to its screen, so `AppRail` and `AppTabBar` stay
+  props-only. A live page shows no sample number; `?state=`,
+  `?source=fixtures` and stories keep theirs (`InboxBadgeLive.test.tsx`).
+  `router.ts` sets `RouteError` and `NotFound` as the default error and
+  not-found components, so no route needs a boundary of its own (d-084).
 
 - Only this folder and page entries read stores (`web/src/structure.ts`).
 - [push/AGENTS.md](push/AGENTS.md): read before you change the service

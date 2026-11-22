@@ -11,6 +11,7 @@ import { useEffect } from 'react'
 import { report } from '../../errors/reporter.ts'
 import { copyText } from '../../lib/copyText.ts'
 import { readsLive } from '../../lib/dataSource.ts'
+import { useInboxChanges } from '../../lib/inboxFeed.ts'
 import {
   useInboxActions,
   useInboxDrafts,
@@ -63,18 +64,8 @@ export function InboxPage() {
   }, [showState, search.state])
   const router = useRouter()
   const live = readsLive({ state: search.state, source: search.source }, inboxSources)
-  useEffect(() => {
-    let stop: (() => void) | undefined
-    let gone = false
-    if (import.meta.env.DEV && live)
-      void import('./liveInbox.ts').then((module) => {
-        if (!gone) stop = module.watchInboxChanges({ onChange: () => void router.invalidate() })
-      })
-    return () => {
-      gone = true
-      stop?.()
-    }
-  }, [router, live])
+  // The live list loads again on each `inbox.changed`, through the app's one stream (lib/inboxFeed.ts).
+  useInboxChanges(live, () => void router.invalidate(), state.data.railBadge)
   const ui = {
     ...state.ui,
     ...changed,

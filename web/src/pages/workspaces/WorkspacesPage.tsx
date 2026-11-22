@@ -39,6 +39,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { report } from '../../errors/reporter.ts'
 import { copyText } from '../../lib/copyText.ts'
 import { readsLive } from '../../lib/dataSource.ts'
+import { useInboxBadge } from '../../lib/inboxFeed.ts'
 import { workspacesSources } from './loadWorkspacesState.ts'
 import { createDraftBook } from './blocks/draftBook.ts'
 import { layoutsSeenOf, withLoadedLayouts } from './blocks/workspaceLayout.ts'
@@ -173,7 +174,9 @@ export function WorkspacesPage() {
   const skillLists = useLiveSkills(import.meta.env.DEV && live)
   // Each live Claude chat's effort (W10): a set level shows until the next list read.
   const efforts = useLiveEffort(import.meta.env.DEV && live, state.data)
-  const screenData = withRestarting(data, models.isRestarting)
+  // The Inbox badge: the app's live count on the live home, the shown state's number on fixtures (lib/inboxFeed.ts).
+  const railBadge = useInboxBadge(data.railBadge, live)
+  const screenData = withRestarting({ ...data, railBadge }, models.isRestarting)
   const layoutWrites = useLayoutWrites(import.meta.env.DEV && live, data, (workspace, chat, tab) => {
     changeUi(followTab(liveData, uiRef.current, workspace, chat, tab))
   })

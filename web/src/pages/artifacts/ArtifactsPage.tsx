@@ -11,6 +11,7 @@ import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { report } from '../../errors/reporter.ts'
 import { copyText } from '../../lib/copyText.ts'
+import { useInboxBadge } from '../../lib/inboxFeed.ts'
 import { enterVisit, sendSeen, takeFollowUp } from './liveArtifacts.ts'
 import { ArtifactsScreen } from './screens/ArtifactsScreen.tsx'
 import { useArtifactWrites } from './useArtifactWrites.ts'
@@ -62,10 +63,12 @@ export function ArtifactsPage() {
       clearTimeout(timer)
     }
   }, [copiedLink])
+  // The Inbox badge: the app's live count on the live home, the shown state's number on fixtures (lib/inboxFeed.ts).
+  const railBadge = useInboxBadge(state.data.railBadge, live !== undefined)
   return (
     <ArtifactsScreen
       push={push}
-      data={state.data}
+      data={{ ...state.data, railBadge }}
       ui={ui}
       viewport="desktop"
       onNavigate={(page) => {

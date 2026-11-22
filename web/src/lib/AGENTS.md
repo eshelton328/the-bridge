@@ -68,3 +68,10 @@ state file and a page are in `screenState.ts` (d-082).
   or a 429; a query or mutation that fails for good goes to the sink that
   `errors/globalHandlers.ts` sets, since lib may not import errors
   (`queryClient.test.ts`, audit W-7).
+- `inboxClient.ts` reads the Inbox list (`readInboxList`) and follows the
+  event stream (`watchInboxChanges`) with the quiet iOS resume of
+  `pageResume.ts`; `inboxFeed.ts` holds the context that
+  `app/InboxFeedProvider.tsx` fills, and the hooks a page entry uses
+  (`useInboxBadge`, `useInboxChanges`). Without the provider, as in a
+  route test, a page keeps its own number and the Inbox page its own
+  stream.
