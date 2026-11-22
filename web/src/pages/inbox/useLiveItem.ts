@@ -4,8 +4,9 @@
 // item and reads the list again; the server's `inbox.changed` reads it too, and
 // the router keeps one load for both. A mark that misses keeps the item open
 // and shows its line, in the detail when the item is open, else under the list
-// tools. The read starts again when another item opens, and ends when the item
-// closes or the page leaves.
+// tools. The read starts again when another item opens or the list loads
+// again, and ends when the item closes or the page leaves; the last read
+// shows until the next one answers.
 import { useEffect, useState } from 'react'
 import { markItem, readItem } from './liveInbox.ts'
 import type { InboxData, InboxPutAway, LiveOpen } from './types.ts'
@@ -45,7 +46,8 @@ export function useLiveItem(
     return () => {
       abort.abort()
     }
-  }, [readId])
+    // `live` is new on each list load, so an `inbox.changed` (a record edited in the brain) reads the open item again.
+  }, [readId, live])
   const act: InboxPutAway = (id, to) => {
     setMissed(undefined)
     void markItem(id, to, data.snoozeMenu).then((sent) => {

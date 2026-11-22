@@ -179,6 +179,18 @@ describe('a live Inbox item', () => {
       await expect.element(page.getByRole('button', { name: /More actions/ })).not.toBeInTheDocument()
     })
 
+    it(`reads the open brain record again when the Inbox changes, on ${device.name}`, async () => {
+      const edited: Record<string, unknown> = { ...details }
+      const server = withServer(undefined, { details: edited })
+      await openInbox(device)
+      await openRow('Sample request in the brain')
+      await expect.element(record()).toBeVisible()
+      edited[request.id] = { source: 'brain', body: 'The same made-up record, edited.' }
+      server.emit('inbox.changed')
+      await expect.element(page.getByText('The same made-up record, edited.')).toBeVisible()
+      await expect.element(record()).not.toBeInTheDocument()
+    })
+
     it(`shows one line when the detail read fails, on ${device.name}`, async () => {
       const server = withServer(undefined, { details })
       server.answerNext('detail', () => inboxError('internal', 500))
