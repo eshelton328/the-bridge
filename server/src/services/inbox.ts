@@ -79,8 +79,9 @@ const chatActions: readonly InboxAction[] = ['snooze', 'done', 'dismiss']
 const hashId = (text: string) => InboxId.parse(createHash('sha256').update(text).digest('hex').slice(0, 16))
 
 export function createInbox({ agents, brain, turns, marks, now = () => new Date() }: Deps): Inbox {
-  // The time the server first saw a chat in a status, for a chat whose turn end the adapter cannot tell. A chat
-  // seen in another status loses it, so its next turn gets a new time.
+  // The time the server first saw a chat in a status, shown as the item's time when the turn port cannot tell
+  // the turn's end. Such an item takes no action: the server sees no status change between reads, so a mark
+  // could hide the chat's next turn, and the time is lost on a restart.
   const firstSeen = new Map<ChatId, { status: string; at: string }>()
   let queue: Promise<unknown> = Promise.resolve()
   const serial = <T>(work: () => Promise<T>): Promise<T> => {
@@ -110,14 +111,15 @@ export function createInbox({ agents, brain, turns, marks, now = () => new Date(
           firstSeen.delete(chat.id)
           continue
         }
-        let ended = await turns.endOf(chat)
-        if (ended === null) {
+        const ended = await turns.endOf(chat)
+        let shownAt = ended
+        if (shownAt === null) {
           const seen = firstSeen.get(chat.id)
-          ended = seen?.status === chat.status ? seen.at : at.toISOString()
-          firstSeen.set(chat.id, { status: chat.status, at: ended })
-        }
-        const id = hashId(`chat|${chat.id}|${chat.status}|${ended}`)
-        const mark = stored.value[id]
+          shownAt = seen?.status === chat.status ? seen.at : at.toISOString()
+          firstSeen.set(chat.id, { status: chat.status, at: shownAt })
+        } else firstSeen.delete(chat.id)
+        const id = hashId(`chat|${chat.id}|${chat.status}|${ended ?? 'unknown'}`)
+        const mark = ended === null ? undefined : stored.value[id]
         if (mark !== undefined) kept[id] = mark
         if (mark?.state === 'done' || mark?.state === 'dismissed') continue
         const snoozed = mark?.state === 'snoozed' && Date.parse(mark.until) > at.getTime() ? mark.until : null
@@ -131,9 +133,9 @@ export function createInbox({ agents, brain, turns, marks, now = () => new Date(
           tags: [],
           needsYou: chat.status === 'needsYou' && snoozed === null,
           snoozedUntil: snoozed,
-          createdAt: ended,
+          createdAt: shownAt,
           chat: chat.id,
-          actions: [...chatActions],
+          actions: ended === null ? [] : [...chatActions],
         })
       }
     for (const request of requests.value) {
@@ -195,7 +197,7 @@ export function createInbox({ agents, brain, turns, marks, now = () => new Date(
         if (!built.ok) return built
         const item = built.value.items.find((i) => i.id === id)
         if (item === undefined) return ok('notFound')
-        if (item.source === 'brain') return ok('readOnly')
+        if (item.actions.length === 0) return ok('readOnly')
         const mark: Mark =
           change.action === 'snooze'
             ? { state: 'snoozed', until: change.until }

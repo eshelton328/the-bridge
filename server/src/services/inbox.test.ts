@@ -109,14 +109,20 @@ describe('the inbox', () => {
     expect((await list()).items[0]).toMatchObject({ snoozedUntil: null, needsYou: true })
   })
 
-  it('keeps a turn with no known end under the time it was first seen', async () => {
-    const { inbox, list, setTime } = setup({ requests: [], turnEnd: null })
-    const id = (await list()).items[0]?.id
-    if (id === undefined) throw new Error('no item')
+  it('takes no action on a turn with no known end, so no mark can hide its next turn', async () => {
+    const { agents, inbox, list, setTime, saves } = setup({ requests: [], turnEnd: null })
+    const item = (await list()).items[0]
+    if (item === undefined) throw new Error('no item')
+    expect(item).toMatchObject({ actions: [], createdAt: '2026-11-21T12:00:00.000Z', needsYou: true })
+    expect(await inbox.act(item.id, { action: 'dismiss' })).toEqual(ok('readOnly'))
+    expect(saves).toEqual([])
+    // The chat works and asks again with no read between: the question still shows.
+    agents.setStatus(question, 'working')
+    agents.setStatus(question, 'needsYou')
     setTime('2026-11-21T12:30:00.000Z')
-    expect((await list()).items[0]?.id).toBe(id)
-    await inbox.act(id, { action: 'dismiss' })
-    expect((await list()).items).toEqual([])
+    expect((await list()).items).toMatchObject([
+      { chat: question, needsYou: true, createdAt: '2026-11-21T12:00:00.000Z' },
+    ])
   })
 
   it('refuses an action on a brain item and an unknown ID', async () => {
