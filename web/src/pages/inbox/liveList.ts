@@ -33,8 +33,8 @@ function untilOf(iso: string, now: Date): string {
   return at.toDateString() === now.toDateString() ? time : `${weekdays[at.getDay()] ?? ''} ${time}`
 }
 
-/** The first part of a row's meta line: the item's project, else where it comes from. */
-const placeOf = (item: InboxItem) => item.project ?? item.source
+/** The first part of a row's meta line: a chat's "chat", else the item's project, else "brain". */
+const placeOf = (item: InboxItem) => (item.source === 'chat' ? 'chat' : (item.project ?? item.source))
 
 /**
  * One item's row. Its snooze, done and dismiss do not reach the server yet, so every live row is read-only here: it has
@@ -46,7 +46,7 @@ function liveRow(item: InboxItem, now: Date): InboxRowView {
     id: InboxItemId.parse(item.id),
     kind: item.kind,
     title: item.title,
-    meta: item.source === 'chat' ? 'chat' : placeOf(item),
+    meta: placeOf(item),
     age: ageOf(item.createdAt, now),
     blocks: item.source === 'chat' && item.kind === 'question' ? 'The chat is waiting' : null,
     approval: false,
@@ -74,7 +74,9 @@ function liveFilterMenu(base: InboxFilterMenu, items: readonly InboxItem[]): Inb
   const kindItems = (kinds?.items ?? [])
     .map((k) => ({ ...k, count: countOf(items, (i) => i.kind === k.value) }))
     .filter((k) => k.count > 0)
-  const projects = tally(items.flatMap((i) => (i.project === null ? [] : [i.project])))
+  // Each row's place, as listView matches it: a project, or "chat" or "brain" for an item with none, so a chat can be
+  // filtered out of a list with one project.
+  const projects = tally(items.map(placeOf))
   const tags = items.flatMap((i) => i.tags)
   const scopes = [...new Set(tags.map((t) => (t.startsWith('project/') ? (t.split('/')[1] ?? '') : 'global')))]
   return {

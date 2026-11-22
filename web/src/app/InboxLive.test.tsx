@@ -117,6 +117,16 @@ describe('the live Inbox list', () => {
       await expect.element(page.getByRole('button', { name: 'Filter', exact: true })).toBeVisible()
     })
 
+    it(`filters chats out of a list with one project, on ${device.name}`, async () => {
+      withServer([question, request])
+      await openInbox(device)
+      await expect.poll(shown).toEqual(['Sample question from a chat', 'Sample request in the brain'])
+      await openAndCloseFilter(device, async () => {
+        await filterMenu(device).getByText('chat', { exact: true }).click()
+      })
+      await expect.poll(shown).toEqual(['Sample request in the brain'])
+    })
+
     it(`reads no list on a timer, on ${device.name}`, async () => {
       const server = withServer([review])
       await openInbox(device)

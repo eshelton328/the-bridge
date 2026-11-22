@@ -65,14 +65,14 @@ describe('liveList', () => {
     })
   })
 
-  it('builds the Filter menu from the items, with every kind and project checked', () => {
+  it('builds the Filter menu from the items, with a chat as its own place, and every kind and project checked', () => {
     expect(data.filterMenu.sections.map((s) => [s.label, s.items.map((i) => i.value)])).toEqual([
       ['Kind', ['question', 'action']],
-      ['Project', ['sample-project']],
+      ['Project', ['chat', 'sample-project']],
       ['Tags · global', ['global/review']],
       ['Tags · project sample-project', ['project/sample-project/web']],
     ])
-    expect(ui.filters).toEqual(['question', 'action', 'sample-project'])
+    expect(ui.filters).toEqual(['question', 'action', 'chat', 'sample-project'])
   })
 
   it('keeps the line of a list that missed', () => {
