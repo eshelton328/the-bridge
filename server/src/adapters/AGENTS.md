@@ -248,7 +248,14 @@ client of a socket or a file sits beside them.
   scan runs at a time. A line over 8 MiB is skipped, and a file that
   became shorter is read again. It reads only
   when asked and logs nothing (`claudeArtifacts.test.ts`, from
-  made-up lines).
+  made-up lines). The finder of the artifacts service
+  (`createClaudeArtifactFinder`) gives each artifact's project in place
+  of its folder: the name after `<chat root>/projects/`, else none.
+- The artifacts store (`diskArtifacts.ts`) keeps `library.json` in a
+  0700 folder beside the database, 0600 and replaced in one rename. A
+  missing file is an empty library; a file that the schema does not take
+  is the fault `EBADDATA`, never an empty library, so no save writes
+  over it. A fault gives its errno code only (`diskArtifacts.test.ts`).
 - The upload store (`diskUploads.ts`, fake `fakeUploads.ts`, suite
   `uploadStoreContract.ts`) keeps each upload in a 0700 folder with
   0600 files, under the folder beside the database. Each chunk goes to

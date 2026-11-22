@@ -30,7 +30,7 @@ export type FoundArtifact = {
 }
 
 /** Reads the artifacts published since its last scan; `partial` when it stopped at a cap. */
-type ArtifactFinder = {
+export type ArtifactFinder = {
   scan(): Promise<{ readonly found: readonly FoundArtifact[]; readonly partial: boolean }>
 }
 
