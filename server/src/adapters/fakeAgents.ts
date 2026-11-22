@@ -533,6 +533,32 @@ export function createFakeAgents(
       tell({ type: 'layoutChanged', workspace: workspace.id })
       return Promise.resolve(ok('done'))
     },
+    renameWorkspace(workspace, label) {
+      if ('error' in answer) return Promise.resolve(err(answer.error))
+      const found = (data ?? []).find((w) => w.id === workspace)
+      if (found === undefined) return Promise.resolve(ok('notFound'))
+      found.label = label
+      tell({ type: 'workspacesChanged' })
+      return Promise.resolve(ok('done'))
+    },
+    renameChat(chat, label) {
+      if ('error' in answer) return Promise.resolve(err(answer.error))
+      const found = chatOf(chat)
+      if (found === undefined) return Promise.resolve(ok('notFound'))
+      found.title = label
+      tell({ type: 'workspacesChanged' })
+      return Promise.resolve(ok('done'))
+    },
+    orderWorkspaces(order) {
+      if ('error' in answer) return Promise.resolve(err(answer.error))
+      const listed = data ?? []
+      const ids = listed.map((w) => w.id)
+      if (order.length !== ids.length || new Set(order).size !== order.length || !ids.every((id) => order.includes(id)))
+        return Promise.resolve(ok('stale'))
+      listed.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id))
+      tell({ type: 'workspacesChanged' })
+      return Promise.resolve(ok('done'))
+    },
     closeChat(chat) {
       if ('error' in answer) return Promise.resolve(err(answer.error))
       const workspace = workspaceOf(chat)

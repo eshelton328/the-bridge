@@ -29,9 +29,8 @@ export const RenameWorkspaceRequest = z.strictObject({ name: Label })
 export type RenameWorkspaceRequest = z.infer<typeof RenameWorkspaceRequest>
 
 /**
- * The body of `POST /api/chats/:chat/rename` (204). An agent's chat takes a `ChatName` and herdr's agent name
- * changes (`nameTaken` when another agent has it, 400 for a name of another form). A shell takes a `Label` and
- * herdr's pane label changes.
+ * The body of `POST /api/chats/:chat/rename` (204): herdr's label of the chat's pane, which the list shows as the
+ * chat's title before the agent's own title. An agent's herdr name does not change, so it stays a `ChatName`.
  */
 export const RenameChatRequest = z.strictObject({ name: Label })
 export type RenameChatRequest = z.infer<typeof RenameChatRequest>

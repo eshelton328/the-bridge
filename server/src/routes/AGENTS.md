@@ -93,6 +93,13 @@ Thin Hono sub-apps, one file for each area, named after the area
   its own tab, 409 `zoomedTab` for a zoomed tab, and 404 for a tab of
   another workspace or a `beside` chat of another tab. The page reads the layout again on
   the `layout.changed` event.
+- `POST /api/workspaces/:workspace/rename` and `POST
+  /api/chats/:chat/rename` (`{ name }`, R41, R42) rename a workspace or
+  a chat: 204, 404 for an unknown one, 400 for a name the contract does
+  not take. `POST /api/workspaces/order` (`{ workspaces }`) puts the
+  workspaces in that order: 204, 400 for an order that repeats one, or
+  409 `workspace-not-ready` `orderStale` for an order that leaves out
+  a listed workspace or names another (`workspaceEdits.test.ts`).
 - `POST /api/chats/:chat/effort` (slice W10) takes `{ effort }` (`low`,
   `medium`, `high` or `xhigh`; `max` is 400) and sets an idle
   Claude chat's effort for its session only: 204, or 409 as a command
