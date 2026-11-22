@@ -1,7 +1,8 @@
 // /api/events: the live events as server-sent events (SSE). Each event's SSE
 // name is its type and its SSE id its sequence number; its data is the
-// whole envelope, checked against the contract. A comment line every 25 s
-// keeps proxies from closing a quiet stream. When the agents stop
+// whole envelope, checked against the contract. A comment line every 15 s
+// (`ssePingMs`) keeps proxies from closing a quiet stream and tells the
+// page that the server is there. When the agents stop
 // answering, the stream sends one `error` event with an ErrorBody and
 // ends, and the browser connects again after `retry` ms. A throw inside
 // the stream does the same with `internal`; the route catches it itself,
@@ -12,8 +13,8 @@ import { type SSEStreamingApi, streamSSE } from 'hono/streaming'
 import { type AppEnv, agentErrorBody, internalMessage } from '../errors.ts'
 import type { Logger } from '../logger.ts'
 import type { LiveEvents } from '../services/liveEvents.ts'
+import { ssePingMs } from './sse.ts'
 
-const pingMs = 25_000
 const retryMs = 5_000
 
 const sendError = (stream: SSEStreamingApi, body: ErrorBody) =>
@@ -36,7 +37,7 @@ export function eventsRoutes(live: LiveEvents, log: Logger) {
       }
       const ping = setInterval(() => {
         void stream.write(': ping\n\n')
-      }, pingMs)
+      }, ssePingMs)
       // The cleanup is in place before the first write, so a client that goes during it leaves nothing open.
       stream.onAbort(done)
       // A throw is caught here, not by streamSSE's onError: Hono writes the raw message after onError returns.

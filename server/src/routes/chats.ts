@@ -85,11 +85,11 @@ import { createNewChats, type NewChats } from '../services/newChats.ts'
 import { createRestarts, type Restarts } from '../services/restarts.ts'
 import { type FilePromptOutcome, sendPromptWithFiles, startUpload } from '../services/uploads.ts'
 import { jsonBody, jsonOnly, smallJson } from './jsonBody.ts'
+import { ssePingMs } from './sse.ts'
 import { storeFailed } from './uploads.ts'
 import { connectTranscript } from '../services/transcriptEvents.ts'
 import { closeChat, moveChat, focusChat, splitChat, swapChats, zoomChat } from '../services/layoutWrites.ts'
 
-const pingMs = 25_000
 const retryMs = 5_000
 
 /**
@@ -509,7 +509,7 @@ export function chatsRoutes(
         }
         const ping = setInterval(() => {
           void stream.write(': ping\n\n')
-        }, pingMs)
+        }, ssePingMs)
         stream.onAbort(done)
         const write = (event: TranscriptChangedEvent) => {
           const checked = TranscriptChangedEvent.parse(event)
