@@ -5,6 +5,8 @@
 import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { serve } from '@hono/node-server'
+import { createClaudeArtifactFinder } from './adapters/claudeArtifacts.ts'
+import { createDiskArtifactStore } from './adapters/diskArtifacts.ts'
 import { createDiskPushStore } from './adapters/diskPush.ts'
 import { createDiskUploads } from './adapters/diskUploads.ts'
 import { createWebPushSender } from './adapters/webPushSender.ts'
@@ -15,6 +17,7 @@ import { readConfig } from './config.ts'
 import { createLogger, dailyFiles, type LogSink, teeSinks } from './logger.ts'
 import { formatEntry, parseLine } from './logs.ts'
 import { handleProcessErrors } from './processErrors.ts'
+import { createArtifacts } from './services/artifacts.ts'
 import { createPushSeen } from './services/push.ts'
 import { createPushNotifier } from './services/pushNotifier.ts'
 
@@ -53,9 +56,16 @@ const seen = createPushSeen()
 const notifier = createPushNotifier({ agents, store: push, sender: createWebPushSender(pushSubject), seen, log })
 void notifier.refresh()
 const pushChanged = () => void notifier.refresh()
+// The Artifacts library goes beside the database too (0700 and 0600); each list reads the session files only from
+// where the last list stopped (R26, R27).
+const artifacts = createArtifacts({
+  store: createDiskArtifactStore(join(dirname(dbFile), 'artifacts')),
+  finder: createClaudeArtifactFinder(claudeProjects, config.value.chatRoot),
+  machine,
+})
 const server = serve(
   {
-    fetch: createApp({ agents, owner, log, uploads, push, seen, pushChanged }).fetch,
+    fetch: createApp({ agents, owner, log, uploads, push, seen, pushChanged, artifacts }).fetch,
     port,
     hostname: '127.0.0.1',
   },
