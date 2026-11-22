@@ -233,8 +233,21 @@ const ArtifactFileMenu = z.object({
 })
 export type ArtifactFileMenu = z.infer<typeof ArtifactFileMenu>
 
-/** The value of the menu's Not in a project choice. */
-export const noProject = 'none'
+/**
+ * The value of the menu's Not in a project choice. A project's name never takes it (`ArtifactProject` starts with a
+ * letter or digit), so a project named "none" stays a project.
+ */
+export const noProject = '(none)'
+
+/** The project field's choices: Not in a project first when the field names it, then each project in mono. */
+export const projectChoices = (field: { readonly projects: readonly string[]; readonly none?: string | undefined }) => [
+  ...(field.none === undefined ? [] : [{ value: noProject, label: field.none }]),
+  ...field.projects.map((project) => ({ value: project, label: project })),
+]
+
+/** The project a meta line names: none for an artifact in no project (the live library's `noProject`). */
+export const projectOf = (card: { readonly project: string }): string | null =>
+  card.project === noProject ? null : card.project
 
 /** A field of the Add a link dialog (D5): its label, its value and the line under it. */
 const AddLinkField = z.object({
@@ -263,7 +276,11 @@ export const AddLinkForm = z.object({
   }),
   name: AddLinkField,
   /** The project, picked from a menu of `projects`; it may be left out. */
-  project: AddLinkField.extend({ projects: z.array(z.string()) }),
+  project: AddLinkField.extend({
+    projects: z.array(z.string()),
+    /** The label of the first choice, `noProject`, such as "Not in a project" (the live form); none without it. */
+    none: z.string().optional(),
+  }),
   cancel: z.string(),
   submit: z.string(),
 })
@@ -378,6 +395,11 @@ export const ArtifactsData = z.object({
   discussion: ArtifactDiscussion.optional(),
   /** File in a project (M7), which the phone's ⋯ button opens; without it the button opens nothing. */
   fileMenu: ArtifactFileMenu.optional(),
+  /**
+   * The live library (liveArtifacts.ts): `partial` when the server's read stopped at its cap, so the page reads the
+   * list once more. A state file has none.
+   */
+  live: z.object({ partial: z.boolean() }).optional(),
 })
 export type ArtifactsData = z.infer<typeof ArtifactsData>
 

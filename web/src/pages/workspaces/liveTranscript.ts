@@ -60,7 +60,7 @@ import {
   type ResumeMark,
   resumeMark,
   whenVisible,
-} from './pageResume.ts'
+} from '../../lib/pageResume.ts'
 import type { AgentKind, ChatEntry, WorkspacesData } from './types.ts'
 
 /** The pane's quiet lines, picked by the chat that built slice 3b's page part (d-101); the PR records them. */

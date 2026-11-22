@@ -63,7 +63,10 @@ function rejectingClipboard(error: Error): void {
 /** Renders the app at /artifacts, as it opens, and opens the artifact of the card (D1, T1) or row (M1) titled `title`. */
 async function openFromLibrary(layout: 'desktop' | 'tablet' | 'phone', width: number, height: number, title: string) {
   await page.viewport(width, height)
-  const router = createRouter({ routeTree, history: createMemoryHistory({ initialEntries: ['/artifacts'] }) })
+  const router = createRouter({
+    routeTree,
+    history: createMemoryHistory({ initialEntries: ['/artifacts?source=fixtures'] }),
+  })
   const view = await testRender(<RouterProvider router={router} />)
   onTestFinished(view.unmount)
   const item = layout === 'phone' ? 'artifact row' : 'artifact card'
@@ -95,7 +98,7 @@ describe('Copy link on an open artifact', () => {
 })
 
 // The owner's path (the owner's report from the phone): /artifacts as the app opens
-// it (home.ts, the library), a press on a card (D1, T1) or a row (M1), which
+// it (home.ts, the library, with its sample data: `?source=fixtures`), a press on a card (D1, T1) or a row (M1), which
 // opens the artifact beside the list (desktop) or as its own page (tablet,
 // phone), then Copy link. Every artifact in the library is a link, so each
 // card's artifact copies its own link.
@@ -111,7 +114,10 @@ describe('Copy link on an artifact opened from the library', () => {
   it.each(cases)('on a %s (%i × %i), %s copies its link', async (layout, width, height, title, expected) => {
     const copied = fakeClipboard()
     await page.viewport(width, height)
-    const router = createRouter({ routeTree, history: createMemoryHistory({ initialEntries: ['/artifacts'] }) })
+    const router = createRouter({
+      routeTree,
+      history: createMemoryHistory({ initialEntries: ['/artifacts?source=fixtures'] }),
+    })
     const view = await testRender(<RouterProvider router={router} />)
     onTestFinished(view.unmount)
     // A card on the desktop and tablet (D1, T1), a row on the phone (M1).
@@ -131,7 +137,7 @@ describe('Copy link on an artifact opened from the library', () => {
 // Copy link says what happened, on the control itself (audit W-6): "Copied"
 // or "Copy failed" for about 2 s, then "Copy link" again, at the same size,
 // and a status region says it to a screen reader. The owner's path: /artifacts
-// with no ?state=, a press on the card or row, then Copy link.
+// with no ?state= (its sample data), a press on the card or row, then Copy link.
 describe('Copy link says whether it copied', () => {
   const layouts = [
     ['desktop', 1512, 982],

@@ -18,7 +18,7 @@ import {
   Thumbnail,
 } from '@eshelton328/component-library-1701'
 import { BlockBoundary } from '../../../errors/BlockBoundary.tsx'
-import type { ArtifactCard, MatchPlace } from '../types.ts'
+import { type ArtifactCard, type MatchPlace, noProject } from '../types.ts'
 
 export type LibraryRowProps = {
   card: ArtifactCard
@@ -84,7 +84,11 @@ export function LibraryRow({ card, query, place, placeLabel, onOpen }: LibraryRo
         <span>{mark('description', card.description)}</span>
         <MetaLine
           leading={<KindMark kind={card.source} size="12" />}
-          items={[card.sourceLabel, mark('project', card.project), place === 'link' ? mark('link', card.link) : null]}
+          items={[
+            card.sourceLabel,
+            card.project === noProject ? null : mark('project', card.project),
+            place === 'link' ? mark('link', card.link) : null,
+          ]}
         />
       </ListRow>
     </div>

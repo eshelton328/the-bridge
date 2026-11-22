@@ -6,8 +6,9 @@
 // before the page read its workspaces again, and the server logged no
 // failure; a layout read "unreachable" with no status came 0.1 s after one
 // such read).
-// `liveTranscript.ts` and `liveWorkspaces.ts` ask `resumeMark()` when a
-// connection or a read starts and `fromBackground(mark)` when it misses.
+// The Workspaces page's `liveTranscript.ts` and `liveWorkspaces.ts`, and the
+// Artifacts page's `liveArtifacts.ts`, ask `resumeMark()` when a connection or
+// a read starts and `fromBackground(mark)` when it misses.
 
 /** How long after the page shows again a connection that starts still counts as part of the return. */
 export const resumeGraceMs = 5000

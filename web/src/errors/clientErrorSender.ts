@@ -7,7 +7,7 @@
 // header (which repeats the message) and the route's path, and nothing
 // from the page. Only the errors on an allowlist (`ownMessage`: the JS
 // built-ins and two app classes) send their own message. The transcript,
-// layout, live, send, stop, command, layout write and push misses send their kind and a ZodError its issue codes
+// layout, live, send, stop, command, layout write, push and artifacts misses send their kind and a ZodError its issue codes
 // (`kindOnly`); every other error sends an empty message, so a new error
 // class sends no transcript, draft, tool or server text by default.
 //
@@ -84,6 +84,8 @@ const kindOnly: Readonly<Record<string, (error: Error) => string>> = {
   // The service worker's registration that failed (d-118): the error's name only.
   ServiceWorkerMissError: (error) => stringAt(error, 'miss') ?? '',
   LiveMissError: (error) => stringAt(Reflect.get(error, 'miss'), 'kind') ?? '',
+  // An Artifacts library read or write that missed: its step, kind and status only, never a link or a title.
+  ArtifactsMissError: (error) => stringAt(error, 'miss') ?? '',
   ZodError: (error) => {
     const issues: unknown = Reflect.get(error, 'issues')
     const codes = Array.isArray(issues) ? issues.map((issue: unknown) => stringAt(issue, 'code') ?? '') : []

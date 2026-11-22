@@ -34,7 +34,7 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   `app/WorkspacesLiveLayout.test.tsx`). A layout read with no answer at
   all (no status) while the page is hidden, after it hid during the read
   or within 5 s after it showed again is iOS closing it in the
-  background (`pageResume.ts`): no line and no report, and it reads
+  background (`lib/pageResume.ts`): no line and no report, and it reads
   again once the page shows, at once if it does; one such miss for each
   trip. An answer from the server, a 5xx too, is reported as before. The
   list read (`GET /api/workspaces`) takes the same rule: such a miss
@@ -60,11 +60,11 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   stream of a page in the background: a stream that ends or drops, or a
   stream or read with no answer, while the page is hidden, after it hid
   during the connection or within 5 s after it showed again, gives no
-  line and no report (`pageResume.ts`). Hidden, the page connects again
+  line and no report (`lib/pageResume.ts`). Hidden, the page connects again
   after the retry time; shown, at once. A visible page takes one such
   quiet miss for each trip to the background, none if a miss came while
   hidden, and an answer from the server is never quiet
-  (`app/WorkspacesLiveTranscript.test.tsx`, `pageResume.test.ts`). A prompt sent
+  (`app/WorkspacesLiveTranscript.test.tsx`, `lib/pageResume.test.ts`). A prompt sent
   with files (`UserEntry.files`) shows a chip for each name above its
   text, and a prompt of files alone the chips with no bubble
   (`blocks/ChatEntryView.tsx`, `app/WorkspacesEntryFiles.test.tsx`). A

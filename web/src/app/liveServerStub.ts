@@ -1,7 +1,8 @@
 // A stubbed the-bridge server for route tests that open the Workspaces live source (d-117): the Workspaces home
 // reads it with no ?state=, and with ?source=live. Without a stub the read goes through the Vite proxy to whatever
 // server runs on the machine, so the test result depends on that machine (lib/testSetup.ts fails such a read).
-import { type LayoutNode, WorkspacesResponse } from '@bridge/contract'
+// The Artifacts home reads the live library the same way: the stub answers it with an empty library.
+import { ArtifactsResponse, type LayoutNode, WorkspacesResponse } from '@bridge/contract'
 import { afterAll, beforeAll } from 'vitest'
 
 type Chat = { readonly local: string; readonly kind: 'claude' | 'codex' | 'shell'; readonly title: string }
@@ -81,7 +82,17 @@ function events(signal: AbortSignal | null | undefined): Response {
 export type LiveServerStubOptions = {
   /** The body of `GET /api/workspaces`; `liveWorkspacesBody` when not set, such as a reply the contract refuses. */
   readonly workspaces?: unknown
+  /** The body of `GET /api/artifacts`; an empty library when not set. */
+  readonly artifacts?: unknown
 }
+
+/** An empty library; no time matters to the tests that get it. */
+const emptyLibrary = ArtifactsResponse.parse({
+  checkedAt: '2026-01-01T00:00:00.000Z',
+  lastSeenAt: null,
+  partial: false,
+  artifacts: [],
+})
 
 /**
  * What the stub saw: the body of each `POST /api/client-errors`, which it answers 204, as the server does. A test sets
@@ -109,6 +120,10 @@ export function stubLiveServer(options: LiveServerStubOptions = {}): LiveServerS
       if (url.origin !== window.location.origin || !url.pathname.startsWith('/api/')) return real(input, init)
       const body = stub.workspaces ?? options.workspaces ?? liveWorkspacesBody
       if (url.pathname === '/api/workspaces') return Promise.resolve(json(body))
+      if (url.pathname === '/api/artifacts' && (init?.method ?? 'GET') === 'GET')
+        return Promise.resolve(json(options.artifacts ?? emptyLibrary))
+      if (url.pathname === '/api/artifacts/seen' && init?.method === 'POST')
+        return Promise.resolve(new Response(null, { status: 204 }))
       if (url.pathname === '/api/client-errors' && init?.method === 'POST') {
         stub.clientErrors.push(typeof init.body === 'string' ? init.body : '')
         return Promise.resolve(new Response(null, { status: 204 }))

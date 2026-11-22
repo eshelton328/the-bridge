@@ -4,7 +4,7 @@
 // (M6) keeps `ProjectPicker`. Props only.
 import { FolderIcon, SelectField, Stack } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
-import type { AddLinkForm } from '../types.ts'
+import { type AddLinkForm, projectChoices } from '../types.ts'
 
 // D5 403:7579: the label as `TextField labelStyle="label"` draws it, Medium 14/20 in `fg.default`, 6 above the control.
 // `SelectField` draws its label in `small` (`fg.muted`) only, so it hides its own (still the field's name) and this one
@@ -33,7 +33,7 @@ export function ProjectSelect({ field, value, onValueChange }: ProjectSelectProp
           labelHidden
           label={field.label}
           icon={<FolderIcon />}
-          options={field.projects.map((project) => ({ value: project, label: project }))}
+          options={projectChoices(field)}
           value={value}
           onValueChange={onValueChange}
         />

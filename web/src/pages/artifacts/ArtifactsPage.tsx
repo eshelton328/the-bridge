@@ -3,11 +3,14 @@
 // the search, the view, the open groups) and passes everything to the
 // props-only screen. Copy link writes the open artifact's link to the
 // clipboard here, and the screen shows "Copied" or "Copy failed" on the
-// control for `copiedFor` ms (audit W-6).
-import { getRouteApi } from '@tanstack/react-router'
+// control for `copiedFor` ms (audit W-6). On the live library (liveArtifacts.ts)
+// it holds the visit, posts seen once its first list shows, and reads a partial
+// list once more.
+import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { report } from '../../errors/reporter.ts'
 import { copyText } from '../../lib/copyText.ts'
+import { enterVisit, sendSeen, takeFollowUp } from './liveArtifacts.ts'
 import { ArtifactsScreen } from './screens/ArtifactsScreen.tsx'
 import type { ArtifactsUi, CopiedLink } from './types.ts'
 import { usePushSwitch } from '../../state/pushStore.ts'
@@ -28,6 +31,17 @@ export function ArtifactsPage() {
   const push = usePushSwitch()
   const search = route.useSearch()
   const navigate = route.useNavigate()
+  const router = useRouter()
+  const live = state.data.live
+  const isLive = live !== undefined
+  // A visit of the live library: it starts when the page shows and ends when it leaves.
+  useEffect(() => (isLive ? enterVisit() : undefined), [isLive])
+  // Seen goes once the visit's first list shows; a partial list reads once more, with no loop.
+  useEffect(() => {
+    if (live === undefined) return
+    void sendSeen()
+    if (takeFollowUp(live.partial)) void router.invalidate()
+  }, [live, router])
   // Another ?state= starts from its own ui.
   const [changed, setChanged] = useState<Changed>({ of: search.state, ui: {} })
   const ui = { ...state.ui, ...(changed.of === search.state ? changed.ui : {}) }

@@ -156,13 +156,13 @@ describe('a tap on a page control while the keyboard is up (R19)', () => {
   })
 
   it('opens the Artifacts Sort sheet from the phone’s search row', async () => {
-    await typing('/artifacts', [390, 844], 'input', 544)
+    await typing('/artifacts?source=fixtures', [390, 844], 'input', 544)
     tap(page.getByRole('button', { name: 'Sort: Newest' }).element())
     await expect.element(page.getByRole('dialog', { name: 'Sort by' })).toBeVisible()
   })
 
   it('opens the Artifacts Filter sheet from the phone’s search row', async () => {
-    await typing('/artifacts', [390, 844], 'input', 544)
+    await typing('/artifacts?source=fixtures', [390, 844], 'input', 544)
     tap(page.getByRole('button', { name: 'Filter', exact: true }).element())
     await expect.element(page.getByRole('dialog', { name: 'Filter' })).toBeVisible()
   })

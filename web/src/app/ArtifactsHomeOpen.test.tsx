@@ -8,7 +8,8 @@ import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
 
-// On /artifacts with no ?state= (pages/artifacts/home.ts) a card or row opens
+// On /artifacts with no ?state= and its sample data (`?source=fixtures`,
+// pages/artifacts/home.ts) a card or row opens
 // its artifact (pages/artifacts/screens/openView.ts): beside the list with its
 // row selected on a desktop (D2), on its own page under Back on a tablet (T2)
 // and a phone (M2), and Back returns to the library. Add a link opens its
@@ -51,7 +52,7 @@ afterEach(async () => {
 describe('opening an artifact from the Artifacts home', () => {
   it('opens a card beside the list at 1512, its row selected, with no Made in', async () => {
     await page.viewport(1512, 982)
-    view = await renderAt('/artifacts')
+    view = await renderAt('/artifacts?source=fixtures')
     await expect.poll(() => card('Hono server spike')).not.toBeNull()
     // The pointer rests on the card (its title button covers it), so the cut description's tooltip opens; the click
     // still opens the card.
@@ -75,7 +76,7 @@ describe('opening an artifact from the Artifacts home', () => {
 
   it('opens a card as its own page at 756, and Back returns to the grid', async () => {
     await page.viewport(756, 1024)
-    view = await renderAt('/artifacts')
+    view = await renderAt('/artifacts?source=fixtures')
     await expect.poll(() => card('Inbox task lifecycle')).not.toBeNull()
     await press(cardButton('Inbox task lifecycle'))
     await expect.poll(backButton).not.toBeNull()
@@ -90,7 +91,7 @@ describe('opening an artifact from the Artifacts home', () => {
 
   it('opens a row as its own page at 390, and Back returns to the rows', async () => {
     await page.viewport(390, 844)
-    view = await renderAt('/artifacts')
+    view = await renderAt('/artifacts?source=fixtures')
     await expect.poll(() => row('Tailscale access check')).not.toBeNull()
     await press(rowButton('Tailscale access check'))
     await expect.poll(backButton).not.toBeNull()
@@ -106,7 +107,7 @@ describe('opening an artifact from the Artifacts home', () => {
 
   it('opens Sort and Filter from the list beside a card it opened at 1512', async () => {
     await page.viewport(1512, 982)
-    view = await renderAt('/artifacts')
+    view = await renderAt('/artifacts?source=fixtures')
     await expect.poll(() => card('Hono server spike')).not.toBeNull()
     await press(cardButton('Hono server spike'))
     await expect.poll(() => query('[data-figma="library list"]')).not.toBeNull()
@@ -125,7 +126,7 @@ describe('Add a link on the Artifacts home', () => {
 
   it('opens the dialog at 1512 with no link and no title', async () => {
     await page.viewport(1512, 982)
-    view = await renderAt('/artifacts')
+    view = await renderAt('/artifacts?source=fixtures')
     await press(page.getByRole('button', { name: 'Add a link' }).element())
     const dialog = page.getByRole('dialog', { name: 'Add a link' })
     await expect.element(dialog).toBeVisible()
@@ -138,7 +139,7 @@ describe('Add a link on the Artifacts home', () => {
 
   it('picks a project in the dialog\u2019s Project select at 1512', async () => {
     await page.viewport(1512, 982)
-    view = await renderAt('/artifacts')
+    view = await renderAt('/artifacts?source=fixtures')
     // The route renders after a first await; wait for its button, so the case also runs alone.
     await expect.element(page.getByRole('button', { name: 'Add a link' })).toBeVisible()
     await press(page.getByRole('button', { name: 'Add a link' }).element())
@@ -157,7 +158,7 @@ describe('Add a link on the Artifacts home', () => {
 
   it('draws the dialog\u2019s Source switch as wide as its Link field at 1512', async () => {
     await page.viewport(1512, 982)
-    view = await renderAt('/artifacts')
+    view = await renderAt('/artifacts?source=fixtures')
     // The route renders after a first await; wait for its button, so the case also runs alone.
     await expect.element(page.getByRole('button', { name: 'Add a link' })).toBeVisible()
     await press(page.getByRole('button', { name: 'Add a link' }).element())
@@ -171,7 +172,7 @@ describe('Add a link on the Artifacts home', () => {
 
   it('opens the sheet at 390 with no link and no title, in M6\u2019s words', async () => {
     await page.viewport(390, 844)
-    view = await renderAt('/artifacts')
+    view = await renderAt('/artifacts?source=fixtures')
     await press(page.getByRole('button', { name: 'Add a link' }).element())
     const sheet = page.getByRole('dialog', { name: 'Add a link' })
     await expect.element(sheet).toBeVisible()

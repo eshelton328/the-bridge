@@ -6,7 +6,7 @@
 import { Badge, Card, KindMark, MetaLine, SparkIcon, Thumbnail } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import { BlockBoundary } from '../../../errors/BlockBoundary.tsx'
-import type { ArtifactCard } from '../types.ts'
+import { type ArtifactCard, projectOf } from '../types.ts'
 
 // The meta line takes the card's width, so the age sits at its end (402:15467).
 const metaWide = css({ flex: '1', overflow: 'hidden' })
@@ -49,7 +49,7 @@ export function LibraryCard({ card, showSource = true, onOpen }: LibraryCardProp
                   {showSource ? null : <span className={srOnly}>{card.sourceLabel}</span>}
                 </>
               }
-              items={showSource ? [card.sourceLabel, card.project] : [card.project]}
+              items={showSource ? [card.sourceLabel, projectOf(card)] : [projectOf(card)]}
               trailing={card.age}
             />
           </div>

@@ -38,8 +38,8 @@ Run these in `web/`; the root `package.json` has neither.
   without it and get no `/api` proxy (`scripts/viteConfig.test.ts`). In
   development `?state=<key>` picks a page state and `?source=` a data
   source (`src/lib/dataSource.ts`); fixtures are the default, except the
-  Workspaces home, which reads live (d-117; `?source=fixtures` shows its
-  sample data).
+  Workspaces and Artifacts homes, which read live (d-117;
+  `?source=fixtures` shows their sample data).
 - `pnpm storybook`: Storybook on http://localhost:6007. Each story is
   also a Vitest browser test.
 

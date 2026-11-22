@@ -48,21 +48,22 @@ const sizes = [
   { name: 'desktop', width: 1512, height: 982 },
 ]
 
-// Each page's home and one detail with a composer or a long body, and the Workspaces live source (#221): each scrolls in
+// Each page's home and one detail with a composer or a long body, and the Workspaces (#221) and Artifacts live sources: each scrolls in
 // the shell.
 const shellRoutes = [
   '/inbox',
   '/inbox?state=chat',
   '/workspaces?source=fixtures',
   '/workspaces?state=phoneChatFull',
-  '/artifacts',
+  '/artifacts?source=fixtures',
   '/artifacts?state=artifactOpen',
   '/toolkit',
   '/toolkit?state=skillOpen',
   '/workspaces?source=live',
+  '/artifacts?source=live',
 ]
 // The not-built screen of a source a page has not built: a short message with no shell and nothing to scroll.
-const notBuiltRoutes = ['/inbox?source=mock-api', '/artifacts?source=live']
+const notBuiltRoutes = ['/inbox?source=mock-api', '/artifacts?source=mock-api']
 
 /** The elements in `root` that scroll on their own: each ScrollFrame body and each shell pane that scrolls. */
 function scrollAreas(root: Element): HTMLElement[] {
