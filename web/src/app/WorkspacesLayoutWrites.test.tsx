@@ -323,7 +323,7 @@ describe('focus (W2)', () => {
     const fakes = withChats()
     await showPanes()
     await userEvent.click(actionsButton('plan the slice'))
-    await expect.element(page.getByRole('menuitem', { name: 'Rename chat' })).toBeVisible()
+    await expect.element(page.getByRole('menuitem', { name: 'New chat' })).toBeVisible()
     await expect.element(page.getByRole('menuitem', { name: 'Focus in terminal' })).not.toBeInTheDocument()
     await userEvent.keyboard('{Escape}')
     actionsButton('review notes').element().focus()

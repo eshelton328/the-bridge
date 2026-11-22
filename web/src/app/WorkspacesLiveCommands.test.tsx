@@ -290,7 +290,7 @@ describe("a live chat's commands in its actions (W5)", () => {
     await userEvent.keyboard('{Escape}')
     for (const title of ['drift check', 'tail logs']) {
       await userEvent.click(actionsButton(title))
-      await expect.element(page.getByRole('menuitem', { name: 'Rename chat' })).toBeVisible()
+      await expect.element(page.getByRole('menuitem', { name: 'New chat' })).toBeVisible()
       expect(page.getByRole('menuitem', { name: 'Compact context…' }).elements()).toHaveLength(0)
       expect(page.getByRole('menuitem', { name: 'Clear context…' }).elements()).toHaveLength(0)
       await userEvent.keyboard('{Escape}')

@@ -438,6 +438,12 @@ describe('withLiveWorkspaces', () => {
     expect(state.data.folders).toBeUndefined()
     expect(state.data.lastChats).toBeUndefined()
     expect(state.data.chatMenu?.map((a) => a.value)).not.toContain('subagents')
+    // Reviews R41, R42: only the actions a route backs, and no Edit on the phone's list.
+    expect(state.data.chatMenu?.map((a) => a.value)).toEqual(['newChat'])
+    expect(state.data.paneMenu.map((a) => a.value)).toEqual(['newChat'])
+    expect(state.data.phone?.chatMenu?.map((a) => a.value)).toEqual(['newChat'])
+    expect(state.data.phone?.edit).toBeUndefined()
+    expect(state.data.phone?.done).toBeUndefined()
   })
 
   it('shows no workspaces, with the notice in the page and the status bar and no sample summary, and reports nothing when the server is down', async () => {

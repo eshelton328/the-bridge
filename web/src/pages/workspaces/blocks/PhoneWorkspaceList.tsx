@@ -4,6 +4,7 @@
 // status. A tap on a row with a chat to show selects it and opens it (M3); a workspace's
 // chevron shows or hides its chats. Edit (with `text.done`) starts edit
 // mode (M2): each workspace is a PhoneEditGroup, + is off and Done ends it.
+// Without `text.edit` there is no Edit (the live page, review R41).
 // With `text.rowMenu`, holding a row or tapping its ⋯ opens the chat's
 // actions (M9, `ui.menuFor`, the sheet in WorkspacesPhone) with the first
 // action highlighted, and the held row lifts over the sheet's scrim.
@@ -147,7 +148,7 @@ export function PhoneWorkspaceList({
             >
               {text.done}
             </Button>
-          ) : (
+          ) : text.edit === undefined ? null : (
             <Button
               size="sm"
               data-figma={layers?.phoneEdit}
