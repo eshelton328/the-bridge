@@ -40,6 +40,18 @@
 // miss of the connection after it is an outage as usual. An answer from the
 // server (a status, an `error` event, a reply the contract refuses) is never
 // quiet.
+//
+// A server restart (review R43). A restart ends every stream with no `error`
+// event, and the server is back within a few seconds. A stream that ends or
+// drops with no `error` event, after a connection that read the transcript,
+// starts a grace of `reconnectGraceMs` (10 s): until it passes, that end and
+// each miss of the connections after it (no answer, a 5xx) are quiet, with no
+// line and no report, and the page connects again after the retry time. The
+// first read that answers ends the grace, and it holds every entry written
+// while the stream was down. A miss after the window shows the line and
+// reports once, as before. An `error` event (the server's watch failed,
+// review R35), an event the page cannot read, a refusal and a read that
+// missed are never quiet.
 import {
   ChatId,
   ErrorBody,
@@ -52,7 +64,7 @@ import type { Result } from '@bridge/shared'
 import { report } from '../../errors/reporter.ts'
 import { api } from '../../lib/api.ts'
 import { type Frame, frames } from '../../lib/eventFrames.ts'
-import { type LiveMiss, liveReadTimeoutMs, readChecked, readJson } from './liveWorkspaces.ts'
+import { type LiveMiss, liveReadTimeoutMs, readChecked, readJson, reconnectGraceMs } from './liveWorkspaces.ts'
 import {
   followPageVisibility,
   fromBackground,
@@ -254,6 +266,28 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
     quietFor = hidesSoFar()
     return true
   }
+  /** The grace of a stream that ended with no `error` event (R43): undefined when none runs; `over` once it passed. */
+  let grace: { readonly timer: ReturnType<typeof setTimeout>; over: boolean } | undefined
+  /**
+   * Whether a miss of the stream is quiet: one within a grace that runs. `ended` (a stream that read the transcript
+   * and ended with no `error` event) starts one when none runs; any other miss is quiet only within one.
+   */
+  const graced = (ended: boolean): boolean => {
+    if (grace !== undefined) return !grace.over
+    if (!ended) return false
+    const started: { readonly timer: ReturnType<typeof setTimeout>; over: boolean } = {
+      timer: setTimeout(() => {
+        started.over = true
+      }, reconnectGraceMs),
+      over: false,
+    }
+    grace = started
+    return true
+  }
+  const endGrace = () => {
+    clearTimeout(grace?.timer)
+    grace = undefined
+  }
   const update = (change: (view: TranscriptView) => TranscriptView) => {
     if (!closed()) setView(chat, change(views.get(chat) ?? emptyView))
   }
@@ -311,6 +345,7 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
     readCounts.set(chat, transcriptReads(chat) + 1)
     update(() => ({ loaded: true, entries, earlier, problem: undefined }))
     outages.delete(chat)
+    endGrace()
     return true
   }
 
@@ -333,6 +368,7 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
       if (closed()) return 'wait'
       if (quietMiss(mark)) return 'resume'
       // fetch rejects when no answer comes in time, or when the server or the tailnet cannot be reached.
+      if (graced(false)) return 'again'
       fail(transcriptText.dropped, { part: 'stream', kind: opening.late ? 'timeout' : 'unreachable' })
       return 'again'
     } finally {
@@ -351,6 +387,7 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
       const miss = { part: 'stream', kind: 'status', status: res.status } as const
       // A 5xx is the server or its proxy with no answer for now: connect again. Any other status is a refusal.
       if (res.status >= 500) {
+        if (graced(false)) return 'again'
         fail(transcriptText.dropped, miss)
         return 'again'
       }
@@ -360,8 +397,9 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
     let loaded = false
     // Set by `take` while the stream runs: an event the page cannot read, the kind of the server's `error` event, and
     // whether that kind says the chat left the list.
-    const seen: { unreadable: boolean; serverKind: string | undefined; gone: boolean } = {
+    const seen: { unreadable: boolean; errored: boolean; serverKind: string | undefined; gone: boolean } = {
       unreadable: false,
+      errored: false,
       serverKind: undefined,
       gone: false,
     }
@@ -370,6 +408,8 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
       if (frame.retry !== undefined) retryMs = frame.retry
       if (frame.event === 'error') {
         const body = ErrorBody.safeParse(readJson(frame.data))
+        // Any `error` event is the server's answer, a body the page cannot read too: never the quiet end of a restart.
+        seen.errored = true
         seen.serverKind = body.success ? body.data.error.kind : undefined
         // The chat left the list: end this connection, and the read that may still run, with nothing more.
         if (seen.serverKind === 'not-found') {
@@ -426,8 +466,9 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
     }
     // A read that missed shows its line; Retry starts again.
     if (!read) return 'wait'
-    // An end with no `error` event, or a drop, as iOS makes of a page in the background.
+    // An end with no `error` event, or a drop, as iOS makes of a page in the background, or a server restart.
     if (seen.serverKind === undefined && quietMiss(mark)) return 'resume'
+    if (!seen.errored && graced(true)) return 'again'
     fail(transcriptText.dropped, { part: 'stream', kind: 'ended', errorKind: seen.serverKind })
     return 'again'
   }
@@ -470,6 +511,7 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
       wake?.()
     },
     stop: () => {
+      endGrace()
       abort.abort()
     },
   }

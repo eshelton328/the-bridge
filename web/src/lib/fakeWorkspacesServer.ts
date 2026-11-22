@@ -47,6 +47,9 @@
 // chat, a tab of another workspace or a `beside` chat of another tab 404.
 // `zoomTab` zooms a tab as herdr would from the terminal.
 //
+// R43: `endEvents` ends each open event stream with no event, as a restart
+// of the server does.
+//
 // W3 (backend #378 to #381): `POST /api/chats` takes the contract's
 // `StartChatRequest`. It lists a new Claude chat (`<machine>/new<n>`, or its
 // name's title) in a new tab of the workspace (a 404 for an unknown one), or
@@ -650,6 +653,10 @@ export function fakeWorkspacesServer(
     layoutChanged,
     /** Sends `workspaces.changed`, as herdr's own change of the list. */
     listChanged: changed,
+    /** Ends each open event stream with no event, as a restart of the server does (review R43). */
+    endEvents: () => {
+      for (const s of streams.splice(0)) s.close()
+    },
     /** Sets the status of `chat`, as a `workspaces.changed` read again shows it. */
     setStatus: (chat: string, status: ChatSummary['status']) => {
       update((c) => (c.id === chat ? { ...c, status } : c))

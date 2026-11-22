@@ -34,6 +34,10 @@
 // (`GET /api/workspaces`) takes the same rule: such a miss shows no notice,
 // and the list is read again once the page shows; a second one in the same
 // trip, or any answer from the server, shows the notice as before.
+// Review R43: a server restart ends the event stream. After a stream that
+// opened ends or drops, a miss is quiet for `reconnectGraceMs`: the status
+// bar says the stream is lost only when a miss comes after that window, and
+// a stream that opens ends the outage.
 // Review R34: the home's sample skills never reach the live page; each live
 // Claude chat's "/" list is read from the server when it opens (liveSkills.ts).
 import {
@@ -351,6 +355,13 @@ function liveOnly(
  * tailnet takes under 1 s.
  */
 export const liveReadTimeoutMs = 8000
+
+/**
+ * How long a live stream that ended or dropped may take to connect again before the page shows it, in ms (review R43,
+ * bridge-coord's decision): a restart of the server ends every stream, and the server is back within the first two
+ * retries (5 s each). A miss within this window is quiet; one after it shows, as before.
+ */
+export const reconnectGraceMs = 10_000
 
 /**
  * A live read that missed in a way the page expects; `message` says what happened, for the status bar and the
@@ -796,8 +807,10 @@ const openEvents: OpenStream = (signal) =>
  * opens (the first time and after it connects again) mark the cache invalid, with every layout, so the next load
  * reads the server. A `layout.changed` event marks that workspace's layout invalid, and only when the page shows that
  * workspace (`shownWorkspaces`): a workspace the page does not show is not read. A burst of events gives one
- * `onChange`. When the stream ends or the network drops, it connects again after the server's retry time (5 s), as EventSource does, and shows the error in the status bar and the
- * dev ErrorTray once for each outage; a 5xx is an outage too, as the Vite proxy answers 5xx while the server is down.
+ * `onChange`. When the stream ends or the network drops, it connects again after the server's retry time (5 s), as EventSource does. A miss
+ * shows the error in the status bar, once for each outage, but after a stream that opened ends or drops (a server
+ * restart) only a miss after `reconnectGraceMs` does, and an outage that ends sooner shows nothing (review R43). A
+ * 5xx is a miss too, as the Vite proxy answers 5xx while the server is down.
  * When the server refuses the stream (such as 403), it stops and shows a notice in the status bar and the dev
  * ErrorTray, as a failed read does. The result stops it.
  */
@@ -814,6 +827,24 @@ export function watchLiveWorkspaces({
   watchSignal = abort.signal
   let retryMs = 5000
   let timer: ReturnType<typeof setTimeout> | undefined
+  /**
+   * The outage's grace (R43): it starts when a stream that opened ends or drops, and a stream that opens ends it. A
+   * miss with no grace, such as the first connection's, shows at once.
+   */
+  const grace: { timer: ReturnType<typeof setTimeout> | undefined; over: boolean } = { timer: undefined, over: false }
+  let opened = false
+  const outage = () => {
+    if (!opened) return
+    opened = false
+    grace.timer = setTimeout(() => {
+      grace.over = true
+    }, reconnectGraceMs)
+  }
+  const endOutage = () => {
+    clearTimeout(grace.timer)
+    grace.timer = undefined
+    grace.over = false
+  }
   const changed = () => {
     timer ??= setTimeout(() => {
       timer = undefined
@@ -878,8 +909,16 @@ export function watchLiveWorkspaces({
   const closed = () => abort.signal.aborted
   const run = async () => {
     while (!closed()) {
+      // A stream that gives no answer (no headers) within `liveReadTimeoutMs` is a miss, so an outage after a drop is
+      // shown even when the reconnect hangs (R43); the limit ends once the headers come.
+      const late = new AbortController()
+      const limit = setTimeout(() => {
+        late.abort()
+      }, liveReadTimeoutMs)
       try {
-        const res = await open(abort.signal)
+        const res = await open(AbortSignal.any([abort.signal, late.signal])).finally(() => {
+          clearTimeout(limit)
+        })
         // A 5xx is the server or its proxy with no answer for now, such as the Vite proxy while the server is down:
         // connect again, so the page loads again, and the notice goes, once the server answers.
         if (res.status >= 500) throw new Error(`the server answered ${String(res.status)} for the event stream`)
@@ -891,17 +930,27 @@ export function watchLiveWorkspaces({
         }
         // The stream is open: the outage, if there was one, is over.
         lost = undefined
+        endOutage()
+        opened = true
         for await (const frame of frames(res.body)) take(frame)
+        outage()
       } catch (thrown) {
         // The watcher stopped (the page closed the stream; fetch rejects with an AbortError): end, with no report.
-        if (closed() || (thrown instanceof DOMException && thrown.name === 'AbortError')) return
-        // The network dropped: keep the error for the status bar and connect again after the retry time. A long
-        // outage tells the page once, on its first error, not once for each reconnect; the status bar says it, so it
-        // is not reported.
-        const first = lost === undefined
-        const why = thrown instanceof Error ? thrown.message : String(thrown)
-        lost = `Live updates lost the event stream (${why}); connecting again.`
-        if (first) changed()
+        if (closed() || (thrown instanceof DOMException && thrown.name === 'AbortError' && !late.signal.aborted)) return
+        // The network dropped: connect again after the retry time. Within the grace a miss is quiet, as the server
+        // restarts; after it the status bar keeps the error. A long outage tells the page once, on its first error
+        // shown, not once for each reconnect; the status bar says it, so it is not reported.
+        outage()
+        if (grace.timer === undefined || grace.over) {
+          const first = lost === undefined
+          const why = late.signal.aborted
+            ? `no answer within ${String(liveReadTimeoutMs / 1000)} s`
+            : thrown instanceof Error
+              ? thrown.message
+              : String(thrown)
+          lost = `Live updates lost the event stream (${why}); connecting again.`
+          if (first) changed()
+        }
       }
       await pause()
     }
@@ -914,6 +963,7 @@ export function watchLiveWorkspaces({
     // The owner left the page: a layout miss on his next visit is reported again.
     if (watching === 0) layoutOutage = false
     clearTimeout(timer)
+    endOutage()
     abort.abort()
   }
 }

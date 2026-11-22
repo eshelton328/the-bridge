@@ -60,7 +60,17 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   each outage of a shown chat, with the miss kind, the HTTP status and
   the chat ID only, never transcript text, a tool target or the server's
   message (`liveTranscript.test.ts`, `app/WorkspacesLiveTranscript.test.tsx`;
-  the server fake is `lib/fakeTranscriptServer.ts`). iOS closes the
+  the server fake is `lib/fakeTranscriptServer.ts`). A server restart
+  ends every stream with no `error` event (review R43): a stream that
+  read the transcript and then ends or drops so starts a 10 s grace
+  (`reconnectGraceMs`), and until it passes that end and each miss of
+  the reconnects (no answer, a 5xx) show no line and report nothing. The
+  first read that answers ends it and shows the entries written
+  meanwhile; a miss after the window shows the line and reports once.
+  An `error` event (a failed watch, review R35), an event the page
+  cannot read, a refusal and a read that missed show at once. The event
+  stream's "Live updates lost" in the desktop status bar waits for the
+  same window (`app/WorkspacesQuietReconnect.test.tsx`). iOS closes the
   stream of a page in the background: a stream that ends or drops, or a
   stream or read with no answer, while the page is hidden, after it hid
   during the connection or within 5 s after it showed again, gives no

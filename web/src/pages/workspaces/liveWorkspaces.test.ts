@@ -745,6 +745,51 @@ describe('watchLiveWorkspaces', () => {
     }
   })
 
+  it('shows the lost line after the grace when the reconnect after a drop gets no answer at all (R43)', async () => {
+    vi.useFakeTimers()
+    try {
+      const queries = client()
+      let calls = 0
+      const open = vi.fn((signal: AbortSignal) => {
+        calls += 1
+        // The first stream opens, then drops; each next one gets no answer until the page aborts it.
+        if (calls === 1)
+          return Promise.resolve(
+            new Response(
+              new ReadableStream<Uint8Array>({
+                start: (c) => {
+                  c.enqueue(new TextEncoder().encode('event: open\ndata: {}\n\n'))
+                  setTimeout(() => {
+                    c.error(new TypeError('network error'))
+                  }, 10)
+                },
+              }),
+              { status: 200 },
+            ),
+          )
+        return new Promise<Response>((_, reject) => {
+          signal.addEventListener('abort', () => {
+            reject(new DOMException('The operation was aborted.', 'AbortError'))
+          })
+        })
+      })
+      const stop = watchLiveWorkspaces({ onChange: () => undefined, client: queries, settleMs: 10, open })
+      await vi.advanceTimersByTimeAsync(5000 + liveReadTimeoutMs + 1000)
+      expect(getReports()).toEqual([])
+      const state = await withLiveWorkspaces(workspacesHome, {
+        fetchLayout: noLayout,
+        client: queries,
+        fetch: () => Promise.resolve(ok(response)),
+      })
+      expect(state.data.status.alert).toBe(
+        'Live updates lost the event stream (no answer within 8 s); connecting again.',
+      )
+      stop()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it('reports nothing when the page closes the stream', async () => {
     const server = fakeServer()
     const stop = watchLiveWorkspaces({ onChange: () => undefined, client: client(), settleMs: 10, open: server.open })
