@@ -11,13 +11,12 @@
 import { FilterChips, Stack } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
-import { AddLinkDialog } from '../blocks/AddLinkDialog.tsx'
 import { CardGroup } from '../blocks/CardGroup.tsx'
 import { LibraryHeader } from '../blocks/LibraryHeader.tsx'
 import { LibraryTools } from '../blocks/LibraryTools.tsx'
 import { type ArtifactsData, type ArtifactsUi, ArtifactChip } from '../types.ts'
 import { LibraryRows } from './LibraryRows.tsx'
-import { addLinkEntry, shownSource } from './addLinkView.ts'
+import { LibraryAddLink } from './LibraryAddLink.tsx'
 import { libraryView } from './libraryView.ts'
 
 // D1 402:15370: the library starts 32 in from the rail and 24 down; its rows are 12 apart.
@@ -75,29 +74,12 @@ export function ArtifactsLibrary({
         }
       />
       {data.addLinkForm === undefined ? null : (
-        <AddLinkDialog
+        <LibraryAddLink
           form={data.addLinkForm}
-          open={ui.addLinkOpen ?? false}
-          source={shownSource(data.addLinkForm, ui)}
-          entry={
-            onSubmitAddLink === undefined ? undefined : addLinkEntry(data.addLinkForm, ui, onUiChange, addLinkError)
-          }
-          onOpenChange={(addLinkOpen) => {
-            onUiChange?.({ addLinkOpen })
-          }}
-          onSourceChange={(addLinkSource) => {
-            onUiChange?.({ addLinkSource })
-          }}
-          project={ui.addLinkProject}
-          onProjectChange={(addLinkProject) => {
-            onUiChange?.({ addLinkProject })
-          }}
-          onSubmit={
-            onSubmitAddLink ??
-            (() => {
-              onUiChange?.({ addLinkOpen: false })
-            })
-          }
+          ui={ui}
+          onUiChange={onUiChange}
+          onSubmit={onSubmitAddLink}
+          error={addLinkError}
         />
       )}
       <div className={chips} data-figma="filter · chips">

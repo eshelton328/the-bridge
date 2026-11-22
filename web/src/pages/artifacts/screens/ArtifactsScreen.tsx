@@ -200,6 +200,8 @@ export function ArtifactsScreen({
                     selectedId={open.artifact.id}
                     onUiChange={onUiChange}
                     onOpenArtifact={openCard}
+                    onSubmitAddLink={submitAddLink}
+                    addLinkError={addLinkError}
                   />
                 )
               }

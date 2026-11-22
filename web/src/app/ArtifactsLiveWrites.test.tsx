@@ -98,6 +98,25 @@ describe('the live library writes', () => {
       expect(server.artifacts().map((a) => a.title)).toEqual(['Sample plan', 'Sample notes'])
     })
 
+    if (!phone(device))
+      it('adds a link from the list beside an open artifact (D2), on the desktop', async () => {
+        const server = withServer()
+        await tapArtifacts(device)
+        await openCard(device, 'Sample plan')
+        await userEvent.click(
+          page.getByRole('region', { name: 'Artifacts list' }).getByRole('button', { name: 'Add a link' }),
+        )
+        const form = page.getByRole('dialog')
+        await userEvent.fill(form.getByRole('textbox', { name: 'Link' }), newLink)
+        await userEvent.fill(form.getByRole('textbox', { name: 'Title' }), 'Sample added')
+        await userEvent.click(form.getByRole('button', { name: 'Add artifact', exact: true }))
+        await expect.element(form).not.toBeInTheDocument()
+        await expect
+          .poll(() => server.artifacts().map((a) => a.title))
+          .toEqual(['Sample added', 'Sample plan', 'Sample notes'])
+        await expect.poll(() => document.querySelector('[data-figma="artifact row · Sample added"]')).not.toBeNull()
+      })
+
     it(`keeps the form with a line when the server refuses the link, on ${device.name}`, async () => {
       const server = withServer()
       await tapArtifacts(device)
