@@ -10,12 +10,16 @@ import { type AppEnv, errorJson } from '../errors.ts'
 /** The most bytes in the body of a POST route that takes a small JSON object: each one but the prompt's. */
 export const maxSmallJsonBytes = 4096
 
-/** Answers 400 to a body over `maxSmallJsonBytes` before it reads the rest, so a large body cannot fill memory. */
-export const smallJson = bodyLimit({
-  maxSize: maxSmallJsonBytes,
-  onError: (c: Context<AppEnv>) =>
-    errorJson(c, 'invalid-input', { message: 'the request is too large', issues: ['the body is too large'] }),
-})
+/** Answers 400 to a body over `maxSize` bytes before it reads the rest, so a large body cannot fill memory. */
+export const jsonLimit = (maxSize: number) =>
+  bodyLimit({
+    maxSize,
+    onError: (c: Context<AppEnv>) =>
+      errorJson(c, 'invalid-input', { message: 'the request is too large', issues: ['the body is too large'] }),
+  })
+
+/** Answers 400 to a body over `maxSmallJsonBytes`. */
+export const smallJson = jsonLimit(maxSmallJsonBytes)
 
 /** Answers 400 to a body that is not JSON, or malformed JSON, before hono's validator could throw it as a 500. */
 export const jsonOnly = async (c: Context<AppEnv>, next: Next) => {

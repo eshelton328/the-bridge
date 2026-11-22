@@ -124,4 +124,14 @@ describe('/api/artifacts', () => {
     expect(text).not.toContain('marker-5150')
     expect(text).not.toContain('Example')
   })
+
+  it('adds a link of the most characters the contract takes, also when each one takes 3 bytes', async () => {
+    const { send } = await setup()
+    const base = 'https://example.com/'
+    const long = base + '中'.repeat(2048 - base.length)
+    const added = await send('POST', '', { link: long, source: 'codex', title: '題'.repeat(200) })
+    expect(added.status).toBe(201)
+    const tooLong = await send('POST', '', { link: `${long}x`, source: 'codex', title: 'x' })
+    expect(tooLong.status).toBe(400)
+  })
 })

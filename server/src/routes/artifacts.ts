@@ -12,13 +12,19 @@ import {
   ArtifactsSeenRequest,
   type ChatId,
   FileArtifactRequest,
+  maxArtifactLink,
+  maxArtifactTitle,
 } from '@bridge/contract'
 import { type Context, Hono } from 'hono'
 import { type AppEnv, errorJson, internalMessage } from '../errors.ts'
 import type { Logger } from '../logger.ts'
 import type { AgentPort } from '../services/agentPort.ts'
 import type { Artifacts } from '../services/artifacts.ts'
-import { jsonBody, jsonOnly, smallJson } from './jsonBody.ts'
+import { jsonBody, jsonLimit, jsonOnly, smallJson } from './jsonBody.ts'
+
+// An add holds a link and a title that the contract counts in characters. As JSON, one character can take up to 6
+// bytes (a JSON unicode escape), so the limit is the bytes of both at their most, and 4 KiB for the other fields.
+const addJson = jsonLimit((maxArtifactLink + maxArtifactTitle) * 6 + 4096)
 
 export function artifactsRoutes(artifacts: Artifacts, agents: AgentPort, log: Logger) {
   const failed = (c: Context<AppEnv>, error: { readonly code: string }) => {
@@ -49,7 +55,7 @@ export function artifactsRoutes(artifacts: Artifacts, agents: AgentPort, log: Lo
       if (!listed.ok) return failed(c, listed.error)
       return c.json(ArtifactsResponse.parse(listed.value), 200)
     })
-    .post('/', smallJson, jsonOnly, jsonBody(AddArtifactRequest), async (c) => {
+    .post('/', addJson, jsonOnly, jsonBody(AddArtifactRequest), async (c) => {
       const added = await artifacts.add(c.req.valid('json'))
       if (!added.ok) return failed(c, added.error)
       const body = AddArtifactResponse.parse({ artifact: added.value.artifact })
