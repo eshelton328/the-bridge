@@ -85,6 +85,16 @@ describe('liveLibrary', () => {
     ])
   })
 
+  it('drops the scheme of a link whatever its case', () => {
+    const shouting = { ...site, link: 'HTTPS://sample-site.example.com/page' }
+    const data = liveLibrary(
+      artifactsHome.data,
+      ArtifactsResponse.parse({ checkedAt: minutesAgo(2), lastSeenAt: null, partial: false, artifacts: [shouting] }),
+      { seenAt: null, now },
+    )
+    expect(data.groups.flatMap((g) => g.cards).map((c) => c.link)).toEqual(['sample-site.example.com/page'])
+  })
+
   it('lists only the live projects in File in a project, the Filter menu and Add a link', () => {
     const data = liveLibrary(artifactsHome.data, response(null), { seenAt: null, now })
     expect(data.fileMenu?.projects).toEqual([{ value: 'sample-project', count: '1 artifact' }])

@@ -50,7 +50,8 @@ function liveCard(artifact: Artifact, seenAt: string | null, now: Date): Artifac
     project: artifact.project ?? noProject,
     age: ageOf(artifact.publishedAt, now),
     isNew: isNew(artifact, seenAt),
-    link: artifact.link.replace(/^https:\/\//, ''),
+    // The scheme is case-blind (`HTTPS://` is a valid link); the page puts `https://` back when it opens the link.
+    link: artifact.link.replace(/^https:\/\//i, ''),
   }
 }
 
