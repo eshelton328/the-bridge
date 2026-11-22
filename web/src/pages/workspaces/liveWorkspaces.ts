@@ -69,6 +69,7 @@ import {
 import type {
   LiveTab,
   PaneAction,
+  PhoneText,
   SidebarChat,
   WorkbenchPane,
   Workspace,
@@ -248,6 +249,14 @@ const chatCommands: PaneAction[] = [
  */
 const liveNewChat: PaneAction = { value: 'newChat', label: 'New chat' }
 
+/** The phone's labels without Edit and Done (review R41): the live page cannot save an edit. */
+function withoutEdit(text: PhoneText): PhoneText {
+  const live = { ...text }
+  delete live.edit
+  delete live.done
+  return live
+}
+
 /** The status bar's summary of `workspace` and its layout's panes, as `shownView` counts them; none with no workspace. */
 const summaryOf = (workspace: Workspace | undefined, layouts: Record<string, { panes: string[] }>) => {
   if (workspace === undefined) return undefined
@@ -319,9 +328,7 @@ function liveOnly(
         : {
             // Review R41: no Edit, as no route renames, orders or closes a workspace or a chat.
             phone: {
-              title: data.phone.title,
-              add: data.phone.add,
-              ...(data.phone.back === undefined ? {} : { back: data.phone.back }),
+              ...withoutEdit(data.phone),
               chatMenu: [liveNewChat],
               addMenu: { newChat: 'New chat' },
               workspaceMenu: [{ value: 'newChat', label: 'New chat in {workspace}' }],
