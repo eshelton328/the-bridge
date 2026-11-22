@@ -1,16 +1,25 @@
 // /api/workspaces: the workspaces sub-app. GET / returns the workspaces and
 // their chats; GET /:workspace/layout the tabs and panes of one workspace,
 // with its ID URL-encoded; POST /:workspace/layout/ratio sets the ratio of
-// one split of one of its tabs (slice W2, 204). Each answer is checked against the contract;
+// one split of one of its tabs (slice W2, 204); POST /:workspace/rename
+// gives it a new label and POST /order puts the workspaces in the owner's
+// order (R41, 204; 409 workspace-not-ready orderStale). Each answer is checked against the contract;
 // when herdr fails, an ErrorBody: 503 herdr-unavailable or 502
 // herdr-bad-reply (d-115).
-import { SetSplitRatioRequest, WorkspaceId, WorkspaceLayout, WorkspacesResponse } from '@bridge/contract'
+import {
+  RenameWorkspaceRequest,
+  SetSplitRatioRequest,
+  WorkspaceId,
+  WorkspaceLayout,
+  WorkspaceOrderRequest,
+  WorkspacesResponse,
+} from '@bridge/contract'
 import type { Context } from 'hono'
 import { Hono } from 'hono'
 import { type AppEnv, agentErrorJson, errorJson } from '../errors.ts'
 import type { Logger } from '../logger.ts'
 import type { AgentPort, AgentPortError } from '../services/agentPort.ts'
-import { listWorkspaces, readLayout } from '../services/workspaces.ts'
+import { listWorkspaces, orderWorkspaces, readLayout, renameWorkspace } from '../services/workspaces.ts'
 import { setSplitRatio } from '../services/layoutWrites.ts'
 import { jsonBody, jsonOnly, smallJson } from './jsonBody.ts'
 
@@ -38,6 +47,25 @@ export function workspacesRoutes(agents: AgentPort, log: Logger) {
       if (read.value === null)
         return errorJson(c, 'not-found', { path: c.req.path, message: 'no workspace has this ID' })
       return c.json(WorkspaceLayout.parse(read.value), 200)
+    })
+    .post('/order', smallJson, jsonOnly, jsonBody(WorkspaceOrderRequest), async (c) => {
+      const done = await orderWorkspaces(agents, c.req.valid('json').workspaces)
+      if (!done.ok) return failed(c, done.error)
+      if (done.value === 'done') return c.body(null, 204)
+      // A workspace that closed during the write reads as a stale order too: the page reads the list again.
+      return errorJson(c, 'workspace-not-ready', {
+        state: 'orderStale',
+        message: 'the order does not name each workspace of the list once',
+      })
+    })
+    .post('/:workspace/rename', smallJson, jsonOnly, jsonBody(RenameWorkspaceRequest), async (c) => {
+      const id = WorkspaceId.safeParse(c.req.param('workspace'))
+      if (!id.success) return invalid(c)
+      const done = await renameWorkspace(agents, id.data, c.req.valid('json').name)
+      if (!done.ok) return failed(c, done.error)
+      if (done.value === 'notFound')
+        return errorJson(c, 'not-found', { path: c.req.path, message: 'no workspace has this ID' })
+      return c.body(null, 204)
     })
     .post('/:workspace/layout/ratio', smallJson, jsonOnly, jsonBody(SetSplitRatioRequest), async (c) => {
       const id = WorkspaceId.safeParse(c.req.param('workspace'))

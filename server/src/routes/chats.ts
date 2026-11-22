@@ -33,6 +33,7 @@ import {
   ChatSkillsResponse,
   ClearInputRequest,
   CloseChatRequest,
+  RenameChatRequest,
   ErrorBody,
   FocusChatRequest,
   MoveChatRequest,
@@ -58,6 +59,7 @@ import {
 } from '@bridge/contract'
 import type { Context } from 'hono'
 import { Hono } from 'hono'
+import { renameChat } from '../services/workspaces.ts'
 import { bodyLimit } from 'hono/body-limit'
 import { createMiddleware } from 'hono/factory'
 import { type SSEStreamingApi, streamSSE } from 'hono/streaming'
@@ -422,6 +424,13 @@ export function chatsRoutes(
       if (!split.ok) return failed(c, split.error)
       if (split.value === 'notFound') return notFound(c)
       return c.json(SplitChatResponse.parse(split.value), 201)
+    })
+    .post('/:chat/rename', smallJson, jsonOnly, jsonBody(RenameChatRequest), async (c) => {
+      const id = chatOf(c)
+      if (!id.success) return invalid(c)
+      const done = await renameChat(agents, id.data, c.req.valid('json').name)
+      if (!done.ok) return failed(c, done.error)
+      return done.value === 'notFound' ? notFound(c) : c.body(null, 204)
     })
     .post('/:chat/close', smallJson, jsonOnly, jsonBody(CloseChatRequest), async (c) => {
       const id = chatOf(c)

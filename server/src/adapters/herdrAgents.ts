@@ -133,7 +133,7 @@ const MoveReply = z.object({
   move_result: z.object({ changed: z.boolean(), reason: z.string().nullable().optional() }),
 })
 /** herdr's error codes that say the pane, the tab or the split of a layout write is not there. */
-const notFoundCodes = new Set(['pane_not_found', 'tab_not_found', 'split_not_found'])
+const notFoundCodes = new Set(['pane_not_found', 'tab_not_found', 'split_not_found', 'workspace_not_found'])
 
 /** herdr's tree in the app's terms, each pane by its chat ID; undefined when a pane has no listed chat. */
 function nodeOf(node: HerdrNode, ids: ReadonlyMap<string, ChatId>): LayoutNode | undefined {
@@ -467,6 +467,7 @@ export function createHerdrAgents({
     agent: HerdrAgent,
     kind: 'claude' | 'codex',
     shared: ReadonlySet<string>,
+    label?: string | null,
   ): Promise<ChatSummary> => {
     const path = kind === 'claude' ? sessionPath(agent) : undefined
     const windows = path === undefined || claudeSettings === undefined ? {} : await readCompactWindows(claudeSettings)
@@ -483,7 +484,8 @@ export function createHerdrAgents({
     return {
       id: chatIdOf(agent, shared),
       kind,
-      title: [agent.terminal_title_stripped, agent.name].find((t): t is string => Boolean(t)) ?? kind,
+      // The owner's name for the pane comes first (a rename from the app), then the agent's own title.
+      title: [label, agent.terminal_title_stripped, agent.name].find((t): t is string => Boolean(t)) ?? kind,
       model: model ?? session.model,
       modelId: model ?? modelAliasOf(session.model),
       effort: kept ?? session.effort,
@@ -540,7 +542,10 @@ export function createHerdrAgents({
         const agent = agentOf.get(pane.pane_id)
         return {
           pane: pane.pane_id,
-          chat: agent !== undefined && isChat(agent) ? await chatOf(agent, agent.agent, shared) : await shellOf(pane),
+          chat:
+            agent !== undefined && isChat(agent)
+              ? await chatOf(agent, agent.agent, shared, pane.label)
+              : await shellOf(pane),
         }
       }),
     )
@@ -1302,6 +1307,34 @@ export function createHerdrAgents({
       const { reason } = written.value.move_result
       if (reason === 'same_tab') return ok('sameTab')
       return ok(reason === 'zoomed_tab' ? 'zoomedTab' : 'done')
+    },
+    async renameWorkspace(workspace, label) {
+      const { machine: on, local } = splitId(workspace)
+      if (on !== machine) return ok('notFound')
+      // herdr sends workspace.renamed, so each list stream reads the list again.
+      return doneOf(await paneWrite('workspace.rename', AnyReply, { workspace_id: local, label }))
+    },
+    async renameChat(chat, label) {
+      const found = await paneOf(chat)
+      if (!found.ok) return found
+      if (found.value === null) return ok('notFound')
+      const written = doneOf(await paneWrite('pane.rename', AnyReply, { pane_id: found.value.pane, label }))
+      // herdr sends no list event for a pane's label.
+      if (written.ok && written.value === 'done') for (const tellList of listTellers) tellList()
+      return written
+    },
+    async orderWorkspaces(order) {
+      const listed = await call('workspace.list', WorkspaceList)
+      if (!listed.ok) return listed
+      const locals = order.filter((id) => splitId(id).machine === machine).map((id) => splitId(id).local)
+      const current = listed.value.workspaces.map((w) => w.workspace_id)
+      const same = locals.length === order.length && locals.length === current.length
+      if (!same || new Set(locals).size !== locals.length || !current.every((id) => locals.includes(id)))
+        return ok('stale')
+      // One move of the whole list, before no workspace: herdr then shows them in this order and sends a list event.
+      return doneOf(
+        await paneWrite('workspace.move_block', AnyReply, { workspace_ids: locals, before_workspace_id: null }),
+      )
     },
     async splitChat(chat, direction) {
       const found = await paneOf(chat)

@@ -90,7 +90,8 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
   `toolkit.changed` on `/api/events` says to read the list again.
 - The Workspaces edit actions (R41, R42, `workspaceEdits.ts`): a
   rename takes a trimmed `Label` of 1 to `maxLabel` (64) characters
-  with no control character; an agent's chat also needs a `ChatName`.
+  with no control character; a chat's rename sets its pane's label, never
+  the agent's herdr name.
   A workspace close asks for the workspace's ID and the number of chats
   the page listed. An order names each workspace or chat once. A move to
   another workspace answers with the pane's old and new ID, and the page

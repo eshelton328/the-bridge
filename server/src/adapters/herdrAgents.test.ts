@@ -147,6 +147,10 @@ const results = {
   'pane.zoom': { type: 'pane_zoom', zoom: { changed: true, zoomed: true, reason: null } },
   'pane.swap': { type: 'pane_swap', swap: { changed: true, reason: null } },
   'pane.close': { type: 'ok' },
+  // The edit writes; the adapter reads no field of their replies.
+  'workspace.rename': { type: 'ok' },
+  'pane.rename': { type: 'ok' },
+  'workspace.move_block': { type: 'ok' },
   'pane.move': { type: 'pane_move', move_result: { changed: true, reason: null } },
   // A shell that runs a job: the foreground group is not the shell's.
   'pane.process_info': {
@@ -628,6 +632,41 @@ describe('herdr agents: input to a chat', () => {
       expect(await port().moveChat(chat, second, 'row')).toEqual({ ok: true, value: 'zoomedTab' })
       expect(sent('pane.move').at(-1)).toMatchObject({ destination: { split: 'right' } })
       socket.set('pane.move', results['pane.move'])
+    })
+
+    it("renames a workspace and a chat's pane, and lists the pane's label as the chat's title", async () => {
+      expect(await port().renameWorkspace(WorkspaceId.parse(`${machine}/w17`), 'theme explorations')).toEqual({
+        ok: true,
+        value: 'done',
+      })
+      expect(sent('workspace.rename').at(-1)).toEqual({ workspace_id: 'w17', label: 'theme explorations' })
+      expect(await port().renameChat(chat, 'Drift check')).toEqual({ ok: true, value: 'done' })
+      expect(sent('pane.rename').at(-1)).toEqual({ pane_id: 'w17:p1', label: 'Drift check' })
+      socket.failOnce('workspace.rename', 'workspace_not_found', 'workspace w99 not found')
+      expect(await port().renameWorkspace(WorkspaceId.parse(`${machine}/w99`), 'x')).toEqual({
+        ok: true,
+        value: 'notFound',
+      })
+      socket.set('pane.list', {
+        ...results['pane.list'],
+        panes: results['pane.list'].panes.map((p) => (p.pane_id === 'w17:p1' ? { ...p, label: 'Drift check' } : p)),
+      })
+      const read = await port().listWorkspaces()
+      expect(read.ok && read.value.flatMap((w) => w.chats).find((c) => c.id === chat)?.title).toBe('Drift check')
+    })
+
+    it('orders the workspaces in one block move, and none for an order that misses or repeats one', async () => {
+      const [w17, w18] = [WorkspaceId.parse(`${machine}/w17`), WorkspaceId.parse(`${machine}/w18`)]
+      expect(await port().orderWorkspaces([w18, w17])).toEqual({ ok: true, value: 'done' })
+      expect(sent('workspace.move_block').at(-1)).toEqual({ workspace_ids: ['w18', 'w17'], before_workspace_id: null })
+      const before = sent('workspace.move_block').length
+      expect(await port().orderWorkspaces([w18])).toEqual({ ok: true, value: 'stale' })
+      expect(await port().orderWorkspaces([w18, w18])).toEqual({ ok: true, value: 'stale' })
+      expect(await port().orderWorkspaces([w18, WorkspaceId.parse('another-machine/w17')])).toEqual({
+        ok: true,
+        value: 'stale',
+      })
+      expect(sent('workspace.move_block')).toHaveLength(before)
     })
 
     it('closes an idle chat or a shell, never one that waits or works, and says when the pane is gone', async () => {

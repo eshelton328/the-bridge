@@ -221,6 +221,24 @@ export function describeAgentPort(name: string, setup: () => Promise<ContractSet
       expect(await port.moveChat(none, otherMachine, 'row')).toEqual({ ok: true, value: 'notFound' })
     })
 
+    it('renames no workspace or chat that the machine does not have, and takes no order that misses one', async () => {
+      const { port } = await setup()
+      const none = WorkspaceId.parse(`${port.machine}/no-such-workspace`)
+      expect(await port.renameWorkspace(WorkspaceId.parse('another-machine/w1'), 'x')).toEqual({
+        ok: true,
+        value: 'notFound',
+      })
+      expect(await port.renameChat(ChatId.parse(`${port.machine}/no-such-chat`), 'x')).toEqual({
+        ok: true,
+        value: 'notFound',
+      })
+      const read = await port.listWorkspaces()
+      if (!read.ok) throw new Error(read.error.message)
+      const ids = read.value.map((w) => w.id)
+      expect(await port.orderWorkspaces(ids.slice(1))).toEqual({ ok: true, value: 'stale' })
+      expect(await port.orderWorkspaces([...ids, none])).toEqual({ ok: true, value: 'stale' })
+    })
+
     it('focuses the pane of a listed chat, and closes no chat whose agent works', async () => {
       const { port, expected, setStatus } = await setup()
       const { chat } = await chatsToUse(port, expected)

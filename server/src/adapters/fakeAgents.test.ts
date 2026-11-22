@@ -86,6 +86,33 @@ describe('fake agents', () => {
     expect(await agents.zoomChat(drift, true)).toEqual({ ok: true, value: 'singlePane' })
   })
 
+  it('renames a workspace and a chat and orders the workspaces, and tells each change', async () => {
+    const agents = createFakeAgents(machine)
+    const told: string[] = []
+    const sub = agents.subscribe(
+      (e) => told.push(e.type),
+      () => undefined,
+    )
+    const listed = async () => {
+      const read = await agents.listWorkspaces()
+      if (!read.ok) throw new Error(read.error.message)
+      return read.value
+    }
+    const [first, second] = await listed()
+    const chat = first?.chats[0]
+    if (first === undefined || second === undefined || chat === undefined) throw new Error('the fake has no chat')
+    expect(await agents.renameWorkspace(first.id, 'theme explorations')).toEqual({ ok: true, value: 'done' })
+    expect(await agents.renameChat(chat.id, 'Drift check')).toEqual({ ok: true, value: 'done' })
+    const ids = (await listed()).map((w) => w.id)
+    expect(await agents.orderWorkspaces([...ids].reverse())).toEqual({ ok: true, value: 'done' })
+    const after = await listed()
+    expect(after.map((w) => w.id)).toEqual([...ids].reverse())
+    expect(after.find((w) => w.id === first.id)?.label).toBe('theme explorations')
+    expect(after.flatMap((w) => w.chats).find((c) => c.id === chat.id)?.title).toBe('Drift check')
+    expect(told.filter((type) => type === 'workspacesChanged')).toHaveLength(3)
+    sub.close()
+  })
+
   it('starts a Claude chat beside a chat or in a workspace, ready, and refuses a name in use', async () => {
     const agents = createFakeAgents(machine)
     const before = await agents.listWorkspaces()
