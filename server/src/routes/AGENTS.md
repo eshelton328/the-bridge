@@ -12,8 +12,10 @@ Thin Hono sub-apps, one file for each area, named after the area
   terminal text (d-110).
 - The SSE stream of `/api/events` sends an `open` frame with the retry
   time, then each event with its type as the SSE event name and its
-  sequence number as the SSE id, and a comment line every 25 s so a
-  proxy keeps a quiet stream open. A failure in the stream sends one
+  sequence number as the SSE id, and a `: ping` comment line every 15 s
+  (`ssePingMs`, `sse.ts`) so a proxy keeps a quiet stream open and the
+  page can tell a server that is gone; the transcript stream sends it
+  too, and each stream clears its timer when it ends (`sse.test.ts`). A failure in the stream sends one
   `error` event with an `ErrorBody`, never the raw message, and ends it
   (`events.test.ts`, d-115).
 - `POST /api/client-errors` checks the JSON content type, then the rate
