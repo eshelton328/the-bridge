@@ -80,5 +80,13 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
   text goes only in the detail's `body`; no prompt or transcript text
   in an item (`inbox.test.ts`). `inbox.changed` on `/api/events`
   says to read the list again.
+- The Toolkit page (R21, `toolkit.ts`): an item of the brain's shared
+  toolkit or of one project's toolkit, read-only. Its `scope` is
+  `shared` (project null) or `project` (its project's folder name), and
+  its `path` is relative to its toolkit root, never a local path. A URL
+  names an item or a file by its hashed ID. Links may cross scopes. File
+  text goes only in an item's `main` or a file's body, at most
+  `maxToolkitFileText` characters (`toolkit.test.ts`).
+  `toolkit.changed` on `/api/events` says to read the list again.
 - A `ClientErrorReport` holds only its listed fields (a strict object),
   so a report carries no page text or app state (`clientErrors.test.ts`).

@@ -69,6 +69,20 @@ export const InboxId = z
   .brand<'InboxId'>()
 export type InboxId = z.infer<typeof InboxId>
 
+/** An item of the Toolkit page: 16 hex characters of a sha256 that the server makes of its scope and path. */
+export const ToolkitItemId = z
+  .string()
+  .regex(/^[0-9a-f]{16}$/)
+  .brand<'ToolkitItemId'>()
+export type ToolkitItemId = z.infer<typeof ToolkitItemId>
+
+/** A file of a Toolkit item: 16 hex characters of a sha256 that the server makes of its item and path. */
+export const ToolkitFileId = z
+  .string()
+  .regex(/^[0-9a-f]{16}$/)
+  .brand<'ToolkitFileId'>()
+export type ToolkitFileId = z.infer<typeof ToolkitFileId>
+
 /** The machine ID and the local part of a workspace, chat, pane or tab ID. */
 export function splitId(id: WorkspaceId | ChatId | PaneId | TabId): { machine: MachineId; local: string } {
   const at = id.indexOf('/')

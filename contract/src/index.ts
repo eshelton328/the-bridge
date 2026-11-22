@@ -9,6 +9,8 @@ export {
   SendId,
   splitId,
   TabId,
+  ToolkitFileId,
+  ToolkitItemId,
   UploadId,
   WorkspaceId,
 } from './ids.ts'
@@ -42,6 +44,17 @@ export {
   maxInboxTitle,
   SnoozeInboxRequest,
 } from './inbox.ts'
+export {
+  maxToolkitFileText,
+  ToolkitFileNode,
+  ToolkitFileText,
+  ToolkitItem,
+  ToolkitItemResponse,
+  ToolkitKind,
+  ToolkitLink,
+  ToolkitResponse,
+  ToolkitScope,
+} from './toolkit.ts'
 export { ErrorBody, ErrorKind, errorStatus } from './errors.ts'
 export { EventEnvelope, EventSource, eventOf } from './events.ts'
 export {
@@ -108,6 +121,7 @@ export {
   InboxChangedEvent,
   LayoutChangedEvent,
   LiveEvent,
+  ToolkitChangedEvent,
   WorkspacesChangedEvent,
 } from './liveEvents.ts'
 export {
