@@ -71,9 +71,14 @@ function shown(stored: StoredArtifact): Artifact {
   const { id, link, source, title, description, project, chat, publishedAt, foundAt, foundBy } = stored
   return { id, link, source, title, description, project, chat, publishedAt, foundAt, foundBy }
 }
-const newestFirst = (a: Artifact, b: Artifact) => b.publishedAt.localeCompare(a.publishedAt)
+// ISO times compare as dates: as text, "10:00:01.100Z" comes before "10:00:01Z".
+const timeOf = (iso: string) => Date.parse(iso)
+const newestFirst = (a: Artifact, b: Artifact) => timeOf(b.publishedAt) - timeOf(a.publishedAt)
 
 export function createArtifacts({ store, finder, machine, now = () => new Date() }: Deps): Artifacts {
+  // What the finder gave and no save has kept yet: the finder gives each artifact once, so a store fault must not
+  // lose it.
+  const held: FoundArtifact[] = []
   // One change at a time, so two lists or an add and a list cannot lose one.
   let queue: Promise<unknown> = Promise.resolve()
   const serial = <T>(work: () => Promise<T>): Promise<T> => {
@@ -120,7 +125,7 @@ export function createArtifacts({ store, finder, machine, now = () => new Date()
           foundBy: 'session',
           removed: false,
         })
-      } else if (f.publishedAt > known.publishedAt) {
+      } else if (timeOf(f.publishedAt) > timeOf(known.publishedAt)) {
         changed = true
         byId.set(id, { ...known, title, description: description || known.description, publishedAt: f.publishedAt })
       }
@@ -137,9 +142,11 @@ export function createArtifacts({ store, finder, machine, now = () => new Date()
   return {
     async list() {
       const scan = await finder.scan()
+      held.push(...scan.found)
+      const batch = [...held]
       const checkedAt = now().toISOString()
-      return update((library) => {
-        const next = merged(library, scan.found)
+      const listed = await update((library) => {
+        const next = merged(library, batch)
         const kept = next ?? library
         return {
           next,
@@ -154,6 +161,8 @@ export function createArtifacts({ store, finder, machine, now = () => new Date()
           },
         }
       })
+      if (listed.ok) held.splice(0, batch.length)
+      return listed
     },
     get: (id) =>
       update((library) => {

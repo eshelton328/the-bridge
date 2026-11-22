@@ -26,9 +26,14 @@ function setup() {
   let library: ArtifactLibrary = { lastSeenAt: null, artifacts: [] }
   let saves = 0
   let failing = false
+  let saveFails = 0
   const store: ArtifactStore = {
     load: () => Promise.resolve(failing ? err({ reason: 'failed', code: 'EACCES' }) : ok(library)),
     save: (next) => {
+      if (saveFails > 0) {
+        saveFails -= 1
+        return Promise.resolve(err({ reason: 'failed', code: 'ENOSPC' }))
+      }
       saves += 1
       library = next
       return Promise.resolve(ok(undefined))
@@ -46,6 +51,9 @@ function setup() {
     saves: () => saves,
     fail: () => {
       failing = true
+    },
+    failSave: () => {
+      saveFails = 1
     },
   }
 }
@@ -122,5 +130,27 @@ describe('the artifacts library', () => {
     expect([cut?.title.length, cut?.description.length]).toEqual([200, 500])
     expect(value(b)?.added).toBe(true)
     expect(value(await t.artifacts.list())?.artifacts).toHaveLength(2)
+  })
+
+  it('keeps what the finder gave until a save keeps it', async () => {
+    const t = setup()
+    t.finds([found(1)])
+    t.failSave()
+    expect(await t.artifacts.list()).toEqual({ ok: false, error: { reason: 'failed', code: 'ENOSPC' } })
+    expect(value(await t.artifacts.list())?.artifacts.map((a) => a.link)).toEqual([link(1)])
+  })
+
+  it('compares times as dates, so a publish in the same second with ms is the newer one', async () => {
+    const t = setup()
+    t.finds(
+      [found(1, { publishedAt: '2026-11-20T10:00:01Z' }), found(2, { publishedAt: '2026-11-20T10:00:01.050Z' })],
+      [found(1, { title: 'Report 1 again', publishedAt: '2026-11-20T10:00:01.100Z' })],
+    )
+    await t.artifacts.list()
+    const list = value(await t.artifacts.list())
+    expect(list?.artifacts.map((a) => [a.link, a.title])).toEqual([
+      [link(1), 'Report 1 again'],
+      [link(2), 'Report 2'],
+    ])
   })
 })
