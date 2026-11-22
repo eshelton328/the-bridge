@@ -97,12 +97,45 @@ describe('the brain requests', () => {
     expect(listed.ok && listed.value.map((r) => [r.project, r.kind])).toEqual([[null, 'action']])
   })
 
+  it('skips only a record it cannot decode', async () => {
+    const brain = await brainWith({
+      'projects/p/inbox/a.md': open,
+      'projects/p/inbox/bad.md': open.replace('- global/human-input', '- "\\U7fffffff"'),
+    })
+    const listed = await brain.list()
+    expect(listed.ok && listed.value.length).toBe(1)
+  })
+
   it('reads an empty list when the brain has no projects folder', async () => {
     expect(await createBrainRequests(join(dir, 'none')).list()).toEqual(ok([]))
   })
 })
 
 describe('splitRecord', () => {
+  it('folds a wrapped value and a block scalar, and decodes YAML escapes', () => {
+    const text = [
+      '---',
+      "title: 'A long title that the writer,",
+      "  wrapped onto a second line'",
+      'plain: one',
+      '  two',
+      'block: >-',
+      '  folded',
+      '  text',
+      'tags:',
+      '- "\\x41\\u00e9\\n"',
+      '- plain tag',
+      '---',
+      'body',
+    ].join('\n')
+    expect(splitRecord(text)?.front).toEqual({
+      title: 'A long title that the writer, wrapped onto a second line',
+      plain: 'one two',
+      block: 'folded text',
+      tags: ['Aé\n', 'plain tag'],
+    })
+  })
+
   it('reads quoted values and gives null for text with no front matter', () => {
     expect(splitRecord('---\ntitle: \'It\'\'s here\'\nnote: "a \\"b\\""\n---\nbody')).toEqual({
       front: { title: "It's here", note: 'a "b"' },

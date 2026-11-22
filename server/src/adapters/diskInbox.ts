@@ -22,52 +22,72 @@ const codeOf = (thrown: unknown) =>
 type Fault = { readonly reason: 'failed'; readonly code: string }
 type Front = Record<string, string | string[] | null>
 
+const simpleEscapes: Readonly<Record<string, string>> = {
+  n: '\n',
+  t: '\t',
+  r: '\r',
+  '0': '\0',
+  '"': '"',
+  '\\': '\\',
+  '/': '/',
+  ' ': ' ',
+}
+
+/** A YAML double-quoted string's text: its escapes, with x, u and U escapes as hex code points; an unknown one stays as written. */
+const decodeDouble = (inner: string) =>
+  inner.replace(/\\(x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4}|U[0-9a-fA-F]{8}|.)/g, (whole: string, code: string) =>
+    code.length > 1 ? String.fromCodePoint(Number.parseInt(code.slice(1), 16)) : (simpleEscapes[code] ?? whole),
+  )
+
 const unquote = (value: string): string | null => {
   if (value === 'null' || value === '~' || value === '') return null
   if (value.startsWith("'") && value.endsWith("'") && value.length >= 2) return value.slice(1, -1).replaceAll("''", "'")
-  if (value.startsWith('"') && value.endsWith('"') && value.length >= 2) {
-    const parsed: unknown = JSON.parse(value)
-    return typeof parsed === 'string' ? parsed : null
-  }
+  if (value.startsWith('"') && value.endsWith('"') && value.length >= 2) return decodeDouble(value.slice(1, -1))
   return value
 }
 
+type Raw = { text: string; join: ' ' | '\n'; block: boolean }
+
 /**
- * The front matter and the body of a record: the top-level keys with a scalar, an inline list or a list of
- * "- " lines, as the brain's records write them. Anything else is skipped. Null when the text has none.
+ * The front matter and the body of a record: the top-level keys with a scalar, a block scalar (`>` or `|`), an
+ * inline empty list or a list of "- " lines, as the brain's records write them. An indented line goes on the value
+ * before it, folded with a space, as YAML wraps a long title. Anything else is skipped. Null when the text has
+ * none. It throws on a value it cannot decode; the caller skips that record.
  */
 export function splitRecord(text: string): { front: Front; body: string } | null {
   const lines = text.replaceAll('\r\n', '\n').split('\n')
   if (lines[0] !== '---') return null
   const end = lines.indexOf('---', 1)
   if (end < 0) return null
-  const front: Front = {}
-  let list: string | undefined
+  const raw: Record<string, Raw | Raw[]> = {}
+  let list: Raw[] | undefined
+  let open: Raw | undefined
   for (const line of lines.slice(1, end)) {
     const item = /^\s*- (.*)$/.exec(line)
-    const current = list === undefined ? undefined : front[list]
-    if (item?.[1] !== undefined && Array.isArray(current)) {
-      const value = unquote(item[1].trim())
-      if (value !== null) current.push(value)
+    if (item?.[1] !== undefined && list !== undefined) {
+      open = { text: item[1].trim(), join: ' ', block: false }
+      list.push(open)
+      continue
+    }
+    if (/^\s+\S/.test(line) && open !== undefined) {
+      open.text = open.text === '' ? line.trim() : `${open.text}${open.join}${line.trim()}`
       continue
     }
     const pair = /^([a-z_]+):(?: (.*))?$/.exec(line)
     list = undefined
+    open = undefined
     if (pair?.[1] === undefined) continue
     const value = (pair[2] ?? '').trim()
-    if (value === '') {
-      front[pair[1]] = []
-      list = pair[1]
-    } else if (value === '[]') front[pair[1]] = []
-    else {
-      try {
-        front[pair[1]] = unquote(value)
-      } catch {
-        // A quoted value JSON cannot read is skipped, as an unknown key is.
-        front[pair[1]] = null
-      }
-    }
+    if (value === '') raw[pair[1]] = list = []
+    else if (value === '[]') raw[pair[1]] = []
+    else if (/^[>|][-+]?$/.test(value))
+      raw[pair[1]] = open = { text: '', join: value.startsWith('|') ? '\n' : ' ', block: true }
+    else raw[pair[1]] = open = { text: value, join: ' ', block: false }
   }
+  const read = (r: Raw) => (r.block ? r.text : unquote(r.text))
+  const front: Front = {}
+  for (const [key, value] of Object.entries(raw))
+    front[key] = Array.isArray(value) ? value.flatMap((r) => read(r) ?? []) : read(value)
   return { front, body: lines.slice(end + 1).join('\n') }
 }
 
@@ -98,6 +118,15 @@ function requestOf(front: Front, id: InboxId, project: string): BrainRequest | n
   }
 }
 
+/** A record's parts, or null for one it cannot read, so one bad record hides only itself. */
+function recordOf(text: string): ReturnType<typeof splitRecord> {
+  try {
+    return splitRecord(text)
+  } catch {
+    return null
+  }
+}
+
 type Found = { readonly request: BrainRequest; readonly body: string }
 
 export function createBrainRequests(brainDir: string): BrainRequests {
@@ -121,7 +150,7 @@ export function createBrainRequests(brainDir: string): BrainRequests {
           const path = join(inbox, entry.name)
           const [real, stat] = await Promise.all([realpath(path), lstat(path)])
           if (!real.startsWith(inbox + sep) || stat.size > maxRecordBytes) continue
-          const record = splitRecord(await readFile(real, 'utf8'))
+          const record = recordOf(await readFile(real, 'utf8'))
           if (record === null) continue
           const id = InboxId.parse(
             createHash('sha256').update(`brain|${project.name}/${entry.name}`).digest('hex').slice(0, 16),
