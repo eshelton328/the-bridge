@@ -41,7 +41,9 @@ describe('live events', () => {
       // A status change adds or removes the chat's Inbox item.
       { source: 'test-mac/agents', seq: 1, type: 'inbox.changed', data: {} },
       { source: 'test-mac/agents', seq: 2, type: 'workspaces.changed', data: {} },
-      { source: 'test-mac/agents', seq: 3, type: 'layout.changed', data: { workspace: 'test-mac/omni-brain' } },
+      // A list change can remove a chat's item too (a closed or cleared chat).
+      { source: 'test-mac/agents', seq: 3, type: 'inbox.changed', data: {} },
+      { source: 'test-mac/agents', seq: 4, type: 'layout.changed', data: { workspace: 'test-mac/omni-brain' } },
     ]
     expect(a.events).toEqual(expected)
     expect(b.events).toEqual(expected)
@@ -60,7 +62,7 @@ describe('live events', () => {
     live.connect(b)
     expect(agents.subscriptions()).toBe(1)
     agents.setStatus(drift, 'idle')
-    expect(b.events.map((e) => e.type)).toEqual(['chat.status', 'inbox.changed', 'workspaces.changed'])
+    expect(b.events.map((e) => e.type)).toEqual(['chat.status', 'inbox.changed', 'workspaces.changed', 'inbox.changed'])
     expect(a.events).toEqual([])
   })
 })

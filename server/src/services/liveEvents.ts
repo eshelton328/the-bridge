@@ -55,8 +55,8 @@ export function createLiveEvents(agents: AgentPort, watchInbox?: InboxWatch): Li
   }
   const broadcast = (event: AgentEvent) => {
     send(envelope(event))
-    // A status change adds or removes the chat's Inbox item.
-    if (event.type === 'chatStatus') inboxChanged()
+    // A status change adds or removes the chat's Inbox item, and a list change too (a closed or cleared chat).
+    if (event.type === 'chatStatus' || event.type === 'workspacesChanged') inboxChanged()
   }
   const stopWatch = () => {
     unwatch?.()
