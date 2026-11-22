@@ -95,6 +95,10 @@ export function LibraryPhone({
               onSourceChange={(addLinkSource) => {
                 onUiChange?.({ addLinkSource })
               }}
+              project={ui.addLinkProject}
+              onProjectChange={(addLinkProject) => {
+                onUiChange?.({ addLinkProject })
+              }}
               onSubmit={
                 onSubmitAddLink ??
                 (() => {

@@ -117,6 +117,25 @@ describe('the live library writes', () => {
         await expect.poll(() => document.querySelector('[data-figma="artifact row · Sample added"]')).not.toBeNull()
       })
 
+    it(`adds a link in the project picked in the form, on ${device.name}`, async () => {
+      const server = withServer()
+      await tapArtifacts(device)
+      await expect.poll(() => shown(device)).toEqual(['Sample plan', 'Sample notes'])
+      const { form, add } = await fillAddLink(device, newLink, 'Sample added')
+      await userEvent.click(
+        form.getByRole('button', { name: /^Project/ }).or(form.getByRole('combobox', { name: 'Project' })),
+      )
+      await userEvent.click(
+        page
+          .getByRole('menuitemradio', { name: 'sample-project' })
+          .or(page.getByRole('option', { name: 'sample-project' })),
+      )
+      await userEvent.click(add)
+      await expect
+        .poll(() => server.calls('add').map((c) => c.body))
+        .toEqual([{ link: newLink, source: 'claude', title: 'Sample added', project: 'sample-project' }])
+    })
+
     it(`keeps the form with a line when the server refuses the link, on ${device.name}`, async () => {
       const server = withServer()
       await tapArtifacts(device)

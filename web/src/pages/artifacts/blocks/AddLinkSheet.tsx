@@ -32,9 +32,22 @@ export type AddLinkSheetProps = {
   onSubmit?: (() => void) | undefined
   /** The typed link and title (the live library); without it the fields keep what is typed. */
   entry?: AddLinkEntry | undefined
+  /** The picked project; the form's `project.value` when not set. */
+  project?: string | undefined
+  onProjectChange?: ((project: string) => void) | undefined
 }
 
-export function AddLinkSheet({ form, open, source, onOpenChange, onSourceChange, onSubmit, entry }: AddLinkSheetProps) {
+export function AddLinkSheet({
+  form,
+  open,
+  source,
+  onOpenChange,
+  onSourceChange,
+  onSubmit,
+  entry,
+  project,
+  onProjectChange,
+}: AddLinkSheetProps) {
   const linkRef = useRef<HTMLDivElement>(null)
   return (
     <BottomSheet
@@ -66,6 +79,8 @@ export function AddLinkSheet({ form, open, source, onOpenChange, onSourceChange,
           onSourceChange={onSourceChange}
           linkRef={linkRef}
           entry={entry}
+          project={project}
+          onProjectChange={onProjectChange}
         />
       </Stack>
     </BottomSheet>

@@ -141,7 +141,7 @@ export function AddLinkFields({
       {dialog ? (
         <ProjectSelect field={form.project} value={project ?? form.project.value} onValueChange={onProjectChange} />
       ) : (
-        <ProjectPicker field={form.project} />
+        <ProjectPicker field={form.project} value={project} onValueChange={onProjectChange} />
       )}
     </>
   )
