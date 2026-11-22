@@ -261,12 +261,13 @@ describe("the live list's × (R41, backend #427)", () => {
     expect(orchardShown()).toBe(1)
   })
 
-  it('draws no × on a workspace with no chats, as a close needs one', async () => {
+  it('draws × on a workspace with chats and none on one with no chats, as a close needs one', async () => {
     const fakes = withChats()
     fakes.list.putWorkspace({ id: 'test-box/w-hedge', label: 'hedge', chats: [] }, true)
     await tapWorkspaces(phone)
     await tapEdit()
     await expect.element(page.getByRole('button', { name: 'Rename hedge' })).toBeVisible()
+    await expect.element(page.getByRole('button', { name: 'Close orchard' })).toBeVisible()
     expect(page.getByRole('button', { name: 'Close hedge' }).elements()).toHaveLength(0)
   })
 })
