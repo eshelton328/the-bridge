@@ -17,8 +17,8 @@ import { routeTree } from './routeTree.gen.ts'
 // Reviews R41 and R42, with backend #423's routes: the live list's Edit renames a workspace (`POST
 // /api/workspaces/:workspace/rename`) and orders the workspaces (`POST /api/workspaces/order`, the whole list), and a
 // live chat's Rename gives its pane a label (`POST /api/chats/:chat/rename`). Each shows from the list read after
-// `workspaces.changed`, never before. Edit mode draws no control without a route: no × to close a workspace, no
-// chat handle, no Move to…. Each live test takes the owner's path: the app with no URL, then Workspaces, with the
+// `workspaces.changed`, never before. Edit mode draws no control without a route: no chat handle, no Move to….
+// × closes a workspace since backend #427 (WorkspacesLiveClose.test.tsx). Each live test takes the owner's path: the app with no URL, then Workspaces, with the
 // contract-checked fakes as the server; nothing reaches a real server.
 document.documentElement.classList.add('dark')
 document.documentElement.dataset.pandaTheme = 'viewscreen'
@@ -124,16 +124,16 @@ const line = (text: string) => page.getByText(text, { exact: true })
 
 describe("the live list's Edit (R41)", () => {
   for (const [name, size] of sizes) {
-    it(`shows Edit, and edit mode offers only a handle and Rename for each workspace on the ${name}`, async () => {
+    it(`shows Edit, and edit mode offers only a handle, Rename and × for each workspace on the ${name}`, async () => {
       withChats()
       await tapWorkspaces(size)
       await tapEdit()
       for (const w of ['orchard', 'meadow']) {
         await expect.element(page.getByRole('button', { name: `Move ${w}` })).toBeVisible()
         await expect.element(page.getByRole('button', { name: `Rename ${w}` })).toBeVisible()
-        expect(page.getByRole('button', { name: `Close ${w}` }).elements()).toHaveLength(0)
+        await expect.element(page.getByRole('button', { name: `Close ${w}` })).toBeVisible()
       }
-      // No route closes a workspace, orders or renames chats from here, or moves a chat to a workspace.
+      // No route orders or renames chats from here, or moves a chat to a workspace.
       expect(page.getByRole('button', { name: /^Move to/ }).elements()).toHaveLength(0)
       expect(page.getByRole('searchbox').elements()).toHaveLength(0)
       await userEvent.click(page.getByText('sketch the plan', { exact: true }))

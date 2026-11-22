@@ -539,6 +539,11 @@ export const CloseWorkspaceText = z.object({
   cancel: z.string(),
   close: z.string(),
   workspaces: z.record(z.string(), z.object({ title: z.string(), text: z.string() })),
+  /**
+   * The live page's dialog, for any workspace (backend #427): the title, and the text over the list of its chats for
+   * one chat and for more, "{count}" in `many` being their number. The dialog then lists each chat that ends.
+   */
+  listed: z.object({ title: z.string(), one: z.string(), many: z.string() }).optional(),
 })
 export type CloseWorkspaceText = z.infer<typeof CloseWorkspaceText>
 
@@ -1173,4 +1178,9 @@ export type WorkspaceEdits = {
   readonly renameChat: (chat: string, name: string, was: string) => void
   /** Puts the workspaces in this order, each of the list once; nothing goes when the order is the list's. */
   readonly order: (workspaces: readonly string[]) => void
+  /**
+   * Closes `workspace` and the `panes` chats the dialog listed. `again` runs when the server counts other chats
+   * (409 `panesChanged`), after the page asked for the list again, so the dialog can ask with the new list.
+   */
+  readonly close: (workspace: string, panes: number, again: () => void) => void
 }
