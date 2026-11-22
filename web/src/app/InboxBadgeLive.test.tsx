@@ -10,6 +10,7 @@ import { resetAllStores } from '../state/resetStores.ts'
 import {
   badge,
   chatItem,
+  shown,
   withInboxFeed,
   type Device,
   devices,
@@ -94,7 +95,11 @@ describe('the live Inbox badge', () => {
         const router = await openApp(device, '/')
         await expect.poll(() => router.state.location.pathname).toBe('/inbox')
         await tapTo(device, to)
-        await expect.poll(() => router.state.location.pathname).toBe(`/${to}`)
+        // The page shows once the router resolved the move: until then the Inbox page, and its badge, stay.
+        await expect
+          .poll(() => router.state.status === 'idle' && router.state.resolvedLocation?.pathname)
+          .toBe(`/${to}`)
+        await expect.poll(() => shown().length).toBe(0)
         // One question and one open request need the owner.
         await expect.poll(() => badge(device)).toBe(2)
         server.put(chatItem(4, 'Another sample question', 'question', 1))
