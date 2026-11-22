@@ -2,7 +2,7 @@ import { ChatId, MachineId, WorkspaceId } from '@bridge/contract'
 import { ok } from '@bridge/shared'
 import { describe, expect, it } from 'vitest'
 import { describeAgentPort } from './agentPortContract.ts'
-import { createFakeAgents } from './fakeAgents.ts'
+import { createFakeAgents, fakeTurnEnd } from './fakeAgents.ts'
 
 const machine = MachineId.parse('test-mac')
 let appended = 0
@@ -195,5 +195,16 @@ describe('fake agents: effort', () => {
     )
     agents.setStatus(themes, 'working')
     expect(await agents.setEffort(themes, 'high')).toEqual({ ok: true, value: 'working' })
+  })
+})
+
+describe('the fake turn end', () => {
+  it('gives each Claude chat fakeTurnEnd until setTurnEnd changes it, and a Codex chat none', async () => {
+    const port = createFakeAgents(machine)
+    const claude = ChatId.parse('test-mac/bridge-themes')
+    expect(await port.turnEnd(claude)).toEqual(ok(fakeTurnEnd))
+    port.setTurnEnd(claude, '2026-11-21T11:00:00.000Z')
+    expect(await port.turnEnd(claude)).toEqual(ok('2026-11-21T11:00:00.000Z'))
+    expect(await port.turnEnd(ChatId.parse('test-mac/drift-check'))).toEqual(ok(null))
   })
 })

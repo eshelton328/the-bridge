@@ -1389,6 +1389,14 @@ export function createHerdrAgents({
       if (path === undefined) return ok({ entries: [], earlier: false })
       return ok(await readClaudeTranscript(path, { working, cwd, home, uploads }))
     },
+    async turnEnd(chat) {
+      const located = await locate(chat)
+      if (!located.ok) return located
+      const path = located.value?.path
+      if (path === undefined) return ok(null)
+      const mtime = await mtimeOf(path)
+      return ok(mtime < 0 ? null : new Date(mtime).toISOString())
+    },
     async readSkills(chat) {
       const located = await locate(chat)
       if (!located.ok) return located
