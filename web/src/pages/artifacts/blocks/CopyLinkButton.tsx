@@ -5,7 +5,9 @@
 // the bar does not jump; icon-only (T2's Back bar) the icon and the name
 // change. A polite status region beside the button says the result to a
 // screen reader, as the button's own children cannot (they are
-// presentational). Props only; the page entry copies and clears `status`.
+// presentational); with `announce` false it has none, for a second Copy
+// link on the same screen (the bar's beside the one next to Open artifact),
+// so the result is said once. Props only; the page entry copies and clears `status`.
 import { Button, CheckIcon, CopyIcon, WarningIcon } from '@eshelton328/component-library-1701'
 import { css, cx } from '../../../../styled-system/css/index.js'
 import type { CopyLinkStatus } from '../types.ts'
@@ -26,9 +28,18 @@ export type CopyLinkButtonProps = {
   /** A square icon-only button (T2's Back bar); its name says the result. */
   iconOnly?: boolean | undefined
   className?: string | undefined
+  /** Whether its status region says the result; false for a second Copy link on the same screen. */
+  announce?: boolean | undefined
 }
 
-export function CopyLinkButton({ status, onClick, size, iconOnly = false, className }: CopyLinkButtonProps) {
+export function CopyLinkButton({
+  status,
+  onClick,
+  size,
+  iconOnly = false,
+  className,
+  announce = true,
+}: CopyLinkButtonProps) {
   const shown = status ?? 'idle'
   return (
     <>
@@ -53,9 +64,11 @@ export function CopyLinkButton({ status, onClick, size, iconOnly = false, classN
           </span>
         </Button>
       )}
-      <span role="status" className={srOnly}>
-        {status === undefined ? '' : labels[status]}
-      </span>
+      {announce ? (
+        <span role="status" className={srOnly}>
+          {status === undefined ? '' : labels[status]}
+        </span>
+      ) : null}
     </>
   )
 }

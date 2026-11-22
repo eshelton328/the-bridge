@@ -1,21 +1,16 @@
 // An artifact on its own page on a tablet (Figma "artifact page", T2
 // 405:413) or a phone (M2 406:360): the Back bar, then the status, title
-// and chips, the preview, Open artifact the full width and where it was
-// made. The tablet's bar has Discuss, Copy link and Remove, and the link
-// sits under Open artifact; the phone's bar has the ⋯ button, and Copy link
-// and Discuss sit side by side under Open artifact. The Back bar stays at
+// and chips, the preview, Open artifact and where it was made. Open
+// artifact is a link to the artifact's https address (`href`) in a new
+// tab; with no `href` it does not show, nor does the Copy link beside it.
+// The tablet's bar has Discuss, Copy link and Remove, Open artifact has
+// Copy link beside it (R40), and the link sits under them; the phone's bar
+// has the ⋯ button, Open artifact takes the width, and Copy link and
+// Discuss sit side by side under it. The Back bar stays at
 // the top and only the page under it scrolls (d-107), in the shared
 // DetailFrame, as the Inbox's task page. Back returns to the library (T1,
 // M1). Props only.
-import {
-  BubbleIcon,
-  Button,
-  ExternalLinkIcon,
-  Grid,
-  Inline,
-  Stack,
-  Thumbnail,
-} from '@eshelton328/component-library-1701'
+import { BubbleIcon, Button, Grid, Inline, Stack, Thumbnail } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import { DetailFrame } from '../../../blocks/DetailFrame.tsx'
 import { BlockBoundary } from '../../../errors/BlockBoundary.tsx'
@@ -25,15 +20,20 @@ import { ArtifactTopBar } from '../blocks/ArtifactTopBar.tsx'
 import { CopyLinkButton } from '../blocks/CopyLinkButton.tsx'
 import { LinkMark } from '../blocks/LinkMark.tsx'
 import { MadeIn } from '../blocks/MadeIn.tsx'
+import { OpenArtifactLink } from '../blocks/OpenArtifactLink.tsx'
 import type { ArtifactDetail, CopyLinkStatus } from '../types.ts'
 
 // 405:467, 406:407: Open artifact takes the page's width; so do Copy link and Discuss their halves (406:411).
 const wide = css({ w: '[100%]' })
+// T2: Open artifact takes what Copy link beside it leaves.
+const grow = css({ flex: '1' })
 const link = css({ textStyle: 'mono', color: 'fg.muted', textDecoration: 'none', minW: '[0]' })
 const linkRow = css({ color: 'fg.muted', alignSelf: 'flex-start' })
 
 export type ArtifactPageProps = {
   artifact: ArtifactDetail
+  /** The https address the artifact's link opens (`artifactHref`); without it no Open artifact or Copy link beside it. */
+  href?: string | undefined
   /** `tablet` (T2) or `phone` (M2). */
   layout: 'tablet' | 'phone'
   /** The status pill, such as "New"; none without it. */
@@ -43,8 +43,7 @@ export type ArtifactPageProps = {
   onBack?: (() => void) | undefined
   /** Discuss was pressed: the discussion opens as its own page (T4); without it Discuss does nothing. */
   onDiscuss?: (() => void) | undefined
-  onOpenArtifact?: (() => void) | undefined
-  /** Copy link was pressed, in the tablet's bar or under the phone's Open artifact; without it Copy link does nothing. */
+  /** Copy link was pressed, in the tablet's bar, beside its Open artifact or under the phone's; without it Copy link does nothing. */
   onCopyLink?: (() => void) | undefined
   /** What the last Copy link did, which its control shows ("Copied" or "Copy failed"). */
   copyLinkStatus?: CopyLinkStatus | undefined
@@ -58,12 +57,12 @@ export type ArtifactPageProps = {
 
 export function ArtifactPage({
   artifact,
+  href,
   layout,
   badge,
   backLabel,
   onBack,
   onDiscuss,
-  onOpenArtifact,
   onCopyLink,
   copyLinkStatus,
   onMore,
@@ -108,32 +107,50 @@ export function ArtifactPage({
             />
           </BlockBoundary>
         </div>
-        <span data-figma="button · Open artifact">
-          <Button variant="primary" size="xl" className={wide} onClick={onOpenArtifact}>
-            Open artifact
-            <ExternalLinkIcon />
-          </Button>
-        </span>
         {phone ? (
-          // 406:411: two 40 px buttons, 8 apart. No control height is 40 (LIBRARY_GAPS.md: Phone secondary action
-          // height); 36 and 44 tie, and the tie takes the larger, the 44 px `xl` (d-072).
-          <Grid columns="2" gap="8" data-figma="secondary actions">
+          <Stack gap="16" data-figma="open actions">
+            {href === undefined ? null : (
+              <span data-figma="button · Open artifact">
+                <OpenArtifactLink href={href} size="xl" className={wide} />
+              </span>
+            )}
+            {/* 406:411: two 40 px buttons, 8 apart. No control height is 40 (LIBRARY_GAPS.md: Phone secondary action
+                height); 36 and 44 tie, and the tie takes the larger, the 44 px `xl` (d-072). */}
+            <Grid columns="2" gap="8" data-figma="secondary actions">
+              {href === undefined ? null : (
+                <span data-figma="button · Copy link">
+                  <CopyLinkButton size="xl" className={wide} status={copyLinkStatus} onClick={onCopyLink} />
+                </span>
+              )}
+              <span data-figma="button · Discuss">
+                <Button size="xl" className={wide} onClick={onDiscuss}>
+                  <BubbleIcon />
+                  Discuss
+                </Button>
+              </span>
+            </Grid>
+          </Stack>
+        ) : href === undefined ? null : (
+          // R40: Copy link beside Open artifact, at its height; the bar keeps its icon.
+          <Inline gap="8" align="center" data-figma="open actions">
+            <span className={grow} data-figma="button · Open artifact">
+              <OpenArtifactLink href={href} size="xl" className={wide} />
+            </span>
             <span data-figma="button · Copy link">
-              <CopyLinkButton size="xl" className={wide} status={copyLinkStatus} onClick={onCopyLink} />
+              <CopyLinkButton size="xl" status={copyLinkStatus} onClick={onCopyLink} />
             </span>
-            <span data-figma="button · Discuss">
-              <Button size="xl" className={wide} onClick={onDiscuss}>
-                <BubbleIcon />
-                Discuss
-              </Button>
-            </span>
-          </Grid>
-        ) : (
+          </Inline>
+        )}
+        {phone ? null : (
           <Inline gap="6" align="center" className={linkRow} data-figma="link">
             <LinkMark />
-            <a className={link} href={`https://${artifact.link}`} target="_blank" rel="noreferrer">
-              {artifact.link}
-            </a>
+            {href === undefined ? (
+              <span className={link}>{artifact.link}</span>
+            ) : (
+              <a className={link} href={href} target="_blank" rel="noopener noreferrer">
+                {artifact.link}
+              </a>
+            )}
           </Inline>
         )}
         {/* A card opened from the library names no chat, so it has no Made in. */}

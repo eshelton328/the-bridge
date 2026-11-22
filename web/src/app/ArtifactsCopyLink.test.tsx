@@ -15,6 +15,8 @@ import { routeTree } from './routeTree.gen.ts'
 // at every width: the bar's button beside the list (D2), the tablet's icon
 // in the Back bar (T2) and the phone's button under Open artifact (M2). The
 // clipboard is swapped for a fake, as the Inbox's and Toolkit's copy tests do.
+// The desktop and tablet also have a Copy link next to Open artifact (R40,
+// ArtifactsOpenLink.test.tsx); these tests press the bar's.
 document.documentElement.classList.add('dark')
 document.documentElement.dataset.pandaTheme = 'viewscreen'
 
@@ -40,9 +42,24 @@ function fakeClipboard(): string[] {
   return copied
 }
 
-/** The button whose accessible name is `name` now, or null. */
-function buttonNamed(name: string): Element | null {
-  return page.getByRole('button', { name, exact: true }).query()
+/** Where each layout's Copy link under test sits: the bar (D2), the Back bar (T2), under Open artifact (M2). */
+const copyPlace = {
+  desktop: '[data-figma="artifact bar"]',
+  tablet: '[data-figma="top bar"]',
+  phone: '[data-figma="open actions"]',
+} as const
+type Layout = keyof typeof copyPlace
+
+/** The Copy link control of `layout` named `name`. */
+const copyControl = (layout: Layout, name = 'Copy link') => {
+  const place = document.querySelector(copyPlace[layout])
+  if (place === null) throw new Error(`no Copy link place on the ${layout}`)
+  return page.elementLocator(place).getByRole('button', { name, exact: true })
+}
+
+/** The button of `layout`'s Copy link place whose accessible name is `name` now, or null. */
+function buttonNamed(layout: Layout, name: string): Element | null {
+  return copyControl(layout, name).query()
 }
 
 /** Whether a status region says `text`. */
@@ -61,7 +78,7 @@ function rejectingClipboard(error: Error): void {
 }
 
 /** Renders the app at /artifacts, as it opens, and opens the artifact of the card (D1, T1) or row (M1) titled `title`. */
-async function openFromLibrary(layout: 'desktop' | 'tablet' | 'phone', width: number, height: number, title: string) {
+async function openFromLibrary(layout: Layout, width: number, height: number, title: string) {
   await page.viewport(width, height)
   const router = createRouter({
     routeTree,
@@ -80,10 +97,10 @@ async function openFromLibrary(layout: 'desktop' | 'tablet' | 'phone', width: nu
 
 describe('Copy link on an open artifact', () => {
   it.each([
-    ['D2', 'artifactOpen', 1512, 982],
-    ['T2', 'artifactTablet', 756, 1158],
-    ['M2', 'artifactPhone', 390, 844],
-  ] as const)('%s copies the artifact’s link', async (_frame, state, width, height) => {
+    ['D2', 'artifactOpen', 'desktop', 1512, 982],
+    ['T2', 'artifactTablet', 'tablet', 756, 1158],
+    ['M2', 'artifactPhone', 'phone', 390, 844],
+  ] as const)('%s copies the artifact’s link', async (_frame, state, layout, width, height) => {
     const copied = fakeClipboard()
     await page.viewport(width, height)
     const router = createRouter({
@@ -92,7 +109,8 @@ describe('Copy link on an open artifact', () => {
     })
     const view = await testRender(<RouterProvider router={router} />)
     onTestFinished(view.unmount)
-    await page.getByRole('button', { name: 'Copy link' }).click()
+    await expect.poll(() => document.querySelector(copyPlace[layout])).not.toBeNull()
+    await copyControl(layout).click()
     await expect.poll(() => copied).toEqual([link])
   })
 })
@@ -129,7 +147,7 @@ describe('Copy link on an artifact opened from the library', () => {
     await userEvent.click(button)
     // The artifact opens: beside the list on the desktop, as its own page on a tablet or phone.
     await expect.poll(() => document.querySelector('[data-figma="title block"] h2')?.textContent).toBe(title)
-    await page.getByRole('button', { name: 'Copy link' }).click()
+    await copyControl(layout).click()
     await expect.poll(() => copied).toEqual([expected])
   })
 })
@@ -149,7 +167,7 @@ describe('Copy link says whether it copied', () => {
   it.each(layouts)('on a %s (%i × %i) it shows Copied, then Copy link again', async (layout, width, height) => {
     const copied = fakeClipboard()
     await openFromLibrary(layout, width, height, title)
-    const control = page.getByRole('button', { name: 'Copy link' })
+    const control = copyControl(layout)
     const button = control.element()
     const before = button.getBoundingClientRect()
     // "Copied" waits for the test's clock, not the runner's (lib/holdTimers.ts). Until the test moves that clock, no
@@ -160,7 +178,7 @@ describe('Copy link says whether it copied', () => {
     await renderedUntil(() => copied.length > 0)
     expect(copied).toEqual(['https://claude.ai/artifact/8f3c2a91-skill-evals'])
     // The same control now reads Copied.
-    await renderedUntil(() => buttonNamed('Copied') === button)
+    await renderedUntil(() => buttonNamed(layout, 'Copied') === button)
     await renderedUntil(() => statusSays('Copied'))
     // The label changes inside the button's own box, so the bar does not jump.
     const during = button.getBoundingClientRect()
@@ -170,9 +188,9 @@ describe('Copy link says whether it copied', () => {
     // It still reads Copied 1.5 s after the press, and Copy link again at 2 s.
     vi.advanceTimersByTime(1500)
     await afterRendering()
-    expect(buttonNamed('Copied')).toBe(button)
+    expect(buttonNamed(layout, 'Copied')).toBe(button)
     vi.advanceTimersByTime(500)
-    await renderedUntil(() => buttonNamed('Copy link') === button)
+    await renderedUntil(() => buttonNamed(layout, 'Copy link') === button)
     release()
   })
 
@@ -182,13 +200,13 @@ describe('Copy link says whether it copied', () => {
     const broken = new Error('the clipboard broke')
     rejectingClipboard(broken)
     await openFromLibrary('phone', 390, 844, title)
-    const control = page.getByRole('button', { name: 'Copy link' })
+    const control = copyControl('phone')
     const button = control.element()
     const before = button.getBoundingClientRect()
     // "Copy failed" waits for the test's clock, as "Copied" does above.
     const release = holdTimers()
     clickNow(button)
-    await renderedUntil(() => buttonNamed('Copy failed') === button)
+    await renderedUntil(() => buttonNamed('phone', 'Copy failed') === button)
     await renderedUntil(() => statusSays('Copy failed'))
     const during = button.getBoundingClientRect()
     expect([during.width, during.height]).toEqual([before.width, before.height])
@@ -197,9 +215,9 @@ describe('Copy link says whether it copied', () => {
     await renderedUntil(() => vi.getTimerCount() > 0)
     vi.advanceTimersByTime(1500)
     await afterRendering()
-    expect(buttonNamed('Copy failed')).toBe(button)
+    expect(buttonNamed('phone', 'Copy failed')).toBe(button)
     vi.advanceTimersByTime(500)
-    await renderedUntil(() => buttonNamed('Copy link') === button)
+    await renderedUntil(() => buttonNamed('phone', 'Copy link') === button)
     release()
   })
 })

@@ -47,8 +47,9 @@ export function ArtifactBar({
           Discuss
         </Button>
       </span>
+      {/* The Copy link beside Open artifact (ArtifactPreview) says the result to a screen reader; this one does not. */}
       <span data-figma="button · Copy link">
-        <CopyLinkButton status={copyLinkStatus} onClick={onCopyLink} />
+        <CopyLinkButton status={copyLinkStatus} onClick={onCopyLink} announce={false} />
       </span>
       <span data-figma="button · Remove">
         <Button variant="secondaryDanger" onClick={onRemove}>
