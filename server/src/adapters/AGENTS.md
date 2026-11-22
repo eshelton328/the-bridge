@@ -175,7 +175,9 @@ client of a socket or a file sits beside them.
   test herdr session, 2026-11-21). `pane.move` inside one tab does nothing
   (`same_tab`), so the adapter answers `sameTab` with no call, and a
   pane goes to another place in its own tab only by a swap.
-- A rename (R41, R42) calls `workspace.rename` or `pane.rename` (for
+- A rename (R41, R42) calls `workspace.rename` only for a workspace
+  that `workspace.list` names, as herdr also takes a workspace's number
+  as its ID, or `pane.rename` (for
   any chat, never `agent.rename`, so an agent's herdr name stays as it
   started). The list gives a pane's label as its chat's title before the
   agent's own title. An order calls `workspace.move_block` once with

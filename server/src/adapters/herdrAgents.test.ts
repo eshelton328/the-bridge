@@ -642,8 +642,16 @@ describe('herdr agents: input to a chat', () => {
       expect(sent('workspace.rename').at(-1)).toEqual({ workspace_id: 'w17', label: 'theme explorations' })
       expect(await port().renameChat(chat, 'Drift check')).toEqual({ ok: true, value: 'done' })
       expect(sent('pane.rename').at(-1)).toEqual({ pane_id: 'w17:p1', label: 'Drift check' })
-      socket.failOnce('workspace.rename', 'workspace_not_found', 'workspace w99 not found')
-      expect(await port().renameWorkspace(WorkspaceId.parse(`${machine}/w99`), 'x')).toEqual({
+      // herdr takes a workspace's number as its ID too; the adapter renames only a listed ID.
+      const renames = sent('workspace.rename').length
+      for (const id of ['w99', '1'])
+        expect(await port().renameWorkspace(WorkspaceId.parse(`${machine}/${id}`), 'x')).toEqual({
+          ok: true,
+          value: 'notFound',
+        })
+      expect(sent('workspace.rename')).toHaveLength(renames)
+      socket.failOnce('workspace.rename', 'workspace_not_found', 'workspace w17 not found')
+      expect(await port().renameWorkspace(WorkspaceId.parse(`${machine}/w17`), 'x')).toEqual({
         ok: true,
         value: 'notFound',
       })

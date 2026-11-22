@@ -1311,6 +1311,10 @@ export function createHerdrAgents({
     async renameWorkspace(workspace, label) {
       const { machine: on, local } = splitId(workspace)
       if (on !== machine) return ok('notFound')
+      // herdr also takes a workspace's number ("1") as its ID, so only a listed ID is renamed.
+      const listed = await call('workspace.list', WorkspaceList)
+      if (!listed.ok) return listed
+      if (!listed.value.workspaces.some((w) => w.workspace_id === local)) return ok('notFound')
       // herdr sends workspace.renamed, so each list stream reads the list again.
       return doneOf(await paneWrite('workspace.rename', AnyReply, { workspace_id: local, label }))
     },
