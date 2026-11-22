@@ -64,6 +64,17 @@ from the outside world.
   store fault is its code only. After each list whose save succeeds, it
   calls the scan's `keep`, so the finder saves how far it read only for
   artifacts the library holds (`artifacts.test.ts`).
+- `inbox.ts` is the Inbox (R20, f-003) and its ports: the brain's
+  attention requests (read only), the end of a chat's turn and the
+  owner's marks. A chat that needs the owner is a question on the badge;
+  a done chat is a review off it; a chat in any other status has no
+  item. A chat item's ID hashes the chat, its status and its turn's end,
+  so a mark holds for that turn only and a mark of an ended turn is
+  dropped. A chat item with no known turn end takes no action, as a mark
+  could hide its next turn; the time the server first saw the status is
+  its time. A snooze takes an item off the badge until its time. A brain
+  item takes no action (`readOnly`). One change at a time; a fault is its
+  code only (`inbox.test.ts`).
 - No polling (d-112): a service reads a port when a request or a
   subscription asks. `liveEvents.ts` shares one port subscription among
   all clients of `/api/events`, so with no client open (and no push
