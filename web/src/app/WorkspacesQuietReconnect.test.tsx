@@ -246,6 +246,31 @@ describe('a server restart, the list and a silent stream (review R43b)', () => {
     expect(getReports()).toEqual([])
   })
 
+  it('keeps the chat for a list read that misses within the grace after 6 min with no change', async () => {
+    const server = withServer()
+    await openPlan(server, [390, 844])
+    const release = holdTimers()
+    // The query client drops a query no one observes after 5 min (gcTime), on a timer it starts once a read ends: a
+    // list change reads on the held clock. The server pings each stream meanwhile.
+    server.workspaces.listChanged()
+    await pass(1000)
+    for (let at = 0; at < 24; at += 1) {
+      await pass(15_000, 5000)
+      server.chats.ping(plan)
+      server.workspaces.pingEvents()
+    }
+    server.workspaces.listChanged()
+    server.restart()
+    await pass(9000)
+    expect(shows(notice)).toBe(false)
+    expect(shows(/^Here is a first sketch\.$/)).toBe(true)
+    server.up()
+    await pass(1500)
+    release()
+    await expect.element(page.getByText('Here is a first sketch.')).toBeVisible()
+    expect(getReports()).toEqual([])
+  })
+
   it('shows the notice once the list read still misses after the grace', async () => {
     const server = withServer()
     await openPlan(server, [390, 844])
