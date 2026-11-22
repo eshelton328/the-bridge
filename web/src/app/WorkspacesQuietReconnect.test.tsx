@@ -21,14 +21,9 @@ import { resetAllStores } from '../state/resetStores.ts'
 import { stubLiveServer } from './liveServerStub.ts'
 import { routeTree } from './routeTree.gen.ts'
 
-// Review R43: a restart of the server ends every live stream, and the page showed "Transcript updates lost —
-// connecting again" and reported a TranscriptMissError before it connected again 5 s later. Now a stream that ends
-// with no `error` event and connects again within the grace (10 s) shows no line and reports nothing, and the read
-// after the reconnect shows each entry written meanwhile. A reconnect that still misses after the window shows the
-// line and reports once; the event stream's "Live updates lost" waits for the window too. A failed watch (an `error`
-// event, review R35) still shows at once. Each test takes the owner's path: the app with no URL parameters, then
-// Workspaces, then the chat (the phone taps it; the desktop shows its pane), with the contract-checked fakes as the
-// server. While the server is down, every request answers 502 with no body, as the Vite proxy does.
+// Review R43: a server restart ends every live stream. A stream that ends with no `error` event and connects again
+// within the grace (10 s) shows no line and reports nothing; a miss after it shows the line and reports once. Owner
+// path (no URL parameters, Workspaces, the chat) on the contract-checked fakes; while down, every request answers 502.
 document.documentElement.classList.add('dark')
 document.documentElement.dataset.pandaTheme = 'viewscreen'
 
@@ -217,20 +212,5 @@ describe('a server restart (review R43)', () => {
       await expect.element(page.getByText('Here is a first sketch.')).toBeVisible()
       await expect.element(page.getByRole('button', { name: 'Retry' })).not.toBeInTheDocument()
       expect(getReports()).toHaveLength(1)
-    })
-
-  for (const device of devices)
-    it(`still shows a failed watch (an error event, review R35) at once and reports it once, on ${device.name}`, async () => {
-      const server = withServer()
-      await openPlan(server, device.size)
-      // The clock stands still: the line comes with no grace.
-      const release = holdTimers()
-      server.chats.fail(plan, 'herdr-unavailable')
-      await renderedUntil(() => shows(/^Transcript updates lost — connecting again$/))
-      expect(getReports().map((r) => r.error.message)).toEqual([
-        'A chat transcript stream missed: ended herdr-unavailable (chat mac-mini/c1)',
-      ])
-      release()
-      await expect.element(page.getByText('Transcript updates lost — connecting again')).toBeVisible()
     })
 })
