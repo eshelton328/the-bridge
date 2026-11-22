@@ -48,7 +48,9 @@
 // `zoomTab` zooms a tab as herdr would from the terminal.
 //
 // R43: `endEvents` ends each open event stream with no event, as a restart
-// of the server does.
+// of the server does. R43b: `pingEvents` writes the server's ping comment
+// to each open event stream (backend #424), and `hangEvents` forgets each
+// open stream with no end, as a killed server behind the Vite proxy leaves it.
 //
 // W3 (backend #378 to #381): `POST /api/chats` takes the contract's
 // `StartChatRequest`. It lists a new Claude chat (`<machine>/new<n>`, or its
@@ -740,6 +742,14 @@ export function fakeWorkspacesServer(
     /** Ends each open event stream with no event, as a restart of the server does (review R43). */
     endEvents: () => {
       for (const s of streams.splice(0)) s.close()
+    },
+    /** Writes the server's ping comment to each open event stream (backend #424). */
+    pingEvents: () => {
+      for (const s of streams) s.enqueue(encoder.encode(': ping\n\n'))
+    },
+    /** Forgets each open event stream with no end, as a killed server behind the Vite proxy leaves it (R43b). */
+    hangEvents: () => {
+      streams.splice(0)
     },
     /** Sets the status of `chat`, as a `workspaces.changed` read again shows it. */
     setStatus: (chat: string, status: ChatSummary['status']) => {

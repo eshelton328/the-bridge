@@ -100,7 +100,14 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   An `error` event (a failed watch, review R35), an event the page
   cannot read, a refusal and a read that missed show at once. The event
   stream's "Live updates lost" in the desktop status bar waits for the
-  same window (`app/WorkspacesQuietReconnect.test.tsx`). iOS closes the
+  same window (`app/WorkspacesQuietReconnect.test.tsx`). A list read with
+  no answer (no status, a timeout, a 5xx with no error body) after the
+  page showed a list keeps that list and its cached layouts, with no
+  notice, for the same window; a miss after it shows the notice, and a
+  4xx or an error body shows it at once (review R43b). A stream that
+  gives no byte for 45 s, pings too, is lost: `lib/eventFrames.ts` closes
+  it and the page connects again as after a drop (a killed server behind
+  the Vite proxy never ends it). iOS closes the
   stream of a page in the background: a stream that ends or drops, or a
   stream or read with no answer, while the page is hidden, after it hid
   during the connection or within 5 s after it showed again, gives no
