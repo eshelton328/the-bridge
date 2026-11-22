@@ -90,6 +90,7 @@ async function answerOf(res: Response): Promise<StartAnswer> {
     case 'upload-conflict':
     case 'storage-full':
     case 'inbox-read-only':
+    case 'workspace-not-ready':
       // The page sends only a body the contract takes, and a start takes no file: the server's refusal is a bug.
       return unexpected(error.kind, res.status)
   }

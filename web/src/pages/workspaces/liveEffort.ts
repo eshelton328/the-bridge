@@ -76,6 +76,7 @@ async function missOf(res: Response): Promise<EffortAnswer> {
     case 'upload-conflict':
     case 'storage-full':
     case 'inbox-read-only':
+    case 'workspace-not-ready':
       return failed(error.kind, res.status)
   }
 }

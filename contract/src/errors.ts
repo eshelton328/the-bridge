@@ -33,7 +33,8 @@ export const ErrorKind = z.discriminatedUnion('kind', [
    * show the asked effort after the effort keys (`effortNotConfirmed`; look at the chat), or, for a model restart,
    * the chat's command line has a token the server does not know (`launchArgsUnknown`) or skips a permission
    * (`skipsPermissions`), the chat runs in another folder than its pane (`folderChanged`), the chat already has
-   * that model (`sameModel`), or a restart of the chat is in progress (`restarting`, for any input to it).
+   * that model (`sameModel`), or a restart of the chat is in progress (`restarting`, for any input to it), or a
+   * move goes to the chat's own workspace (`sameWorkspace`), or a fork has no session to copy (`noSession`).
    */
   z.object({
     kind: z.literal('chat-not-ready'),
@@ -61,7 +62,20 @@ export const ErrorKind = z.discriminatedUnion('kind', [
       'folderChanged',
       'sameModel',
       'restarting',
+      'sameWorkspace',
+      'noSession',
     ]),
+    ...common,
+  }),
+  /**
+   * The workspace cannot take the request now (409): a chat in it works (`working`) or waits for the owner
+   * (`needsYou`), the close's pane count is not the server's (`panesChanged`; read the list again), it holds the
+   * server's own processes or the coordinator's chat (`holdsServer`), herdr groups it with worktree workspaces
+   * (`group`), or an order does not name the current list (`orderStale`; read the list again).
+   */
+  z.object({
+    kind: z.literal('workspace-not-ready'),
+    state: z.enum(['working', 'needsYou', 'panesChanged', 'holdsServer', 'group', 'orderStale']),
     ...common,
   }),
   /** The file is larger than the server takes (413). */
@@ -95,6 +109,7 @@ export const errorStatus = {
   'herdr-bad-reply': 502,
   'herdr-unavailable': 503,
   'chat-not-ready': 409,
+  'workspace-not-ready': 409,
   'too-large': 413,
   'unsupported-media': 415,
   'upload-conflict': 409,
