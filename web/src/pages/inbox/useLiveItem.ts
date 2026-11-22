@@ -7,7 +7,7 @@
 // tools. The read starts again when another item opens or the list loads
 // again, and ends when the item closes or the page leaves; the last read
 // shows until the next one answers.
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { markItem, readItem } from './liveInbox.ts'
 import type { InboxData, InboxPutAway, LiveOpen } from './types.ts'
 
@@ -48,11 +48,16 @@ export function useLiveItem(
     }
     // `live` is new on each list load, so an `inbox.changed` (a record edited in the brain) reads the open item again.
   }, [readId, live])
+  // The item open now, for a mark that answers after the owner opened another one.
+  const openNowRef = useRef(openId)
+  useEffect(() => {
+    openNowRef.current = openId
+  }, [openId])
   const act: InboxPutAway = (id, to) => {
     setMissed(undefined)
     void markItem(id, to, data.snoozeMenu).then((sent) => {
       if (sent.ok) {
-        close()
+        if (openNowRef.current === id) close()
         void reload()
       } else setMissed({ id, line: sent.error })
     })

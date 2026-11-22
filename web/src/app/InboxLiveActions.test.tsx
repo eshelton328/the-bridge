@@ -191,6 +191,23 @@ describe('a live Inbox item', () => {
       await expect.element(record()).not.toBeInTheDocument()
     })
 
+    it(`keeps another item open when a mark answers after it opened, on ${device.name}`, async () => {
+      const server = withServer(undefined, { details })
+      let answer: (response: Response) => void = () => undefined
+      server.answerNext('dismiss', () => new Promise<Response>((resolve) => (answer = resolve)))
+      await openInbox(device)
+      await openRow('Sample question from a chat')
+      await expect.element(page.getByText('sample chat one')).toBeVisible()
+      await userEvent.click(page.getByRole('button', { name: 'Dismiss', exact: true }))
+      await expect.poll(() => server.calls('dismiss')).toHaveLength(1)
+      if (device.name === 'the phone') await userEvent.click(page.getByRole('button', { name: 'Back to Inbox' }))
+      await openRow('Sample request in the brain')
+      await expect.element(record()).toBeVisible()
+      answer(new Response(null, { status: 204 }))
+      await quiet()
+      await expect.element(record()).toBeVisible()
+    })
+
     it(`shows one line when the detail read fails, on ${device.name}`, async () => {
       const server = withServer(undefined, { details })
       server.answerNext('detail', () => inboxError('internal', 500))
