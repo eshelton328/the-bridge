@@ -498,7 +498,8 @@ export type InboxUi = z.infer<typeof InboxUi>
 /** Takes an item out of the list: snoozed until a time, or finished (marked done or dismissed). */
 export type InboxPutAway = (
   id: InboxItemId,
-  to: { until: string } | { result: InboxUi['finished'][number]['result'] },
+  // `value` is the Snooze menu's choice, when the time came from it: two choices can show the same time.
+  to: { until: string; value?: string | undefined } | { result: InboxUi['finished'][number]['result'] },
 ) => void
 
 /** The schema of one Inbox state, for the state checks. */
@@ -533,4 +534,19 @@ export function draftProps(
       drafts.onChange(field, value)
     },
   }
+}
+
+/**
+ * The live item open by its row (liveInbox.ts, `GET /api/inbox/:item`): while it reads, `read` is `reading`; once
+ * read, a chat item has its chat (null when Workspaces no longer lists it) and a brain item its record's Markdown;
+ * a read that missed has `missed`. `canAct` is false for a brain item, which hides Snooze, Mark done and Dismiss.
+ * `line` is one short line: why the read or the last snooze, done or dismiss missed.
+ */
+export type LiveOpen = {
+  read: 'reading' | 'read' | 'missed'
+  source: 'chat' | 'brain'
+  canAct: boolean
+  chat?: { title: string; model: string | null } | null | undefined
+  body?: string | undefined
+  line: string | null
 }

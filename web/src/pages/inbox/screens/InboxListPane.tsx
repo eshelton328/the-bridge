@@ -203,8 +203,9 @@ export function InboxListPane({
           leave()
           selectItem(id)
         }
+  // The live Inbox opens a row at any width: its item's detail fills the desktop's detail pane.
   const onOpenRow =
-    desktop || openRow === undefined
+    (desktop && data.live === undefined) || openRow === undefined
       ? undefined
       : (id: InboxGroupView['rows'][number]['id']) => {
           leave()
@@ -437,8 +438,8 @@ export function InboxListPane({
         onOpenChange={(open) => {
           if (!open) onUiChange?.({ actionsFor: null })
         }}
-        onPick={(until) => {
-          onPutAway?.(acted.id, until === null ? { result: 'done' } : { until })
+        onPick={(until, value) => {
+          onPutAway?.(acted.id, until === null ? { result: 'done' } : { until, value })
         }}
         onDismiss={() => {
           onPutAway?.(acted.id, { result: 'dismissed' })

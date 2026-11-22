@@ -29,15 +29,15 @@ export type RowActionsSheetProps = {
   menu: InboxSnoozeMenu
   open: boolean
   onOpenChange?: ((open: boolean) => void) | undefined
-  /** A snooze time, or `null` for Mark done. */
-  onPick?: ((until: string | null) => void) | undefined
+  /** A snooze time and the menu choice it came from (`value`), or `null` for Mark done. */
+  onPick?: ((until: string | null, value?: string) => void) | undefined
   onDismiss?: (() => void) | undefined
 }
 
 export function RowActionsSheet({ row, kindLabel, menu, open, onOpenChange, onPick, onDismiss }: RowActionsSheetProps) {
   const pick = (value: string) => {
     const until = menu.times.find((t) => t.value === value)?.time
-    if (until !== undefined) onPick?.(until)
+    if (until !== undefined) onPick?.(until, value)
     else if (value === 'done') onPick?.(null)
     else if (value === 'dismiss') onDismiss?.()
     else onOpenChange?.(false)
