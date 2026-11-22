@@ -470,6 +470,11 @@ export const InboxUi = z.object({
   filterChecks: z.array(z.string()),
   /** The checked boxes that apply to the list. A section narrows it only when some, not all, of its boxes are checked. */
   filters: z.array(z.string()),
+  /**
+   * Every box the Filter menu had when `filters` were last set. The live Inbox's menu changes with each read; a section
+   * whose boxes were all checked then takes the boxes that came since (listView's `withNewBoxes`).
+   */
+  filterSeen: z.array(z.string()).optional(),
   /** Items the owner snoozed from the Snooze menu, each with the time it returns, such as "11:40". */
   snoozed: z.array(z.object({ id: InboxItemId, until: z.string() })),
   /**

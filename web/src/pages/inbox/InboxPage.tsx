@@ -20,6 +20,7 @@ import {
 } from './inboxStore.ts'
 import { inboxSources } from './loadInboxState.ts'
 import { InboxScreen } from './screens/InboxScreen.tsx'
+import { withNewBoxes } from './screens/listView.ts'
 import { usePushSwitch } from '../../state/pushStore.ts'
 
 const reportCopy = (error: unknown) => {
@@ -81,6 +82,11 @@ export function InboxPage() {
     promptOpen: promptOpen ?? state.ui.promptOpen,
     removeOpen: removeOpen ?? state.ui.removeOpen,
   }
+  // The live menu changes with each read: a section that did not narrow the list when the owner set the filters
+  // takes the boxes that came since, so a new kind or project is not hidden by checks made before it came.
+  const seen = ui.filterSeen
+  ui.filters = withNewBoxes(state.data.filterMenu, ui.filters, seen)
+  ui.filterChecks = withNewBoxes(state.data.filterMenu, ui.filterChecks, seen)
   return (
     <InboxScreen
       push={push}

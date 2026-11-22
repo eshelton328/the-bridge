@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { page } from 'vitest/browser'
+import { page, userEvent } from 'vitest/browser'
 import { clearReports, getReports } from '../errors/reporter.ts'
 import { inboxError } from '../lib/fakeInboxServer.ts'
 import { answerLateServerReads } from '../lib/lateServerReads.ts'
@@ -51,6 +51,19 @@ function setHidden(hidden: boolean) {
 
 const sampleTask = 'Write the tickets for increment one'
 
+/** The open Filter menu: a popover on the desktop, a sheet on the phone. */
+const filterMenu = (device: (typeof devices)[number]) =>
+  page.getByRole('dialog', { name: device.name === 'the phone' ? 'Filter' : 'Filter the inbox' })
+
+/** Opens the Filter menu and closes it with Escape once it has the focus, which applies its boxes. */
+async function openAndCloseFilter(device: (typeof devices)[number], meanwhile?: () => Promise<void>) {
+  await page.getByRole('button', { name: 'Filter', exact: true }).click()
+  await expect.poll(() => filterMenu(device).query()?.contains(document.activeElement) ?? false).toBe(true)
+  await meanwhile?.()
+  await userEvent.keyboard('{Escape}')
+  await expect.element(filterMenu(device)).not.toBeInTheDocument()
+}
+
 describe('the live Inbox list', () => {
   for (const device of devices) {
     it(`lists the server's items, newest first, with no sample one, on ${device.name}`, async () => {
@@ -91,6 +104,17 @@ describe('the live Inbox list', () => {
       await expect.poll(() => badge(device)).toBe(1)
       await quiet()
       expect(server.calls('list').length - before).toBe(1)
+    })
+
+    it(`keeps showing a kind that comes after the Filter menu closed with nothing unchecked, on ${device.name}`, async () => {
+      const server = withServer([review])
+      await openInbox(device)
+      await expect.poll(shown).toEqual(['Sample chat turn to review'])
+      await openAndCloseFilter(device)
+      server.put(question)
+      server.emit('inbox.changed')
+      await expect.poll(shown).toEqual(['Sample question from a chat', 'Sample chat turn to review'])
+      await expect.element(page.getByRole('button', { name: 'Filter', exact: true })).toBeVisible()
     })
 
     it(`reads no list on a timer, on ${device.name}`, async () => {

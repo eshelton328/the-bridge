@@ -236,7 +236,7 @@ export function InboxListPane({
   const sortFirst = data.sortMenu.options[0]
   const sorted = data.sortMenu.options.find((o) => o.value === ui.sort)
   const setFilters = (filters: string[]) => {
-    onUiChange?.({ filters, filterChecks: filters })
+    onUiChange?.({ filters, filterChecks: filters, filterSeen: allChecks(data.filterMenu) })
   }
   const list = (
     <section
@@ -289,7 +289,11 @@ export function InboxListPane({
         filterCount={applied.length}
         onFilterOpenChange={(filterOpen) => {
           // The menu opens on the filters that apply, and its boxes apply when it closes.
-          onUiChange?.(filterOpen ? { filterOpen, filterChecks: ui.filters } : { filterOpen, filters: ui.filterChecks })
+          onUiChange?.(
+            filterOpen
+              ? { filterOpen, filterChecks: ui.filters }
+              : { filterOpen, filters: ui.filterChecks, filterSeen: allChecks(data.filterMenu) },
+          )
         }}
         onFilterChecksChange={(filterChecks) => {
           onUiChange?.({ filterChecks })
