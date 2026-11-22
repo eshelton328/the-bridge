@@ -177,23 +177,29 @@ describe('the brain inbox watch', () => {
     return check()
   }
 
-  it('tells a write in an inbox folder and in a new project inbox, and nothing after close', async () => {
+  it('tells once when ready, then a write in an inbox, a new inbox and a new project, and nothing after close', async () => {
     const brain = join(dir, 'brain')
     await mkdir(join(brain, 'projects', 'p', 'inbox'), { recursive: true })
+    await mkdir(join(brain, 'projects', 'r'), { recursive: true })
     let told = 0
     const close = watchBrainInbox(brain)(() => (told += 1))
-    // Give fs.watch its start before the first write.
-    await new Promise((resolve) => setTimeout(resolve, 100))
-    await writeFile(join(brain, 'projects', 'p', 'inbox', 'a.md'), open)
-    expect(await until(() => told > 0)).toBe(true)
+    expect(await until(() => told === 1)).toBe(true)
+    const wrote = async (path: string) => {
+      await new Promise((resolve) => setTimeout(resolve, 300))
+      const before = told
+      await writeFile(join(brain, 'projects', path), open)
+      return until(() => told > before)
+    }
+    expect(await wrote('p/inbox/a.md')).toBe(true)
+    // An inbox made in a project that was there before the watch.
+    await mkdir(join(brain, 'projects', 'r', 'inbox'))
+    expect(await wrote('r/inbox/b.md')).toBe(true)
+    // A new project with its inbox.
     await mkdir(join(brain, 'projects', 'q', 'inbox'), { recursive: true })
-    await new Promise((resolve) => setTimeout(resolve, 300))
-    const before = told
-    await writeFile(join(brain, 'projects', 'q', 'inbox', 'b.md'), open)
-    expect(await until(() => told > before)).toBe(true)
+    expect(await wrote('q/inbox/c.md')).toBe(true)
     close()
     const after = told
-    await writeFile(join(brain, 'projects', 'p', 'inbox', 'c.md'), open)
+    await writeFile(join(brain, 'projects', 'p', 'inbox', 'd.md'), open)
     await new Promise((resolve) => setTimeout(resolve, 300))
     expect(told).toBe(after)
   })
