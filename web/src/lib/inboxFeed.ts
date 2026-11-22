@@ -7,7 +7,7 @@
 // Without the provider (a route test that renders only the router) a page
 // shows its own data's number and the Inbox page watches the stream itself,
 // as before the feed.
-import { createContext, use, useEffect, useRef } from 'react'
+import { createContext, use, useCallback, useEffect, useRef } from 'react'
 
 export type InboxFeed = {
   /** The server's `counts.needsYou`; undefined until a read answers. */
@@ -19,7 +19,14 @@ export type InboxFeed = {
   readonly follow: (onChange: () => void) => () => void
   /** The `counts.needsYou` of the list the Inbox page loaded. */
   readonly publish: (count: number) => void
+  /**
+   * A page whose own stream of `GET /api/events` gives the feed its events, so the app holds one stream: the feed
+   * closes its own until `release`. The host calls `changed` on each `inbox.changed` and each time its stream opens.
+   */
+  readonly host: () => InboxHost
 }
+
+export type InboxHost = { readonly changed: () => void; readonly release: () => void }
 
 export const InboxFeedContext = createContext<InboxFeed | null>(null)
 
@@ -66,4 +73,26 @@ export function useInboxChanges(live: boolean, onChange: () => void, count: numb
   useEffect(() => {
     if (live) publish?.(count)
   }, [publish, live, count])
+}
+
+/**
+ * A live page that reads `GET /api/events` itself (the Workspaces page) hosts the app's feed while `live`, so the app
+ * holds one stream. The result is the call for its stream's `open` and `inbox.changed` frames; with no feed it does
+ * nothing.
+ */
+export function useInboxStreamHost(live: boolean): () => void {
+  const host = use(InboxFeedContext)?.host
+  const hostedRef = useRef<InboxHost | undefined>(undefined)
+  useEffect(() => {
+    if (!import.meta.env.DEV || !live || host === undefined) return undefined
+    const hosted = host()
+    hostedRef.current = hosted
+    return () => {
+      hostedRef.current = undefined
+      hosted.release()
+    }
+  }, [host, live])
+  return useCallback(() => {
+    hostedRef.current?.changed()
+  }, [])
 }

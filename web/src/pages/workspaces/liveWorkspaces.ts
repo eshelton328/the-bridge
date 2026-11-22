@@ -777,6 +777,11 @@ export type WatchDeps = {
   readonly client?: QueryClient
   readonly open?: OpenStream
   readonly settleMs?: number
+  /**
+   * Called each time the stream opens and on each `inbox.changed`: the stream hosts the app's Inbox feed
+   * (lib/inboxFeed.ts `useInboxStreamHost`), so the app holds one stream of the route.
+   */
+  readonly onInbox?: () => void
 }
 
 /** The new cache for one chat's status, or undefined when the cache does not hold the chat. */
@@ -825,6 +830,7 @@ export function watchLiveWorkspaces({
   client = queryClient,
   open = openEvents,
   settleMs = 100,
+  onInbox,
 }: WatchDeps): () => void {
   watching += 1
   stopped = undefined
@@ -876,6 +882,7 @@ export function watchLiveWorkspaces({
   }
   const take = (frame: Frame) => {
     if (frame.retry !== undefined) retryMs = frame.retry
+    if (frame.event === 'open' || frame.event === 'inbox.changed') onInbox?.()
     if (frame.event === 'layout.changed') {
       takeLayout(frame)
       return

@@ -185,6 +185,21 @@ describe('the live Inbox badge', () => {
     await expect.poll(() => badge(device)).toBe(3)
   })
 
+  for (const device of devices) {
+    it(`holds one event stream on the live Workspaces page, whose stream gives the badge its changes, on ${device.name}`, async () => {
+      // The browser keeps few connections to a host over HTTP/1.1; the Workspaces page's streams and reads need them.
+      const server = withInbox()
+      const router = await openApp(device, '/workspaces')
+      await expect.poll(() => router.state.resolvedLocation?.pathname).toBe('/workspaces')
+      await expect.poll(() => badge(device)).toBe(2)
+      await quiet()
+      expect(server.streams()).toBe(1)
+      server.put(chatItem(4, 'Another sample question', 'question', 1))
+      await expect.poll(() => badge(device)).toBe(3)
+      expect(server.streams()).toBe(1)
+    })
+  }
+
   it('reads the list once for each inbox.changed while the Inbox page shows: the page loads it for the badge', async () => {
     const server = withInbox()
     const device = devices[0]
