@@ -2,7 +2,7 @@ import '@fontsource-variable/geist'
 import '@fontsource-variable/geist-mono'
 import '../index.css'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
 import { rootErrorOptions } from '../errors/rootErrorOptions.ts'
 import { RouteError } from '../errors/RouteError.tsx'
@@ -304,11 +304,34 @@ describe('the composer on the desktop (R31)', () => {
   })
 })
 
+// A stand-in for window.visualViewport that the test moves as iOS Safari does when its keyboard opens: the layout keeps
+// its height, and only the visual viewport shrinks (WorkspacesChatDock.test.tsx).
+class FakeViewport extends EventTarget {
+  height = document.documentElement.clientHeight
+  width = document.documentElement.clientWidth
+  offsetTop = 0
+  offsetLeft = 0
+  scale = 1
+  move(change: { height: number }) {
+    this.height = change.height
+    this.dispatchEvent(new Event('resize'))
+  }
+}
+
 describe.each([
   ['phone', phone],
   ['tablet', tablet],
-] as const)('the composer on the %s with the proxy focus of iOS (R37)', (_, size) => {
-  it('expands at the tap while the proxy holds the focus, so the focus moves into it with no change of layout', async () => {
+] as const)('the composer on the %s with the proxy focus of iOS (R37, R39)', (_, size) => {
+  it('expands as the dock rises while the proxy holds the focus, so the focus moves into it with no change of layout', async () => {
+    // The shell reads the visual viewport as it mounts; it starts as tall as the screen.
+    await setViewport(size[0], size[1])
+    const viewport = new FakeViewport()
+    const own = Object.getOwnPropertyDescriptor(window, 'visualViewport')
+    Object.defineProperty(window, 'visualViewport', { configurable: true, value: viewport })
+    onTestFinished(() => {
+      if (own) Object.defineProperty(window, 'visualViewport', own)
+      else Reflect.deleteProperty(window, 'visualViewport')
+    })
     await openChat(size)
     await expect.poll(collapsed).toBe(true)
     const stop = installKeyboardProxy({ proxyWaitMs: 600 })
@@ -318,14 +341,28 @@ describe.each([
       field.dispatchEvent(new Event('touchend', { bubbles: true, cancelable: true }))
       const proxy = document.activeElement
       expect(proxy?.hasAttribute('data-keyboard-proxy')).toBe(true)
-      await expect.poll(collapsed).toBe(false)
-      expect(document.activeElement).toBe(proxy)
-      const expanded = height()
-      const top = Math.round(composer().getBoundingClientRect().top)
+      // Not at the tap: the box keeps its row until the keyboard shows, so its growth is not a step of its own before
+      // the keyboard moves (screen review R39).
+      await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))
+      expect(collapsed()).toBe(true)
+      // The keyboard's report: the shell's dock starts to rise, and the box expands with it, before the focus moves into
+      // the box. As the focus moves (the dock has stopped by then), the box is expanded, and two frames later it has not
+      // moved or changed its height.
+      let atMove: { collapsed: boolean; height: number; top: number } | undefined
+      field.addEventListener(
+        'focus',
+        () => {
+          atMove = { collapsed: collapsed(), height: height(), top: Math.round(composer().getBoundingClientRect().top) }
+        },
+        { once: true },
+      )
+      viewport.move({ height: viewport.height - 300 })
       await expect.poll(() => document.activeElement, { timeout: 3000 }).toBe(field)
+      await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))
+      expect(atMove?.collapsed).toBe(false)
       expect(collapsed()).toBe(false)
-      expect(height()).toBe(expanded)
-      expect(Math.round(composer().getBoundingClientRect().top)).toBe(top)
+      expect(height()).toBe(atMove?.height)
+      expect(Math.round(composer().getBoundingClientRect().top)).toBe(atMove?.top)
     } finally {
       stop()
     }

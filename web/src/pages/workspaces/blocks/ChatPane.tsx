@@ -49,6 +49,7 @@
 // draft, a file, a running chat (so Stop shows) or a disabled box keeps it
 // expanded. Props only.
 import {
+  appShellDockEvent,
   Composer,
   type ComposerAttachment,
   Inline,
@@ -393,20 +394,40 @@ export function ChatPane(props: ChatPaneProps) {
   const [focused, setFocused] = useState(autoFocus)
   // The box's wrapper is a new element when the skill list comes or goes.
   const plainBox = skills === undefined
-  // On iOS a tap focuses a proxy field for the box until the keyboard is up (app/keyboardProxy.ts): the box expands at
-  // the tap as on its own focus, so the focus's later move into the box changes no layout (R37), and collapses again if
-  // the proxy goes without giving it the focus.
+  // On iOS a tap focuses a proxy field for the box until the keyboard is up (app/keyboardProxy.ts). The box expands as
+  // the shell's keyboard dock starts to rise (the library's `appShellDockEvent`), so the dock takes the growth on the
+  // keyboard's curve, and the focus's later move into the box changes no layout (R37); it collapses again if the proxy
+  // goes without giving it the focus (screen review R39: the box grew at the tap, a 28 px step of its own before the
+  // keyboard moved). A blur collapses it at once, as the dock starts to fall, which takes the change on its curve too.
+  const proxyHoldsRef = useRef(false)
   useEffect(() => {
     const area = areaRef.current
+    const root = area?.closest('.app-shell__root') ?? null
     if (area === null) return undefined
     const onProxy = (event: Event) => {
-      if (event instanceof CustomEvent) setFocused(event.detail === true)
+      if (!(event instanceof CustomEvent)) return
+      proxyHoldsRef.current = event.detail === true
+      if (event.detail !== true) setFocused(false)
+    }
+    const onDock = (event: Event) => {
+      if (!(event instanceof CustomEvent) || !proxyHoldsRef.current) return
+      const detail: unknown = event.detail
+      if (typeof detail !== 'object' || detail === null || !('inset' in detail) || typeof detail.inset !== 'number') return
+      if (detail.inset <= 0) return
+      proxyHoldsRef.current = false
+      setFocused(true)
     }
     area.addEventListener(KEYBOARD_PROXY_EVENT, onProxy)
+    root?.addEventListener(appShellDockEvent, onDock)
     return () => {
       area.removeEventListener(KEYBOARD_PROXY_EVENT, onProxy)
+      root?.removeEventListener(appShellDockEvent, onDock)
     }
   }, [plainBox])
+  const onFocusChange = useCallback((now: boolean) => {
+    proxyHoldsRef.current = false
+    setFocused(now)
+  }, [])
   const fileRef = useRef<HTMLInputElement>(null)
   // A live chat's transcript is read while the pane shows, and the stream closes when it unmounts.
   useEffect(
@@ -592,7 +613,7 @@ export function ChatPane(props: ChatPaneProps) {
       stopTextSize="xs"
       layout={layout}
       collapsed={collapsed}
-      onFocusChange={setFocused}
+      onFocusChange={onFocusChange}
       model={
         folders === undefined ? (
           chip
