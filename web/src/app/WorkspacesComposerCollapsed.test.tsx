@@ -20,8 +20,8 @@ import { routeTree } from './routeTree.gen.ts'
 // Screen review R31: in the Claude iOS app the message box is one short row while the keyboard is closed and grows
 // when it opens. On the phone and the tablet the live chat's composer now draws one row (paperclip, text, Send; about
 // 50 px against 78) while its box is not focused and holds no text and no files (library beta.96 `collapsed`): focus
-// expands it, a blur with the box empty collapses it again, and a draft or a file keeps it expanded. The desktop never
-// collapses. Each test takes the owner's path: it opens the app with no URL parameters, taps Workspaces and the live
+// expands it, a blur with the box empty collapses it again, and a draft or a file keeps it expanded. A working chat
+// draws the row too, with Stop in it (R45; WorkspacesComposerOneRow.test.tsx). The desktop never collapses. Each test takes the owner's path: it opens the app with no URL parameters, taps Workspaces and the live
 // chat (on the desktop its pane shows).
 document.documentElement.classList.add('dark')
 document.documentElement.dataset.pandaTheme = 'viewscreen'
@@ -277,11 +277,12 @@ describe.each([
     expect(height()).toBeGreaterThan(70)
   })
 
-  it('stays expanded while the chat works, so Stop shows', async () => {
+  it('draws one row while the chat works, with Stop in it (R45)', async () => {
     await openChat(size, 'working')
     await expect.element(chatOf().getByRole('button', { name: 'Stop' })).toBeVisible()
-    expect(collapsed()).toBe(false)
-    expect(height()).toBeGreaterThan(70)
+    await expect.poll(collapsed).toBe(true)
+    expect(height()).toBeGreaterThanOrEqual(46)
+    expect(height()).toBeLessThanOrEqual(54)
   })
 
   it("stays expanded while the box is disabled, as a Codex chat's is", async () => {

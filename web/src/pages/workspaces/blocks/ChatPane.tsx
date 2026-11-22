@@ -46,8 +46,8 @@
 // and the tablet's chat, review R31) the composer draws one row while the
 // box is not focused and holds no text and no files (library beta.97):
 // focus expands it, and a blur with the box empty collapses it again. A
-// draft, a file, a running chat (so Stop shows) or a disabled box keeps it
-// expanded. Props only.
+// draft, a file or a disabled box keeps it expanded; a running chat does
+// not, as the row draws Stop beside Send (review R45). Props only.
 import {
   appShellDockEvent,
   Composer,
@@ -290,8 +290,9 @@ type ChatPaneBase = {
   autoFocus?: boolean | undefined
   /**
    * The composer draws one row (paperclip, text, Send) while the box is not focused and holds no text and no files, as
-   * the phone's and the tablet's chat do with the keyboard closed (review R31). A running chat keeps it expanded, so
-   * Stop shows, and so does a disabled box. Not set, as on the desktop, it never collapses.
+   * the phone's and the tablet's chat do with the keyboard closed (review R31). A running chat collapses too, with Stop
+   * beside Send in the row (review R45); a disabled box keeps it expanded. Not set, as on the desktop, it never
+   * collapses.
    */
   collapsible?: boolean | undefined
   /**
@@ -573,14 +574,14 @@ export function ChatPane(props: ChatPaneProps) {
           onRemoveAttachment: () => undefined,
           onAttach: composer.notLive === undefined ? () => undefined : undefined,
         }
-  // R31: one row while nothing is in or on the box; the library draws it expanded anyway with chips.
+  // R31: one row while nothing is in or on the box; the library draws it expanded anyway with chips. R45: a running
+  // chat too, so a turn that starts or ends changes no height; the row draws Stop beside Send.
   const collapsed =
     collapsible &&
     !focused &&
     text === '' &&
     (files === undefined ? composer.attachments.length : (filesView?.chips.length ?? 0)) === 0 &&
-    composer.notLive === undefined &&
-    !composer.running
+    composer.notLive === undefined
   const chip =
     composer.model === undefined ? undefined : (
       <ModelChip

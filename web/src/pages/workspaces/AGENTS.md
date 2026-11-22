@@ -207,8 +207,13 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   the box is not focused and holds no text and no files: library beta.96
   `collapsed`, as the Claude iOS app does with its keyboard closed (review
   R31). Focus expands it (`onFocusChange`), and a blur with the box empty
-  collapses it again. A draft, a file, a running chat (so Stop shows) and
-  a disabled box keep it expanded; the desktop never collapses. Send keeps
+  collapses it again. A working chat collapses too: the row draws Stop
+  beside Send, as M3 does (Stop 105:2838, Send 105:2844), and a turn that
+  starts or ends changes no height, so the transcript does not move
+  (review R45, the owner: "sometimes the chat box closes all the way and
+  sometimes it stays as the expanded form"; this replaces R31's rule that
+  a running chat stays expanded). A draft, a file and a disabled box keep
+  it expanded; the desktop never collapses. Send keeps
   the focus, so the box stays expanded under the pending send. A focus
   change renders only the composer (`app/WorkspacesComposerCollapsed.test.tsx`,
   `app/WorkspacesTypingRenders.test.tsx`). The height change only resizes
