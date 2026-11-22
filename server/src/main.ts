@@ -58,9 +58,12 @@ void notifier.refresh()
 const pushChanged = () => void notifier.refresh()
 // The Artifacts library goes beside the database too (0700 and 0600); each list reads the session files only from
 // where the last list stopped (R26, R27).
+const artifactsRoot = join(dirname(dbFile), 'artifacts')
 const artifacts = createArtifacts({
-  store: createDiskArtifactStore(join(dirname(dbFile), 'artifacts')),
-  finder: createClaudeArtifactFinder(claudeProjects, config.value.chatRoot),
+  store: createDiskArtifactStore(artifactsRoot),
+  finder: createClaudeArtifactFinder(claudeProjects, config.value.chatRoot, {
+    cursorFile: join(artifactsRoot, 'scan.json'),
+  }),
   machine,
 })
 const server = serve(

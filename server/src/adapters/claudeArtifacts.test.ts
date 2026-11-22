@@ -1,4 +1,4 @@
-import { appendFileSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
+import { appendFileSync, mkdirSync, mkdtempSync, statSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
@@ -173,6 +173,38 @@ describe('the Claude artifact scanner', () => {
     writeFileSync(file, filler.repeat(Math.ceil((40 * 1024 * 1024) / filler.length)) + publish(1))
     const scan = await createArtifactScanner(root).scan()
     expect([scan.partial, scan.found.map((a) => a.link)]).toEqual([false, [link(1)]])
+  })
+
+  it('finds a call whose "Artifact" name a read cuts in two, as each line is whole before the check', async () => {
+    const { root, file } = projects()
+    const text = publish(1)
+    writeFileSync(file, text)
+    const scanner = createArtifactScanner(root, { maxBytes: text.indexOf('"Artifact"') + 4 })
+    const found = []
+    for (let i = 0; i < 10 && found.length === 0; i += 1) found.push(...(await scanner.scan()).found)
+    expect(found.map((a) => a.link)).toEqual([link(1)])
+  })
+
+  it('reads on after a restart from the cursor it saved, in a 0600 file', async () => {
+    const { root, file } = projects()
+    const cursorFile = join(mkdtempSync(join(tmpdir(), 'bridge-artifacts-')), 'artifacts', 'scan.json')
+    writeFileSync(file, publish(1))
+    expect((await createArtifactScanner(root, { cursorFile }).scan()).found.map((a) => a.link)).toEqual([link(1)])
+    expect(statSync(cursorFile).mode & 0o777).toBe(0o600)
+    const restarted = createArtifactScanner(root, { cursorFile })
+    expect((await restarted.scan()).found).toEqual([])
+    appendFileSync(file, publish(2))
+    expect((await restarted.scan()).found.map((a) => a.link)).toEqual([link(2)])
+    writeFileSync(file, publish(3))
+    expect((await createArtifactScanner(root, { cursorFile }).scan()).found.map((a) => a.link)).toEqual([link(3)])
+  })
+
+  it('reads every file when the saved cursor is not one', async () => {
+    const { root, file } = projects()
+    const cursorFile = join(mkdtempSync(join(tmpdir(), 'bridge-artifacts-')), 'scan.json')
+    writeFileSync(cursorFile, 'not json')
+    writeFileSync(file, publish(1))
+    expect((await createArtifactScanner(root, { cursorFile }).scan()).found.map((a) => a.link)).toEqual([link(1)])
   })
 
   it('gives each artifact once when two scans run at the same time', async () => {

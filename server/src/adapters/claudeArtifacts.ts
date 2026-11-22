@@ -7,8 +7,9 @@
 // and stops at a time cap and a byte cap, so a large file cannot hold up a
 // list; the next scan goes on from there. Nothing here logs.
 import type { Dirent, Stats } from 'node:fs'
-import { open, readdir, stat } from 'node:fs/promises'
-import { join, relative, sep } from 'node:path'
+import { randomUUID } from 'node:crypto'
+import { chmod, mkdir, open, readFile, readdir, rename, rm, stat, writeFile } from 'node:fs/promises'
+import { dirname, join, relative, sep } from 'node:path'
 import { ArtifactProject } from '@bridge/contract'
 import { z } from 'zod'
 import type { ArtifactFinder } from '../services/artifacts.ts'
@@ -38,6 +39,42 @@ type Limits = {
   /** The most bytes one scan reads. */
   readonly maxBytes?: number
   readonly now?: () => number
+  /**
+   * Where the scan keeps how far it read each file, so a server restart reads on from there. A 0600 file in a 0700
+   * folder; with none, a restart reads every file again.
+   */
+  readonly cursorFile?: string
+}
+
+/** How far a scan read one file: a line's start, and whether the scan is in a line over `maxLineBytes` it skips. */
+const Cursor = z.record(z.string(), z.object({ offset: z.number().int().min(0), skipLine: z.boolean() }))
+type Cursor = z.infer<typeof Cursor>
+
+/** The saved cursor, or none when the file is missing or not one; then the scan reads every file. */
+async function loadCursor(path: string): Promise<Cursor> {
+  const text = await readFile(path, 'utf8').catch(() => undefined)
+  if (text === undefined) return {}
+  let raw: unknown
+  try {
+    raw = JSON.parse(text)
+  } catch {
+    return {}
+  }
+  const parsed = Cursor.safeParse(raw)
+  return parsed.success ? parsed.data : {}
+}
+
+/** Saves the cursor in one rename. A fault only means that a restart reads more, so it is not an error. */
+async function saveCursor(path: string, cursor: Cursor): Promise<void> {
+  const temporary = `${path}.${randomUUID()}.tmp`
+  try {
+    await mkdir(dirname(path), { recursive: true, mode: 0o700 })
+    await chmod(dirname(path), 0o700)
+    await writeFile(temporary, JSON.stringify(cursor), { mode: 0o600 })
+    await rename(temporary, path)
+  } catch {
+    await rm(temporary, { force: true }).catch(() => undefined)
+  }
 }
 
 const claudeLink = /^https:\/\/claude\.ai\/(?:code\/)?artifact\/[A-Za-z0-9_-]+$/
@@ -145,9 +182,13 @@ async function sessionFiles(projects: string): Promise<{ path: string; size: num
 
 export function createArtifactScanner(
   projects: string,
-  { maxMs = 1500, maxBytes = defaultMaxBytes, now = Date.now }: Limits = {},
+  { maxMs = 1500, maxBytes = defaultMaxBytes, now = Date.now, cursorFile }: Limits = {},
 ): ArtifactScanner {
   const states = new Map<string, FileState>()
+  // The cursor of the last run, read once at the first scan. A session file only grows, so its saved offset is a
+  // line's start in it; a file that is now shorter is read from the start, as in one run.
+  let saved: Cursor | undefined
+  let savedText = ''
   // One scan at a time: two at once would read the same bytes from the same offset.
   let queue: Promise<unknown> = Promise.resolve()
   const scanOnce = async (): Promise<ArtifactScan> => {
@@ -158,7 +199,14 @@ export function createArtifactScanner(
     // Each scan reads at least one chunk, also past its time cap, so a slow disk or a long listing still moves on.
     let progressed = false
     const allowed = () => budget > 0 && (!progressed || now() - start <= maxMs)
-    for (const { path, size } of await sessionFiles(projects)) {
+    if (cursorFile !== undefined && saved === undefined) {
+      saved = await loadCursor(cursorFile)
+      for (const [path, at] of Object.entries(saved))
+        states.set(path, { offset: at.offset, carry: Buffer.alloc(0), skipLine: at.skipLine, pending: new Map() })
+      savedText = JSON.stringify(saved)
+    }
+    const files = await sessionFiles(projects)
+    for (const { path, size } of files) {
       let state = states.get(path)
       // A file that became shorter was written again: read it from the start.
       if (state === undefined || size < state.offset) {
@@ -205,6 +253,19 @@ export function createArtifactScanner(
         await handle.close()
       }
       if (partial) break
+    }
+    if (cursorFile !== undefined) {
+      // Only the files that are there now, so a removed session leaves the cursor.
+      const cursor: Cursor = {}
+      for (const { path } of files) {
+        const state = states.get(path)
+        if (state !== undefined) cursor[path] = { offset: state.offset, skipLine: state.skipLine }
+      }
+      const text = JSON.stringify(cursor)
+      if (text !== savedText) {
+        await saveCursor(cursorFile, cursor)
+        savedText = text
+      }
     }
     return { found, partial }
   }

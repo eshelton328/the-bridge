@@ -245,8 +245,12 @@ client of a socket or a file sits beside them.
   whose bytes name `Artifact` or a result it waits for, and stops at
   1.5 s or 1 GiB (the next scan goes on, and the scan says `partial`).
   The time cap is the limit that counts: a projects folder of 6.8 GiB
-  took about 213 lists at the old 32 MiB cap, and each restart reads
-  from the start. Each scan reads at
+  took about 213 lists at the old 32 MiB cap. The scan saves how far it
+  read each file (its offset, a line's start) in `scan.json`, 0600 in
+  the artifacts folder, so a server restart reads on from there; a file
+  that is now shorter is read from the start, and a missing or bad cursor
+  file means a read of every file. A call whose result a restart cuts off
+  is not found. Each scan reads at
   least one chunk, a line not finished stays for the next scan, and one
   scan runs at a time. A line over 8 MiB is skipped, and a file that
   became shorter is read again. It reads only
