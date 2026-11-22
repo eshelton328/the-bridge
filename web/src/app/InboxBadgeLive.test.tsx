@@ -200,6 +200,30 @@ describe('the live Inbox badge', () => {
     })
   }
 
+  it('keeps the count the Inbox page loaded when an older badge read answers later', async () => {
+    const server = withInbox()
+    let answerLate: (res: Response) => void = () => undefined
+    const late = new Promise<Response>((resolve) => {
+      answerLate = resolve
+    })
+    // The badge's first read on Workspaces waits; the Inbox page then loads the list itself.
+    server.answerNext('list', () => late, 1)
+    const device = devices[0]
+    const router = await openApp(device, '/workspaces')
+    await expect.poll(() => router.state.resolvedLocation?.pathname).toBe('/workspaces')
+    await expect.poll(() => server.calls('list').length).toBe(1)
+    navItem(device.nav)?.click()
+    await expect.poll(() => router.state.resolvedLocation?.pathname).toBe('/inbox')
+    await expect.poll(() => badge(device)).toBe(2)
+    answerLate(new Response(JSON.stringify({ items: [], counts: { needsYou: 0, total: 0 } }), { status: 200 }))
+    await quiet()
+    // The Inbox page draws its own count; Artifacts draws the feed's, and opens no stream that would read it again.
+    await tapTo(device, 'artifacts')
+    await expect.poll(() => router.state.resolvedLocation?.pathname).toBe('/artifacts')
+    await quiet()
+    expect(badge(device)).toBe(2)
+  })
+
   it('reads the list once for each inbox.changed while the Inbox page shows: the page loads it for the badge', async () => {
     const server = withInbox()
     const device = devices[0]

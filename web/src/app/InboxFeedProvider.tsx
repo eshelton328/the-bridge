@@ -74,6 +74,8 @@ export function InboxFeedProvider({ children }: { children: ReactNode }) {
         hub.reading = mine
         readInboxList('badge', mine.signal).then(
           (answer) => {
+            // A read that a newer one or the Inbox page's count replaced keeps its answer to itself.
+            if (mine.signal.aborted) return
             if (answer.ok) setCount(answer.value.counts.needsYou)
             else if (answer.error.status !== undefined) report(new InboxMissError('badge', answer.error), 'live')
           },
@@ -133,7 +135,11 @@ export function InboxFeedProvider({ children }: { children: ReactNode }) {
           hub.followers.delete(onChange)
         }
       },
-      publish: setCount,
+      publish: (next) => {
+        // The Inbox page's count is newer than the badge read that runs, if one does: that read is dropped.
+        hubRef.current.reading?.abort()
+        setCount(next)
+      },
       host: () => {
         const hub = hubRef.current
         hub.hosts += 1
