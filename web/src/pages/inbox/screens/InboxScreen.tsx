@@ -9,6 +9,7 @@
 // callbacks are optional, so a story or a canvas board needs none.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
 import { useState } from 'react'
+import { css } from '../../../../styled-system/css/index.js'
 import { reportShellDiagnostic } from '../../../errors/shellDiagnostic.ts'
 import { AppRail } from '../../../blocks/AppRail.tsx'
 import { AppTabBar } from '../../../blocks/AppTabBar.tsx'
@@ -20,7 +21,15 @@ import type { ProposalControl } from '../blocks/ProposalCard.tsx'
 import { RemoveDialog } from '../blocks/RemoveDialog.tsx'
 import { RowActionsSheet } from '../blocks/RowActionsSheet.tsx'
 import { RowDetail } from '../blocks/RowDetail.tsx'
-import type { InboxDraftField, InboxDrafts, InboxData, InboxGroupId, InboxPutAway, InboxUi } from '../types.ts'
+import type {
+  InboxDraftField,
+  InboxDrafts,
+  InboxData,
+  InboxGroupId,
+  InboxPutAway,
+  InboxUi,
+  LiveOpen,
+} from '../types.ts'
 import { DiscussionPage } from './DiscussionPage.tsx'
 import {
   type DiscussionEffect,
@@ -36,8 +45,12 @@ import {
 import { InboxDetail } from './InboxDetail.tsx'
 import { InboxListPane } from './InboxListPane.tsx'
 import { listView } from './listView.ts'
+import { LiveDetail } from './LiveDetail.tsx'
 import { startView } from './startView.ts'
 import type { PushSwitch } from '../../../lib/pushSwitch.ts'
+
+// The live item fills the desktop's detail pane as an item does (InboxDetail).
+const livePane = css({ display: 'flex', flexDirection: 'column', flex: '1', minH: '[0]' })
 
 export type InboxScreenProps = {
   data: InboxData
@@ -74,6 +87,15 @@ export type InboxScreenProps = {
    * message to the discussion and empties the box at once.
    */
   onSend?: ((text: string) => Promise<boolean>) | undefined
+  /**
+   * The live Inbox (`data.live`): the item `ui.rowOpen` names, as its detail read gives it, at any width. Without it
+   * the open row shows only what its row knows (`RowDetail`).
+   */
+  liveOpen?: LiveOpen | undefined
+  /** Open chat on a live chat item: its chat in Workspaces. */
+  onOpenChat?: ((id: string) => void) | undefined
+  /** Snooze, Mark done or Dismiss on a live item: the page sends it to the server, and the list changes then. */
+  onLiveAct?: InboxPutAway | undefined
 }
 
 type InboxLayoutProps = Omit<InboxScreenProps, 'viewport' | 'drafts'> & { layout: Viewport; drafts: InboxDrafts }
@@ -90,7 +112,11 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
     onRemoveOpenChange,
     onUiChange,
     onSend,
+    liveOpen,
+    onOpenChat,
+    onLiveAct,
   } = props
+  const live = props.data.live !== undefined
   const data = startView(discussionView(props.data, ui), ui)
   const { discussion } = data
   const desktop = layout === 'desktop'
@@ -133,7 +159,7 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
   // R11: on a tablet or phone a tap on a row the state has no detail for opens the row's own page, from the rows the
   // list shows (`listView`): a row the owner finished keeps its outcome, and a search's Done matches open too.
   const rowOpened =
-    desktop || open !== null || ui.rowOpen === null
+    (desktop && !live) || open !== null || ui.rowOpen === null
       ? undefined
       : listView(data, ui, props.query ?? data.search?.query ?? '')
           .groups.flatMap((g) => g.rows)
@@ -174,6 +200,11 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
   // the item, so the owner can pick again: the last pick replaces the earlier one, and the item is never in the list twice.
   // A row's actions sheet on the phone (M6) puts a row away the same way, and closes.
   const putAway: InboxPutAway = (id, to) => {
+    // The live Inbox sends it to the server; the list it reads next shows the change.
+    if (onLiveAct !== undefined) {
+      onLiveAct(id, to)
+      return
+    }
     const snoozed = ui.snoozed.filter((s) => s.id !== id)
     const finished = ui.finished.filter((f) => f.id !== id)
     const closed = { snoozeOpen: false, actionsFor: null, rowOpen: null }
@@ -187,7 +218,7 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
   // The list draws the open task's row selected (d-101). The desktop shows the list and the state's task side by
   // side, so its row is selected even after Back on a tablet and a resize, when `ui.selectedId` is null; a tablet or
   // phone shows the list without a task, and selects the row of `ui.selectedId`.
-  const selectedId = desktop ? (data.detail?.id ?? null) : ui.selectedId
+  const selectedId = live ? ui.rowOpen : desktop ? (data.detail?.id ?? null) : ui.selectedId
   const list = (
     <InboxListPane
       data={data}
@@ -213,6 +244,36 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
   )
   // The discussed task's place, from its row.
   const place = data.groups.flatMap((g) => g.rows).find((row) => row.id === data.detail?.id)?.meta ?? ''
+  // The live item's detail, from its read; the desktop puts it in the detail pane.
+  const liveDetail =
+    rowOpened === undefined || liveOpen === undefined ? null : (
+      <LiveDetail
+        row={rowOpened}
+        open={liveOpen}
+        layout={layout}
+        snooze={{
+          menu: data.snoozeMenu,
+          open: ui.snoozeOpen,
+          onOpenChange: (snoozeOpen) => {
+            onUiChange?.({ snoozeOpen })
+          },
+          onPick: (until) => {
+            putAway(rowOpened.id, until === null ? { result: 'done' } : { until })
+          },
+          onDismiss: () => {
+            putAway(rowOpened.id, { result: 'dismissed' })
+          },
+        }}
+        onBack={closeRow}
+        onOpenChat={
+          onOpenChat === undefined
+            ? undefined
+            : () => {
+                onOpenChat(rowOpened.id)
+              }
+        }
+      />
+    )
   const detail =
     discussPage !== undefined && open?.kind === 'next' ? (
       <DiscussionPage
@@ -225,6 +286,14 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
         drafts={drafts}
         onSend={send}
       />
+    ) : liveDetail !== null ? (
+      desktop ? (
+        <article className={livePane} data-figma="task pane">
+          {liveDetail}
+        </article>
+      ) : (
+        liveDetail
+      )
     ) : rowOpened !== undefined ? (
       <>
         <RowDetail

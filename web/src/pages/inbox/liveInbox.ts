@@ -19,7 +19,7 @@
 // the background (lib/pageResume.ts): no line and no report, and the list is
 // read again once the page shows; one such miss for each trip. A reply the
 // contract refuses throws, for RouteError.
-import { ErrorBody, type ErrorKind, InboxResponse } from '@bridge/contract'
+import { ErrorBody, type ErrorKind, InboxDetailResponse, InboxResponse } from '@bridge/contract'
 import { err, ok, type Result } from '@bridge/shared'
 import { report } from '../../errors/reporter.ts'
 import { api } from '../../lib/api.ts'
@@ -34,8 +34,8 @@ import {
   whenVisible,
 } from '../../lib/pageResume.ts'
 import type { ScreenState } from '../../lib/screenState.ts'
-import { liveList } from './liveList.ts'
-import type { InboxData, InboxUi } from './types.ts'
+import { liveList, snoozeAt } from './liveList.ts'
+import type { InboxData, InboxPutAway, InboxSnoozeMenu, InboxUi, LiveOpen } from './types.ts'
 
 /** How long a read or a write waits for the server, in ms, as the Workspaces reads do (d-101). */
 const inboxTimeoutMs = 8000
@@ -47,7 +47,7 @@ type InboxMiss = {
 }
 
 /** A step of the page that reads or writes the server. */
-type InboxStep = 'list'
+type InboxStep = 'list' | 'detail' | 'snooze' | 'done' | 'dismiss'
 
 /** A miss for report(): a stable name and, in its message, only the step, the kind and the status. */
 class InboxMissError extends Error {
@@ -173,6 +173,65 @@ export async function withLiveInbox(
   }
   const response = InboxResponse.parse(readJson(answer.value.body))
   return { ...state, ...liveList(state, response, { now: now() }) }
+}
+
+/**
+ * Reads one item's detail (`GET /api/inbox/:item`) for its open row: a chat item's chat, or a brain item's record.
+ * A miss is one line ("Not read — the server answered 500"; a 404 "This item is no longer in the Inbox"); a read with
+ * no answer around a trip to the background is quiet and goes again once the page shows.
+ */
+export async function readItem(id: string, signal: AbortSignal): Promise<Omit<LiveOpen, 'canAct' | 'source'>> {
+  const answer = await readQuietly(
+    'detail',
+    () => send((init) => api.api.inbox[':item'].$get({ param: { item: id } }, { init: { signal: init } }), signal),
+    signal,
+  )
+  if (!answer.ok) {
+    if (answer.error.status === 404) return { read: 'missed', line: 'This item is no longer in the Inbox' }
+    reportMiss('detail', answer.error)
+    return { read: 'missed', line: missLine('Not read', answer.error) }
+  }
+  const { detail } = InboxDetailResponse.parse(readJson(answer.value.body))
+  return detail.source === 'chat'
+    ? {
+        read: 'read',
+        line: null,
+        chat: detail.chat === null ? null : { title: detail.chat.title, model: detail.chat.model },
+      }
+    : { read: 'read', line: null, body: detail.body }
+}
+
+const markLead = { snooze: 'Not snoozed', done: 'Not marked done', dismiss: 'Not dismissed' } as const
+
+/**
+ * Sends a snooze, a done or a dismiss of the item `id` (`POST /api/inbox/:item/snooze | done | dismiss`). A snooze's
+ * `until` is the Snooze menu's time; it ends at that choice's time from now (`snoozeAt`). It answers nothing on a 204,
+ * else the miss's line: a 409 is a brain item, read-only here ("Not snoozed — it is read-only here"), a 404 an item
+ * gone already. report() gets an answered miss other than those two.
+ */
+export async function markItem(
+  id: string,
+  to: Parameters<InboxPutAway>[1],
+  menu: InboxSnoozeMenu,
+  now = new Date(),
+): Promise<Result<void, string>> {
+  const step = 'until' in to ? 'snooze' : to.result === 'done' ? 'done' : 'dismiss'
+  const param = { param: { item: id } }
+  const item = api.api.inbox[':item']
+  let call: (signal: AbortSignal) => Promise<Answer>
+  if ('until' in to) {
+    const value = menu.times.find((t) => t.time === to.until)?.value
+    const at = value === undefined ? undefined : snoozeAt(value, now)
+    if (at === undefined) return err(`${markLead.snooze} — pick a time from the menu`)
+    call = (signal) => item.snooze.$post({ ...param, json: { until: at.toISOString() } }, { init: { signal } })
+  } else if (step === 'done') call = (signal) => item.done.$post({ ...param, json: {} }, { init: { signal } })
+  else call = (signal) => item.dismiss.$post({ ...param, json: {} }, { init: { signal } })
+  const sent = await send(call)
+  if (sent.ok) return ok(undefined)
+  if (sent.error.status === 409) return err(`${markLead[step]} — it is read-only here`)
+  if (sent.error.status === 404) return err(`${markLead[step]} — it is no longer in the Inbox`)
+  reportMiss(step, sent.error)
+  return err(missLine(markLead[step], sent.error))
 }
 
 type OpenStream = (signal: AbortSignal) => Promise<Response>

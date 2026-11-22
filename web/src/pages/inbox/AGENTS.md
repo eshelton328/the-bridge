@@ -36,11 +36,14 @@ in `references/inbox/`.
   `GET /api/events` and each time the stream opens, never on a timer. The
   tab badge is the server's `counts.needsYou`. `?state=` and
   `?source=fixtures` show the sample data.
-- A live row has no actions sheet and opens only on a tablet or phone
-  (`RowDetail`) until its item's detail and its Snooze, Mark done and
-  Dismiss reach the server. No row shows Allow or Deny (v1).
+- On the live Inbox a row opens its item at any width (`LiveDetail`, read
+  from `GET /api/inbox/:item` in `useLiveItem.ts`). No row shows Allow or
+  Deny (v1); a chat item's Open chat goes to `/workspaces?chat=`. Snooze,
+  Mark done and Dismiss go to the server; a brain item is read-only and
+  shows none of them. A miss shows one short line, and report() gets only
+  the step, kind and status (`InboxMissError`).
 - The live tests run on the owner's path with `lib/fakeInboxServer.ts`
-  (`app/InboxLive.test.tsx`).
+  (`app/InboxLive.test.tsx`, `app/InboxLiveActions.test.tsx`).
 - The route tests are in `app/` (`InboxRoute.test.tsx`,
   `InboxListTools.test.tsx`, `InboxPhone.test.tsx`, with
   `inboxRouteHelpers.ts`; the home in `InboxHome.test.tsx`). Run them

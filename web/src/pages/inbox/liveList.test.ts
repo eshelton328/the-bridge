@@ -1,7 +1,7 @@
 import { InboxResponse } from '@bridge/contract'
 import { describe, expect, it } from 'vitest'
 import { inboxHome } from './home.ts'
-import { liveList } from './liveList.ts'
+import { liveList, snoozeAt } from './liveList.ts'
 
 // The live Inbox's mapping (liveList.ts): made-up items onto the home's words.
 const now = new Date(2026, 0, 15, 10, 0)
@@ -54,9 +54,9 @@ describe('liveList', () => {
     expect(ui.selectedId).toBeNull()
   })
 
-  it('draws a row with its age, no Allow or Deny, and no actions sheet yet', () => {
+  it('draws a row with its age, no Allow or Deny, and a brain row read-only', () => {
     const [question, request] = data.groups.flatMap((g) => g.rows)
-    expect(question).toMatchObject({ age: '4m', meta: 'chat', approval: false, readOnly: true })
+    expect(question).toMatchObject({ age: '4m', meta: 'chat', approval: false, readOnly: false })
     expect(request).toMatchObject({
       age: '3h',
       meta: 'sample-project',
@@ -75,8 +75,25 @@ describe('liveList', () => {
     expect(ui.filters).toEqual(['question', 'action', 'chat', 'sample-project'])
   })
 
+  it('shows the time each snooze ends in the Snooze menu', () => {
+    expect(data.snoozeMenu.times.map((t) => t.time)).toEqual(['11:00', '20:00', 'Fri 9:00'])
+  })
+
   it('keeps the line of a list that missed', () => {
     const empty = InboxResponse.parse({ items: [], counts: { needsYou: 0, total: 0 } })
     expect(liveList(inboxHome, empty, { now, line: 'Inbox not read' }).data.live?.line).toBe('Inbox not read')
+  })
+})
+
+describe('snoozeAt', () => {
+  it('ends in an hour, this evening at 20:00 or tomorrow at 9:00', () => {
+    expect(snoozeAt('hour', now)).toEqual(new Date(2026, 0, 15, 11, 0))
+    expect(snoozeAt('evening', now)).toEqual(new Date(2026, 0, 15, 20, 0))
+    expect(snoozeAt('morning', now)).toEqual(new Date(2026, 0, 16, 9, 0))
+    expect(snoozeAt('pick', now)).toBeUndefined()
+  })
+
+  it("takes tomorrow's evening once this evening is past", () => {
+    expect(snoozeAt('evening', new Date(2026, 0, 15, 21, 30))).toEqual(new Date(2026, 0, 16, 20, 0))
   })
 })

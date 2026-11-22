@@ -2,7 +2,10 @@
 // the router and the page store. It merges the loaded state with the URL
 // and the store and passes everything to the props-only screen. On the live
 // Inbox (liveInbox.ts) it reads the event stream while it shows and loads
-// again on each `inbox.changed`.
+// again on each `inbox.changed`. A row opens its item's detail, Open chat
+// opens a chat item's chat in Workspaces (`/workspaces?chat=`), and Snooze,
+// Mark done and Dismiss go to the server (useLiveItem.ts).
+import { ChatId } from '@bridge/contract'
 import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import { report } from '../../errors/reporter.ts'
@@ -22,6 +25,7 @@ import { inboxSources } from './loadInboxState.ts'
 import { InboxScreen } from './screens/InboxScreen.tsx'
 import { withNewBoxes } from './screens/listView.ts'
 import { usePushSwitch } from '../../state/pushStore.ts'
+import { useLiveItem } from './useLiveItem.ts'
 
 const reportCopy = (error: unknown) => {
   report(error, 'handler')
@@ -87,10 +91,36 @@ export function InboxPage() {
   const seen = ui.filterSeen
   ui.filters = withNewBoxes(state.data.filterMenu, ui.filters, seen)
   ui.filterChecks = withNewBoxes(state.data.filterMenu, ui.filterChecks, seen)
+  const liveItem = useLiveItem(
+    state.data,
+    ui.rowOpen,
+    () => {
+      setUi(search.state, { rowOpen: null })
+    },
+    () => router.invalidate(),
+  )
+  const liveData = state.data.live
+  const data =
+    liveData === undefined || liveItem.listLine === undefined
+      ? state.data
+      : { ...state.data, live: { ...liveData, line: liveItem.listLine } }
   return (
     <InboxScreen
       push={push}
-      data={state.data}
+      data={data}
+      liveOpen={liveItem.open}
+      onLiveAct={
+        liveData === undefined
+          ? undefined
+          : (id, to) => {
+              setUi(search.state, { snoozeOpen: false, actionsFor: null })
+              liveItem.act(id, to)
+            }
+      }
+      onOpenChat={(id) => {
+        const chat = ChatId.safeParse(liveData?.items.find((i) => i.id === id)?.chat)
+        if (chat.success) void navigate({ to: '/workspaces', search: { chat: chat.data } })
+      }}
       drafts={{
         values: draftValues,
         onChange: (field, value) => {

@@ -534,3 +534,18 @@ export function draftProps(
     },
   }
 }
+
+/**
+ * The live item open by its row (liveInbox.ts, `GET /api/inbox/:item`): while it reads, `read` is `reading`; once
+ * read, a chat item has its chat (null when Workspaces no longer lists it) and a brain item its record's Markdown;
+ * a read that missed has `missed`. `canAct` is false for a brain item, which hides Snooze, Mark done and Dismiss.
+ * `line` is one short line: why the read or the last snooze, done or dismiss missed.
+ */
+export type LiveOpen = {
+  read: 'reading' | 'read' | 'missed'
+  source: 'chat' | 'brain'
+  canAct: boolean
+  chat?: { title: string; model: string | null } | null | undefined
+  body?: string | undefined
+  line: string | null
+}

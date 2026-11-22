@@ -10,7 +10,7 @@
 // dropped. Pure; tested in liveList.test.ts.
 import type { InboxItem, InboxResponse } from '@bridge/contract'
 import { InboxItemId } from '@bridge/shared'
-import type { InboxData, InboxFilterMenu, InboxGroupView, InboxRowView, InboxUi } from './types.ts'
+import type { InboxData, InboxFilterMenu, InboxGroupView, InboxRowView, InboxSnoozeMenu, InboxUi } from './types.ts'
 
 const minute = 60_000
 
@@ -33,13 +33,42 @@ function untilOf(iso: string, now: Date): string {
   return at.toDateString() === now.toDateString() ? time : `${weekdays[at.getDay()] ?? ''} ${time}`
 }
 
+/**
+ * When a snooze of the Snooze menu's `value` ends, picked at `now`: in an hour, this evening at 20:00 (tomorrow's
+ * once it is past), or tomorrow at 9:00. Undefined for a value the menu does not have.
+ */
+export function snoozeAt(value: string, now: Date): Date | undefined {
+  if (value === 'hour') return new Date(now.getTime() + 3_600_000)
+  const at = new Date(now)
+  at.setSeconds(0, 0)
+  if (value === 'evening') {
+    at.setHours(20, 0)
+    if (at.getTime() <= now.getTime()) at.setDate(at.getDate() + 1)
+    return at
+  }
+  if (value === 'morning') {
+    at.setDate(at.getDate() + 1)
+    at.setHours(9, 0)
+    return at
+  }
+  return undefined
+}
+
+/** The home's Snooze menu with the time each choice ends at `now`. */
+function liveSnoozeMenu(base: InboxSnoozeMenu, now: Date): InboxSnoozeMenu {
+  return {
+    ...base,
+    times: base.times.map((t) => {
+      const at = snoozeAt(t.value, now)
+      return at === undefined ? t : { ...t, time: untilOf(at.toISOString(), now) }
+    }),
+  }
+}
+
 /** The first part of a row's meta line: a chat's "chat", else the item's project, else "brain". */
 const placeOf = (item: InboxItem) => (item.source === 'chat' ? 'chat' : (item.project ?? item.source))
 
-/**
- * One item's row. Its snooze, done and dismiss do not reach the server yet, so every live row is read-only here: it has
- * no actions sheet, and no change shows that the server did not make.
- */
+/** One item's row. A brain item is read-only here: its row has no actions sheet. */
 function liveRow(item: InboxItem, now: Date): InboxRowView {
   const until = item.snoozedUntil === null ? undefined : untilOf(item.snoozedUntil, now)
   return {
@@ -52,7 +81,7 @@ function liveRow(item: InboxItem, now: Date): InboxRowView {
     approval: false,
     ...(until === undefined ? {} : { snoozed: { line: `Snoozed until ${until}`, age: `until ${until}` } }),
     tags: [...item.tags],
-    readOnly: true,
+    readOnly: item.actions.length === 0,
   }
 }
 
@@ -125,7 +154,7 @@ export function liveList(
       count: waiting.length,
       filters: base.data.filters.map((f) => ({ ...f, count: chipCounts[f.value] ?? 0 })),
       filterMenu,
-      snoozeMenu: base.data.snoozeMenu,
+      snoozeMenu: liveSnoozeMenu(base.data.snoozeMenu, now),
       groups,
       detail: null,
       live: {
