@@ -195,7 +195,7 @@ async function openChat(size: readonly [number, number], title: string) {
 
 /** Back to the list on the phone, and into `title`. */
 async function switchTo(title: string) {
-  await userEvent.click(page.getByRole('button', { name: 'Workspaces' }).first())
+  await userEvent.click(page.getByRole('button', { name: 'Back to Workspaces' }).first())
   await userEvent.click(page.getByText(title, { exact: true }).first())
   await expect.element(page.getByRole('heading', { name: title })).toBeVisible()
 }

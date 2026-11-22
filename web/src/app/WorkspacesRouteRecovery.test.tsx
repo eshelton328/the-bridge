@@ -83,7 +83,10 @@ describe('the Workspaces route after a crash (audit W-10)', () => {
     await userEvent.type(composer, 'half a thought')
     crash.shell = true
     // Back to the list renders the page again.
-    await page.getByRole('region', { name: 'bridge themes' }).getByRole('button', { name: 'Workspaces' }).click()
+    await page
+      .getByRole('region', { name: 'bridge themes' })
+      .getByRole('button', { name: 'Back to Workspaces' })
+      .click()
     await expect.element(page.getByRole('heading', { name: 'This page failed to load' })).toBeVisible()
     crash.shell = false
     await page.getByRole('button', { name: 'Go to Inbox' }).click()

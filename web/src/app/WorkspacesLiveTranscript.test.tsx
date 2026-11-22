@@ -212,7 +212,7 @@ describe("a live chat's transcript (slice 3b)", () => {
       expect(texts.indexOf('Looking at the build now.')).toBeLessThan(texts.indexOf('The build passes.'))
       await expect.element(page.getByText('Earlier entries not live yet')).not.toBeInTheDocument()
       // Back to the list closes the stream.
-      await userEvent.click(page.getByRole('button', { name: 'Workspaces' }).first())
+      await userEvent.click(page.getByRole('button', { name: 'Back to Workspaces' }).first())
       await expect.poll(() => server.openStreams()).toEqual([])
       expect(getReports()).toEqual([])
     })

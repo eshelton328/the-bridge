@@ -237,7 +237,7 @@ describe.each([
     await userEvent.type(box(), 'keep this draft')
     await blurBox()
     // Back to the list, then the chat again: its composer mounts from the page's draft book.
-    await userEvent.click(chatOf().getByRole('button', { name: 'Workspaces', exact: true }))
+    await userEvent.click(chatOf().getByRole('button', { name: 'Back to Workspaces', exact: true }))
     await expect.element(page.getByRole('heading', { name: title })).not.toBeInTheDocument()
     await openFromList()
     await expect.element(box()).toHaveValue('keep this draft')

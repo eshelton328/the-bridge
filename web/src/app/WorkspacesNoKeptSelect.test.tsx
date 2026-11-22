@@ -46,9 +46,9 @@ describe.each([
   it('leaves no row selected', async () => {
     await openWorkspaces(width, height)
     await userEvent.click(page.getByRole('button', { name: 'plan the slice', exact: true }))
-    // The chat's view has no tab bar; its back button takes the page title as its name on the live home.
+    // The chat's view has no tab bar; its back button is "Back to Workspaces", as in M3.
     await expect.element(page.getByRole('heading', { name: 'plan the slice' })).toBeVisible()
-    await userEvent.click(page.getByRole('button', { name: 'Workspaces', exact: true }))
+    await userEvent.click(page.getByRole('button', { name: 'Back to Workspaces', exact: true }))
     await expect.element(page.getByRole('button', { name: 'plan the slice', exact: true })).toBeVisible()
     expect(selectedRows()).toEqual([])
   })

@@ -75,7 +75,7 @@ describe('the Workspaces route when a transcript entry throws', () => {
     await expect.element(routeFallback()).not.toBeInTheDocument()
     await expect.element(page.getByRole('textbox')).toBeVisible()
     crash.message = false
-    await page.getByRole('button', { name: 'Workspaces', exact: true }).click()
+    await page.getByRole('button', { name: 'Back to Workspaces', exact: true }).click()
     await expect.element(page.getByRole('button', { name: 'Home' })).toBeVisible()
     await expect.element(page.getByText('drift check', { exact: true })).toBeVisible()
   })
