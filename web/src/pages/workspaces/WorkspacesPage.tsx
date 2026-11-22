@@ -39,6 +39,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { report } from '../../errors/reporter.ts'
 import { copyText } from '../../lib/copyText.ts'
 import { readsLive } from '../../lib/dataSource.ts'
+import { useInboxBadge, useInboxStreamHost } from '../../lib/inboxFeed.ts'
 import { workspacesSources } from './loadWorkspacesState.ts'
 import { createDraftBook } from './blocks/draftBook.ts'
 import { layoutsSeenOf, withLoadedLayouts } from './blocks/workspaceLayout.ts'
@@ -107,19 +108,21 @@ export function WorkspacesPage() {
     showState(search.state)
   }, [showState, search.state])
   const live = readsLive({ state: search.state, source: search.source }, workspacesSources)
+  // The page's stream also gives the app's Inbox badge its events, so the app holds one stream (lib/inboxFeed.ts).
+  const inboxChanged = useInboxStreamHost(live)
   useEffect(() => {
     let stop: (() => void) | undefined
     let gone = false
     if (import.meta.env.DEV && live) {
       void import('./liveWorkspaces.ts').then((live) => {
-        if (!gone) stop = live.watchLiveWorkspaces({ onChange: () => void router.invalidate() })
+        if (!gone) stop = live.watchLiveWorkspaces({ onChange: () => void router.invalidate(), onInbox: inboxChanged })
       })
     }
     return () => {
       gone = true
       stop?.()
     }
-  }, [router, live])
+  }, [router, live, inboxChanged])
   // Pane follow (W5): a chat whose ID changed on its pane since the last list takes the changes of its old ID, in this
   // render already, and in the store before the browser paints.
   // Each live Claude chat's model (W10): while a restart runs, the chat's composer is off and says so.
@@ -173,7 +176,9 @@ export function WorkspacesPage() {
   const skillLists = useLiveSkills(import.meta.env.DEV && live)
   // Each live Claude chat's effort (W10): a set level shows until the next list read.
   const efforts = useLiveEffort(import.meta.env.DEV && live, state.data)
-  const screenData = withRestarting(data, models.isRestarting)
+  // The Inbox badge: the app's live count on the live home, the shown state's number on fixtures (lib/inboxFeed.ts).
+  const railBadge = useInboxBadge(data.railBadge, live)
+  const screenData = withRestarting({ ...data, railBadge }, models.isRestarting)
   const layoutWrites = useLayoutWrites(import.meta.env.DEV && live, data, (workspace, chat, tab) => {
     changeUi(followTab(liveData, uiRef.current, workspace, chat, tab))
   })

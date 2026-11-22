@@ -7,6 +7,7 @@ import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
 import { report } from '../../errors/reporter.ts'
 import { copyText } from '../../lib/copyText.ts'
+import { useInboxBadge } from '../../lib/inboxFeed.ts'
 import { ToolkitScreen } from './screens/ToolkitScreen.tsx'
 import type { ToolkitUi } from './types.ts'
 import { usePushSwitch } from '../../state/pushStore.ts'
@@ -21,6 +22,13 @@ type Changed = { of: ToolkitUi; ui: Partial<ToolkitUi> }
 
 export function ToolkitPage() {
   const state = route.useLoaderData()
+  const search = route.useSearch()
+  // The Toolkit has no live source yet, but its home (no ?state=, no ?source=) is the owner's app in development, so
+  // its Inbox badge is the app's live count; a state or a source keeps the state's number (lib/inboxFeed.ts).
+  const railBadge = useInboxBadge(
+    state.data.railBadge,
+    import.meta.env.DEV && search.state === undefined && search.source === undefined,
+  )
   const push = usePushSwitch()
   const navigate = route.useNavigate()
   const [changed, setChanged] = useState<Changed>({ of: state.ui, ui: {} })
@@ -28,7 +36,7 @@ export function ToolkitPage() {
   return (
     <ToolkitScreen
       push={push}
-      data={state.data}
+      data={{ ...state.data, railBadge }}
       ui={{ ...state.ui, ...own }}
       viewport="desktop"
       onNavigate={(page) => {

@@ -4,13 +4,14 @@ import '@fontsource-variable/geist'
 import '@fontsource-variable/geist-mono'
 import '../index.css'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
-import { createElement } from 'react'
+import { createElement, type ReactElement } from 'react'
 import { expect, onTestFinished, vi } from 'vitest'
 import { page } from 'vitest/browser'
 import { RouteError } from '../errors/RouteError.tsx'
 import { type FakeInboxOptions, type FakeInboxServer, fakeInboxServer } from '../lib/fakeInboxServer.ts'
 import { setViewport } from '../lib/rendering.ts'
 import { testRender } from '../lib/testRender.ts'
+import { InboxFeedProvider } from './InboxFeedProvider.tsx'
 import { routeTree } from './routeTree.gen.ts'
 
 document.documentElement.classList.add('dark')
@@ -119,3 +120,6 @@ export const shown = () =>
 
 export const liveLine = (text: string) => page.getByRole('status').filter({ hasText: text })
 export const quiet = (ms = 300) => new Promise((resolve) => setTimeout(resolve, ms))
+
+/** `routes` under the app's live Inbox feed, as mountApp renders them in the app that reads the live server. */
+export const withInboxFeed = (routes: ReactElement): ReactElement => createElement(InboxFeedProvider, null, routes)

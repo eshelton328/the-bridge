@@ -16,6 +16,7 @@ import { AppTabBar } from '../../../blocks/AppTabBar.tsx'
 import { MoreDrawer } from '../../../blocks/MoreDrawer.tsx'
 import { ViewportFrame } from '../../../blocks/ViewportFrame.tsx'
 import type { Viewport } from '../../../lib/screenState.ts'
+import { kindValue } from '../types.ts'
 import { DiscussionPanel } from '../blocks/DiscussionPanel.tsx'
 import type { ProposalControl } from '../blocks/ProposalCard.tsx'
 import { RemoveDialog } from '../blocks/RemoveDialog.tsx'
@@ -310,7 +311,9 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
         {ui.actionsFor === rowOpened.id ? (
           <RowActionsSheet
             row={rowOpened}
-            kindLabel={data.filterMenu.sections[0]?.items.find((k) => k.value === rowOpened.kind)?.label ?? ''}
+            kindLabel={
+              data.filterMenu.sections[0]?.items.find((k) => k.value === kindValue(rowOpened.kind))?.label ?? ''
+            }
             menu={data.snoozeMenu}
             open
             onOpenChange={(next) => {

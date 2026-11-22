@@ -127,6 +127,36 @@ describe('the live Inbox list', () => {
       await expect.poll(shown).toEqual(['Sample request in the brain'])
     })
 
+    it(`keeps a project named like a kind when that kind is unchecked, on ${device.name}`, async () => {
+      // A made-up project named "review", as the kind Review: unchecking the kind must not uncheck the project.
+      const named = { ...brainItem(5, 'Sample request in a project named review', 20), project: 'review', tags: [] }
+      withServer([review, named])
+      await openInbox(device)
+      await expect.poll(shown).toEqual(['Sample request in a project named review', 'Sample chat turn to review'])
+      await openAndCloseFilter(device, async () => {
+        await filterMenu(device).getByText('Review', { exact: true }).click()
+      })
+      await expect.poll(shown).toEqual(['Sample request in a project named review'])
+    })
+
+    it(`keeps the tags of a project named "global" apart from the global tags, on ${device.name}`, async () => {
+      const inGlobal = {
+        ...brainItem(5, 'Sample request in a project named global', 20),
+        project: 'global',
+        tags: ['project/global/web', 'project/global/docs'],
+      }
+      // A section narrows the list only while some, not all, of its boxes are checked: the project's section has two.
+      const tagged = { ...brainItem(6, 'Sample request with a global tag', 40), tags: ['global/web'] }
+      withServer([inGlobal, tagged])
+      await openInbox(device)
+      await expect.poll(shown).toEqual(['Sample request in a project named global', 'Sample request with a global tag'])
+      await openAndCloseFilter(device, async () => {
+        await expect.element(filterMenu(device).getByText('Tags · project global', { exact: true })).toBeVisible()
+        await filterMenu(device).getByText('project/global/web', { exact: true }).click()
+      })
+      await expect.poll(shown).toEqual(['Sample request in a project named global'])
+    })
+
     it(`reads no list on a timer, on ${device.name}`, async () => {
       const server = withServer([review])
       await openInbox(device)

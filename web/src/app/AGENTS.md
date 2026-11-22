@@ -3,12 +3,24 @@
 The app's start: `main.ts` calls `mountApp()` (`mountApp.ts`), which
 installs the global error handlers, creates the React root with the root
 error hooks (`errors/rootErrorOptions.ts`) and renders `AppBoundary` >
-`RouterProvider`, with the dev `ErrorTray` beside `AppBoundary` so it
-still shows a crash that replaces the app (`mountApp.test.ts`, audit W-9,
-W-11).
+`InboxFeedProvider` > `RouterProvider`, with the dev `ErrorTray` beside
+`AppBoundary` so it still shows a crash that replaces the app
+(`mountApp.test.ts`, audit W-9, W-11).
 `router.ts` sets `RouteError` and `NotFound` as the default error and
 not-found components, so no route needs a boundary of its own (d-084).
 
+- `InboxFeedProvider` is the app's live Inbox badge (only in the app that
+  reads the live server, never in a test): one event stream, one
+  `GET /api/inbox` per `inbox.changed` burst and per stream open, no
+  timer. A page entry reads it with `useInboxBadge` (`lib/inboxFeed.ts`)
+  and passes the count to its screen, so `AppRail` and `AppTabBar` stay
+  props-only. A live page shows no sample number; `?state=`,
+  `?source=fixtures` and stories keep theirs (`InboxBadgeLive.test.tsx`).
+  The stream closes when the page goes to the background and opens again
+  when it shows. While the live Workspaces page shows, its own stream
+  hosts the feed (`useInboxStreamHost`) and the feed closes its own, so
+  the app holds one `/api/events` stream and the page's reads keep the
+  browser's few HTTP/1.1 connections to the host.
 - Only this folder and page entries read stores (`web/src/structure.ts`).
 - [push/AGENTS.md](push/AGENTS.md): read before you change the service
   worker's registration, the "seen" beat or how a notification opens a

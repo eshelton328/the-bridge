@@ -4,6 +4,7 @@
 // filters and the task bar take out; a search changes only the group
 // counts, as Figma D10 and T10 show. Pure functions, no React.
 import type { InboxItemId } from '@bridge/shared'
+import { kindValue, projectValue, tagValue } from '../types.ts'
 import {
   type AppliedSection,
   type InboxData,
@@ -43,7 +44,9 @@ const projectOf = (row: InboxRowView): string => row.meta.split(' · ')[0] ?? ''
 /** Each section of the Filter menu that narrows the list: some, not all, of its boxes are checked. */
 function appliedSections(menu: InboxData['filterMenu'], checks: readonly string[]): AppliedSection[] {
   return menu.sections.flatMap((section) => {
-    const values = section.items.map((item) => item.value).filter((value) => checks.includes(value))
+    const values = section.items
+      .filter((item) => checks.includes(item.value))
+      .map((item) => ({ value: item.value, label: item.label }))
     return values.length === 0 || values.length === section.items.length ? [] : [{ label: section.label, values }]
   })
 }
@@ -71,10 +74,13 @@ export function withNewBoxes(
   return [...checks, ...added]
 }
 
-/** Whether a row passes every narrowing section: its kind, project or one of its tags is checked there. */
+/**
+ * Whether a row passes every narrowing section: its kind, project or one of its tags is checked there. Each facet
+ * has its section's prefix (`kindValue` and its kin in types.ts), so a project named like a kind matches only the project's box.
+ */
 function passes(row: InboxRowView, sections: readonly AppliedSection[]): boolean {
-  const facets = [row.kind, projectOf(row), ...(row.tags ?? [])]
-  return sections.every((section) => facets.some((facet) => section.values.includes(facet)))
+  const facets = [kindValue(row.kind), projectValue(projectOf(row)), ...(row.tags ?? []).map(tagValue)]
+  return sections.every((section) => facets.some((facet) => section.values.some((v) => v.value === facet)))
 }
 
 /** Whether a row matches the search, in its title, its meta line (project, feature and issue IDs), its prompt or its notes. */

@@ -67,12 +67,18 @@ describe('liveList', () => {
 
   it('builds the Filter menu from the items, with a chat as its own place, and every kind and project checked', () => {
     expect(data.filterMenu.sections.map((s) => [s.label, s.items.map((i) => i.value)])).toEqual([
-      ['Kind', ['question', 'action']],
-      ['Project', ['chat', 'sample-project']],
-      ['Tags · global', ['global/review']],
-      ['Tags · project sample-project', ['project/sample-project/web']],
+      ['Kind', ['kind:question', 'kind:action']],
+      ['Project', ['project:chat', 'project:sample-project']],
+      ['Tags · global', ['tag:global/review']],
+      ['Tags · project sample-project', ['tag:project/sample-project/web']],
     ])
-    expect(ui.filters).toEqual(['question', 'action', 'chat', 'sample-project'])
+    expect(data.filterMenu.sections.map((s) => s.items.map((i) => i.label))).toEqual([
+      ['Question', 'Action'],
+      ['chat', 'sample-project'],
+      ['global/review'],
+      ['project/sample-project/web'],
+    ])
+    expect(ui.filters).toEqual(['kind:question', 'kind:action', 'project:chat', 'project:sample-project'])
   })
 
   it('shows the time each snooze ends in the Snooze menu', () => {

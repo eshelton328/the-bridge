@@ -67,6 +67,16 @@ export const InboxGroupView = z.object({
 export type InboxGroupView = z.infer<typeof InboxGroupView>
 
 /** A sort of the list: newest first (the default), oldest first, by project, or by kind. */
+/**
+ * The values of the Filter menu's boxes, by section: `kind:review`, `project:ncc-1701`, `tag:global/review`. A
+ * section's prefix keeps its values apart from another section's, so a project named like a kind ("review") never
+ * checks or matches the kind's box. The menu shows each box's label; the value is only the key (the sample states
+ * and the live menu, liveList.ts, both use these).
+ */
+export const kindValue = (kind: z.infer<typeof InboxKind>): string => `kind:${kind}`
+export const projectValue = (project: string): string => `project:${project}`
+export const tagValue = (tag: string): string => `tag:${tag}`
+
 export const SortValue = z.enum(['newest', 'oldest', 'project', 'kind'])
 export type SortValue = z.infer<typeof SortValue>
 
@@ -127,7 +137,8 @@ const InboxSnoozeMenu = z.object({
 export type InboxSnoozeMenu = z.infer<typeof InboxSnoozeMenu>
 
 /** A Filter menu section that narrows the list: its label and its checked values. */
-export type AppliedSection = { label: string; values: string[] }
+/** A section of the Filter menu that narrows the list, with each checked box's value and the label it shows. */
+export type AppliedSection = { label: string; values: { value: string; label: string }[] }
 
 /**
  * A toast over the bottom of the list, such as "Created 3 tasks from a discussion" with Undo. `created` names the rows a

@@ -34,15 +34,15 @@ export function AppliedFilters({ sections, onRemove, onClear }: AppliedFiltersPr
           {/* The library has no removable filter chip (LIBRARY_GAPS.md); a pressed small button stands for one. */}
           {section.values.map((v) => (
             <Button
-              key={v}
+              key={v.value}
               size="sm"
               pressed
-              aria-label={`Remove ${v}`}
+              aria-label={`Remove ${v.label}`}
               onClick={() => {
-                onRemove?.(v)
+                onRemove?.(v.value)
               }}
             >
-              <span className={value}>{v}</span>
+              <span className={value}>{v.label}</span>
               <CloseIcon size="12" />
             </Button>
           ))}
