@@ -1,4 +1,4 @@
-import { appendFileSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
+import { appendFileSync, mkdirSync, mkdtempSync, statSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
@@ -60,7 +60,8 @@ describe('the Claude artifact scanner', () => {
   it('finds each published artifact with its link, title, description, time, session and folder', async () => {
     const { root, file } = projects()
     writeFileSync(file, `{"type":"user","message":{"content":"hello"}}\nnot json\n${publish(1)}`)
-    const scan = await createArtifactScanner(root).scan()
+    const { keep, ...scan } = await createArtifactScanner(root).scan()
+    expect(typeof keep).toBe('function')
     expect(scan).toEqual({
       partial: false,
       found: [
@@ -145,7 +146,8 @@ describe('the Claude artifact scanner', () => {
     expect((await scanner.scan()).found).toHaveLength(2)
     writeFileSync(file, publish(3))
     expect((await scanner.scan()).found.map((a) => a.link)).toEqual([link(3)])
-    expect(await createArtifactScanner(join(root, 'none')).scan()).toEqual({ found: [], partial: false })
+    const none = await createArtifactScanner(join(root, 'none')).scan()
+    expect([none.found, none.partial]).toEqual([[], false])
   })
 
   it('finds an artifact whose line is longer than one scan reads, over several scans', async () => {
@@ -165,6 +167,73 @@ describe('the Claude artifact scanner', () => {
     const found = []
     for (let i = 0; i < 5 && found.length === 0; i += 1) found.push(...(await scanner.scan()).found)
     expect(found.map((a) => a.link)).toEqual([link(1)])
+  })
+
+  it('reads a file of more than 32 MiB in one scan with the default caps, as the time cap is the limit', async () => {
+    const { root, file } = projects()
+    const filler = `${JSON.stringify({ type: 'assistant', message: { content: [{ type: 'text', text: 'marker-5150 '.repeat(80) }] } })}\n`
+    writeFileSync(file, filler.repeat(Math.ceil((40 * 1024 * 1024) / filler.length)) + publish(1))
+    const scan = await createArtifactScanner(root).scan()
+    expect([scan.partial, scan.found.map((a) => a.link)]).toEqual([false, [link(1)]])
+  })
+
+  it('finds a call whose "Artifact" name a read cuts in two, as each line is whole before the check', async () => {
+    const { root, file } = projects()
+    const text = publish(1)
+    writeFileSync(file, text)
+    const scanner = createArtifactScanner(root, { maxBytes: text.indexOf('"Artifact"') + 4 })
+    const found = []
+    for (let i = 0; i < 10 && found.length === 0; i += 1) found.push(...(await scanner.scan()).found)
+    expect(found.map((a) => a.link)).toEqual([link(1)])
+  })
+
+  it('reads on after a restart from the cursor it saved, in a 0600 file', async () => {
+    const { root, file } = projects()
+    const cursorFile = join(mkdtempSync(join(tmpdir(), 'bridge-artifacts-')), 'artifacts', 'scan.json')
+    const scanKept = async (scanner: ReturnType<typeof createArtifactScanner>) => {
+      const scan = await scanner.scan()
+      await scan.keep()
+      return scan.found.map((a) => a.link)
+    }
+    writeFileSync(file, publish(1))
+    expect(await scanKept(createArtifactScanner(root, { cursorFile }))).toEqual([link(1)])
+    expect(statSync(cursorFile).mode & 0o777).toBe(0o600)
+    const restarted = createArtifactScanner(root, { cursorFile })
+    expect(await scanKept(restarted)).toEqual([])
+    appendFileSync(file, publish(2))
+    expect(await scanKept(restarted)).toEqual([link(2)])
+    writeFileSync(file, publish(3))
+    expect(await scanKept(createArtifactScanner(root, { cursorFile }))).toEqual([link(3)])
+  })
+
+  it('saves no cursor until the scan is kept, so a restart before that finds the artifacts again', async () => {
+    const { root, file } = projects()
+    const cursorFile = join(mkdtempSync(join(tmpdir(), 'bridge-artifacts-')), 'scan.json')
+    writeFileSync(file, publish(1))
+    expect((await createArtifactScanner(root, { cursorFile }).scan()).found).toHaveLength(1)
+    const again = await createArtifactScanner(root, { cursorFile }).scan()
+    expect(again.found.map((a) => a.link)).toEqual([link(1)])
+  })
+
+  it('finds a publish whose result comes after a restart, as the cursor stays at the call', async () => {
+    const { root, file } = projects()
+    const cursorFile = join(mkdtempSync(join(tmpdir(), 'bridge-artifacts-')), 'scan.json')
+    const [call = '', result = ''] = publish(1).split('\n')
+    writeFileSync(file, `${publish(2)}${call}\n`)
+    const first = await createArtifactScanner(root, { cursorFile }).scan()
+    await first.keep()
+    expect(first.found.map((a) => a.link)).toEqual([link(2)])
+    appendFileSync(file, `${result}\n`)
+    const restarted = await createArtifactScanner(root, { cursorFile }).scan()
+    expect(restarted.found.map((a) => a.link)).toEqual([link(1)])
+  })
+
+  it('reads every file when the saved cursor is not one', async () => {
+    const { root, file } = projects()
+    const cursorFile = join(mkdtempSync(join(tmpdir(), 'bridge-artifacts-')), 'scan.json')
+    writeFileSync(cursorFile, 'not json')
+    writeFileSync(file, publish(1))
+    expect((await createArtifactScanner(root, { cursorFile }).scan()).found.map((a) => a.link)).toEqual([link(1)])
   })
 
   it('gives each artifact once when two scans run at the same time', async () => {
@@ -189,7 +258,8 @@ describe('the Claude artifact finder', () => {
   it('gives each found artifact with its project in place of its folder', async () => {
     const { root, file } = projects()
     writeFileSync(file, publish(1))
-    const scan = await createClaudeArtifactFinder(root, '/home/dev').scan()
+    const { keep, ...scan } = await createClaudeArtifactFinder(root, '/home/dev').scan()
+    expect(typeof keep).toBe('function')
     expect(scan).toEqual({
       partial: false,
       found: [

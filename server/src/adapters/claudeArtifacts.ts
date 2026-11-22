@@ -7,8 +7,9 @@
 // and stops at a time cap and a byte cap, so a large file cannot hold up a
 // list; the next scan goes on from there. Nothing here logs.
 import type { Dirent, Stats } from 'node:fs'
-import { open, readdir, stat } from 'node:fs/promises'
-import { join, relative, sep } from 'node:path'
+import { randomUUID } from 'node:crypto'
+import { chmod, mkdir, open, readFile, readdir, rename, rm, stat, writeFile } from 'node:fs/promises'
+import { dirname, join, relative, sep } from 'node:path'
 import { ArtifactProject } from '@bridge/contract'
 import { z } from 'zod'
 import type { ArtifactFinder } from '../services/artifacts.ts'
@@ -28,6 +29,11 @@ type ArtifactScan = {
   readonly found: readonly FoundArtifact[]
   /** The scan stopped at a cap; the next scan reads the rest. */
   readonly partial: boolean
+  /**
+   * Saves how far this scan read, once its artifacts are kept: before that, a restart reads them again. Without a
+   * cursor file it does nothing.
+   */
+  readonly keep: () => Promise<void>
 }
 
 type ArtifactScanner = { scan(): Promise<ArtifactScan> }
@@ -38,11 +44,53 @@ type Limits = {
   /** The most bytes one scan reads. */
   readonly maxBytes?: number
   readonly now?: () => number
+  /**
+   * Where the scan keeps how far it read each file, so a server restart reads on from there. A 0600 file in a 0700
+   * folder; with none, a restart reads every file again.
+   */
+  readonly cursorFile?: string
+}
+
+/** How far a scan read one file: a line's start, and whether the scan is in a line over `maxLineBytes` it skips. */
+const Cursor = z.record(z.string(), z.object({ offset: z.number().int().min(0), skipLine: z.boolean() }))
+type Cursor = z.infer<typeof Cursor>
+
+/** The saved cursor, or none when the file is missing or not one; then the scan reads every file. */
+async function loadCursor(path: string): Promise<Cursor> {
+  const text = await readFile(path, 'utf8').catch(() => undefined)
+  if (text === undefined) return {}
+  let raw: unknown
+  try {
+    raw = JSON.parse(text)
+  } catch {
+    return {}
+  }
+  const parsed = Cursor.safeParse(raw)
+  return parsed.success ? parsed.data : {}
+}
+
+/** Saves the cursor in one rename. A fault only means that a restart reads more, so it is not an error. */
+async function saveCursor(path: string, cursor: Cursor): Promise<void> {
+  const temporary = `${path}.${randomUUID()}.tmp`
+  try {
+    await mkdir(dirname(path), { recursive: true, mode: 0o700 })
+    await chmod(dirname(path), 0o700)
+    await writeFile(temporary, JSON.stringify(cursor), { mode: 0o600 })
+    await rename(temporary, path)
+  } catch {
+    await rm(temporary, { force: true }).catch(() => undefined)
+  }
 }
 
 const claudeLink = /^https:\/\/claude\.ai\/(?:code\/)?artifact\/[A-Za-z0-9_-]+$/
 /** The size of each read. */
 const chunkBytes = 1024 * 1024
+/**
+ * The most bytes one scan reads. The time cap is the limit that counts: a first scan of a large projects folder
+ * (several GiB) must not take hundreds of lists. This cap only stops a scan of a very fast disk at a size that
+ * the time cap allows.
+ */
+const defaultMaxBytes = 1024 * 1024 * 1024
 /** A line longer than this is skipped, so one line cannot hold the scan. */
 const maxLineBytes = 8 * 1024 * 1024
 
@@ -71,16 +119,27 @@ const User = z.object({
   toolUseResult: z.object({ url: z.string(), title: z.string().optional() }).optional(),
 })
 
-type Pending = { readonly title: string | undefined; readonly description: string }
+/** A publish call that waits for its result; `at` is the start of its line in the file. */
+type Pending = { readonly title: string | undefined; readonly description: string; readonly at: number }
+/**
+ * How far back the saved offset may stay for a call that waits for its result: a call that never got one (a chat
+ * that ended) must not make each restart read the rest of its file again.
+ */
+const maxHoldBytes = 64 * 1024 * 1024
 /** Where the next read of a file starts: `offset` is a line's start, and `carry` the bytes read after it. */
 type FileState = { offset: number; carry: Buffer; skipLine: boolean; readonly pending: Map<string, Pending> }
 
+/** A line can hold an Artifact call or the result it waits for only when it has one of these bytes. */
+const callMark = Buffer.from('"Artifact"')
+const resultMark = Buffer.from('"tool_result"')
+
 /** The artifacts of one line, and the calls it starts or ends in `pending`. */
-function readLine(line: string, pending: Map<string, Pending>, found: FoundArtifact[]) {
-  if (!line.includes('"Artifact"') && (pending.size === 0 || !line.includes('"tool_result"'))) return
+function readLine(line: Buffer, at: number, pending: Map<string, Pending>, found: FoundArtifact[]) {
+  // Most lines hold neither mark: the check reads bytes, so such a line is never decoded or parsed.
+  if (!line.includes(callMark) && (pending.size === 0 || !line.includes(resultMark))) return
   let value: unknown
   try {
-    value = JSON.parse(line)
+    value = JSON.parse(line.toString('utf8'))
   } catch {
     return
   }
@@ -89,7 +148,7 @@ function readLine(line: string, pending: Map<string, Pending>, found: FoundArtif
     for (const block of assistant.data.message.content) {
       const call = Publish.safeParse(block)
       if (call.success)
-        pending.set(call.data.id, { title: call.data.input.title, description: call.data.input.description ?? '' })
+        pending.set(call.data.id, { title: call.data.input.title, description: call.data.input.description ?? '', at })
     }
     return
   }
@@ -134,9 +193,13 @@ async function sessionFiles(projects: string): Promise<{ path: string; size: num
 
 export function createArtifactScanner(
   projects: string,
-  { maxMs = 1500, maxBytes = 32 * 1024 * 1024, now = Date.now }: Limits = {},
+  { maxMs = 1500, maxBytes = defaultMaxBytes, now = Date.now, cursorFile }: Limits = {},
 ): ArtifactScanner {
   const states = new Map<string, FileState>()
+  // The cursor of the last run, read once at the first scan. A session file only grows, so its saved offset is a
+  // line's start in it; a file that is now shorter is read from the start, as in one run.
+  let saved: Cursor | undefined
+  let savedText = ''
   // One scan at a time: two at once would read the same bytes from the same offset.
   let queue: Promise<unknown> = Promise.resolve()
   const scanOnce = async (): Promise<ArtifactScan> => {
@@ -147,7 +210,14 @@ export function createArtifactScanner(
     // Each scan reads at least one chunk, also past its time cap, so a slow disk or a long listing still moves on.
     let progressed = false
     const allowed = () => budget > 0 && (!progressed || now() - start <= maxMs)
-    for (const { path, size } of await sessionFiles(projects)) {
+    if (cursorFile !== undefined && saved === undefined) {
+      saved = await loadCursor(cursorFile)
+      for (const [path, at] of Object.entries(saved))
+        states.set(path, { offset: at.offset, carry: Buffer.alloc(0), skipLine: at.skipLine, pending: new Map() })
+      savedText = JSON.stringify(saved)
+    }
+    const files = await sessionFiles(projects)
+    for (const { path, size } of files) {
       let state = states.get(path)
       // A file that became shorter was written again: read it from the start.
       if (state === undefined || size < state.offset) {
@@ -176,9 +246,10 @@ export function createArtifactScanner(
           let end = bytes.indexOf(10)
           while (end !== -1) {
             const line = bytes.subarray(0, end)
+            const at = state.offset
             state.offset += end + 1
             if (state.skipLine) state.skipLine = false
-            else readLine(line.toString('utf8'), state.pending, found)
+            else readLine(line, at, state.pending, found)
             bytes = bytes.subarray(end + 1)
             end = bytes.indexOf(10)
           }
@@ -195,7 +266,25 @@ export function createArtifactScanner(
       }
       if (partial) break
     }
-    return { found, partial }
+    // Only the files that are there now, so a removed session leaves the cursor. A file with a call that waits for
+    // its result is saved at that call's line, so a restart reads the call again and then its result.
+    const cursor: Cursor = {}
+    for (const { path } of files) {
+      const state = states.get(path)
+      if (state === undefined) continue
+      const held = [...state.pending.values()].map((p) => p.at).filter((at) => state.offset - at <= maxHoldBytes)
+      cursor[path] =
+        held.length === 0
+          ? { offset: state.offset, skipLine: state.skipLine }
+          : { offset: Math.min(...held), skipLine: false }
+    }
+    const keep = async () => {
+      const text = JSON.stringify(cursor)
+      if (cursorFile === undefined || text === savedText) return
+      await saveCursor(cursorFile, cursor)
+      savedText = text
+    }
+    return { found, partial, keep }
   }
   return {
     scan() {
@@ -219,9 +308,10 @@ export function createClaudeArtifactFinder(projects: string, chatRoot: string, l
   const scanner = createArtifactScanner(projects, limits)
   return {
     async scan() {
-      const { found, partial } = await scanner.scan()
+      const { found, partial, keep } = await scanner.scan()
       return {
         partial,
+        keep,
         found: found.map(({ cwd, ...artifact }) => ({ ...artifact, project: projectOf(chatRoot, cwd) })),
       }
     },

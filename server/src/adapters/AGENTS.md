@@ -241,9 +241,19 @@ client of a socket or a file sits beside them.
   an https claude.ai artifact link, is skipped. A Code Mode chat calls
   the tool inside a script and writes no such record, so its artifacts
   are not found. Each scan reads only the bytes written since the last
-  one, splits lines on the byte 0x0a, parses only a line that names
-  `Artifact` or a result it waits for, and stops at 1.5 s or 32 MiB (the
-  next scan goes on, and the scan says `partial`). Each scan reads at
+  one, splits lines on the byte 0x0a, decodes and parses only a line
+  whose bytes name `Artifact` or a result it waits for, and stops at
+  1.5 s or 1 GiB (the next scan goes on, and the scan says `partial`).
+  The time cap is the limit that counts: a projects folder of 6.8 GiB
+  took about 213 lists at the old 32 MiB cap. The scan saves how far it
+  read each file (its offset, a line's start) in `scan.json`, 0600 in
+  the artifacts folder, so a server restart reads on from there; a file
+  that is now shorter is read from the start, and a missing or bad cursor
+  file means a read of every file. The cursor is saved only when the
+  service calls the scan's `keep`, after the library save, so a failed
+  save and a restart find those artifacts again. A file with a publish
+  call that waits for its result is saved at that call's line (at most
+  64 MiB back), so a restart reads the call and then its result. Each scan reads at
   least one chunk, a line not finished stays for the next scan, and one
   scan runs at a time. A line over 8 MiB is skipped, and a file that
   became shorter is read again. It reads only

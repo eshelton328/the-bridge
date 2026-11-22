@@ -40,7 +40,18 @@ function setup() {
     },
   }
   let next: FoundArtifact[][] = []
-  const finder = { scan: () => Promise.resolve({ found: next.shift() ?? [], partial: false }) }
+  let keeps = 0
+  const finder = {
+    scan: () =>
+      Promise.resolve({
+        found: next.shift() ?? [],
+        partial: false,
+        keep: () => {
+          keeps += 1
+          return Promise.resolve()
+        },
+      }),
+  }
   let time = Date.parse('2026-11-21T12:00:00.000Z')
   const artifacts = createArtifacts({ store, finder, machine, now: () => new Date((time += 1000)) })
   return {
@@ -49,6 +60,7 @@ function setup() {
       next = lists
     },
     saves: () => saves,
+    keeps: () => keeps,
     fail: () => {
       failing = true
     },
@@ -152,5 +164,15 @@ describe('the artifacts library', () => {
       [link(1), 'Report 1 again'],
       [link(2), 'Report 2'],
     ])
+  })
+
+  it('tells the finder to keep its scan only after the library save', async () => {
+    const t = setup()
+    t.finds([found(1)], [])
+    t.failSave()
+    await t.artifacts.list()
+    expect(t.keeps()).toBe(0)
+    await t.artifacts.list()
+    expect([t.saves(), t.keeps()]).toEqual([1, 1])
   })
 })

@@ -29,9 +29,16 @@ export type FoundArtifact = {
   readonly project: ArtifactProject | null
 }
 
-/** Reads the artifacts published since its last scan; `partial` when it stopped at a cap. */
+/**
+ * Reads the artifacts published since its last scan; `partial` when it stopped at a cap. `keep` tells the finder
+ * that the library kept them, so it may save how far it read; until then a restart gives them again.
+ */
 export type ArtifactFinder = {
-  scan(): Promise<{ readonly found: readonly FoundArtifact[]; readonly partial: boolean }>
+  scan(): Promise<{
+    readonly found: readonly FoundArtifact[]
+    readonly partial: boolean
+    readonly keep?: () => Promise<void>
+  }>
 }
 
 type StoredArtifact = Artifact & { readonly removed: boolean }
@@ -161,7 +168,11 @@ export function createArtifacts({ store, finder, machine, now = () => new Date()
           },
         }
       })
-      if (listed.ok) held.splice(0, batch.length)
+      if (listed.ok) {
+        held.splice(0, batch.length)
+        // This scan's artifacts, and each held one before them, are in the saved library now.
+        await scan.keep?.()
+      }
       return listed
     },
     get: (id) =>
