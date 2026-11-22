@@ -1,9 +1,11 @@
+import { appShellDockEvent } from '@eshelton328/component-library-1701'
 import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import {
   createRing,
   type KeyboardTraceSample,
   readDisplayMode,
   readHeader,
+  readBuild,
   readKbExperiment,
   readSafeArea,
   readSample,
@@ -26,6 +28,8 @@ const FIELDS = [
   'rootTop',
   'composerTop',
   'keyboard',
+  'keyboardTop',
+  'dockInset',
 ]
 
 function mountShell(): HTMLElement {
@@ -223,6 +227,59 @@ describe('keyboard trace sampler', () => {
     expect(document.querySelector('[data-keyboard-trace]')).toBeNull()
   })
 
+  it('records the keyboard top in layout px, from the visual viewport, in each sample', () => {
+    const vv = window.visualViewport
+    if (vv === null) throw new Error('no visualViewport')
+    const sample = readSample('raf', null)
+    expect(sample.keyboardTop).toBe(Math.round((vv.offsetTop + vv.height) * 10) / 10)
+    // A visual viewport moved down 40 px and 300 px shorter: the keyboard's top is at 340.
+    const top = vi.spyOn(vv, 'offsetTop', 'get').mockReturnValue(40)
+    const height = vi.spyOn(vv, 'height', 'get').mockReturnValue(300)
+    onTestFinished(() => {
+      top.mockRestore()
+      height.mockRestore()
+    })
+    expect(readSample('raf', null).keyboardTop).toBe(340)
+  })
+
+  it("records the dock's target inset from the shell's dock event in the samples after it", async () => {
+    const host = mountShell()
+    const running = trace()
+    await expect.poll(() => ofType(running.trace().samples, 'raf').length).toBeGreaterThan(0)
+    expect(running.trace().samples.at(-1)?.dockInset).toBeNull()
+    // AppShell sends it to its root and it does not bubble.
+    host.dispatchEvent(new CustomEvent(appShellDockEvent, { detail: { inset: 336 } }))
+    const count = running.trace().samples.length
+    await expect.poll(() => running.trace().samples.length).toBeGreaterThan(count)
+    expect(running.trace().samples.at(-1)?.dockInset).toBe(336)
+    host.dispatchEvent(new CustomEvent(appShellDockEvent, { detail: { inset: 0 } }))
+    window.dispatchEvent(new Event('resize'))
+    expect(ofType(running.trace().samples, 'resize').at(-1)?.dockInset).toBe(0)
+  })
+
+  it('records the build in the header: the commit and the component library version the dev server defined', async () => {
+    // The web test project extends web/vite.config.ts, so the plugin's define is in this run.
+    const defined = readBuild()
+    expect(defined.libraryVersion).toMatch(/^[0-9A-Za-z.+-]{1,64}$/)
+    expect(defined.commit === null || /^[0-9a-f]{7,40}$/.test(defined.commit)).toBe(true)
+    expect(trace().trace().build).toEqual(defined)
+    const build = { commit: 'abc1234', libraryVersion: '1.0.0-beta.1' }
+    const posts: string[] = []
+    const running = startKeyboardTrace({
+      postEveryMs: 50,
+      overlay: false,
+      build,
+      post: (_endpoint, body) => {
+        posts.push(body)
+        return Promise.resolve(undefined)
+      },
+    })
+    onTestFinished(running.stop)
+    expect(running.trace().build).toEqual(build)
+    await expect.poll(() => posts.length).toBeGreaterThan(0)
+    expect(JSON.parse(posts[0] ?? '')).toMatchObject({ build })
+  })
+
   it('reads a sample with an empty keyboard when no shell is on the page', () => {
     expect(readSample('raf', null).keyboard).toBe('')
   })
@@ -352,6 +409,7 @@ describe('keyboard trace sampler', () => {
     expect(Object.keys(header).sort()).toEqual(
       [
         'automated',
+        'build',
         'devicePixelRatio',
         'displayMode',
         'kbExperiment',

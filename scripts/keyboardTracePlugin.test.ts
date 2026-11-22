@@ -8,9 +8,11 @@ import {
   createEnabledHandler,
   createTraceHandler,
   findTraceDir,
+  KEYBOARD_TRACE_BUILD_DEFINE,
   KEYBOARD_TRACE_ENABLED_PATH,
   KEYBOARD_TRACE_PATH,
   keyboardTracePlugin,
+  readTraceBuild,
   type TraceHandler,
   traceFileName,
 } from './keyboardTracePlugin.ts'
@@ -54,6 +56,48 @@ void test('the plugin runs only on the dev server, never in a build', () => {
   plugin.configureServer({ middlewares: { use: (path) => used.push(path) } })
   // The switch comes first, as connect matches the trace endpoint's path as a prefix.
   assert.deepEqual(used, [KEYBOARD_TRACE_ENABLED_PATH, KEYBOARD_TRACE_PATH])
+})
+
+/** A repository root with the library's package.json at `version`, or none. */
+function fakeRoot(version?: unknown): string {
+  const root = tempDir()
+  if (version === undefined) return root
+  const dir = join(root, 'web', 'node_modules', '@eshelton328', 'component-library-1701')
+  mkdirSync(dir, { recursive: true })
+  writeFileSync(join(dir, 'package.json'), JSON.stringify({ name: '@eshelton328/component-library-1701', version }))
+  return root
+}
+
+void test('the build is the short HEAD commit and the library version, each null when it cannot be read', () => {
+  const calls: string[][] = []
+  const root = fakeRoot('1.0.0-beta.102')
+  const git = (args: string[], cwd: string) => {
+    calls.push([cwd, ...args])
+    return 'ce9bbfa\n'
+  }
+  assert.deepEqual(readTraceBuild({ root, git }), { commit: 'ce9bbfa', libraryVersion: '1.0.0-beta.102' })
+  assert.deepEqual(calls, [[root, 'rev-parse', '--short', 'HEAD']])
+  const noGit = () => {
+    throw new Error('spawn git ENOENT')
+  }
+  assert.deepEqual(readTraceBuild({ root: fakeRoot(), git: noGit }), { commit: null, libraryVersion: null })
+  const odd = () => 'not a sha'
+  assert.deepEqual(readTraceBuild({ root: fakeRoot(7), git: odd }), { commit: null, libraryVersion: null })
+  // In this repository both are read.
+  const own = readTraceBuild()
+  assert.match(own.libraryVersion ?? '', /^\d+\.\d+\.\d+/)
+  assert.ok(own.commit === null || /^[0-9a-f]{7,40}$/.test(own.commit))
+})
+
+void test('the plugin defines the build for the app once the dev server reads its config', () => {
+  const build = { commit: 'abc1234', libraryVersion: '1.0.0-beta.1' }
+  const plugin = keyboardTracePlugin({ build: () => build })
+  assert.deepEqual(plugin.config(), { define: { [KEYBOARD_TRACE_BUILD_DEFINE]: JSON.stringify(build) } })
+  assert.equal(KEYBOARD_TRACE_BUILD_DEFINE, '__KEYBOARD_TRACE_BUILD__')
+  const none = keyboardTracePlugin({ build: () => ({ commit: null, libraryVersion: null }) })
+  assert.deepEqual(none.config(), {
+    define: { __KEYBOARD_TRACE_BUILD__: '{"commit":null,"libraryVersion":null}' },
+  })
 })
 
 void test('the switch answers enabled true while the traces folder has ENABLED, else false, never cached', async () => {
@@ -166,6 +210,16 @@ void test('a chat session trace with its route and chat is taken, the state key 
   assert.equal((await post(url, trace({ ...HEADER, ...home, samples: [{ t: 2 }] }))).status, 204)
 })
 
+void test('a trace with its build is taken, and either field may be null', async () => {
+  const dir = tempDir()
+  const url = await serve(createTraceHandler({ traceDir: () => dir, now: () => NOW }))
+  const full = trace({ ...HEADER, build: { commit: 'ce9bbfa', libraryVersion: '1.0.0-beta.102' }, samples: [{ t: 1 }] })
+  assert.equal((await post(url, full)).status, 204)
+  assert.equal(readFileSync(join(dir, '2026-11-19T09-58-12-345Z.json'), 'utf8'), full)
+  const none = { build: { commit: null, libraryVersion: null } }
+  assert.equal((await post(url, trace({ ...HEADER, ...none, samples: [{ t: 2 }] }))).status, 204)
+})
+
 void test('two chat sessions with their own startedAt are written to two files', async () => {
   const dir = tempDir()
   const url = await serve(createTraceHandler({ traceDir: () => dir, now: () => NOW }))
@@ -209,6 +263,12 @@ void test('a trace with a malformed display header is refused', async () => {
     { kbExperiment: 'a.b' },
     { kbExperiment: 7 },
     { kbExperiment: ['a'] },
+    { build: 'ce9bbfa' },
+    { build: { commit: 'ce9bbfa' } },
+    { build: { commit: 'not a sha', libraryVersion: null } },
+    { build: { commit: null, libraryVersion: 'my secret text' } },
+    { build: { commit: null, libraryVersion: 1 } },
+    { build: { commit: null, libraryVersion: null, branch: 'main' } },
   ]) {
     assert.equal((await post(url, trace({ ...HEADER, ...bad }))).status, 400, JSON.stringify(bad))
   }

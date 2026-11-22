@@ -48,6 +48,9 @@ tracing on or off, or change what a trace records.
   and a short `kb-experiment` key (`keyboardTrace.test.ts`).
 - Under automation (`navigator.webdriver`) the switch starts no trace;
   the param still traces, marked `automated` (`keyboardTraceSwitch.test.ts`).
+- Trace fields are additive: add a field, never rename or drop one, and
+  keep the sample read free of new layout reads (`keyboardTop` and
+  `dockInset` read only `visualViewport` and the last dock event).
 - `keyboardProxy.ts` gives the composer the focus through a proxy field on
   iOS, in every build (screen reviews R27 and R37). It acts only on a
   touch tap on a composer field or its box, never on Send, Stop, Attach or

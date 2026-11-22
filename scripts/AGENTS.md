@@ -21,7 +21,9 @@ camelCase (the lint's file-name rule).
   `BRIDGE_SERVER_URL`, and the build, Vitest and Storybook start without it.
 - `keyboardTracePlugin.ts` is a dev-server plugin (`apply: 'serve'`); a
   build must never include it. No client text may reach a trace file's
-  path (`keyboardTracePlugin.test.ts`).
+  path (`keyboardTracePlugin.test.ts`). Its build read (git, the
+  library's package.json) gives null on any failure and never stops the
+  dev server.
 
 Read [README.md](README.md) when you run `pnpm new`, `pnpm
 keyboard:served` or change the keyboard trace endpoint.
