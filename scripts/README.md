@@ -36,8 +36,8 @@ and `?state=changeProposedPage`, Discuss) in Playwright's WebKit with the iPhone
 2. blurs a focused field and waits 600 ms (a state can open with the
    composer focused), then taps the composer, scrolls the window by the keyboard's height as iOS
    does for a focused field, and shrinks the fake viewport by 336 px on
-   the library's keyboard curve (250 ms, `cubic-bezier(0.38, 0.7, 0.125,
-   1)`), one step each frame;
+   iOS's keyboard curve (300 ms, `cubic-bezier(0.22, 0.17, 0.15, 1)`,
+   the spring fit of library #312), one step each frame;
 3. blurs the field and grows the viewport back on the same curve;
 4. samples every animation frame and checks the owner's acceptance rules
    (R22): the header's top is the same in every frame, `window.scrollY`
