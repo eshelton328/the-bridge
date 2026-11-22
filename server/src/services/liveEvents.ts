@@ -3,7 +3,9 @@
 // closes it, so with no client open the server reads nothing. It numbers
 // the events of its source from 0 up. When the port stops answering it
 // ends every client's stream; each browser connects again after its retry
-// time, and the first one opens a new subscription.
+// time, and the first one opens a new subscription. The Inbox changes with
+// each chat status, each owner mark and each write in the brain's inbox
+// folders, which it watches only while a client is open (R20).
 import { type ChatId, EventSource, type LiveEvent } from '@bridge/contract'
 import type { AgentEvent, AgentPort, AgentPortError, AgentSubscription } from './agentPort.ts'
 
@@ -14,18 +16,24 @@ type LiveClient = {
   readonly end: (error: AgentPortError) => void
 }
 
+/** Watches the brain's inbox folders: `onChange` after each change, until the result is called. */
+export type InboxWatch = (onChange: () => void) => () => void
+
 export type LiveEvents = {
   /** Adds a client; the result removes it. */
   connect(client: LiveClient): () => void
   /** How many clients are connected now. */
   clients(): number
+  /** Tells each client that the Inbox changed, as after an owner's mark. */
+  readonly inboxChanged: () => void
 }
 
-export function createLiveEvents(agents: AgentPort): LiveEvents {
+export function createLiveEvents(agents: AgentPort, watchInbox?: InboxWatch): LiveEvents {
   const source = EventSource.parse(`${agents.machine}/agents`)
   const clients = new Set<LiveClient>()
   let seq = 0
   let subscription: AgentSubscription | undefined
+  let unwatch: (() => void) | undefined
 
   const envelope = (event: AgentEvent): LiveEvent => {
     const base = { source, seq: seq++ }
@@ -39,13 +47,25 @@ export function createLiveEvents(agents: AgentPort): LiveEvents {
     }
   }
 
-  const broadcast = (event: AgentEvent) => {
-    const live = envelope(event)
+  const send = (live: LiveEvent) => {
     for (const client of [...clients]) client.send(live)
+  }
+  const inboxChanged = () => {
+    if (clients.size > 0) send({ source, seq: seq++, type: 'inbox.changed', data: {} })
+  }
+  const broadcast = (event: AgentEvent) => {
+    send(envelope(event))
+    // A status change adds or removes the chat's Inbox item, and a list change too (a closed or cleared chat).
+    if (event.type === 'chatStatus' || event.type === 'workspacesChanged') inboxChanged()
+  }
+  const stopWatch = () => {
+    unwatch?.()
+    unwatch = undefined
   }
 
   const ended = (error: AgentPortError) => {
     subscription = undefined
+    stopWatch()
     const gone = [...clients]
     clients.clear()
     for (const client of gone) client.end(error)
@@ -55,12 +75,15 @@ export function createLiveEvents(agents: AgentPort): LiveEvents {
     connect(client) {
       clients.add(client)
       subscription ??= agents.subscribe(broadcast, ended)
+      unwatch ??= watchInbox?.(inboxChanged)
       return () => {
         if (!clients.delete(client) || clients.size > 0) return
         subscription?.close()
         subscription = undefined
+        stopWatch()
       }
     },
     clients: () => clients.size,
+    inboxChanged,
   }
 }

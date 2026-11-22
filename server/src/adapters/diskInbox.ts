@@ -5,12 +5,14 @@
 // beside the database, 0600 and replaced in one rename. A fault gives its
 // errno code only; no path, title or record text goes into an error.
 import { createHash, randomUUID } from 'node:crypto'
+import { type FSWatcher, watch } from 'node:fs'
 import { chmod, lstat, mkdir, readdir, readFile, realpath, rename, rm, writeFile } from 'node:fs/promises'
 import { join, sep } from 'node:path'
 import { InboxId, InboxKind, maxInboxBody } from '@bridge/contract'
 import { err, ok, type Result } from '@bridge/shared'
 import { z } from 'zod'
 import type { BrainRequest, BrainRequests, InboxMarks, InboxMarkStore } from '../services/inbox.ts'
+import type { InboxWatch } from '../services/liveEvents.ts'
 
 /** A record larger than this is not read: an attention request is a page of text. */
 const maxRecordBytes = 256 * 1024
@@ -213,5 +215,71 @@ export function createDiskInboxMarks(root: string): InboxMarkStore {
         return err({ reason: 'failed', code: codeOf(thrown) })
       }
     },
+  }
+}
+
+/** How long the watch waits after a change before it tells, so a burst of writes (a save, a rename) tells once. */
+const inboxQuietMs = 100
+
+/**
+ * Watches `<brain>/projects`, each project folder and each project's `inbox` folder that is a real folder, never a
+ * symlink, with no timer but the quiet wait. A change in `projects` or a project folder watches the folders again,
+ * as a project may have a new inbox. A folder that cannot be watched is skipped. Once the watches are ready it tells
+ * once, so a change during their start is not lost.
+ */
+export function watchBrainInbox(brainDir: string): InboxWatch {
+  return (onChange) => {
+    const projects = join(brainDir, 'projects')
+    let closed = false
+    let quiet: ReturnType<typeof setTimeout> | undefined
+    let watchers: FSWatcher[] = []
+    const tell = () => {
+      clearTimeout(quiet)
+      quiet = setTimeout(() => {
+        if (!closed) onChange()
+      }, inboxQuietMs)
+    }
+    const open = (folder: string, listener: () => void): FSWatcher | undefined => {
+      try {
+        const watcher = watch(folder, listener)
+        watcher.on('error', () => {
+          watcher.close()
+        })
+        return watcher
+      } catch {
+        // A folder that is gone or cannot be read gives no watch; the next change above it tries again.
+        return undefined
+      }
+    }
+    const isFolder = async (path: string) => (await lstat(path).catch(() => null))?.isDirectory() === true
+    const rewatch = () => {
+      tell()
+      void watchAll()
+    }
+    const watchAll = async () => {
+      const found: FSWatcher[] = []
+      const add = (watcher: FSWatcher | undefined) => {
+        if (watcher !== undefined) found.push(watcher)
+      }
+      add(open(projects, rewatch))
+      const entries = await readdir(projects, { withFileTypes: true }).catch(() => [])
+      for (const entry of entries) {
+        if (!entry.isDirectory()) continue
+        const project = join(projects, entry.name)
+        add(open(project, rewatch))
+        const inbox = join(project, 'inbox')
+        if (await isFolder(inbox)) add(open(inbox, tell))
+      }
+      for (const old of watchers) old.close()
+      if (closed) for (const watcher of found) watcher.close()
+      else watchers = found
+    }
+    void watchAll().then(tell)
+    return () => {
+      closed = true
+      clearTimeout(quiet)
+      for (const watcher of watchers) watcher.close()
+      watchers = []
+    }
   }
 }
