@@ -7,7 +7,9 @@
 // the list read after the server's event, so the list shows the server's
 // order from then on. The move and the end are window listeners, so a
 // handle that React moves in the list keeps its drag. A drag that the
-// browser cancels sends nothing. Props only: the hook keeps the drag.
+// browser cancels sends nothing. Only the pointer that started the drag
+// moves or ends it: a second finger on the screen is ignored (Codex review
+// of #425). Props only: the hook keeps the drag.
 import { type KeyboardEvent, type PointerEvent, useCallback, useEffect, useRef, useState } from 'react'
 
 /** `ids` with `id` taken out and put in at `at` of the others. */
@@ -69,9 +71,11 @@ export function useWorkspaceReorder(
       event.preventDefault()
       stopRef.current?.()
       const from = nowRef.current.ids
+      const pointer = event.pointerId
       let at = Math.max(0, from.indexOf(id))
       setDrag({ id, at })
       const move = (e: globalThis.PointerEvent) => {
+        if (e.pointerId !== pointer) return
         at = placeOf(id, e.clientY)
         setDrag({ id, at })
       }
@@ -83,12 +87,13 @@ export function useWorkspaceReorder(
         setDrag(undefined)
       }
       const up = (e: globalThis.PointerEvent) => {
+        if (e.pointerId !== pointer) return
         at = placeOf(id, e.clientY)
         stop()
         nowRef.current.onOrder?.(movedTo(from, id, at))
       }
-      const cancel = () => {
-        stop()
+      const cancel = (e: globalThis.PointerEvent) => {
+        if (e.pointerId === pointer) stop()
       }
       window.addEventListener('pointermove', move)
       window.addEventListener('pointerup', up)

@@ -200,6 +200,26 @@ describe("the live list's Edit (R41)", () => {
     })
   }
 
+  it('ends a drag only with the pointer that started it (a second finger sends nothing)', async () => {
+    const fakes = withChats()
+    await tapWorkspaces(phone)
+    await tapEdit()
+    const handle = page.getByRole('button', { name: 'Move orchard' }).element()
+    const box = handle.getBoundingClientRect()
+    const below = page.getByText('survey the pond', { exact: true }).element().getBoundingClientRect().bottom + 4
+    const pointer = (type: string, pointerId: number, clientY: number) =>
+      new PointerEvent(type, { pointerId, isPrimary: pointerId === 1, button: 0, bubbles: true, clientY })
+    handle.dispatchEvent(pointer('pointerdown', 1, box.top + box.height / 2))
+    // A second finger goes down and up under meadow: it must not end the drag.
+    window.dispatchEvent(pointer('pointerup', 2, below))
+    await expect.element(page.getByRole('button', { name: 'Done', exact: true })).toBeVisible()
+    expect(fakes.list.edits).toEqual([])
+    // The first finger lifts where it started: the order is the same, so nothing goes.
+    window.dispatchEvent(pointer('pointerup', 1, box.top + box.height / 2))
+    await expect.poll(handleOrder).toEqual(['Move orchard', 'Move meadow'])
+    expect(fakes.list.edits).toEqual([])
+  })
+
   it('shows the server’s 400 as one line and keeps the old name', async () => {
     const fakes = withChats()
     await tapWorkspaces(phone)
