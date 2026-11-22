@@ -14,8 +14,8 @@ title's place, with the focus in it and "bridge themes" as its text. A
 tap outside saves the name in `ui.names`; × undoes the change and closes
 the field, as in M23 and T1; either gives the focus back to the message
 box if it had it before Rename chat (`WorkspacesTabletRenameChat.test.tsx`).
-The chat has no tab bar, so the render has no Artifacts tab, and no
-exception is needed.
+The chat has no tab bar, so the render has no Artifacts tab, and the only
+exceptions are R45's (the last deviation).
 
 ## Checks
 
@@ -91,4 +91,14 @@ shorter, below Figma's status bar (d-102), and the position check adds
 - **Actions still to build.** Attach, Stop and Send draw only, as in
   T11. The new name stays in the view's state (`ui.names`) and is not
   sent anywhere.
-- **No exceptions.**
+- **The composer is one row, with no model (screen review R45,
+  library beta.103).** The chat works and its box has no focus, no
+  draft and no file, so the composer draws its collapsed row
+  (paperclip, text, Stop, Send; 50 high) where Figma draws the
+  expanded composer (420:1605, 75 high) with the model chip
+  (420:1615, "Opus 5.5"). The owner's comment on R45 ("sometimes the
+  chat box closes all the way and sometimes it stays as the expanded
+  form") replaced R31's rule that a working chat stays expanded.
+  `exceptions.json` covers the model text (420:1615) and the
+  composer's place (420:1605): its top is 24 lower
+  (y 1074).

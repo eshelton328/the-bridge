@@ -10,7 +10,7 @@ with `tabletList`), with `ui.menuFor` set: at a tablet's width the ⋯ is
 the trigger of D2b's `ChatActionsMenu` (`PaneMenu`, `Menu width="sm"
 density="compact"`, `placement="bottom-end"`) in place of M4's sheet, and
 Move to workspace is highlighted (`ui.menuHighlight`). The chat has no
-tab bar, so the render has no Artifacts tab, and no exception is needed.
+tab bar, so the render has no Artifacts tab, and the only exceptions are R45's (the last deviation).
 
 ## Checks
 
@@ -84,3 +84,14 @@ tab bar, so the render has no Artifacts tab, and no exception is needed.
 - **Menu surface (2026-11-18).** Library beta.45 gives the `Menu`
   content the `blurs.glass` backdrop blur, as Figma's chat actions menu
   (402:5721) has, so Claude's reply under the menu no longer shows through it.
+- **The composer is one row, with no model (screen review R45,
+  library beta.103).** The chat works and its box has no focus, no
+  draft and no file, so the composer draws its collapsed row
+  (paperclip, text, Stop, Send; 50 high) where Figma draws the
+  expanded composer (402:5783, 75 high) with the model chip
+  (402:5801, "Opus 5.5"). The owner's comment on R45 ("sometimes the
+  chat box closes all the way and sometimes it stays as the expanded
+  form") replaced R31's rule that a working chat stays expanded.
+  `exceptions.json` covers the model text (402:5801) and the
+  composer's place (402:5783): its top is 28 lower
+  (y 1074).

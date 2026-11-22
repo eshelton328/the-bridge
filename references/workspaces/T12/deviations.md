@@ -13,7 +13,7 @@ workspace is highlighted (`ui.menuHighlight`) and its list is open
 (`ui.moveOpen`) with the-bridge highlighted (`ui.moveTarget`), as on D19.
 The library opens the list on the menu's left, as Figma draws it, as the
 screen has no room on the right. The chat has no tab bar, so the render
-has no Artifacts tab, and no exception is needed.
+has no Artifacts tab, and the only exceptions are R45's (the last deviation).
 
 ## Checks
 
@@ -89,4 +89,14 @@ has no Artifacts tab, and no exception is needed.
 - **Menu surface (2026-11-18).** Library beta.45 gives the `Menu`
   content the `blurs.glass` backdrop blur, as Figma's chat actions menu
   (420:1266) has, so Claude's reply under the menu no longer shows through it.
-- **No exceptions.**
+- **The composer is one row, with no model (screen review R45,
+  library beta.103).** The chat works and its box has no focus, no
+  draft and no file, so the composer draws its collapsed row
+  (paperclip, text, Stop, Send; 50 high) where Figma draws the
+  expanded composer (420:1243, 75 high) with the model chip
+  (420:1253, "Opus 5.5"). The owner's comment on R45 ("sometimes the
+  chat box closes all the way and sometimes it stays as the expanded
+  form") replaced R31's rule that a working chat stays expanded.
+  `exceptions.json` covers the model text (420:1253) and the
+  composer's place (420:1243): its top is 24 lower
+  (y 1074).
