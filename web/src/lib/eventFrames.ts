@@ -16,6 +16,13 @@ export type Frame = { readonly event: string; readonly data: string; readonly re
 /** How long a stream may give no byte before it counts as lost, in ms: three of the server's 15 s pings. */
 export const streamIdleMs = 45_000
 
+/**
+ * How long a live stream that ended or dropped, or a read that got no answer, may take before the page shows it, in ms
+ * (review R43, bridge-coord's decision): a restart of the server ends every stream, and the server is back within the
+ * first two retries (5 s each). A miss within this window is quiet; one after it shows, as before.
+ */
+export const reconnectGraceMs = 10_000
+
 /** A stream that gave no byte for `streamIdleMs`: the reader closed it. */
 export class StreamIdleError extends Error {
   constructor(ms: number) {

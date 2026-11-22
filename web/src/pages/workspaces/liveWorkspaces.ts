@@ -55,7 +55,7 @@ import type { QueryClient, QueryKey } from '@tanstack/react-query'
 import { err, ok, type Result } from '@bridge/shared'
 import { report } from '../../errors/reporter.ts'
 import { api } from '../../lib/api.ts'
-import { type Frame, frames } from '../../lib/eventFrames.ts'
+import { type Frame, frames, reconnectGraceMs } from '../../lib/eventFrames.ts'
 import { queryClient } from '../../lib/queryClient.ts'
 import type { ScreenState } from '../../lib/screenState.ts'
 import { modelFamilies } from './blocks/modelFamilies.ts'
@@ -356,13 +356,6 @@ function liveOnly(
  * tailnet takes under 1 s.
  */
 export const liveReadTimeoutMs = 8000
-
-/**
- * How long a live stream that ended or dropped may take to connect again before the page shows it, in ms (review R43,
- * bridge-coord's decision): a restart of the server ends every stream, and the server is back within the first two
- * retries (5 s each). A miss within this window is quiet; one after it shows, as before.
- */
-export const reconnectGraceMs = 10_000
 
 /**
  * A live read that missed in a way the page expects; `message` says what happened, for the status bar and the

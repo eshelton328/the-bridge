@@ -15,8 +15,18 @@
 // again when the page shows (lib/pageResume.ts); a miss keeps the last count
 // and report() gets only its kind and status. A reply the contract refuses
 // keeps the last count and is reported by a fixed message.
+//
+// Review R43b: a read with no answer from the server (none at all, or a 5xx
+// with no error body: the Vite proxy for a server that is down, as in a
+// restart) starts a grace of `reconnectGraceMs`. Within it the miss is
+// quiet; when it passes, the feed reads once more, and a miss then is
+// reported once for the outage. A read that answers ends it. Its stream is
+// `watchInboxChanges`, whose reader closes a stream that gives no byte for
+// 45 s (lib/eventFrames.ts), so it connects again as after a drop.
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 import { report } from '../errors/reporter.ts'
+import { reconnectGraceMs } from '../lib/eventFrames.ts'
+import type { InboxMiss } from '../lib/inboxClient.ts'
 import { type InboxFeed, InboxFeedContext } from '../lib/inboxFeed.ts'
 
 /** A badge read whose reply the contract refused, with no part of the reply. */
@@ -26,6 +36,9 @@ class InboxRefusedError extends Error {
     this.name = 'InboxRefusedError'
   }
 }
+
+/** A miss with no answer from the server: none at all, or a 5xx with no error body (a proxy for a server that is down). */
+const noAnswer = (miss: InboxMiss) => miss.status === undefined || (miss.kind === 'status' && miss.status >= 500)
 
 /** How long a burst of events from a host's stream waits before it gives one read, in ms (as the feed's own stream). */
 const settleMs = 100
@@ -42,6 +55,8 @@ type Hub = {
   /** A change: the followers load, or the feed reads (once the Inbox client loaded). */
   changed: () => void
   settle: ReturnType<typeof setTimeout> | undefined
+  /** The grace of a read with no answer (R43b), while one runs or until a read answers; `over` once it passed. */
+  grace: { over: boolean; reported: boolean } | undefined
 }
 
 const newHub = (): Hub => ({
@@ -52,6 +67,7 @@ const newHub = (): Hub => ({
   reading: undefined,
   changed: () => undefined,
   settle: undefined,
+  grace: undefined,
 })
 
 export function InboxFeedProvider({ children }: { children: ReactNode }) {
@@ -62,6 +78,7 @@ export function InboxFeedProvider({ children }: { children: ReactNode }) {
     const hub = hubRef.current
     let unlisten: (() => void) | undefined
     let gone = false
+    let graceTimer: ReturnType<typeof setTimeout> | undefined
     const start = ({ InboxMissError, readInboxList, watchInboxChanges }: typeof import('../lib/inboxClient.ts')) => {
       if (gone) return
       hub.changed = () => {
@@ -76,8 +93,25 @@ export function InboxFeedProvider({ children }: { children: ReactNode }) {
           (answer) => {
             // A read that a newer one or the Inbox page's count replaced keeps its answer to itself.
             if (mine.signal.aborted) return
-            if (answer.ok) setCount(answer.value.counts.needsYou)
-            else if (answer.error.status !== undefined) report(new InboxMissError('badge', answer.error), 'live')
+            if (answer.ok) {
+              clearTimeout(graceTimer)
+              hub.grace = undefined
+              setCount(answer.value.counts.needsYou)
+              return
+            }
+            if (noAnswer(answer.error)) {
+              if (hub.grace === undefined) {
+                const grace = { over: false, reported: false }
+                hub.grace = grace
+                graceTimer = setTimeout(() => {
+                  grace.over = true
+                  hub.changed()
+                }, reconnectGraceMs)
+              }
+              if (!hub.grace.over || hub.grace.reported || answer.error.status === undefined) return
+              hub.grace.reported = true
+            }
+            if (answer.error.status !== undefined) report(new InboxMissError('badge', answer.error), 'live')
           },
           () => {
             // A read the next one replaced, or the app's end, is no miss. A reply the contract refuses is reported by
@@ -122,6 +156,7 @@ export function InboxFeedProvider({ children }: { children: ReactNode }) {
     void import('../lib/inboxClient.ts').then(start)
     return () => {
       gone = true
+      clearTimeout(graceTimer)
       unlisten?.()
     }
   }, [])
