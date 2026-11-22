@@ -7,7 +7,7 @@ import { dirname, join } from 'node:path'
 import { serve } from '@hono/node-server'
 import { createClaudeArtifactFinder } from './adapters/claudeArtifacts.ts'
 import { createDiskArtifactStore } from './adapters/diskArtifacts.ts'
-import { createBrainRequests, createDiskInboxMarks } from './adapters/diskInbox.ts'
+import { createBrainRequests, createDiskInboxMarks, watchBrainInbox } from './adapters/diskInbox.ts'
 import { createDiskPushStore } from './adapters/diskPush.ts'
 import { createDiskUploads } from './adapters/diskUploads.ts'
 import { createWebPushSender } from './adapters/webPushSender.ts'
@@ -76,7 +76,18 @@ const inbox = createInbox({
 })
 const server = serve(
   {
-    fetch: createApp({ agents, owner, log, uploads, push, seen, pushChanged, artifacts, inbox }).fetch,
+    fetch: createApp({
+      agents,
+      owner,
+      log,
+      uploads,
+      push,
+      seen,
+      pushChanged,
+      artifacts,
+      inbox,
+      watchInbox: watchBrainInbox(config.value.brainDir),
+    }).fetch,
     port,
     hostname: '127.0.0.1',
   },

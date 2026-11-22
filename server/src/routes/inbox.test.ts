@@ -4,9 +4,13 @@ import { ChatId, ErrorBody, InboxDetailResponse, InboxId, InboxResponse, Machine
 import { err, ok } from '@bridge/shared'
 import { describe, expect, it } from 'vitest'
 import { createFakeAgents } from '../adapters/fakeAgents.ts'
+import { Hono } from 'hono'
+import { requestId } from 'hono/request-id'
 import { createApp } from '../app.ts'
+import type { AppEnv } from '../errors.ts'
 import { memoryLogger } from '../logger.ts'
 import { createInbox, type InboxMarks } from '../services/inbox.ts'
+import { inboxRoutes } from './inbox.ts'
 
 const local = { Host: '127.0.0.1:5181' }
 const json = { ...local, 'Content-Type': 'application/json' }
@@ -46,7 +50,13 @@ function setup(options: { failing?: boolean } = {}) {
   })
   const app = createApp({ agents, owner: 'owner@example.com', log: logger.log, inbox })
   const list = async () => InboxResponse.parse(await (await app.request('/api/inbox', { headers: local })).json())
-  return { app, list, logger }
+  // The routes alone, with a spy where the app gives the live events' inboxChanged.
+  const told: string[] = []
+  const routed = new Hono<AppEnv>().use(requestId()).route(
+    '/api/inbox',
+    inboxRoutes(inbox, logger.log, () => told.push('inbox.changed')),
+  )
+  return { app, list, logger, routed, told }
 }
 
 describe('/api/inbox', () => {
@@ -92,6 +102,19 @@ describe('/api/inbox', () => {
     })
     expect(res.status).toBe(204)
     expect((await list()).items.find((i) => i.id === id)?.snoozedUntil).toBe(until)
+  })
+
+  it('tells the live events after a mark, and not after a refusal', async () => {
+    const { routed, list, told } = setup()
+    const id = (await list()).items[0]?.id ?? ''
+    expect(
+      (await routed.request(`/api/inbox/${brainId}/done`, { method: 'POST', headers: json, body: '{}' })).status,
+    ).toBe(409)
+    expect(told).toEqual([])
+    expect((await routed.request(`/api/inbox/${id}/done`, { method: 'POST', headers: json, body: '{}' })).status).toBe(
+      204,
+    )
+    expect(told).toEqual(['inbox.changed'])
   })
 
   it('answers 409 inbox-read-only for a brain item and a chat item with no actions', async () => {

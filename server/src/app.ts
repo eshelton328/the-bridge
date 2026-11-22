@@ -18,7 +18,7 @@ import { workspacesRoutes } from './routes/workspaces.ts'
 import type { AgentPort } from './services/agentPort.ts'
 import { type Artifacts, createArtifacts } from './services/artifacts.ts'
 import { createInbox, type Inbox } from './services/inbox.ts'
-import { createLiveEvents } from './services/liveEvents.ts'
+import { createLiveEvents, type InboxWatch } from './services/liveEvents.ts'
 import { createPushSeen, type PushSeen, type PushStore } from './services/push.ts'
 import { defaultChunkBytes, type UploadStore } from './services/uploadStore.ts'
 
@@ -39,6 +39,8 @@ export type AppDeps = {
   readonly artifacts?: Artifacts
   /** The Inbox (R20); with none, each inbox route answers 500. main.ts gives the brain and the disk marks. */
   readonly inbox?: Inbox
+  /** Watches the brain's inbox folders while a client of `/api/events` is open; main.ts gives the disk watch. */
+  readonly watchInbox?: InboxWatch
 }
 
 /** The store of an app with none: each call fails, so an upload answers 500 and is logged. */
@@ -94,7 +96,9 @@ export function createApp({
   pushChanged,
   artifacts = noArtifacts(agents),
   inbox = noInbox(agents),
+  watchInbox,
 }: AppDeps) {
+  const live = createLiveEvents(agents, watchInbox)
   return (
     new Hono<AppEnv>()
       // Each response carries an X-Request-Id, and the request's log line has the same ID (d-115).
@@ -125,10 +129,10 @@ export function createApp({
       .route('/api/workspaces', workspacesRoutes(agents, log))
       .route('/api/chats', chatsRoutes(agents, log, uploads))
       .route('/api/uploads', uploadsRoutes(uploads, log))
-      .route('/api/events', eventsRoutes(createLiveEvents(agents), log))
+      .route('/api/events', eventsRoutes(live, log))
       .route('/api/push', pushRoutes(push, seen, log, pushChanged))
       .route('/api/artifacts', artifactsRoutes(artifacts, agents, log))
-      .route('/api/inbox', inboxRoutes(inbox, log))
+      .route('/api/inbox', inboxRoutes(inbox, log, live.inboxChanged))
       .route('/api/client-errors', clientErrorsRoutes(log, createRateLimit(60, 60_000)))
       .notFound((c) => errorJson(c, 'not-found', { path: c.req.path, message: 'no route has this path' }))
       // A throw that no route caught: the log gets the error and its causes, the client the request ID.

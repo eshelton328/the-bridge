@@ -5,7 +5,7 @@ import { InboxId } from '@bridge/contract'
 import { err, ok } from '@bridge/shared'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import type { InboxMarks } from '../services/inbox.ts'
-import { createBrainRequests, createDiskInboxMarks, splitRecord } from './diskInbox.ts'
+import { createBrainRequests, createDiskInboxMarks, splitRecord, watchBrainInbox } from './diskInbox.ts'
 
 const record = (front: string, body = '# A request\n\n## Requested input\n\nmarker-5150') =>
   `---\nschema_version: 1\ntype: attention-request\n${front}\n---\n${body}\n`
@@ -168,5 +168,33 @@ describe('the inbox marks', () => {
     await writeFile(join(root, 'inbox.json'), '{not json')
     expect(await createDiskInboxMarks(root).load()).toEqual(err({ reason: 'failed', code: 'EBADDATA' }))
     expect(await readFile(join(root, 'inbox.json'), 'utf8')).toBe('{not json')
+  })
+})
+
+describe('the brain inbox watch', () => {
+  const until = async (check: () => boolean) => {
+    for (let i = 0; i < 100 && !check(); i++) await new Promise((resolve) => setTimeout(resolve, 20))
+    return check()
+  }
+
+  it('tells a write in an inbox folder and in a new project inbox, and nothing after close', async () => {
+    const brain = join(dir, 'brain')
+    await mkdir(join(brain, 'projects', 'p', 'inbox'), { recursive: true })
+    let told = 0
+    const close = watchBrainInbox(brain)(() => (told += 1))
+    // Give fs.watch its start before the first write.
+    await new Promise((resolve) => setTimeout(resolve, 100))
+    await writeFile(join(brain, 'projects', 'p', 'inbox', 'a.md'), open)
+    expect(await until(() => told > 0)).toBe(true)
+    await mkdir(join(brain, 'projects', 'q', 'inbox'), { recursive: true })
+    await new Promise((resolve) => setTimeout(resolve, 300))
+    const before = told
+    await writeFile(join(brain, 'projects', 'q', 'inbox', 'b.md'), open)
+    expect(await until(() => told > before)).toBe(true)
+    close()
+    const after = told
+    await writeFile(join(brain, 'projects', 'p', 'inbox', 'c.md'), open)
+    await new Promise((resolve) => setTimeout(resolve, 300))
+    expect(told).toBe(after)
   })
 })

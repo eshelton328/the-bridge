@@ -11,7 +11,7 @@ import { jsonBody, jsonOnly, smallJson } from './jsonBody.ts'
 
 type Fault = AgentPortError | { readonly reason: 'failed'; readonly code: string }
 
-export function inboxRoutes(inbox: Inbox, log: Logger) {
+export function inboxRoutes(inbox: Inbox, log: Logger, changed: () => void = () => undefined) {
   const failed = (c: Context<AppEnv>, error: Fault) => {
     if (error.reason !== 'failed') return agentErrorJson(c, error)
     log.error('inbox read failed', { requestId: c.get('requestId'), code: error.code })
@@ -29,6 +29,7 @@ export function inboxRoutes(inbox: Inbox, log: Logger) {
     if (!done.ok) return failed(c, done.error)
     switch (done.value) {
       case 'done':
+        changed()
         return c.body(null, 204)
       case 'notFound':
         return notFound(c)

@@ -78,4 +78,7 @@ from the outside world.
 - No polling (d-112): a service reads a port when a request or a
   subscription asks. `liveEvents.ts` shares one port subscription among
   all clients of `/api/events`, so with no client open (and no push
-  subscription stored) no herdr stream is open.
+  subscription stored) no herdr stream is open. It sends `inbox.changed`
+  after each `chat.status`, after each owner's mark (`inboxChanged`) and
+  on each change that the Inbox watch tells; it opens that watch with the
+  first client and closes it with the last (`liveEvents.test.ts`).

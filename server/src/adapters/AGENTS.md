@@ -273,7 +273,9 @@ client of a socket or a file sits beside them.
   files of at most 256 KiB whose real path stays in that folder, never a
   symlink; a record it cannot decode is skipped. The body goes only to a
   detail. The marks are `inbox.json`, 0600, as `diskArtifacts.ts` keeps
-  its file (`diskInbox.test.ts`).
+  its file. `watchBrainInbox` watches `projects` and each real inbox
+  folder with `fs.watch` and tells once after 100 ms of quiet; a change
+  in `projects` watches the inbox folders again (`diskInbox.test.ts`).
 - The upload store (`diskUploads.ts`, fake `fakeUploads.ts`, suite
   `uploadStoreContract.ts`) keeps each upload in a 0700 folder with
   0600 files, under the folder beside the database. Each chunk goes to
