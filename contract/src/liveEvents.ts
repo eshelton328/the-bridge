@@ -31,11 +31,16 @@ export type LayoutChangedEvent = z.infer<typeof LayoutChangedEvent>
 export const InboxChangedEvent = eventOf('inbox.changed', z.object({}))
 export type InboxChangedEvent = z.infer<typeof InboxChangedEvent>
 
+/** A toolkit's files changed: read `GET /api/toolkit` again. */
+export const ToolkitChangedEvent = eventOf('toolkit.changed', z.object({}))
+export type ToolkitChangedEvent = z.infer<typeof ToolkitChangedEvent>
+
 /** One event of the stream. Its `type` is also the SSE event name, and its `seq` the SSE id. */
 export const LiveEvent = z.discriminatedUnion('type', [
   ChatStatusEvent,
   InboxChangedEvent,
   LayoutChangedEvent,
+  ToolkitChangedEvent,
   WorkspacesChangedEvent,
 ])
 export type LiveEvent = z.infer<typeof LiveEvent>
