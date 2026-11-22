@@ -17,15 +17,23 @@
 // PhoneAddMenu). With `text.moveTo`, edit mode draws Move to… in place of
 // the status of its chats (T1 105:1594), which opens the chat's actions with
 // Move to workspace's list open. At a tablet's width (T1, `device`) the list
-// takes the tablet's inset. Props only.
+// takes the tablet's inset. With `edits` (the live page, reviews R41, R42)
+// edit mode offers only what a route backs: each workspace's handle moves
+// it (useWorkspaceReorder, the whole order to `edits.order`) and Rename
+// opens its name as a field, which saves through `edits.renameWorkspace`;
+// there is no × and the chats have no handle or field. The name and the
+// order show from the next list read, and a pending order holds its place
+// on the page until then. Props only.
 import { Button, Container, MoreIcon, PageHeader } from '@eshelton328/component-library-1701'
 import type { MouseEvent, ReactNode, Ref } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
-import type { PhoneText, SidebarChat, SidebarLayers, Workspace, WorkspacesUi } from '../types.ts'
+import type { PhoneText, SidebarChat, SidebarLayers, Workspace, WorkspaceEdits, WorkspacesUi } from '../types.ts'
 import { CloseWorkspaceDialog } from './CloseWorkspaceDialog.tsx'
 import { PhoneAddMenu } from './PhoneAddMenu.tsx'
 import { PhoneEditGroup } from './PhoneEditGroup.tsx'
+import { ReorderHandle } from './ReorderHandle.tsx'
 import { SidebarGroup } from './SidebarGroup.tsx'
+import { useWorkspaceReorder } from './useWorkspaceReorder.ts'
 
 // The list fills the screen, running under the tab bar that lies over its foot (M1 105:2327, 38 to 767).
 const fill = css({ flex: '1' })
@@ -62,6 +70,8 @@ export type PhoneWorkspaceListProps = {
   heldRow?: Ref<HTMLDivElement> | undefined
   /** The live-unavailable notice (LiveNotice), drawn at the top of the content; none when not set. */
   notice?: ReactNode
+  /** The live list's edits: edit mode renames and orders the workspaces through them, and draws nothing else. */
+  edits?: WorkspaceEdits | undefined
 }
 
 /** A chat row's ⋯ (M1 146:3), on the row and on its lifted copy (M9 146:268). */
@@ -100,6 +110,7 @@ export function PhoneWorkspaceList({
   layers,
   heldRow,
   notice,
+  edits,
 }: PhoneWorkspaceListProps) {
   const collapsed = ui.collapsed ?? []
   const editing = ui.editing === true && text.done !== undefined
@@ -130,6 +141,13 @@ export function PhoneWorkspaceList({
       }
     />
   )
+  // The live order: the drag's while it moves, then the held one while its edit waits, then the list's.
+  const reorder = useWorkspaceReorder(
+    workspaces.map((w) => w.id),
+    edits?.held,
+    edits?.order,
+  )
+  const shown = edits === undefined ? workspaces : reorder.order.flatMap((id) => workspaces.filter((w) => w.id === id))
   const closed = ui.closedWorkspaces ?? []
   const closeText = text.closeWorkspace
   const setOpen = (id: string, open: boolean) =>
@@ -170,13 +188,14 @@ export function PhoneWorkspaceList({
         </PageHeader>
       </div>
       {notice}
-      {workspaces.map((w) =>
+      {shown.map((w) =>
         editing ? (
           <PhoneEditGroup
             key={w.id}
             device={device}
             workspace={w}
-            open={!collapsed.includes(w.id)}
+            // While a workspace is dragged every group shows its header only, so each place is on the screen.
+            open={reorder.dragging === undefined && !collapsed.includes(w.id)}
             onOpenChange={(open) => setOpen(w.id, open)}
             renaming={renamingWorkspaces[w.id]}
             renamingChats={renamingChats}
@@ -191,20 +210,45 @@ export function PhoneWorkspaceList({
                 ...(name === undefined ? {} : { names: { ...ui.names, [chat]: name } }),
               })
             }
-            onRenamed={(name) =>
+            onRenamed={(name) => {
+              // Live, the name goes to the server and shows from the next list read, never from `ui`.
+              if (edits !== undefined && name !== undefined) edits.renameWorkspace(w.id, name, w.label)
               onUiChange?.({
                 renamingWorkspaces: without(renamingWorkspaces, w.id),
-                ...(name === undefined ? {} : { workspaceNames: { ...ui.workspaceNames, [w.id]: name } }),
+                ...(name === undefined || edits !== undefined
+                  ? {}
+                  : { workspaceNames: { ...ui.workspaceNames, [w.id]: name } }),
               })
+            }}
+            onClose={
+              edits !== undefined || closeText?.workspaces[w.id] === undefined
+                ? undefined
+                : () => onUiChange?.({ closing: w.id })
             }
-            onClose={closeText?.workspaces[w.id] === undefined ? undefined : () => onUiChange?.({ closing: w.id })}
-            moveTo={text.moveTo}
+            moveTo={edits === undefined ? text.moveTo : undefined}
             onMove={
-              text.rowMenu === undefined
+              text.rowMenu === undefined || edits !== undefined
                 ? undefined
                 : (chat) => onUiChange?.({ menuFor: chat, moveOpen: true, menuHighlight: null })
             }
             layers={layers}
+            {...(edits === undefined
+              ? {}
+              : {
+                  handle: (
+                    <ReorderHandle
+                      name={w.label}
+                      onPointerDown={reorder.onPointerDown(w.id)}
+                      onKeyDown={reorder.onKeyDown(w.id)}
+                    />
+                  ),
+                  onRename: () => {
+                    onUiChange?.({ renamingWorkspaces: { ...renamingWorkspaces, [w.id]: w.label } })
+                  },
+                  fixedChats: true,
+                  dragging: reorder.dragging === w.id,
+                  groupRef: reorder.groupRef(w.id),
+                })}
           />
         ) : (
           <SidebarGroup

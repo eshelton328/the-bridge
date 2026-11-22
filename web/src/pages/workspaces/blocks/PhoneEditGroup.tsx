@@ -4,18 +4,23 @@
 // (PhoneRenameRow); a workspace in `renaming` shows its name as a field in
 // place of the name, the count and × (105:2614). × asks before the workspace
 // closes (M13, `onClose`). A chat in `moveTo` shows Move to… in place of
-// its status (T1 105:1594). Props only.
+// its status (T1 105:1594). The live edit mode (reviews R41, R42) offers
+// only what a route backs: `handle` in place of the grip moves the
+// workspace, `onRename` puts a Rename button in place of ×, and with
+// `fixedChats` the chats have no handle and no field, as nothing orders
+// or renames them from here. Props only.
 import {
   Button,
   ChevronDownIcon,
   ChevronRightIcon,
   CloseIcon,
+  EditIcon,
   GripIcon,
   GroupHeader,
   Inline,
   Stack,
 } from '@eshelton328/component-library-1701'
-import { useId } from 'react'
+import { type ReactNode, type Ref, useId } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { SidebarLayers, Workspace } from '../types.ts'
 import { ChatNameField } from './ChatNameField.tsx'
@@ -36,6 +41,8 @@ const tabletRenameHeader = css({ ps: '4', pe: '4', py: '6' })
 const grip = css({ color: 'fg.subtle', flexShrink: '0' })
 // The chevron's 24 px button reaches 6 into the gaps on each side, so the icon sits where Figma draws it.
 const chevron = css({ color: 'fg.muted', mx: '-6' })
+// D6 158:750: a dragged item fades; `opacity.disabled` is the nearest token to Figma's look (d-100).
+const faded = css({ opacity: 'disabled' })
 
 export type PhoneEditGroupProps = {
   /** The phone, or a tablet in a state with `tabletList` (T1): the field's end inset follows it. */
@@ -62,6 +69,16 @@ export type PhoneEditGroupProps = {
   /** Move to… on a chat was pressed. Without it, the button draws only. */
   onMove?: ((chat: string) => void) | undefined
   layers?: SidebarLayers | undefined
+  /** The live edit mode: the drag handle drawn in place of the grip (ReorderHandle). */
+  handle?: ReactNode
+  /** The live edit mode: Rename in place of ×, which opens the workspace's name as a field. */
+  onRename?: (() => void) | undefined
+  /** The live edit mode: the chats draw with no handle and open no field. */
+  fixedChats?: boolean | undefined
+  /** The workspace is being dragged: it fades. */
+  dragging?: boolean | undefined
+  /** The ref of the group's element, for the drag to place the pointer. */
+  groupRef?: Ref<HTMLDivElement> | undefined
 }
 
 export function PhoneEditGroup(props: PhoneEditGroupProps) {
@@ -79,13 +96,18 @@ export function PhoneEditGroup(props: PhoneEditGroupProps) {
     onClose,
     moveTo,
     onMove,
+    handle,
+    onRename,
+    fixedChats = false,
+    dragging = false,
+    groupRef,
   } = props
   const { layers } = props
   const rowsId = useId()
   const name = workspace.label
   const toggle = () => onOpenChange?.(!open)
   return (
-    <div>
+    <div ref={groupRef} className={dragging ? faded : undefined}>
       {renaming === undefined ? (
         <div data-figma={layers?.headers?.[workspace.id]}>
           <GroupHeader
@@ -96,18 +118,31 @@ export function PhoneEditGroup(props: PhoneEditGroupProps) {
             open={open}
             onOpenChange={onOpenChange}
             contentId={rowsId}
-            leading={<GripIcon size="12" />}
+            leading={handle ?? <GripIcon size="12" />}
             actions={
-              <Button
-                variant="text"
-                size="xs"
-                iconOnly
-                className={headerAction}
-                aria-label={`Close ${name}`}
-                onClick={onClose}
-              >
-                <CloseIcon size="12" />
-              </Button>
+              onRename === undefined ? (
+                <Button
+                  variant="text"
+                  size="xs"
+                  iconOnly
+                  className={headerAction}
+                  aria-label={`Close ${name}`}
+                  onClick={onClose}
+                >
+                  <CloseIcon size="12" />
+                </Button>
+              ) : (
+                <Button
+                  variant="text"
+                  size="xs"
+                  iconOnly
+                  className={headerAction}
+                  aria-label={`Rename ${name}`}
+                  onClick={onRename}
+                >
+                  <EditIcon size="12" />
+                </Button>
+              )
             }
           />
         </div>
@@ -156,8 +191,8 @@ export function PhoneEditGroup(props: PhoneEditGroupProps) {
                 key={chat.id}
                 chat={chat}
                 figma={layers?.rows?.[chat.id]}
-                grip
-                onSelect={() => onRenameChat?.(chat.id)}
+                grip={!fixedChats}
+                onSelect={fixedChats ? undefined : () => onRenameChat?.(chat.id)}
                 menu={
                   moveTo?.chats.includes(chat.id) === true ? (
                     <MoveButton

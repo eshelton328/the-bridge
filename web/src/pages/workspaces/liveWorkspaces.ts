@@ -248,19 +248,21 @@ const chatCommands: PaneAction[] = [
 ]
 
 /**
- * The one sample action a live chat keeps (reviews R41, R42): New chat, which `POST /api/chats` starts. The live
- * actions follow it: Close pane… (layoutActions.ts) and /compact and /clear (`chatCommands`). Fork, Side chat,
- * Subtask, Move to workspace and Rename have no route, so a live chat does not offer them.
+ * The sample actions a live chat keeps (reviews R41, R42): New chat, which `POST /api/chats` starts, and Rename, which
+ * `POST /api/chats/:chat/rename` saves as herdr's label of the chat's pane (backend #423). The live actions follow
+ * them: Close pane… (layoutActions.ts) and /compact and /clear (`chatCommands`). Fork, Side chat, Subtask and Move to
+ * workspace have no route yet, so a live chat does not offer them. The desktop workbench's pane menu has no rename
+ * field, so it keeps New chat alone.
  */
 const liveNewChat: PaneAction = { value: 'newChat', label: 'New chat' }
+const liveChatMenu: PaneAction[] = [liveNewChat, { value: 'rename', label: 'Rename chat' }]
+const livePhoneChatMenu: PaneAction[] = [liveNewChat, { value: 'rename', label: 'Rename' }]
 
-/** The phone's labels without Edit and Done (review R41): the live page cannot save an edit. */
-function withoutEdit(text: PhoneText): PhoneText {
-  const live = { ...text }
-  delete live.edit
-  delete live.done
-  return live
-}
+/**
+ * The phone's labels with Edit and Done (M1, M2; reviews R41, R42): the live edit mode renames and orders the
+ * workspaces (backend #423), and draws no control that has no route (PhoneWorkspaceList with `edits`).
+ */
+const withEdit = (text: PhoneText): PhoneText => ({ ...text, edit: text.edit ?? 'Edit', done: text.done ?? 'Done' })
 
 /** The status bar's summary of `workspace` and its layout's panes, as `shownView` counts them; none with no workspace. */
 const summaryOf = (workspace: Workspace | undefined, layouts: Record<string, { panes: string[] }>) => {
@@ -277,9 +279,8 @@ const focusOf = (ids: readonly string[], panes: readonly WorkbenchPane[]) =>
  * `state` with only what the live source gives: `workspaces`, a pane for each of their chats, and each workspace's
  * own layout, so a tab shows only its own chats: its herdr layout from `herdr` by workspace ID, else its first
  * `maxPanes` chats with its first chat that is not a shell focused; none of the home's sample parts (side chat,
- * subagents, folders, a workspace's last chat, the toast, the status bar's alert, the chat actions that have no route,
- * the phone's Edit). With no workspaces (an empty live
- * list or a missed read) no workspace is shown, never one of the sample's (P-3).
+ * subagents, folders, a workspace's last chat, the toast, the status bar's alert, the chat actions that have no route).
+ * With no workspaces (an empty live list or a missed read) no workspace is shown, never one of the sample's (P-3).
  */
 function liveOnly(
   state: WorkspacesScreenState,
@@ -319,8 +320,8 @@ function liveOnly(
       // The sample's summary and alert name a sample workspace and chat. The summary counts the first workspace's
       // panes, and none shows with no workspace; the live alerts are set by the caller.
       status: { ...data.status, summary: summaryOf(workspaces[0], layouts), alert: undefined },
-      // Review R42: of the sample's chat actions only New chat works on a live chat; the others have no route.
-      ...(data.chatMenu === undefined ? {} : { chatMenu: [liveNewChat] }),
+      // Review R42: of the sample's chat actions only New chat and Rename work on a live chat; the others have no route.
+      ...(data.chatMenu === undefined ? {} : { chatMenu: liveChatMenu }),
       chatCommands,
       liveTabs: Object.fromEntries(tabs),
       liveMachine: machine,
@@ -331,10 +332,10 @@ function liveOnly(
       ...(data.phone === undefined
         ? {}
         : {
-            // Review R41: no Edit, as no route renames, orders or closes a workspace or a chat.
+            // Review R41: Edit renames and orders the workspaces; nothing closes a workspace yet.
             phone: {
-              ...withoutEdit(data.phone),
-              chatMenu: [liveNewChat],
+              ...withEdit(data.phone),
+              chatMenu: livePhoneChatMenu,
               addMenu: { newChat: 'New chat' },
               workspaceMenu: [{ value: 'newChat', label: 'New chat in {workspace}' }],
             },
@@ -760,6 +761,11 @@ export async function readAfterClear(
  */
 export function readLayoutAgain(workspace: string, list = false): void {
   reload?.(list ? queryKey : layoutKey(workspace))
+}
+
+/** Has the open watcher read the workspace list again (an edit's answer that the list changed, useWorkspaceEdits.ts). */
+export function readListAgain(): void {
+  reload?.(queryKey)
 }
 
 /** Opens the event stream; `signal` aborts it. */

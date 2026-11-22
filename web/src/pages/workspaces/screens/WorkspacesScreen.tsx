@@ -35,7 +35,10 @@
 // send no focus. A tab picked in a workbench pane's Move to tab… opens its
 // dialog (MoveChatDialog, W2d) for the chat in `ui.commandFor` and the tab in
 // `ui.moveToTab`, while both are still in the layout read; the workbench
-// follows the move of its focused pane.
+// follows the move of its focused pane. The live list's edits (`edits`,
+// reviews R41, R42) rename a chat from its Rename and a workspace or the
+// order from the phone's and tablet's edit mode; their line draws under the
+// live notice in every layout, with Dismiss.
 import type { ChatCommandRequest } from '@bridge/contract'
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
 import { type ReactNode, useLayoutEffect, useRef, useState } from 'react'
@@ -46,6 +49,7 @@ import { SlotBoundary } from '../../../errors/SlotBoundary.tsx'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { css } from '../../../../styled-system/css/index.js'
 import { LiveNotice } from '../blocks/LiveNotice.tsx'
+import { TranscriptProblem } from '../blocks/TranscriptProblem.tsx'
 import { MainChat } from '../blocks/MainChat.tsx'
 import { NewChatDialog } from '../blocks/NewChatDialog.tsx'
 import { SubagentsPane } from '../blocks/SubagentsPane.tsx'
@@ -73,7 +77,7 @@ import { type NewChatStarter, startOf } from '../blocks/newChatStart.ts'
 import { liveSkillList } from '../blocks/useSkillRows.ts'
 import { createDraftBook, type DraftBook } from '../blocks/draftBook.ts'
 import { openableChats, openChat, shownView } from '../blocks/workspaceLayout.ts'
-import type { WorkspacesData, WorkspacesUi } from '../types.ts'
+import type { WorkspaceEdits, WorkspacesData, WorkspacesUi } from '../types.ts'
 import { WorkspacesPhone } from './WorkspacesPhone.tsx'
 import type { ComposerAnswer } from '../blocks/useComposerActions.ts'
 import type { PushSwitch } from '../../../lib/pushSwitch.ts'
@@ -118,6 +122,8 @@ export type WorkspacesScreenProps = {
   layoutWrites?: LayoutWrites | undefined
   /** Starts a live chat from New chat (W3); none on a fixture. */
   newChat?: NewChatStarter | undefined
+  /** The live list's edits (R41, R42): renames and the workspaces' order; none on a fixture. */
+  edits?: WorkspaceEdits | undefined
 }
 
 export function WorkspacesScreen({
@@ -140,6 +146,7 @@ export function WorkspacesScreen({
   drafts: pageDrafts,
   layoutWrites,
   newChat,
+  edits,
 }: WorkspacesScreenProps) {
   const [changed, setChanged] = useState<{ of: WorkspacesUi; ui: WorkspacesUi }>({ of: stateUi, ui: stateUi })
   const ui = changed.of === stateUi ? changed.ui : stateUi
@@ -160,7 +167,7 @@ export function WorkspacesScreen({
   // The notice the owner dismissed; a new load gives a new notice, which shows again.
   const [dismissed, setDismissed] = useState<WorkspacesData['liveNotice']>()
   const shownNotice = data.liveNotice === dismissed ? undefined : data.liveNotice
-  const notice =
+  const liveNotice =
     shownNotice === undefined ? undefined : (
       <LiveNotice
         title={shownNotice.title}
@@ -170,6 +177,20 @@ export function WorkspacesScreen({
         }}
         onRetry={onRetry}
       />
+    )
+  // The line of a live edit that missed (R41, R42), under the notice.
+  const editLine =
+    edits?.line === undefined ? undefined : (
+      <TranscriptProblem text={edits.line} action={{ label: 'Dismiss', onClick: edits.dismiss }} />
+    )
+  const notice =
+    editLine === undefined ? (
+      liveNotice
+    ) : (
+      <>
+        {liveNotice}
+        {editLine}
+      </>
     )
   // The chat a command's dialog acts on (W5): the chat whose actions opened it, kept while the dialog is open.
   const target = data.panes.find((p) => p.id === (ui.commandFor ?? ui.focusedPane))
@@ -257,6 +278,7 @@ export function WorkspacesScreen({
             notice={notice}
             layoutWrites={layoutWrites}
             newChat={newChat}
+            edits={edits}
           />
           {phoneDeviceOf(layout, data) === undefined || data.phone === undefined ? (
             <DesktopNewChat data={data} ui={ui} change={change} newChat={newChat} />
@@ -331,6 +353,7 @@ function WorkspacesLayout({
   notice,
   layoutWrites,
   newChat,
+  edits,
 }: WorkspacesLayoutProps) {
   // The names the owner gave chats (D21) take the place of their titles: in the sidebar, in the header of the chat
   // alone and in the panes of the workbench, with or without the sidebar.
@@ -378,6 +401,7 @@ function WorkspacesLayout({
         notice={notice}
         layoutWrites={layoutWrites}
         newChat={newChat}
+        edits={edits}
       />
     )
   // The shown workspace (R6): a tab the owner picked shows its own panes, so the focused chat, the chats the sidebar can
@@ -502,7 +526,12 @@ function WorkspacesLayout({
         <ChatNameField
           name={chat.head.title}
           onSave={(name) => {
-            change({ renaming: false, names: { ...names, [chat.id]: name } })
+            // Live, the name goes to the server and shows from the next list read, never from `ui`.
+            if (edits === undefined) change({ renaming: false, names: { ...names, [chat.id]: name } })
+            else {
+              edits.renameChat(chat.id, name, chat.head.title)
+              change({ renaming: false })
+            }
           }}
           onCancel={() => {
             change({ renaming: false })

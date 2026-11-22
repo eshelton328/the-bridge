@@ -22,9 +22,39 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   Retry in every layout; any other error goes to RouteError
   (`app/WorkspacesLiveDefault.test.tsx`). The live page offers only what
   a route backs (reviews R41, R42): a live chat's actions are New chat,
-  Close pane…, Compact context… and Clear context… (with the layout
-  actions in a desktop pane), and the phone's and tablet's list has no
-  Edit. The fixture states keep every action and Edit.
+  Rename chat (Rename in the phone's sheet), Close pane…, Compact
+  context… and Clear context… (with the layout actions in a desktop
+  pane, whose menu has no Rename, as it has no name field). Fork, Side
+  chat, Subtask and Move to workspace stay hidden until their routes
+  come. The fixture states keep every action, and their edit mode every
+  control (`app/WorkspacesLiveUnbacked.test.tsx`).
+- The live list's edits (R41, R42, backend #423; `useWorkspaceEdits.ts`,
+  `liveWorkspaceEdits.ts`): the phone's and tablet's Edit opens edit
+  mode with Done, which on live draws only what a route backs. Each
+  workspace has a handle (`blocks/ReorderHandle.tsx`,
+  `blocks/useWorkspaceReorder.ts`) and Rename in place of ×. A drag on
+  the handle, or an arrow key on the focused handle, posts `POST
+  /api/workspaces/order` with the whole list in the new order; the page
+  holds that order until the list read after `workspaces.changed`. While
+  a drag runs every group shows its header only, a pointer held near the
+  list's top or bottom edge scrolls it, and only the pointer that started
+  the drag moves or ends it. Rename
+  opens the name as a field, which posts `POST
+  /api/workspaces/:workspace/rename`. A chat's Rename posts `POST
+  /api/chats/:chat/rename`, herdr's label of its pane, which the list
+  shows as the chat's title. No × closes a workspace, and the chats have
+  no handle, no field and no Move to…: closing a workspace, ordering
+  chats and moving a chat have no route yet. A name is trimmed; an empty
+  one or the same name is not sent, and one the contract's `Label`
+  refuses (over 64 characters, a control character) shows a line and is
+  not sent. A new name or order shows only from the list read, never
+  before, so a miss leaves the old one. One edit at a time; 409
+  orderStale and a 404 read the list again with a line, a 400 shows the
+  server's message as one line, and any other miss "Not renamed —
+  <kind>". The line draws under the live notice in every layout, with
+  Dismiss. report() gets only a 5xx or an unexpected answer, with the
+  action, kind and status (`app/WorkspacesLiveEdits.test.tsx`; the fake
+  is `lib/fakeWorkspacesServer.ts`).
 - Each live workspace's panes are its herdr layout's active tab (slice
   3a): `liveWorkspaces.ts` reads `GET /api/workspaces/:workspace/layout`
   on load, on `workspaces.changed` and on that workspace's
