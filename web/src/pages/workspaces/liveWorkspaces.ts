@@ -34,9 +34,10 @@
 // (`GET /api/workspaces`) takes the same rule: such a miss shows no notice,
 // and the list is read again once the page shows; a second one in the same
 // trip, or any answer from the server, shows the notice as before.
-// Review R43: a server restart ends the event stream. Its miss is quiet for
-// `reconnectGraceMs`: the status bar says the stream is lost only when a
-// miss comes after that window, and a stream that opens ends the outage.
+// Review R43: a server restart ends the event stream. After a stream that
+// opened ends or drops, a miss is quiet for `reconnectGraceMs`: the status
+// bar says the stream is lost only when a miss comes after that window, and
+// a stream that opens ends the outage.
 // Review R34: the home's sample skills never reach the live page; each live
 // Claude chat's "/" list is read from the server when it opens (liveSkills.ts).
 import {
@@ -806,10 +807,10 @@ const openEvents: OpenStream = (signal) =>
  * opens (the first time and after it connects again) mark the cache invalid, with every layout, so the next load
  * reads the server. A `layout.changed` event marks that workspace's layout invalid, and only when the page shows that
  * workspace (`shownWorkspaces`): a workspace the page does not show is not read. A burst of events gives one
- * `onChange`. When the stream ends or the network drops, it connects again after the server's retry time (5 s), as EventSource does. An end or a
- * miss starts an outage; a miss after `reconnectGraceMs` of it shows the error in the status bar, once for each
- * outage, and an outage that ends sooner (a server restart) shows nothing (review R43). A 5xx is a miss too, as the
- * Vite proxy answers 5xx while the server is down.
+ * `onChange`. When the stream ends or the network drops, it connects again after the server's retry time (5 s), as EventSource does. A miss
+ * shows the error in the status bar, once for each outage, but after a stream that opened ends or drops (a server
+ * restart) only a miss after `reconnectGraceMs` does, and an outage that ends sooner shows nothing (review R43). A
+ * 5xx is a miss too, as the Vite proxy answers 5xx while the server is down.
  * When the server refuses the stream (such as 403), it stops and shows a notice in the status bar and the dev
  * ErrorTray, as a failed read does. The result stops it.
  */
@@ -826,10 +827,16 @@ export function watchLiveWorkspaces({
   watchSignal = abort.signal
   let retryMs = 5000
   let timer: ReturnType<typeof setTimeout> | undefined
-  /** The outage's grace (R43): it starts at the first end or miss, and a stream that opens ends it. */
+  /**
+   * The outage's grace (R43): it starts when a stream that opened ends or drops, and a stream that opens ends it. A
+   * miss with no grace, such as the first connection's, shows at once.
+   */
   const grace: { timer: ReturnType<typeof setTimeout> | undefined; over: boolean } = { timer: undefined, over: false }
+  let opened = false
   const outage = () => {
-    grace.timer ??= setTimeout(() => {
+    if (!opened) return
+    opened = false
+    grace.timer = setTimeout(() => {
       grace.over = true
     }, reconnectGraceMs)
   }
@@ -916,6 +923,7 @@ export function watchLiveWorkspaces({
         // The stream is open: the outage, if there was one, is over.
         lost = undefined
         endOutage()
+        opened = true
         for await (const frame of frames(res.body)) take(frame)
         outage()
       } catch (thrown) {
@@ -925,7 +933,7 @@ export function watchLiveWorkspaces({
         // restarts; after it the status bar keeps the error. A long outage tells the page once, on its first error
         // shown, not once for each reconnect; the status bar says it, so it is not reported.
         outage()
-        if (grace.over) {
+        if (grace.timer === undefined || grace.over) {
           const first = lost === undefined
           const why = thrown instanceof Error ? thrown.message : String(thrown)
           lost = `Live updates lost the event stream (${why}); connecting again.`
