@@ -151,6 +151,7 @@ const results = {
   'workspace.rename': { type: 'ok' },
   'pane.rename': { type: 'ok' },
   'workspace.move_block': { type: 'ok' },
+  'workspace.close': { type: 'ok' },
   'pane.move': { type: 'pane_move', move_result: { changed: true, reason: null } },
   // A shell that runs a job: the foreground group is not the shell's.
   'pane.process_info': {
@@ -661,6 +662,30 @@ describe('herdr agents: input to a chat', () => {
       })
       const read = await port().listWorkspaces()
       expect(read.ok && read.value.flatMap((w) => w.chats).find((c) => c.id === chat)?.title).toBe('Drift check')
+    })
+
+    it('closes a workspace whose panes the owner saw and none of which works, waits or runs the server', async () => {
+      const w17 = WorkspaceId.parse(`${machine}/w17`)
+      const w18 = WorkspaceId.parse(`${machine}/w18`)
+      // w17 holds bridge-coord, which herdr gives as "blocked"; w18 a gemini pane (no chat) and a shell.
+      expect(await port().closeWorkspace(w17, 2)).toEqual({ ok: true, value: 'needsYou' })
+      expect(await port().closeWorkspace(w18, 3)).toEqual({ ok: true, value: 'panesChanged' })
+      expect(await port().closeWorkspace(WorkspaceId.parse(`${machine}/1`), 2)).toEqual({ ok: true, value: 'notFound' })
+      // The recorded shell's foreground process is pid 11: a server above it guards its workspace.
+      const guarded = createHerdrAgents({
+        socket: socket.path,
+        machine,
+        log,
+        claudeProjects: projects,
+        home,
+        serverPids: () => Promise.resolve(new Set([11, 4242])),
+      })
+      expect(await guarded.closeWorkspace(w18, 2)).toEqual({ ok: true, value: 'holdsServer' })
+      expect(sent('workspace.close')).toHaveLength(0)
+      socket.failOnce('workspace.close', 'workspace_group_close_required', 'close the group')
+      expect(await port().closeWorkspace(w18, 2)).toEqual({ ok: true, value: 'group' })
+      expect(await port().closeWorkspace(w18, 2)).toEqual({ ok: true, value: 'done' })
+      expect(sent('workspace.close').at(-1)).toEqual({ workspace_id: 'w18', close_group: false })
     })
 
     it('orders the workspaces in one block move, and none for an order that misses or repeats one', async () => {

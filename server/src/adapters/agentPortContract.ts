@@ -236,6 +236,10 @@ export function describeAgentPort(name: string, setup: () => Promise<ContractSet
       if (!read.ok) throw new Error(read.error.message)
       const ids = read.value.map((w) => w.id)
       expect(await port.orderWorkspaces(ids.slice(1))).toEqual({ ok: true, value: 'stale' })
+      expect(await port.closeWorkspace(none, 1)).toEqual({ ok: true, value: 'notFound' })
+      const own = read.value.find((w) => w.chats.length > 0)
+      if (own === undefined) throw new Error('no workspace has a chat')
+      expect(await port.closeWorkspace(own.id, own.chats.length + 1)).toEqual({ ok: true, value: 'panesChanged' })
       expect(await port.orderWorkspaces([...ids, none])).toEqual({ ok: true, value: 'stale' })
     })
 

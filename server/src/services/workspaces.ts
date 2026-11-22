@@ -2,7 +2,7 @@
 // the layout of each workspace's tabs and panes.
 import type { ChatId, WorkspaceId, WorkspaceLayout, WorkspacesResponse } from '@bridge/contract'
 import { ok, type Result } from '@bridge/shared'
-import type { AgentPort, AgentPortError, OrderOutcome, PaneWriteOutcome } from './agentPort.ts'
+import type { AgentPort, AgentPortError, CloseWorkspaceOutcome, OrderOutcome, PaneWriteOutcome } from './agentPort.ts'
 
 export async function listWorkspaces(agents: AgentPort): Promise<Result<WorkspacesResponse, AgentPortError>> {
   const read = await agents.listWorkspaces()
@@ -25,6 +25,20 @@ export function renameChat(
   label: string,
 ): Promise<Result<PaneWriteOutcome, AgentPortError>> {
   return agents.renameChat(chat, label)
+}
+
+/**
+ * Closes `workspace` and each pane in it when `confirm` names it (`notConfirmed` otherwise, with no call to the
+ * port) and it has the `panes` panes the owner saw. The port refuses a workspace that works, waits for the owner or
+ * runs the server (R41).
+ */
+export async function closeWorkspace(
+  agents: AgentPort,
+  workspace: WorkspaceId,
+  request: { readonly confirm: WorkspaceId; readonly panes: number },
+): Promise<Result<CloseWorkspaceOutcome | 'notConfirmed', AgentPortError>> {
+  if (request.confirm !== workspace) return ok('notConfirmed')
+  return agents.closeWorkspace(workspace, request.panes)
 }
 
 /** Puts the workspaces in the owner's order (R41); `stale` when it does not name each listed workspace once. */

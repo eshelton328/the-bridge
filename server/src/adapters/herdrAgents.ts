@@ -327,6 +327,8 @@ export type HerdrAgentsOptions = {
   readonly log: Logger
   /** The folder under which a start may open a chat (slice W3); none: every start is `folderNotAllowed`. */
   readonly chatRoot?: string
+  /** The server's own process and each one above it, which no workspace close may end (`processAncestors`). */
+  readonly serverPids?: () => Promise<ReadonlySet<number>>
   /** The time in ms, for the stop hold; a test can move it. */
   readonly now?: () => number
 }
@@ -381,6 +383,7 @@ export function createHerdrAgents({
   watch: watchFs = (path, listener) => watch(path, listener),
   now = Date.now,
   chatRoot,
+  serverPids = () => Promise.resolve(new Set<number>()),
 }: HerdrAgentsOptions): AgentPort {
   const unknownSeen = new Set<string>()
   /** The chat's status for herdr's `status`; one it does not know is `unknown`, logged once. */
@@ -1326,6 +1329,39 @@ export function createHerdrAgents({
       // herdr sends no list event for a pane's label.
       if (written.ok && written.value === 'done') for (const tellList of listTellers) tellList()
       return written
+    },
+    async closeWorkspace(workspace, count) {
+      const { machine: on, local } = splitId(workspace)
+      if (on !== machine) return ok('notFound')
+      const [workspaces, agents, panes] = await Promise.all([
+        call('workspace.list', WorkspaceList),
+        call('agent.list', AgentList),
+        call('pane.list', PaneList),
+      ])
+      if (!workspaces.ok) return workspaces
+      if (!agents.ok) return agents
+      if (!panes.ok) return panes
+      if (!workspaces.value.workspaces.some((w) => w.workspace_id === local)) return ok('notFound')
+      const own = panes.value.panes.filter((p) => p.workspace_id === local)
+      if (own.length !== count) return ok('panesChanged')
+      // A pane whose shell or foreground process is the server or above it (the chat that started it) never closes.
+      const guarded = await serverPids()
+      for (const pane of own) {
+        const info = await call('pane.process_info', ProcessInfo, { pane_id: pane.pane_id })
+        if (!info.ok) return info
+        const { shell_pid: shell, foreground_processes: foreground } = info.value.process_info
+        if ([shell, ...foreground.map((f) => f.pid)].some((pid) => typeof pid === 'number' && guarded.has(pid)))
+          return ok('holdsServer')
+      }
+      const chats = new Map(agents.value.agents.filter(isChat).map((a) => [a.pane_id, statusOf(a.agent_status)]))
+      const statuses = own.map((p) => chats.get(p.pane_id) ?? 'idle')
+      if (statuses.includes('needsYou')) return ok('needsYou')
+      // As for a chat's close: a state herdr cannot tell may work.
+      if (statuses.some((s) => s !== 'idle' && s !== 'done')) return ok('working')
+      const reply = await herdrRequest(socket, 'workspace.close', { workspace_id: local, close_group: false })
+      if (reply.ok) return ok('done')
+      if (reply.error.kind === 'herdrError' && reply.error.code === 'workspace_group_close_required') return ok('group')
+      return writeFailed('workspace.close', reply.error)
     },
     async orderWorkspaces(order) {
       const listed = await call('workspace.list', WorkspaceList)

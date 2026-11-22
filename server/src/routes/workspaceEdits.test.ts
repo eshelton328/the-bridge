@@ -17,7 +17,7 @@ function setup() {
     app.request(path, { method: 'POST', headers: json, body: JSON.stringify(body) })
   const list = async () =>
     WorkspacesResponse.parse(await (await app.request('/api/workspaces', { headers: json })).json())
-  return { post, list }
+  return { agents, post, list }
 }
 
 describe('the edit routes', () => {
@@ -55,5 +55,22 @@ describe('the edit routes', () => {
     const many = Array.from({ length: 300 }, (_, i) => `test-mac/w${String(i)}`)
     const large = await post('/api/workspaces/order', { workspaces: many })
     expect(ErrorBody.parse(await large.json()).error).toMatchObject({ state: 'orderStale' })
+  })
+
+  it('closes a workspace after its confirm, and refuses one that works, changed or runs the server', async () => {
+    const { agents, post, list } = setup()
+    const close = (id: string, body: unknown) => post(`/api/workspaces/${encodeURIComponent(id)}/close`, body)
+    const state = async (res: Response) => ErrorBody.parse(await res.json()).error
+    const [brain, omni] = (await list()).workspaces
+    if (brain === undefined || omni === undefined) throw new Error('the fake has no workspaces')
+    expect((await close(brain.id, { confirm: omni.id, panes: 2 })).status).toBe(400)
+    expect(await state(await close(brain.id, { confirm: brain.id, panes: 2 }))).toMatchObject({ state: 'needsYou' })
+    expect(await state(await close(brain.id, { confirm: brain.id, panes: 3 }))).toMatchObject({ state: 'panesChanged' })
+    agents.holdServer(omni.id)
+    expect(await state(await close(omni.id, { confirm: omni.id, panes: 1 }))).toMatchObject({ state: 'holdsServer' })
+    for (const chat of brain.chats) agents.setStatus(chat.id, 'idle')
+    expect((await close(brain.id, { confirm: brain.id, panes: 2 })).status).toBe(204)
+    expect((await list()).workspaces.map((w) => w.id)).toEqual([omni.id])
+    expect((await close(brain.id, { confirm: brain.id, panes: 2 })).status).toBe(404)
   })
 })

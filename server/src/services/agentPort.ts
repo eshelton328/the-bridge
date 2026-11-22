@@ -96,6 +96,11 @@ export type SwapOutcome = PaneWriteOutcome | 'otherTab' | 'samePane'
 export type CloseOutcome = PaneWriteOutcome | 'working' | 'needsYou'
 /** What a move did: as a write, or `sameTab` or `zoomedTab` when the tab cannot take the pane, so nothing moved. */
 export type MoveOutcome = PaneWriteOutcome | 'sameTab' | 'zoomedTab'
+/**
+ * A workspace close: `panesChanged` when the workspace has another number of panes than the owner saw, `holdsServer`
+ * when a pane runs the server or a process above it, `group` when herdr groups it with worktree workspaces.
+ */
+export type CloseWorkspaceOutcome = CloseOutcome | 'panesChanged' | 'holdsServer' | 'group'
 /** An order of workspaces: `stale` when it does not name each listed workspace once. */
 export type OrderOutcome = PaneWriteOutcome | 'stale'
 /** What a split did: the chat of the new shell pane, or `notFound` when the chat has no pane. */
@@ -225,6 +230,11 @@ export type AgentPort = {
    * the agent's own title, and the agent's herdr name does not change.
    */
   renameChat(chat: ChatId, label: string): Promise<Result<PaneWriteOutcome, AgentPortError>>
+  /**
+   * Closes a workspace and so each pane in it, when it has `panes` panes, none of them works or waits for the owner,
+   * and none runs the server or a process above it. Never herdr's group close.
+   */
+  closeWorkspace(workspace: WorkspaceId, panes: number): Promise<Result<CloseWorkspaceOutcome, AgentPortError>>
   /** Puts the workspaces in `order`, as herdr shows and lists them; `order` names each listed workspace once. */
   orderWorkspaces(order: readonly WorkspaceId[]): Promise<Result<OrderOutcome, AgentPortError>>
   /** Splits the pane of one chat in two, `row` with the new pane on the right, `column` below; the new pane is a shell. */
