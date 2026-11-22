@@ -224,6 +224,23 @@ describe('the live Inbox badge', () => {
     expect(badge(device)).toBe(2)
   })
 
+  it('reads the count when the Inbox page leaves during its load of a change', async () => {
+    const server = withInbox()
+    const device = devices[0]
+    const router = await openApp(device, '/')
+    await expect.poll(() => badge(device)).toBe(2)
+    await expect.poll(() => server.streams()).toBe(1)
+    await quiet()
+    // The page's load of the next change never answers, and the owner leaves before it could.
+    server.answerNext('list', () => new Promise<Response>(() => undefined), 1)
+    const before = server.calls('list').length
+    server.put(chatItem(4, 'Another sample question', 'question', 1))
+    await expect.poll(() => server.calls('list').length).toBe(before + 1)
+    await tapTo(device, 'artifacts')
+    await expect.poll(() => router.state.resolvedLocation?.pathname).toBe('/artifacts')
+    await expect.poll(() => badge(device)).toBe(3)
+  })
+
   it('reads the list once for each inbox.changed while the Inbox page shows: the page loads it for the badge', async () => {
     const server = withInbox()
     const device = devices[0]
