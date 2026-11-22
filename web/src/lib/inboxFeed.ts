@@ -26,7 +26,7 @@ export type InboxFeed = {
   readonly host: () => InboxHost
 }
 
-export type InboxHost = { readonly changed: () => void; readonly release: () => void }
+type InboxHost = { readonly changed: () => void; readonly release: () => void }
 
 export const InboxFeedContext = createContext<InboxFeed | null>(null)
 
