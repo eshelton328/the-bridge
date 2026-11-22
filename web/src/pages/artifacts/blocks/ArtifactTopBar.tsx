@@ -61,8 +61,9 @@ export function ArtifactTopBar({
                   Discuss
                 </Button>
               </span>
+              {/* The Copy link beside Open artifact (ArtifactPage) says the result to a screen reader; this one does not. */}
               <span data-figma="button · copy">
-                <CopyLinkButton size="lg" iconOnly status={copyLinkStatus} onClick={onCopyLink} />
+                <CopyLinkButton size="lg" iconOnly status={copyLinkStatus} onClick={onCopyLink} announce={false} />
               </span>
               <span data-figma="button · trash">
                 <Button size="lg" iconOnly variant="secondaryDanger" aria-label="Remove" onClick={onRemove}>

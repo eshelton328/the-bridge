@@ -5,8 +5,9 @@
 // column and gives the discussion the rest of the pane, up to
 // `shell.discussionPane`, as the Inbox's task and discussion (D14); the
 // column and the discussion each scroll on their own (d-107). Copy
-// link calls `onCopyLink`; Remove, Open artifact and Open in workspace
-// render as Figma draws them; their screens come with later frames. The project chip opens the
+// link, in the bar and beside Open artifact, calls `onCopyLink`; Open
+// artifact is a link to `href` in a new tab; Open in workspace
+// renders as Figma draws it; its screen comes with a later frame. The project chip opens the
 // project menu (`projectMenu`). Props only.
 import { Container, DetailSplit, Stack } from '@eshelton328/component-library-1701'
 import type { ReactNode } from 'react'
@@ -30,6 +31,8 @@ const full = css({ w: 'shell.detail' })
 
 export type ArtifactDetailProps = {
   artifact: Artifact
+  /** The https address the artifact's link opens (`artifactHref`); without it no Open artifact or Copy link beside it. */
+  href?: string | undefined
   /** The bar's pill, such as "New" or, after Apply, "Updated" (D9); none without it. */
   badge?: string | undefined
   /** Discuss was pressed; without it Discuss does nothing. */
@@ -53,6 +56,7 @@ export type ArtifactDetailProps = {
 
 export function ArtifactDetail({
   artifact,
+  href,
   badge,
   onDiscuss,
   onCopyLink,
@@ -76,7 +80,7 @@ export function ArtifactDetail({
       <ArtifactTitleBlock artifact={artifact} projectMenu={projectMenu} />
       {/* d-084: a preview that fails to render shows its fallback; the bar and the title stay. */}
       <BlockBoundary contentKey={artifact.id}>
-        <ArtifactPreview artifact={artifact} />
+        <ArtifactPreview artifact={artifact} href={href} onCopyLink={onCopyLink} copyLinkStatus={copyLinkStatus} />
       </BlockBoundary>
       {/* A card opened from the library names no chat, so it has no Made in. */}
       {artifact.madeIn === undefined ? null : (

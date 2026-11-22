@@ -50,13 +50,25 @@ export function withServer(artifacts: readonly unknown[] = [plan, notes]): FakeA
   return server
 }
 
+/** A device of the owner's path: its size and what the library draws each artifact as. */
+export type Device = {
+  readonly name: string
+  readonly size: readonly [number, number]
+  readonly item: 'artifact card' | 'artifact row'
+}
+
 export const devices = [
   { name: 'the desktop', size: [1512, 982], item: 'artifact card' },
   { name: 'the phone', size: [390, 844], item: 'artifact row' },
-] as const
-export type Device = (typeof devices)[number]
+] as const satisfies readonly Device[]
 
-/** Opens the app with no URL parameters at the device's size and taps Artifacts in the rail, or in More on the phone. */
+/** The tablet, which opens Artifacts from its tab bar and draws cards, as the desktop. */
+export const tablet = { name: 'the tablet', size: [756, 1158], item: 'artifact card' } as const satisfies Device
+
+/**
+ * Opens the app with no URL parameters at the device's size and taps Artifacts in the rail (the tablet's tab bar), or in
+ * More on the phone.
+ */
 export async function tapArtifacts(device: Device) {
   await setViewport(device.size[0], device.size[1])
   const router = createRouter({

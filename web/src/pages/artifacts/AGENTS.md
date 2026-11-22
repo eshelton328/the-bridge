@@ -24,6 +24,13 @@ the Artifacts page; their saved copies are in `references/artifacts/`.
 - The Back bar and the discussion header stay at the top and the reply
   box at the bottom; only the content between them scrolls (d-107,
   `app/ArtifactsStickyBars.test.tsx`).
+- Open artifact is a plain link (`blocks/OpenArtifactLink.tsx`, the
+  library's `button` recipe on an `<a>`) to `artifactHref(link)`
+  (`screens/openView.ts`) with `target="_blank"` and
+  `rel="noopener noreferrer"`, so the Home Screen app opens Safari; never
+  a `window.open` after an await. Only an https address renders it; any
+  other link shows no Open artifact and no Copy link beside it (R40,
+  `app/ArtifactsOpenLink.test.tsx`).
 - Every card and open artifact has a `link` (`types.ts`). Copy link
   goes out through the screen's `onCopyLink`; the entry writes the
   clipboard and passes back `copiedLink`, which the control shows as

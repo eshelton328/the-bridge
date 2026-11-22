@@ -37,7 +37,7 @@ import { addLinkInput } from './addLinkView.ts'
 import { appliedView, discussionEntries, proposalEffect } from './discussionView.ts'
 import { LibraryList } from './LibraryList.tsx'
 import { LibraryPhone } from './LibraryPhone.tsx'
-import { filedProject, openArtifact } from './openView.ts'
+import { artifactHref, filedProject, openArtifact } from './openView.ts'
 import type { PushSwitch } from '../../../lib/pushSwitch.ts'
 
 export type ArtifactsScreenProps = {
@@ -104,16 +104,17 @@ export function ArtifactsScreen({
                   onFile?.(view.artifact.id, fileProject)
                 },
               }
-        // D2, T2, M2: Copy link copies the address the artifact's link opens; every artifact in the library has one.
+        // D2, T2, M2: Open artifact links to the https address the artifact's link opens, and Copy link copies it; a
+        // link that is not an https address has neither (artifactHref).
+        const href = view === undefined ? undefined : artifactHref(view.artifact.link)
         const copyLink =
-          view === undefined || onCopyLink === undefined
+          href === undefined || onCopyLink === undefined
             ? undefined
             : () => {
-                onCopyLink(`https://${view.artifact.link}`)
+                onCopyLink(href)
               }
         // "Copied" or "Copy failed" shows only on the artifact whose link was copied.
-        const copyLinkStatus =
-          view !== undefined && copiedLink?.link === `https://${view.artifact.link}` ? copiedLink.status : undefined
+        const copyLinkStatus = href !== undefined && copiedLink?.link === href ? copiedLink.status : undefined
         // D1, T1, M1 and D2's list: a card or row opens its artifact; Back closes it again on a tablet or phone.
         const openCard = (openId: string) => {
           onUiChange?.({ openId, artifactClosed: false })
@@ -237,6 +238,7 @@ export function ArtifactsScreen({
                 ) : layout !== 'desktop' ? (
                   <ArtifactPage
                     artifact={view.artifact}
+                    href={href}
                     layout={layout}
                     badge={view.badge}
                     backLabel={data.title}
@@ -262,6 +264,7 @@ export function ArtifactsScreen({
                 ) : (
                   <ArtifactDetail
                     artifact={view.artifact}
+                    href={href}
                     badge={view.badge}
                     onDiscuss={
                       discussion === undefined

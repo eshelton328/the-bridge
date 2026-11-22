@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { ScreenState, Viewport } from '../../lib/screenState.ts'
 import { artifactsHome } from './home.ts'
-import { cardDetail, filedProject, openArtifact } from './screens/openView.ts'
+import { artifactHref, cardDetail, filedProject, openArtifact } from './screens/openView.ts'
 import { artifactsStates } from './states/index.ts'
 import type { ArtifactCard, ArtifactsData, ArtifactsUi } from './types.ts'
 
@@ -94,5 +94,41 @@ describe('filedProject', () => {
   it('checks a pick made for a card opened from the library', () => {
     const ui = { ...artifactPhone.ui, fileProject: 'omni', fileFor: other.id }
     expect(filedProject(ui, open.id, other)).toBe('omni')
+  })
+})
+
+// Made-up links only.
+describe('artifactHref', () => {
+  it('puts https:// before a link the page shows without its scheme', () => {
+    expect(artifactHref('claude.ai/artifact/00000000-0000-0000-0000-000000000000')).toBe(
+      'https://claude.ai/artifact/00000000-0000-0000-0000-000000000000',
+    )
+    expect(artifactHref('sample-2.example.com/')).toBe('https://sample-2.example.com/')
+  })
+
+  it('gives none for a link that keeps another scheme, such as http:// in any case', () => {
+    for (const link of ['http://sample.example.com/', 'HTTP://sample.example.com/', 'ftp://sample.example.com/'])
+      expect(artifactHref(link)).toBeUndefined()
+  })
+
+  it('gives none for a link that is not an https address with a host', () => {
+    for (const link of [
+      '',
+      'javascript:void(0)',
+      'data:text/html,x',
+      '/sample',
+      '//sample.example.com',
+      'a b.example.com',
+    ])
+      expect(artifactHref(link)).toBeUndefined()
+  })
+
+  it('encodes a space in the path or query, as Add a link takes such a link', () => {
+    expect(artifactHref('sample.example.com/my page?q=a b')).toBe('https://sample.example.com/my%20page?q=a%20b')
+  })
+
+  it('gives none for a link with a user name, which would hide the host', () => {
+    // Built from parts: the link before the host is a user name, as in `user@host`.
+    expect(artifactHref(['claude.ai', 'sample.example.com/'].join('@'))).toBeUndefined()
   })
 })
