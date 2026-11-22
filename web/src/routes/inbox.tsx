@@ -6,6 +6,6 @@ import { InboxPage, inboxSearch, loadInboxState } from '../pages/inbox/index.ts'
 export const Route = createFileRoute('/inbox')({
   validateSearch: inboxSearch,
   loaderDeps: ({ search }) => ({ state: search.state, source: search.source }),
-  loader: ({ deps }) => loadInboxState(deps.state, deps.source),
+  loader: ({ deps, abortController }) => loadInboxState(deps.state, deps.source, abortController.signal),
   component: InboxPage,
 })

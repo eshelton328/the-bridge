@@ -31,6 +31,16 @@ in `references/inbox/`.
   draft until it resolves, a failed send is reported, and `markSent` empties
   only the draft that still holds the sent text (audit L-3,
   `InboxSendDraft.test.tsx`).
+- In development the home reads the live Inbox (`liveInbox.ts`, mapped by
+  `liveList.ts`): `GET /api/inbox`, read again on each `inbox.changed` of
+  `GET /api/events` and each time the stream opens, never on a timer. The
+  tab badge is the server's `counts.needsYou`. `?state=` and
+  `?source=fixtures` show the sample data.
+- A live row has no actions sheet and opens only on a tablet or phone
+  (`RowDetail`) until its item's detail and its Snooze, Mark done and
+  Dismiss reach the server. No row shows Allow or Deny (v1).
+- The live tests run on the owner's path with `lib/fakeInboxServer.ts`
+  (`app/InboxLive.test.tsx`).
 - The route tests are in `app/` (`InboxRoute.test.tsx`,
   `InboxListTools.test.tsx`, `InboxPhone.test.tsx`, with
   `inboxRouteHelpers.ts`; the home in `InboxHome.test.tsx`). Run them

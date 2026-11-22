@@ -9,7 +9,11 @@ import { RouteError } from '../errors/RouteError.tsx'
 import { resetRetries } from '../errors/retryGuard.ts'
 import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
+import { stubLiveServer } from './liveServerStub.ts'
 import { routeTree } from './routeTree.gen.ts'
+
+// The Inbox home reads the live Inbox (d-117): a stubbed server, never the one on this machine.
+stubLiveServer()
 
 // Audit W-10, on the owner's path. A route crash leaves the owner a way to another page (Go to Inbox), Retry
 // used up in one boundary leaves Retry in another, and the composer's draft outlives a reload. The library's

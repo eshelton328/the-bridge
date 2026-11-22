@@ -5,7 +5,8 @@
 // not-built screen (errors/NotFound.tsx). In development `?source=` and `?state=`
 // pick the source and the state; with no `?state=`, and always in a
 // production build, a loader reads the page's home. A page can name its own
-// `default` source for its home in development (d-117: live on Workspaces);
+// `default` source for its home in development (d-117: live on Workspaces,
+// Artifacts and the Inbox);
 // a `?state=` still reads its fixture state, so the stories and the
 // fidelity checks do not change.
 import { err, ok, type Result } from '@bridge/shared'

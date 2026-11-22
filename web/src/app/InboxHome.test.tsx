@@ -12,7 +12,9 @@ import { routeTree } from './routeTree.gen.ts'
 
 // /inbox with no ?state= opens the page's home (pages/inbox/home.ts): nothing
 // selected and every overlay closed, laid out for the window's width. A
-// ?state= still draws its own frame.
+// ?state= still draws its own frame. The home reads the live Inbox in
+// development (app/InboxLive.test.tsx); these tests open its sample data
+// with ?source=fixtures.
 document.documentElement.classList.add('dark')
 document.documentElement.dataset.pandaTheme = 'viewscreen'
 // The Workspaces home reads the live source (d-117): a stubbed server, never the one on this machine.
@@ -48,7 +50,7 @@ afterEach(async () => {
 describe('the Inbox home', () => {
   it('draws the phone list at 390 with nothing open', async () => {
     await setViewport(390, 844)
-    view = await renderAt('/inbox')
+    view = await renderAt('/inbox?source=fixtures')
     await expect.poll(tabBar).not.toBeNull()
     expect(rail()).toBeNull()
     await expect.element(searchbox()).toBeVisible()
@@ -58,7 +60,7 @@ describe('the Inbox home', () => {
 
   it('draws the desktop list and task at 1512 with nothing open', async () => {
     await setViewport(1512, 982)
-    view = await renderAt('/inbox')
+    view = await renderAt('/inbox?source=fixtures')
     await expect.poll(rail).not.toBeNull()
     expect(tabBar()).toBeNull()
     await expect.element(searchbox()).toBeVisible()
@@ -68,7 +70,7 @@ describe('the Inbox home', () => {
 
   it('changes from the desktop to the phone list and back as the window narrows and widens', async () => {
     await setViewport(1512, 982)
-    view = await renderAt('/inbox')
+    view = await renderAt('/inbox?source=fixtures')
     await expect.element(task()).toBeVisible()
     await setViewport(390, 844)
     await expect.poll(tabBar).not.toBeNull()
@@ -81,7 +83,7 @@ describe('the Inbox home', () => {
 
   it('draws the tablet list at 756 with nothing open', async () => {
     await setViewport(756, 1158)
-    view = await renderAt('/inbox')
+    view = await renderAt('/inbox?source=fixtures')
     await expect.poll(tabBar).not.toBeNull()
     expect(rail()).toBeNull()
     await expect.element(searchbox()).toBeVisible()
@@ -96,7 +98,7 @@ describe('the Inbox home', () => {
   ] as const)
     it(`opens the task from the list, keeps a typed note after Back, at ${String(w)}`, async () => {
       await setViewport(w, h)
-      view = await renderAt('/inbox')
+      view = await renderAt('/inbox?source=fixtures')
       await page.getByText('Write the tickets for increment one').click()
       await expect.element(task()).toBeVisible()
       await userEvent.type(page.getByRole('textbox', { name: 'Add a note' }), 'Check the ticket size')
@@ -109,7 +111,7 @@ describe('the Inbox home', () => {
 
   it('goes to Workspaces from the tablet tab bar', async () => {
     await setViewport(756, 1158)
-    view = await renderAt('/inbox')
+    view = await renderAt('/inbox?source=fixtures')
     await expect.poll(tabBar).not.toBeNull()
     await userEvent.click(page.getByRole('button', { name: 'Workspaces' }))
     await expect.poll(() => router?.state.location.pathname).toBe('/workspaces')
@@ -117,7 +119,7 @@ describe('the Inbox home', () => {
 
   it('reaches Toolkit from More in the tablet tab bar, as the tablet has no rail', async () => {
     await setViewport(756, 1158)
-    view = await renderAt('/inbox')
+    view = await renderAt('/inbox?source=fixtures')
     await expect.poll(tabBar).not.toBeNull()
     await userEvent.click(page.getByRole('button', { name: 'More' }))
     const toolkit = page.getByRole('button', { name: 'Toolkit' })

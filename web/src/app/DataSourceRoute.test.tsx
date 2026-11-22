@@ -39,9 +39,10 @@ describe('the data source', () => {
     }
   })
 
-  it('shows "not built yet" for ?source=mock-api and ?source=live, and Use fixtures goes back', async () => {
+  it('shows "not built yet" for ?source=mock-api, and Use fixtures goes back', async () => {
     vi.spyOn(console, 'warn').mockImplementation(() => undefined)
-    for (const source of ['mock-api', 'live']) {
+    // The Inbox built its live source; the mock API is built for no page.
+    for (const source of ['mock-api']) {
       const { router, rendered } = renderAt(`/inbox?state=nextStep&source=${source}`)
       const view = await rendered
       await expect.element(page.getByRole('heading', { name: 'Data source not built yet' })).toBeVisible()
@@ -51,6 +52,15 @@ describe('the data source', () => {
       expect(router.state.location.searchStr).toBe('?state=nextStep')
       await view.unmount()
     }
+  })
+
+  it('shows "not built yet" for ?source=live on a page that did not build it', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+    const { rendered } = renderAt('/toolkit?source=live')
+    const view = await rendered
+    await expect.element(page.getByRole('heading', { name: 'Data source not built yet' })).toBeVisible()
+    await expect.element(page.getByText('The live source is not built yet.', { exact: false })).toBeVisible()
+    await view.unmount()
   })
 
   it('shows Page not found for an unknown source, as for an unknown state', async () => {

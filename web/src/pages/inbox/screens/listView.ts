@@ -52,6 +52,25 @@ function appliedSections(menu: InboxData['filterMenu'], checks: readonly string[
 export const allChecks = (menu: InboxData['filterMenu']): string[] =>
   menu.sections.flatMap((section) => section.items.map((item) => item.value))
 
+/**
+ * `checks` with the boxes the menu gained since `seen`, in each section whose seen boxes were all checked: a section
+ * that did not narrow the list then does not narrow it now (the live Inbox's menu changes with each read). With no
+ * `seen`, `checks` as they are.
+ */
+export function withNewBoxes(
+  menu: InboxData['filterMenu'],
+  checks: readonly string[],
+  seen: readonly string[] | undefined,
+): string[] {
+  if (seen === undefined) return [...checks]
+  const added = menu.sections.flatMap((section) => {
+    const values = section.items.map((item) => item.value)
+    const open = values.filter((v) => seen.includes(v)).every((v) => checks.includes(v))
+    return open ? values.filter((v) => !checks.includes(v)) : []
+  })
+  return [...checks, ...added]
+}
+
 /** Whether a row passes every narrowing section: its kind, project or one of its tags is checked there. */
 function passes(row: InboxRowView, sections: readonly AppliedSection[]): boolean {
   const facets = [row.kind, projectOf(row), ...(row.tags ?? [])]

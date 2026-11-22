@@ -86,6 +86,8 @@ const kindOnly: Readonly<Record<string, (error: Error) => string>> = {
   LiveMissError: (error) => stringAt(Reflect.get(error, 'miss'), 'kind') ?? '',
   // An Artifacts library read or write that missed: its step, kind and status only, never a link or a title.
   ArtifactsMissError: (error) => stringAt(error, 'miss') ?? '',
+  // An Inbox read or mark that missed: its step, kind and status only, never a title, a record or a chat.
+  InboxMissError: (error) => stringAt(error, 'miss') ?? '',
   ZodError: (error) => {
     const issues: unknown = Reflect.get(error, 'issues')
     const codes = Array.isArray(issues) ? issues.map((issue: unknown) => stringAt(issue, 'code') ?? '') : []

@@ -231,7 +231,7 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
           row={rowOpened}
           onBack={closeRow}
           onActions={
-            rowOpened.outcome === undefined
+            rowOpened.outcome === undefined && rowOpened.readOnly !== true
               ? () => {
                   onUiChange?.({ actionsFor: rowOpened.id })
                 }

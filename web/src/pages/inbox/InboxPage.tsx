@@ -1,10 +1,13 @@
 // The Inbox's connected entry: the only component of the page that reads
 // the router and the page store. It merges the loaded state with the URL
-// and the store and passes everything to the props-only screen.
-import { getRouteApi } from '@tanstack/react-router'
+// and the store and passes everything to the props-only screen. On the live
+// Inbox (liveInbox.ts) it reads the event stream while it shows and loads
+// again on each `inbox.changed`.
+import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import { report } from '../../errors/reporter.ts'
 import { copyText } from '../../lib/copyText.ts'
+import { readsLive } from '../../lib/dataSource.ts'
 import {
   useInboxActions,
   useInboxDrafts,
@@ -15,7 +18,9 @@ import {
   useInboxRemoveOpen,
   useInboxUi,
 } from './inboxStore.ts'
+import { inboxSources } from './loadInboxState.ts'
 import { InboxScreen } from './screens/InboxScreen.tsx'
+import { withNewBoxes } from './screens/listView.ts'
 import { usePushSwitch } from '../../state/pushStore.ts'
 
 const reportCopy = (error: unknown) => {
@@ -52,6 +57,20 @@ export function InboxPage() {
   useEffect(() => {
     showState(search.state)
   }, [showState, search.state])
+  const router = useRouter()
+  const live = readsLive({ state: search.state, source: search.source }, inboxSources)
+  useEffect(() => {
+    let stop: (() => void) | undefined
+    let gone = false
+    if (import.meta.env.DEV && live)
+      void import('./liveInbox.ts').then((module) => {
+        if (!gone) stop = module.watchInboxChanges({ onChange: () => void router.invalidate() })
+      })
+    return () => {
+      gone = true
+      stop?.()
+    }
+  }, [router, live])
   const ui = {
     ...state.ui,
     ...changed,
@@ -63,6 +82,11 @@ export function InboxPage() {
     promptOpen: promptOpen ?? state.ui.promptOpen,
     removeOpen: removeOpen ?? state.ui.removeOpen,
   }
+  // The live menu changes with each read: a section that did not narrow the list when the owner set the filters
+  // takes the boxes that came since, so a new kind or project is not hidden by checks made before it came.
+  const seen = ui.filterSeen
+  ui.filters = withNewBoxes(state.data.filterMenu, ui.filters, seen)
+  ui.filterChecks = withNewBoxes(state.data.filterMenu, ui.filterChecks, seen)
   return (
     <InboxScreen
       push={push}

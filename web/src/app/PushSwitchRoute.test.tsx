@@ -40,7 +40,10 @@ const layouts = [
 async function show(layout: (typeof layouts)[number], options: FakePushOptions) {
   const push = fakePush(options)
   await page.viewport(layout.size[0], layout.size[1])
-  const router = createRouter({ routeTree, history: createMemoryHistory({ initialEntries: ['/inbox'] }) })
+  const router = createRouter({
+    routeTree,
+    history: createMemoryHistory({ initialEntries: ['/inbox?source=fixtures'] }),
+  })
   await testRender(<RouterProvider router={router} />)
   await layout.open()
   // The switch's input is hidden, as Ark draws it; the owner taps its row, which is the input's label.

@@ -16,10 +16,11 @@ state file and a page are in `screenState.ts` (d-082).
   rendering step, which a busy CI runner can delay for seconds.
 - A browser test never reads the real server: `testSetup.ts` fails a test whose
   `fetch` of `/api` has no stub (`serverGuard.test.ts`). A test file that
-  opens the Workspaces or Artifacts live source, or taps its way to either
-  home, calls `stubLiveServer()` at its top (`app/liveServerStub.ts`,
-  RouteScroll `/workspaces?source=live`); it answers the Artifacts list
-  with an empty library. A file
+  opens the Workspaces, Artifacts or Inbox live source, or taps its way to
+  one of those homes (`/` opens the Inbox), calls `stubLiveServer()` at its
+  top (`app/liveServerStub.ts`, RouteScroll `/workspaces?source=live`); it
+  answers the Artifacts list with an empty library and the Inbox with an
+  empty Inbox. A file
   that stubs `fetch` in each test and removes it in `afterEach` calls
   `answerLateServerReads()` at its top (`lateServerReads.ts`): a page's
   router can read after its test ended (WorkspacesLiveUnavailable).
