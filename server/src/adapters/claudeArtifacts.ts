@@ -8,8 +8,10 @@
 // list; the next scan goes on from there. Nothing here logs.
 import type { Dirent, Stats } from 'node:fs'
 import { open, readdir, stat } from 'node:fs/promises'
-import { join } from 'node:path'
+import { join, relative, sep } from 'node:path'
+import { ArtifactProject } from '@bridge/contract'
 import { z } from 'zod'
+import type { ArtifactFinder } from '../services/artifacts.ts'
 
 /** An artifact as its session file records it. `cwd` is the chat's folder; it stays in the server. */
 type FoundArtifact = {
@@ -200,6 +202,28 @@ export function createArtifactScanner(
       const next = queue.then(scanOnce, scanOnce)
       queue = next.catch(() => undefined)
       return next
+    },
+  }
+}
+
+/** The project of a chat folder: the name after `<chat root>/projects/`, else null. */
+export function projectOf(chatRoot: string, cwd: string): ArtifactProject | null {
+  const parts = relative(join(chatRoot, 'projects'), cwd).split(sep)
+  if (parts[0] === undefined || parts[0] === '' || parts[0] === '..') return null
+  const project = ArtifactProject.safeParse(parts[0])
+  return project.success ? project.data : null
+}
+
+/** The finder of the artifacts service: the scanner, with each chat folder turned into its project. */
+export function createClaudeArtifactFinder(projects: string, chatRoot: string, limits: Limits = {}): ArtifactFinder {
+  const scanner = createArtifactScanner(projects, limits)
+  return {
+    async scan() {
+      const { found, partial } = await scanner.scan()
+      return {
+        partial,
+        found: found.map(({ cwd, ...artifact }) => ({ ...artifact, project: projectOf(chatRoot, cwd) })),
+      }
     },
   }
 }

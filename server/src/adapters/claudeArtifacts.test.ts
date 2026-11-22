@@ -2,7 +2,7 @@ import { appendFileSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { createArtifactScanner } from './claudeArtifacts.ts'
+import { createArtifactScanner, createClaudeArtifactFinder, projectOf } from './claudeArtifacts.ts'
 
 const session = '0b7f2c1e-4d3a-4f6b-9a8c-1e2d3c4b5a69'
 const cwd = '/home/dev/projects/example-project'
@@ -173,5 +173,35 @@ describe('the Claude artifact scanner', () => {
     const scanner = createArtifactScanner(root)
     const [a, b] = await Promise.all([scanner.scan(), scanner.scan()])
     expect([...a.found, ...b.found].map((f) => f.link)).toEqual([link(1), link(2)])
+  })
+})
+
+describe('the Claude artifact finder', () => {
+  it('names the project from the chat folder under the chat root, and none outside it', () => {
+    expect(projectOf('/home/dev', '/home/dev/projects/example-project')).toBe('example-project')
+    expect(projectOf('/home/dev', '/home/dev/projects/example-project/repo-worktrees/branch')).toBe('example-project')
+    expect(projectOf('/home/dev', '/home/dev/projects')).toBeNull()
+    expect(projectOf('/home/dev', '/home/dev/engine')).toBeNull()
+    expect(projectOf('/home/dev', '/srv/other/projects/x')).toBeNull()
+    expect(projectOf('/home/dev', '/home/dev/projects/Not A Name')).toBeNull()
+  })
+
+  it('gives each found artifact with its project in place of its folder', async () => {
+    const { root, file } = projects()
+    writeFileSync(file, publish(1))
+    const scan = await createClaudeArtifactFinder(root, '/home/dev').scan()
+    expect(scan).toEqual({
+      partial: false,
+      found: [
+        {
+          link: link(1),
+          title: 'Report 1',
+          description: 'An example',
+          publishedAt: '2026-11-20T10:00:01.000Z',
+          session,
+          project: 'example-project',
+        },
+      ],
+    })
   })
 })
