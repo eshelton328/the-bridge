@@ -194,7 +194,8 @@ export function PhoneWorkspaceList({
             key={w.id}
             device={device}
             workspace={w}
-            open={!collapsed.includes(w.id)}
+            // While a workspace is dragged every group shows its header only, so each place is on the screen.
+            open={reorder.dragging === undefined && !collapsed.includes(w.id)}
             onOpenChange={(open) => setOpen(w.id, open)}
             renaming={renamingWorkspaces[w.id]}
             renamingChats={renamingChats}

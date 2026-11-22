@@ -9,8 +9,33 @@
 // handle that React moves in the list keeps its drag. A drag that the
 // browser cancels sends nothing. Only the pointer that started the drag
 // moves or ends it: a second finger on the screen is ignored (Codex review
-// of #425). Props only: the hook keeps the drag.
+// of #425). While a drag runs the list shows each workspace's header only
+// (PhoneWorkspaceList closes the groups), so a workspace with more chats
+// than the screen holds does not push the others off it, and a pointer held
+// within `edgePx` of the list's top or bottom scrolls the list a step each
+// frame (Codex review of #425: touch scrolling is off on the handle). Props
+// only: the hook keeps the drag.
 import { type KeyboardEvent, type PointerEvent, useCallback, useEffect, useRef, useState } from 'react'
+
+/** How near the scrolling list's top or bottom edge a held pointer scrolls it, and by how much each frame, in px. */
+const edgePx = 48
+const stepPx = 8
+
+/** The nearest ancestor of `element` that scrolls vertically, else the page's own scroller. */
+function scrollerOf(element: Element): Element | null {
+  for (let at = element.parentElement; at !== null; at = at.parentElement) {
+    const { overflowY } = getComputedStyle(at)
+    if ((overflowY === 'auto' || overflowY === 'scroll') && at.scrollHeight > at.clientHeight) return at
+  }
+  return document.scrollingElement
+}
+
+/** The part of the screen `scroller` shows: the page's scroller shows the whole window. */
+function shownBy(scroller: Element): { top: number; bottom: number } {
+  return scroller === document.scrollingElement
+    ? { top: 0, bottom: window.innerHeight }
+    : scroller.getBoundingClientRect()
+}
 
 /** `ids` with `id` taken out and put in at `at` of the others. */
 const movedTo = (ids: readonly string[], id: string, at: number): string[] => {
@@ -72,14 +97,33 @@ export function useWorkspaceReorder(
       stopRef.current?.()
       const from = nowRef.current.ids
       const pointer = event.pointerId
+      const scroller = scrollerOf(event.currentTarget)
       let at = Math.max(0, from.indexOf(id))
+      let y = event.clientY
+      let frame = 0
       setDrag({ id, at })
+      // Each frame, a pointer held near the list's edge scrolls it a step, and the place follows.
+      const edgeScroll = () => {
+        if (scroller !== null) {
+          const box = shownBy(scroller)
+          const step = y < box.top + edgePx ? -stepPx : y > box.bottom - edgePx ? stepPx : 0
+          if (step !== 0) {
+            scroller.scrollTop += step
+            at = placeOf(id, y)
+            setDrag({ id, at })
+          }
+        }
+        frame = requestAnimationFrame(edgeScroll)
+      }
+      frame = requestAnimationFrame(edgeScroll)
       const move = (e: globalThis.PointerEvent) => {
         if (e.pointerId !== pointer) return
-        at = placeOf(id, e.clientY)
+        y = e.clientY
+        at = placeOf(id, y)
         setDrag({ id, at })
       }
       const stop = () => {
+        cancelAnimationFrame(frame)
         window.removeEventListener('pointermove', move)
         window.removeEventListener('pointerup', up)
         window.removeEventListener('pointercancel', cancel)

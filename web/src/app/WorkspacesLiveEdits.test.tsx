@@ -52,10 +52,10 @@ const list = {
 type Fakes = { chats: FakeTranscriptServer; list: FakeWorkspacesServer }
 
 /** The stubbed server: the fakes' routes, and a rejection for anything else. */
-function withChats(): Fakes {
+function withChats(listed: typeof list = list): Fakes {
   const chats = fakeTranscriptServer()
-  for (const c of [sketch, notes, pond]) chats.set(c, [])
-  const workspaces = fakeWorkspacesServer(chats, list)
+  for (const c of listed.workspaces.flatMap((w) => w.chats)) chats.set(c.id, [])
+  const workspaces = fakeWorkspacesServer(chats, listed)
   vi.stubGlobal(
     'fetch',
     vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
@@ -164,9 +164,10 @@ describe("the live list's Edit (R41)", () => {
       await tapWorkspaces(size)
       await tapEdit()
       expect(handleOrder()).toEqual(['Move orchard', 'Move meadow'])
+      // The groups show their headers only while the drag runs; the tab bar lies under meadow's.
       await userEvent.dragAndDrop(
         page.getByRole('button', { name: 'Move orchard' }),
-        page.getByText('survey the pond', { exact: true }),
+        page.getByRole('button', { name: 'Workspaces', exact: true }),
       )
       await expect.poll(() => fakes.list.edits).toEqual([{ action: 'order', body: { workspaces: [meadow, orchard] } }])
       await expect.poll(handleOrder).toEqual(['Move meadow', 'Move orchard'])
@@ -199,6 +200,37 @@ describe("the live list's Edit (R41)", () => {
       await expect.poll(handleOrder).toEqual(['Move orchard', 'Move meadow', 'Move hedge'])
     })
   }
+
+  it('drags a workspace below one taller than the screen', async () => {
+    // meadow has more chats than the phone's screen holds: its middle is below the screen while its chats show.
+    const pondChats = Array.from({ length: 60 }, (_, i) =>
+      summary(`test-box/p${String(i)}`, `pond survey ${String(i)}`),
+    )
+    const tall = {
+      ...list,
+      workspaces: [list.workspaces[0], { id: meadow, label: 'meadow', chats: pondChats }].flatMap((w) =>
+        w === undefined ? [] : [w],
+      ),
+    }
+    const fakes = withChats(tall)
+    await tapWorkspaces(phone)
+    await tapEdit()
+    // A finger on the handle cannot scroll, so it ends the drag inside the screen, near its foot.
+    const handle = page.getByRole('button', { name: 'Move orchard' }).element()
+    const box = handle.getBoundingClientRect()
+    const foot = window.innerHeight - 60
+    const pointer = (type: string, clientY: number) =>
+      new PointerEvent(type, { pointerId: 1, isPrimary: true, button: 0, bubbles: true, clientY })
+    handle.dispatchEvent(pointer('pointerdown', box.top + box.height / 2))
+    window.dispatchEvent(pointer('pointermove', foot))
+    // While the drag runs each group shows its header only, so meadow's middle is on the screen.
+    await expect
+      .poll(() => page.getByText('meadow', { exact: true }).element().getBoundingClientRect().bottom)
+      .toBeLessThan(foot)
+    window.dispatchEvent(pointer('pointerup', foot))
+    await expect.poll(() => fakes.list.edits).toEqual([{ action: 'order', body: { workspaces: [meadow, orchard] } }])
+    await expect.poll(handleOrder).toEqual(['Move meadow', 'Move orchard'])
+  })
 
   it('ends a drag only with the pointer that started it (a second finger sends nothing)', async () => {
     const fakes = withChats()
