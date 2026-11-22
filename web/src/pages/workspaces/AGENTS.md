@@ -20,7 +20,11 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   expected miss the page shows no
   workspaces, never the sample ones, and `blocks/LiveNotice.tsx` with
   Retry in every layout; any other error goes to RouteError
-  (`app/WorkspacesLiveDefault.test.tsx`).
+  (`app/WorkspacesLiveDefault.test.tsx`). The live page offers only what
+  a route backs (reviews R41, R42): a live chat's actions are New chat,
+  Close pane…, Compact context… and Clear context… (with the layout
+  actions in a desktop pane), and the phone's and tablet's list has no
+  Edit. The fixture states keep every action and Edit.
 - Each live workspace's panes are its herdr layout's active tab (slice
   3a): `liveWorkspaces.ts` reads `GET /api/workspaces/:workspace/layout`
   on load, on `workspaces.changed` and on that workspace's

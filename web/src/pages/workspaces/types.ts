@@ -548,7 +548,8 @@ export type CloseWorkspaceText = z.infer<typeof CloseWorkspaceText>
  */
 export const PhoneText = z.object({
   title: z.string(),
-  edit: z.string(),
+  /** Edit (M1 105:2333); without it the list has no Edit, as on the live page, where no edit can be saved (R41). */
+  edit: z.string().optional(),
   add: z.string(),
   /** The button that ends edit mode (M2 105:2508); without it, Edit does not start edit mode. */
   done: z.string().optional(),
