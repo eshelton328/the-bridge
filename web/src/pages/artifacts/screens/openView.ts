@@ -67,18 +67,20 @@ const withScheme = /^[a-z][a-z\d+.-]*:\/\//i
  * The https address an artifact's link opens, which Open artifact goes to and Copy link copies: `https://` before the
  * link the page shows (the live library takes a case-blind `https://` off, liveLibrary.ts). Only an https address with
  * a host and no user name is one; a link that keeps another scheme (`http://`, `ftp://`), or that does not parse as a
- * URL (`javascript:…`, `data:…`), has none, and the page shows no Open artifact or Copy link for it.
+ * URL (`javascript:…`, `data:…`), has none, and the page shows no Open artifact or Copy link for it. The address is the
+ * URL's own form, so a space in a path Add a link took (`/my page`) is encoded (`/my%20page`).
  */
 export function artifactHref(link: string): string | undefined {
-  if (link === '' || withScheme.test(link) || /[\s\\]/.test(link) || link.startsWith('/')) return undefined
-  const href = `https://${link}`
+  if (link === '' || withScheme.test(link) || link.includes('\\') || link.startsWith('/')) return undefined
+  // A space is fine in the path or query, never in the host (Chromium would encode it there too).
+  if (/\s/.test(link.split(/[/?#]/, 1)[0] ?? '')) return undefined
   let url: URL
   try {
-    url = new URL(href)
+    url = new URL(`https://${link}`)
   } catch {
     return undefined
   }
   return url.protocol === 'https:' && url.hostname !== '' && url.username === '' && url.password === ''
-    ? href
+    ? url.href
     : undefined
 }

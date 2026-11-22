@@ -123,6 +123,10 @@ describe('artifactHref', () => {
       expect(artifactHref(link)).toBeUndefined()
   })
 
+  it('encodes a space in the path or query, as Add a link takes such a link', () => {
+    expect(artifactHref('sample.example.com/my page?q=a b')).toBe('https://sample.example.com/my%20page?q=a%20b')
+  })
+
   it('gives none for a link with a user name, which would hide the host', () => {
     // Built from parts: the link before the host is a user name, as in `user@host`.
     expect(artifactHref(['claude.ai', 'sample.example.com/'].join('@'))).toBeUndefined()
