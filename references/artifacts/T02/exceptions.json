@@ -1,0 +1,8 @@
+{
+  "extra": [
+    {
+      "text": "Copy link",
+      "reason": "Screen review R40 (2026-11-22): bridge-coord's decision, after the owner asked to copy the link as before, puts a Copy link next to Open artifact on every layout. T2 has no layer for it (deviations.md, Copy link beside Open artifact)."
+    }
+  ]
+}
