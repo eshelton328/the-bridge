@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // pnpm keyboard:served: the keyboard check of screen review R20 to R22 on the served app. It opens the Workspaces
 // chat and the Inbox chat in Playwright's WebKit as an installed iPhone app, takes the composer's focus with a tap,
-// opens and closes a fake keyboard (window.visualViewport shrinks and grows on the library's keyboard curve, as iOS
+// opens and closes a fake keyboard (window.visualViewport shrinks and grows on iOS's keyboard curve, as iOS
 // Safari's does, like the stand-in of WorkspacesChatDock.test.tsx) and samples every animation frame. It checks
 // that the header never moves, the window never scrolls, the last message stays above the composer and nothing
 // fades (keyboardCheckLib.ts), and tiles a recording of each run into a contact sheet. Prints one JSON line and
@@ -41,9 +41,12 @@ if (!served.ok) {
 const url = served.url
 const keyboard = Number(values.keyboard)
 const out = resolve(values.out ?? join('reports', 'keyboard', new Date().toISOString().replace(/[:.]/g, '-')))
-// The library's durations.keyboard and easings.keyboard (screen review R18).
-const duration = 250
-const ease = cubicBezier(0.38, 0.7, 0.125, 1)
+// iOS's keyboard motion, not our token: library #312 (component-library-1701 commit 3a690f06, screen review R37) fit
+// a critically damped spring (w ≈ 23.5/s) to the owner's iPad mini and iPhone traces on iOS 26 and the iOS 26.5
+// Simulator, and this curve stays within 1.06 % of it over 300 ms. The library's durations.keyboard and
+// easings.keyboard hold the same values, but the fake models iOS, so it keeps its own numbers.
+const duration = 300
+const ease = cubicBezier(0.22, 0.17, 0.15, 1)
 const curve = Array.from({ length: duration + 1 }, (_, ms) => ease(ms / duration))
 const iphone = devices['iPhone 15']
 if (targets.length === 0 || !Number.isFinite(keyboard)) {
