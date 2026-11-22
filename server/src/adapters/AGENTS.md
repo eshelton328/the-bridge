@@ -188,8 +188,9 @@ client of a socket or a file sits beside them.
   calls `workspace.close` with `close_group: false`, never herdr's
   group close (`group` when herdr asks for it). It refuses a workspace
   with another pane count than the owner saw (`panesChanged`), and
-  `holdsServer` for a chat with a guarded herdr name (`bridge-coord`,
-  from `main.ts`) or a pane whose shell or foreground process is the
+  `holdsServer` for a pane whose chat's herdr name, label or terminal
+  title (Claude's session name; a herdr name clears when its agent
+  ends) is guarded (`bridge-coord`, from `main.ts`), or a pane whose shell or foreground process is the
   server or a process above it (`pane.process_info` and
   `processAncestors.ts`, which runs `ps` with an argument list; a walk
   that fails refuses too). Then it reads the lists again, as another

@@ -182,6 +182,8 @@ const PaneList = z.object({
       cwd: z.string().nullable().optional(),
       agent_status: z.string(),
       label: z.string().nullable().optional(),
+      // Read only to guard a workspace close; a shell's title never leaves the adapter.
+      terminal_title_stripped: z.string().nullable().optional(),
     }),
   ),
 })
@@ -1348,12 +1350,18 @@ export function createHerdrAgents({
         if (!agents.ok) return agents
         if (!panes.ok) return panes
         const chats = new Map(agents.value.agents.filter(isChat).map((a) => [a.pane_id, a]))
-        const own = panes.value.panes.filter((p) => p.workspace_id === local).map((p) => p.pane_id)
+        const inWorkspace = panes.value.panes.filter((p) => p.workspace_id === local)
+        const own = inWorkspace.map((p) => p.pane_id)
         const statuses = own.map((p) => {
           const chat = chats.get(p)
           return chat === undefined ? 'idle' : statusOf(chat.agent_status)
         })
-        const guardedName = own.some((p) => guardedAgents.includes(chats.get(p)?.name ?? ''))
+        // A herdr name clears when its agent ends, so the pane's label and title (Claude's session name) count too.
+        const guardedName = inWorkspace.some((p) =>
+          [chats.get(p.pane_id)?.name, p.label, p.terminal_title_stripped].some(
+            (name) => typeof name === 'string' && guardedAgents.includes(name),
+          ),
+        )
         return ok({ own, statuses, guardedName })
       }
       const first = await snapshot()
