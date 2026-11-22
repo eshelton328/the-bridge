@@ -358,7 +358,7 @@ describe('a clear of the terminal input that misses, on the phone (R28 part B)',
     await askToClear()
     await userEvent.click(dialog().getByRole('button', { name: 'Clear', exact: true }))
     await expect.element(chatOf('plan the slice').getByText('Not cleared — herdr-unavailable')).toBeVisible()
-    await userEvent.click(page.getByRole('button', { name: 'Workspaces' }).first())
+    await userEvent.click(page.getByRole('button', { name: 'Back to Workspaces' }).first())
     await userEvent.click(page.getByText('plan the slice', { exact: true }).first())
     await expect.element(box('plan the slice')).toHaveValue(secret)
     // The reopened chat sends its kept draft; the terminal input still holds text, so the line offers the clear again.
@@ -404,10 +404,10 @@ describe('a chat switch around "Clear the terminal input", on the phone (R28 par
     await askToClear()
     // The dialog is modal: while it shows, the chat's back and the rest of the page are out of reach, so no switch
     // starts from the page. Escape (or Cancel) closes it; the back then opens the list.
-    expect(page.getByRole('button', { name: 'Workspaces' }).elements()).toHaveLength(0)
+    expect(page.getByRole('button', { name: 'Back to Workspaces' }).elements()).toHaveLength(0)
     await userEvent.keyboard('{Escape}')
     await expect.element(dialog()).not.toBeInTheDocument()
-    await userEvent.click(page.getByRole('button', { name: 'Workspaces' }).first())
+    await userEvent.click(page.getByRole('button', { name: 'Back to Workspaces' }).first())
     await userEvent.click(page.getByText('review notes', { exact: true }).first())
     await expect.element(page.getByRole('heading', { name: 'review notes' })).toBeVisible()
     await settle()
@@ -425,7 +425,7 @@ describe('a chat switch around "Clear the terminal input", on the phone (R28 par
     await askToClear()
     await userEvent.click(dialog().getByRole('button', { name: 'Clear', exact: true }))
     await expect.poll(() => fake.posts.length).toBe(2)
-    await userEvent.click(page.getByRole('button', { name: 'Workspaces' }).first())
+    await userEvent.click(page.getByRole('button', { name: 'Back to Workspaces' }).first())
     await userEvent.click(page.getByText('review notes', { exact: true }).first())
     await expect.element(page.getByRole('heading', { name: 'review notes' })).toBeVisible()
     await userEvent.fill(box('review notes'), 'a note for review')
@@ -442,7 +442,7 @@ describe('a chat switch around "Clear the terminal input", on the phone (R28 par
     await expect.element(box('review notes')).toHaveValue('a note for review')
     await expect.element(page.getByText(/^Not (sent|cleared)/)).not.toBeInTheDocument()
     // The sent chat's draft went with its send.
-    await userEvent.click(page.getByRole('button', { name: 'Workspaces' }).first())
+    await userEvent.click(page.getByRole('button', { name: 'Back to Workspaces' }).first())
     await userEvent.click(page.getByText('plan the slice', { exact: true }).first())
     await expect.element(box('plan the slice')).toHaveValue('')
   })
@@ -462,7 +462,7 @@ describe('the draft that a clear sends again, on the phone (R28 part B, review o
       await userEvent.click(dialog().getByRole('button', { name: 'Clear', exact: true }))
       await expect.poll(() => fake.posts.length).toBe(2)
       // Back to the list and into the same chat: a new pane, whose box the owner changes while the clear is pending.
-      await userEvent.click(page.getByRole('button', { name: 'Workspaces' }).first())
+      await userEvent.click(page.getByRole('button', { name: 'Back to Workspaces' }).first())
       await userEvent.click(page.getByText('plan the slice', { exact: true }).first())
       await expect.element(box('plan the slice')).toHaveValue(secret)
       await userEvent.fill(box('plan the slice'), change.text)
@@ -489,7 +489,7 @@ describe('a Send while a clear is pending, on the phone (R28 part B, review of #
       await userEvent.click(dialog().getByRole('button', { name: 'Clear', exact: true }))
       await expect.poll(() => fake.posts.length).toBe(2)
       if (where.reopen) {
-        await userEvent.click(page.getByRole('button', { name: 'Workspaces' }).first())
+        await userEvent.click(page.getByRole('button', { name: 'Back to Workspaces' }).first())
         await userEvent.click(page.getByText('plan the slice', { exact: true }).first())
         await expect.element(box('plan the slice')).toHaveValue(secret)
       }

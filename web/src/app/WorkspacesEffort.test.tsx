@@ -294,7 +294,7 @@ describe("a live chat's effort picker (W10)", () => {
     await expect.element(page.getByText('drift check', { exact: true }).first()).toBeVisible()
     expect(page.getByRole('button', { name: /^Model:/ }).elements()).toHaveLength(0)
     // A Claude chat of the same workspace has it.
-    await userEvent.click(page.getByRole('button', { name: 'Workspaces' }).first())
+    await userEvent.click(page.getByRole('button', { name: 'Back to Workspaces' }).first())
     await tapChat('plan the slice')
     await expect.element(chip('Opus 5.5 · medium effort')).toBeVisible()
   })
