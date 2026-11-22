@@ -14,6 +14,7 @@ import { setViewport } from '../lib/rendering.ts'
 import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { stubLiveServer } from './liveServerStub.ts'
+import { installKeyboardProxy } from './keyboardProxy.ts'
 import { routeTree } from './routeTree.gen.ts'
 
 // Screen review R31: in the Claude iOS app the message box is one short row while the keyboard is closed and grows
@@ -300,5 +301,33 @@ describe('the composer on the desktop (R31)', () => {
     await blurBox()
     expect(collapsed()).toBe(false)
     expect(height()).toBeGreaterThan(70)
+  })
+})
+
+describe.each([
+  ['phone', phone],
+  ['tablet', tablet],
+] as const)('the composer on the %s with the proxy focus of iOS (R37)', (_, size) => {
+  it('expands at the tap while the proxy holds the focus, so the focus moves into it with no change of layout', async () => {
+    await openChat(size)
+    await expect.poll(collapsed).toBe(true)
+    const stop = installKeyboardProxy({ proxyWaitMs: 600 })
+    try {
+      const field = box().element()
+      field.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, pointerType: 'touch' }))
+      field.dispatchEvent(new Event('touchend', { bubbles: true, cancelable: true }))
+      const proxy = document.activeElement
+      expect(proxy?.hasAttribute('data-keyboard-proxy')).toBe(true)
+      await expect.poll(collapsed).toBe(false)
+      expect(document.activeElement).toBe(proxy)
+      const expanded = height()
+      const top = Math.round(composer().getBoundingClientRect().top)
+      await expect.poll(() => document.activeElement, { timeout: 3000 }).toBe(field)
+      expect(collapsed()).toBe(false)
+      expect(height()).toBe(expanded)
+      expect(Math.round(composer().getBoundingClientRect().top)).toBe(top)
+    } finally {
+      stop()
+    }
   })
 })

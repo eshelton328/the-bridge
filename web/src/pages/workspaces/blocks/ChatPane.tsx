@@ -68,6 +68,7 @@ import {
   useSyncExternalStore,
 } from 'react'
 import { css, cx } from '../../../../styled-system/css/index.js'
+import { KEYBOARD_PROXY_EVENT } from '../../../lib/keyboardProxyEvent.ts'
 import { dropSkillWord, pickSkill, skillQuery } from '../../../lib/skillQuery.ts'
 import type { ChatEntry, ComposerState } from '../types.ts'
 import type { CopyReply } from './ChatEntryView.tsx'
@@ -390,6 +391,22 @@ export function ChatPane(props: ChatPaneProps) {
   useSendKeepsFocus(areaRef, skills === undefined)
   // Whether the composer has the focus (its `onFocusChange`): a collapsible composer expands while it does (R31).
   const [focused, setFocused] = useState(autoFocus)
+  // The box's wrapper is a new element when the skill list comes or goes.
+  const plainBox = skills === undefined
+  // On iOS a tap focuses a proxy field for the box until the keyboard is up (app/keyboardProxy.ts): the box expands at
+  // the tap as on its own focus, so the focus's later move into the box changes no layout (R37), and collapses again if
+  // the proxy goes without giving it the focus.
+  useEffect(() => {
+    const area = areaRef.current
+    if (area === null) return undefined
+    const onProxy = (event: Event) => {
+      if (event instanceof CustomEvent) setFocused(event.detail === true)
+    }
+    area.addEventListener(KEYBOARD_PROXY_EVENT, onProxy)
+    return () => {
+      area.removeEventListener(KEYBOARD_PROXY_EVENT, onProxy)
+    }
+  }, [plainBox])
   const fileRef = useRef<HTMLInputElement>(null)
   // A live chat's transcript is read while the pane shows, and the stream closes when it unmounts.
   useEffect(

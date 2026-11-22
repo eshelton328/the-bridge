@@ -1,18 +1,11 @@
-import { describe, expect, it, onTestFinished, vi } from 'vitest'
-import {
-  dockedBox,
-  experimentFromSearch,
-  installKeyboardExperiment,
-  KEYBOARD_EXPERIMENT_SWITCH_URL,
-  type KeyboardExperiment,
-  parseExperiment,
-  pressedField,
-  startKeyboardExperiment,
-} from './keyboardExperiment.ts'
+import { describe, expect, it, onTestFinished } from 'vitest'
+import { KEYBOARD_PROXY_EVENT } from '../lib/keyboardProxyEvent.ts'
+import { dockedBox, installKeyboardProxy, pressedField, proxyFocusApplies } from './keyboardProxy.ts'
 
-// The keyboard experiments of screen reviews R26 and R27 (dev only): a touch tap on a composer field focuses it with
-// no document scroll, by 'prevent' or 'proxy'. Desktop Chromium draws no iOS keyboard and has no iOS scroll into
-// view, so these tests prove the focus, the cancelled default, the move and the text; only the phone shows the slide.
+// The composer's focus through a proxy field (screen reviews R26, R27 and R37): a touch tap on a composer field
+// focuses a transparent field at the docked place, with no document scroll, then moves the focus to the field. Desktop
+// Chromium draws no iOS keyboard and has no iOS scroll into view, so these tests prove the focus, the cancelled
+// default, the move and the text; only the phone shows the slide.
 
 function mountComposer(): { field: HTMLTextAreaElement; send: Element; box: Element; chip: Element } {
   const footer = document.createElement('div')
@@ -32,8 +25,8 @@ function mountComposer(): { field: HTMLTextAreaElement; send: Element; box: Elem
   return { field, send, box, chip }
 }
 
-function run(experiment: KeyboardExperiment | null, proxyWaitMs = 30) {
-  const stop = installKeyboardExperiment({ current: () => experiment, proxyWaitMs })
+function run(proxyWaitMs = 30) {
+  const stop = installKeyboardProxy({ proxyWaitMs })
   onTestFinished(stop)
 }
 
@@ -54,17 +47,9 @@ async function hold(target: Element, ms: number) {
   return end
 }
 
-const proxyOf = () => document.querySelector('[data-keyboard-experiment-proxy]')
+const proxyOf = () => document.querySelector('[data-keyboard-proxy]')
 
-describe('keyboard experiment', () => {
-  it('reads only the two names, from the param or a switch value', () => {
-    expect(experimentFromSearch('?kb-experiment=proxy')).toBe('proxy')
-    expect(experimentFromSearch('?state=chat&kb-experiment=prevent')).toBe('prevent')
-    expect(experimentFromSearch('?kb-experiment=other')).toBeNull()
-    expect(experimentFromSearch('')).toBeNull()
-    expect(parseExperiment(1)).toBeNull()
-  })
-
+describe('keyboard proxy', () => {
   it('takes a composer field in its keep wrapper, never its Send control or a field outside a footer', () => {
     const { field, send } = mountComposer()
     expect(pressedField(field)).toBe(field)
@@ -78,42 +63,20 @@ describe('keyboard experiment', () => {
     expect(pressedField(outside)).toBeNull()
   })
 
-  it('prevent: the tap cancels its touchend and focuses the field inside that same handler, with no await', () => {
-    const { field } = mountComposer()
-    run('prevent')
-    const focus = vi.spyOn(field, 'focus')
-    const end = tap(field)
-    expect(end.defaultPrevented).toBe(true)
-    // Synchronous: right after dispatchEvent returns, inside the gesture iOS needs to open the keyboard.
-    expect(document.activeElement).toBe(field)
-    expect(focus).toHaveBeenCalledWith({ preventScroll: true })
-  })
-
-  it('prevent: a tap on the composer box beside the field takes the field, with the caret at the end of the draft', () => {
-    const { field, box } = mountComposer()
-    run('prevent')
-    field.value = 'line one\nline two'
-    expect(pressedField(box)).toBe(field)
-    const end = tap(box)
-    expect(end.defaultPrevented).toBe(true)
-    expect(document.activeElement).toBe(field)
-    expect(field.selectionStart).toBe(field.value.length)
-    expect(field.selectionEnd).toBe(field.value.length)
-  })
-
-  it('prevent: a tap on a control in the box (a chip remove, the model chip) keeps its default and focuses nothing', () => {
+  it('a tap on a control in the box (a chip remove, the model chip) keeps its default and focuses nothing', () => {
     const { field, chip } = mountComposer()
-    run('prevent')
+    run()
     for (const control of [chip, document.querySelector('.chip-model')]) {
       if (control === null) throw new Error('no control')
       expect(tap(control).defaultPrevented).toBe(false)
       expect(document.activeElement).not.toBe(field)
+      expect(proxyOf()).toBeNull()
     }
   })
 
-  it('prevent: a tap on the box of a focused composer keeps its default, so the caret and selection stay', () => {
+  it('a tap on the box of a focused composer keeps its default, so the caret and selection stay', () => {
     const { field, box } = mountComposer()
-    run('prevent')
+    run()
     field.value = 'some text'
     field.focus()
     field.setSelectionRange(2, 6)
@@ -123,32 +86,23 @@ describe('keyboard experiment', () => {
 
   it('a long press on the field or its box keeps its default, so iOS shows its magnifier and paste menu', async () => {
     const { field, box } = mountComposer()
-    run('prevent')
+    run()
     expect((await hold(field, 520)).defaultPrevented).toBe(false)
     expect((await hold(box, 520)).defaultPrevented).toBe(false)
     expect(document.activeElement).not.toBe(field)
   })
 
-  it('proxy: a tap on the composer box goes through the proxy to the field too', async () => {
+  it('a tap on the composer box goes through the proxy to the field too', async () => {
     const { field, box } = mountComposer()
-    run('proxy')
+    run()
     expect(tap(box).defaultPrevented).toBe(true)
     expect(proxyOf()).not.toBeNull()
     await expect.poll(() => document.activeElement).toBe(field)
   })
 
-  it('prevent: a tap in a composer that already has the focus keeps its default, so the caret and selection work', () => {
+  it('the tap focuses a proxy at the docked place inside its handler, hidden from VoiceOver, then the field', async () => {
     const { field } = mountComposer()
-    run('prevent')
-    field.value = 'some text'
-    field.focus()
-    expect(tap(field).defaultPrevented).toBe(false)
-    expect(document.activeElement).toBe(field)
-  })
-
-  it('proxy: the tap focuses a proxy at the docked place inside its handler, hidden from VoiceOver, then the field', async () => {
-    const { field } = mountComposer()
-    run('proxy')
+    run()
     const end = tap(field)
     expect(end.defaultPrevented).toBe(true)
     const proxy = proxyOf()
@@ -163,12 +117,12 @@ describe('keyboard experiment', () => {
     expect(proxyOf()).toBeNull()
   })
 
-  it('proxy: starts as a copy of the draft, and its edits (typing, Backspace) end up in the field', async () => {
+  it('starts as a copy of the draft, and its edits (typing, Backspace) end up in the field', async () => {
     const { field } = mountComposer()
     field.value = 'draft'
     const changes: string[] = []
     field.addEventListener('input', () => changes.push(field.value))
-    run('proxy')
+    run()
     tap(field)
     const proxy = proxyOf()
     if (!(proxy instanceof HTMLTextAreaElement)) throw new Error('no proxy')
@@ -184,10 +138,10 @@ describe('keyboard experiment', () => {
     expect(changes).toEqual(['drafts hi'])
   })
 
-  it('proxy: a Backspace into an existing draft before the move shortens the draft', async () => {
+  it('a Backspace into an existing draft before the move shortens the draft', async () => {
     const { field } = mountComposer()
     field.value = 'draft'
-    run('proxy')
+    run()
     tap(field)
     const proxy = proxyOf()
     if (!(proxy instanceof HTMLTextAreaElement)) throw new Error('no proxy')
@@ -196,9 +150,24 @@ describe('keyboard experiment', () => {
     expect(field.value).toBe('draf')
   })
 
-  it('proxy: an IME composition holds the move until it ends, and its text moves whole', async () => {
+  it('a Send that clears the draft before the move keeps the field empty: the sent text does not come back', async () => {
     const { field } = mountComposer()
-    run('proxy', 10)
+    field.value = 'draft'
+    run()
+    tap(field)
+    const proxy = proxyOf()
+    if (!(proxy instanceof HTMLTextAreaElement)) throw new Error('no proxy')
+    expect(proxy.value).toBe('draft')
+    // A tap on Send is a control, so it keeps its default and the proxy keeps the focus; Send clears the composer.
+    field.value = ''
+    field.dispatchEvent(new Event('input', { bubbles: true }))
+    await expect.poll(() => document.activeElement).toBe(field)
+    expect(field.value).toBe('')
+  })
+
+  it('an IME composition holds the move until it ends, and its text moves whole', async () => {
+    const { field } = mountComposer()
+    run(10)
     tap(field)
     const proxy = proxyOf()
     if (!(proxy instanceof HTMLTextAreaElement)) throw new Error('no proxy')
@@ -214,9 +183,9 @@ describe('keyboard experiment', () => {
     expect(proxyOf()).toBeNull()
   })
 
-  it('proxy: a proxy that loses the focus to something else goes, the field stays unfocused and keeps the text', () => {
+  it('a proxy that loses the focus to something else goes, the field stays unfocused and keeps the text', () => {
     const { field } = mountComposer()
-    run('proxy', 5000)
+    run(5000)
     tap(field)
     const proxy = proxyOf()
     if (!(proxy instanceof HTMLTextAreaElement)) throw new Error('no proxy')
@@ -255,7 +224,7 @@ describe('keyboard experiment', () => {
 
   it('leaves a mouse tap, a keep control, a touch that moves and a focused field alone', () => {
     const { field, send } = mountComposer()
-    run('prevent')
+    run()
     expect(tap(field, 'mouse').defaultPrevented).toBe(false)
     expect(tap(send).defaultPrevented).toBe(false)
     field.dispatchEvent(
@@ -272,90 +241,90 @@ describe('keyboard experiment', () => {
     expect(tap(field).defaultPrevented).toBe(false)
   })
 
-  it('does nothing with no experiment, or after its stop function runs', () => {
+  it('does nothing after its stop function runs', () => {
     const { field } = mountComposer()
-    run(null)
-    expect(tap(field).defaultPrevented).toBe(false)
-    const stop = installKeyboardExperiment({ current: () => 'prevent' })
+    const stop = installKeyboardProxy()
     stop()
     expect(tap(field).defaultPrevented).toBe(false)
-  })
-})
-
-/** The test browser is automated, and automation never asks the switch: these tests act as a person's browser. */
-function notAutomated() {
-  Object.defineProperty(navigator, 'webdriver', { configurable: true, value: false })
-  onTestFinished(() => {
-    Reflect.deleteProperty(navigator, 'webdriver')
-  })
-}
-
-describe('keyboard experiment switch', () => {
-  it('never asks the switch under automation', async () => {
-    const fetchSwitch = vi.fn(() => Promise.resolve(new Response('{"experiment":"proxy"}')))
-    const running = startKeyboardExperiment({ pollMs: 20, fetchSwitch })
-    onTestFinished(running.stop)
-    await new Promise((done) => setTimeout(done, 60))
-    expect(fetchSwitch).not.toHaveBeenCalled()
-    expect(running.current()).toBeNull()
+    expect(proxyOf()).toBeNull()
   })
 
-  it("takes the dev server's switch with no param, marks the root, and clears the mark at stop", async () => {
-    notAutomated()
-    let answer: unknown = { experiment: 'proxy' }
-    const asked: string[] = []
-    const running = startKeyboardExperiment({
-      pollMs: 20,
-      fetchSwitch: (url) => {
-        asked.push(url)
-        return Promise.resolve(new Response(JSON.stringify(answer)))
-      },
+  it('tells the composer at the tap that the proxy holds its focus, and nothing more when the field takes it', async () => {
+    const { field } = mountComposer()
+    const told: unknown[] = []
+    const listener = (event: Event) => {
+      if (event instanceof CustomEvent) told.push(event.detail)
+    }
+    // The composer's wrapper hears it: the event bubbles from the field.
+    const wrapper = field.closest('[data-keyboard-keep]')
+    wrapper?.addEventListener(KEYBOARD_PROXY_EVENT, listener)
+    onTestFinished(() => wrapper?.removeEventListener(KEYBOARD_PROXY_EVENT, listener))
+    run()
+    tap(field)
+    // Synchronous, before the proxy's focus: the composer expands at the tap (R31), not at the move (R37).
+    expect(told).toEqual([true])
+    await expect.poll(() => document.activeElement).toBe(field)
+    expect(told).toEqual([true])
+  })
+
+  it('tells the composer when the proxy loses the focus to something else, so a collapsible composer collapses again', () => {
+    const { field } = mountComposer()
+    const told: unknown[] = []
+    field.addEventListener(KEYBOARD_PROXY_EVENT, (event) => {
+      if (event instanceof CustomEvent) told.push(event.detail)
     })
-    onTestFinished(running.stop)
-    await expect.poll(() => document.documentElement.dataset.kbExperiment).toBe('proxy')
-    expect(running.current()).toBe('proxy')
-    expect(asked[0]).toBe(KEYBOARD_EXPERIMENT_SWITCH_URL)
-    answer = { experiment: 'prevent' }
-    await expect.poll(running.current).toBe('prevent')
-    answer = { experiment: 'other' }
-    await expect.poll(running.current).toBeNull()
-    expect(document.documentElement.dataset.kbExperiment).toBeUndefined()
-    answer = { experiment: 'prevent' }
-    await expect.poll(running.current).toBe('prevent')
-    running.stop()
-    expect(document.documentElement.dataset.kbExperiment).toBeUndefined()
-    const count = asked.length
-    await new Promise((done) => setTimeout(done, 60))
-    expect(asked.length).toBe(count)
-  })
-
-  it('keeps the experiment when the switch fails, and lets the URL param win with no asking', async () => {
-    const before = window.location.href
+    run(5000)
+    tap(field)
+    const other = document.createElement('input')
+    document.body.append(other)
     onTestFinished(() => {
-      window.history.replaceState(null, '', before)
+      other.remove()
     })
-    notAutomated()
-    let fail = false
-    const running = startKeyboardExperiment({
-      pollMs: 20,
-      fetchSwitch: () =>
-        fail
-          ? Promise.reject(new Error('away'))
-          : Promise.resolve(new Response(JSON.stringify({ experiment: 'prevent' }))),
+    other.focus()
+    expect(told).toEqual([true, false])
+  })
+
+  it("moves the focus once the keyboard is reported only after the shell's dock has stopped (keyboardEnd)", async () => {
+    const { field } = mountComposer()
+    // The field sits high on the page, so it is above the shrunk visible area from the start: only the dock's end holds
+    // the move.
+    const shell = document.createElement('div')
+    shell.className = 'app-shell__root'
+    const footer = field.closest('.scroll-frame__footer')
+    if (footer === null || window.visualViewport === null) throw new Error('no footer or visual viewport')
+    footer.before(shell)
+    shell.append(footer)
+    const vv = window.visualViewport
+    const full = vv.height
+    let height = full
+    Object.defineProperty(vv, 'height', { configurable: true, get: () => height })
+    onTestFinished(() => {
+      Reflect.deleteProperty(vv, 'height')
+      document.body.append(footer)
+      shell.remove()
     })
-    onTestFinished(running.stop)
-    await expect.poll(running.current).toBe('prevent')
-    fail = true
-    await new Promise((done) => setTimeout(done, 60))
-    expect(running.current()).toBe('prevent')
-    running.stop()
-    window.history.replaceState(null, '', window.location.pathname + '?kb-experiment=proxy')
-    const fetchSwitch = vi.fn(() => Promise.resolve(new Response('{}')))
-    const fromUrl = startKeyboardExperiment({ pollMs: 20, fetchSwitch })
-    onTestFinished(fromUrl.stop)
-    expect(fromUrl.current()).toBe('proxy')
-    expect(document.documentElement.dataset.kbExperiment).toBe('proxy')
-    await new Promise((done) => setTimeout(done, 60))
-    expect(fetchSwitch).not.toHaveBeenCalled()
+    shell.dataset.keyboardEnd = String(performance.now() + 5000)
+    run(5000)
+    tap(field)
+    const proxy = proxyOf()
+    // The keyboard's report: the visible area shrinks by a keyboard.
+    height = full - 300
+    vv.dispatchEvent(new Event('resize'))
+    await new Promise((done) => setTimeout(done, 80))
+    // Docked, but the dock still moves: the focus stays in the proxy.
+    expect(document.activeElement).toBe(proxy)
+    shell.dataset.keyboardEnd = String(performance.now())
+    await expect.poll(() => document.activeElement).toBe(field)
+    expect(proxyOf()).toBeNull()
+  })
+
+  it('applies only on a touch screen with no VirtualKeyboard API (iOS)', () => {
+    const win = (coarse: boolean, virtualKeyboard: boolean) => ({
+      matchMedia: (query: string) => ({ matches: query === '(pointer: coarse)' && coarse }),
+      navigator: virtualKeyboard ? { virtualKeyboard: {} } : {},
+    })
+    expect(proxyFocusApplies(win(true, false))).toBe(true)
+    expect(proxyFocusApplies(win(true, true))).toBe(false)
+    expect(proxyFocusApplies(win(false, false))).toBe(false)
   })
 })
