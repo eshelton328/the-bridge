@@ -1153,3 +1153,24 @@ export type WorkspacesUi = z.infer<typeof WorkspacesUi>
 
 /** The schema of one Workspaces state, for the state checks. */
 export const WorkspacesState = z.object({ data: WorkspacesData, ui: WorkspacesUi })
+
+/**
+ * The live list's edits (reviews R41, R42, useWorkspaceEdits.ts): one at a time, each shown from the next list read,
+ * never before. IDs are the page's. None on a fixture, which keeps its names in `ui`.
+ */
+export type WorkspaceEdits = {
+  /** An edit waits for its answer or for the list read after it. */
+  readonly pending: boolean
+  /** The order of the workspaces (page IDs) that a pending reorder holds on the page; none otherwise. */
+  readonly held: readonly string[] | undefined
+  /** The line about the last edit that missed, such as "Not renamed — herdr-unavailable". */
+  readonly line: string | undefined
+  /** Hides the line. */
+  readonly dismiss: () => void
+  /** Renames `workspace` to `name` (trimmed); nothing goes when it is empty or still `was`. */
+  readonly renameWorkspace: (workspace: string, name: string, was: string) => void
+  /** Gives the chat's pane the label `name` (trimmed); nothing goes when it is empty or still `was`. */
+  readonly renameChat: (chat: string, name: string, was: string) => void
+  /** Puts the workspaces in this order, each of the list once; nothing goes when the order is the list's. */
+  readonly order: (workspaces: readonly string[]) => void
+}

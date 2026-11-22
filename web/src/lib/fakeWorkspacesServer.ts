@@ -81,6 +81,18 @@
 // `workspaces.changed` and answers 200 `ready` with the same chat ID.
 // `answerModel` answers each next restart with a test's answer, and `models`
 // records each body.
+//
+// R41, R42 (backend #423): `POST /api/workspaces/:workspace/rename` and
+// `POST /api/chats/:chat/rename` take the contract's `{ name }` (a name the
+// contract's `Label` refuses is 400); the list gives the workspace that
+// label, or the chat that title (herdr's pane label, which the server lists
+// first), sends `workspaces.changed` and answers 204, and an unknown one is
+// 404. `POST /api/workspaces/order` takes `WorkspaceOrderRequest` (a repeat
+// is 400): an order that leaves out a listed workspace or names another is
+// 409 workspace-not-ready orderStale; else the list takes that order, sends
+// `workspaces.changed` and answers 204. `answerEdits` answers each next edit
+// with a test's error, `edits` records each body, and `putWorkspace` lists
+// another workspace, with no event when `quiet`, as herdr makes one.
 import {
   ChatId,
   type ChatSummary,
@@ -92,6 +104,8 @@ import {
   type LayoutNode,
   type ModelAlias,
   MoveChatRequest,
+  RenameChatRequest,
+  RenameWorkspaceRequest,
   RestartModelRequest,
   SetEffortRequest,
   SetSplitRatioRequest,
@@ -100,6 +114,7 @@ import {
   SplitChatRequest,
   SwapChatsRequest,
   WorkspaceLayout,
+  WorkspaceOrderRequest,
   WorkspacesChangedEvent,
   WorkspacesResponse,
   ZoomChatRequest,
@@ -199,6 +214,9 @@ export function fakeWorkspacesServer(
   /** W10: each model restart's chat and body, and an answer in place of the next ones'. */
   const models: { chat: string; body: unknown }[] = []
   let modelAnswer: (() => Response) | undefined
+  /** R41, R42: each edit's action, its target (none for an order) and its body, and an answer in place of the next ones'. */
+  const edits: { action: 'renameWorkspace' | 'renameChat' | 'order'; target?: string; body: unknown }[] = []
+  let editAnswer: (() => Response) | undefined
 
   /** The ID of the tab made `at`th for `workspace`; it stays while the tab lives. */
   const tabId = (workspace: string, at: number) => `${workspace}:t${String(at + 1)}`
@@ -600,6 +618,72 @@ export function fakeWorkspacesServer(
     })
   }
 
+  const badBody = () =>
+    errorAnswer(
+      {
+        kind: 'invalid-input',
+        issues: ['the body'],
+        message: 'the request does not match the contract',
+        requestId: 'r-400',
+      },
+      400,
+    )
+
+  /** A rename (R41, R42): the contract's checks, the test's answer, then the label or the title, the event and 204. */
+  const rename = (action: 'renameWorkspace' | 'renameChat', target: string, init: RequestInit | undefined) => {
+    const body = bodyOf(init)
+    edits.push({ action, target, body })
+    const parsed = (action === 'renameWorkspace' ? RenameWorkspaceRequest : RenameChatRequest).safeParse(body)
+    if (new Headers(init?.headers).get('content-type') !== 'application/json' || !parsed.success) return badBody()
+    if (editAnswer !== undefined) return editAnswer()
+    const { name } = parsed.data
+    const known =
+      action === 'renameWorkspace'
+        ? response.workspaces.some((w) => w.id === target)
+        : response.workspaces.some((w) => w.chats.some((c) => c.id === target))
+    if (!known)
+      return errorAnswer({ kind: 'not-found', path: `/api/${target}`, message: 'Not found', requestId: 'r-404' }, 404)
+    response = WorkspacesResponse.parse({
+      ...response,
+      workspaces: response.workspaces.map((w) =>
+        action === 'renameWorkspace'
+          ? w.id === target
+            ? { ...w, label: name }
+            : w
+          : { ...w, chats: w.chats.map((c) => (c.id === target ? { ...c, title: name } : c)) },
+      ),
+    })
+    changed()
+    return new Response(null, { status: 204 })
+  }
+
+  /** An order of the workspaces (R41): the contract's checks, the test's answer, a stale order, then the list's order. */
+  const order = (init: RequestInit | undefined) => {
+    const body = bodyOf(init)
+    edits.push({ action: 'order', body })
+    const parsed = WorkspaceOrderRequest.safeParse(body)
+    if (new Headers(init?.headers).get('content-type') !== 'application/json' || !parsed.success) return badBody()
+    if (editAnswer !== undefined) return editAnswer()
+    const ids = parsed.data.workspaces
+    const listed = response.workspaces.map((w) => w.id)
+    if (ids.length !== listed.length || !listed.every((id) => ids.includes(id)))
+      return errorAnswer(
+        {
+          kind: 'workspace-not-ready',
+          state: 'orderStale',
+          message: 'the order does not name each workspace of the list once',
+          requestId: 'r-409',
+        },
+        409,
+      )
+    response = WorkspacesResponse.parse({
+      ...response,
+      workspaces: ids.flatMap((id) => response.workspaces.filter((w) => w.id === id)),
+    })
+    changed()
+    return new Response(null, { status: 204 })
+  }
+
   /** Changes the list with `change`, checked against the contract, and tells the event streams unless `quiet`. */
   const update = (change: (chat: ChatSummary) => ChatSummary, quiet = false) => {
     response = WorkspacesResponse.parse({
@@ -693,6 +777,19 @@ export function fakeWorkspacesServer(
     },
     /** The chats of the list now. */
     chats: () => response.workspaces.flatMap((w) => w.chats),
+    /** The workspaces of the list now, in its order: their IDs and labels. */
+    workspaces: () => response.workspaces.map((w) => ({ id: w.id, label: w.label })),
+    /** Each rename and order the page posted (R41, R42), in order. */
+    edits,
+    /** Answers each next rename and order with `answer` until it is set to undefined. */
+    answerEdits: (answer: (() => Response) | undefined) => {
+      editAnswer = answer
+    },
+    /** Lists `workspace` last, as herdr makes one (checked against the contract), and tells the streams unless `quiet`. */
+    putWorkspace: (workspace: unknown, quiet = false) => {
+      response = WorkspacesResponse.parse({ ...response, workspaces: [...response.workspaces, workspace] })
+      if (!quiet) changed()
+    },
     /** The answer to a request for `path`, or undefined when it is not a workspace route. */
     handle: (path: string, init?: RequestInit): Response | undefined => {
       if (path === '/api/workspaces') return json(response)
@@ -703,6 +800,14 @@ export function fakeWorkspacesServer(
       }
       if (path === '/api/events') return events(init?.signal)
       if (path === '/api/chats' && init?.method === 'POST') return start(init)
+      if (path === '/api/workspaces/order' && init?.method === 'POST') return order(init)
+      const renamed = /^\/api\/(workspaces|chats)\/([^/]+)\/rename$/.exec(path)
+      if (renamed !== null && init?.method === 'POST')
+        return rename(
+          renamed[1] === 'workspaces' ? 'renameWorkspace' : 'renameChat',
+          decodeURIComponent(renamed[2] ?? ''),
+          init,
+        )
       const effortPath = /^\/api\/chats\/([^/]+)\/effort$/.exec(path)
       if (effortPath !== null && init?.method === 'POST') return effort(decodeURIComponent(effortPath[1] ?? ''), init)
       const modelPath = /^\/api\/chats\/([^/]+)\/model$/.exec(path)

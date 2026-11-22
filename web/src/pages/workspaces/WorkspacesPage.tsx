@@ -32,6 +32,8 @@
 // (useLiveEffort.ts, W10), through the server's effort route only, never by sending /effort. The same chip restarts
 // the chat with another model by resume (useLiveModel.ts), never by sending /model: while the restart runs the chat's
 // composer is off, and a restart that ended the chat and started none opens a dialog with the command to resume it.
+// A live workspace's rename, a live chat's rename (herdr's pane label) and the workspaces' order go to the server one
+// at a time and show from the list read after `workspaces.changed` (useWorkspaceEdits.ts, reviews R41, R42).
 import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { report } from '../../errors/reporter.ts'
@@ -52,6 +54,7 @@ import { keptOnPane, useLiveModel, withRestarting } from './useLiveModel.ts'
 import { useLiveSkills } from './useLiveSkills.ts'
 import { useLiveTranscripts } from './useLiveTranscripts.ts'
 import { useLayoutWrites } from './useLayoutWrites.ts'
+import { useWorkspaceEdits } from './useWorkspaceEdits.ts'
 import { useLivePending } from './useLivePending.ts'
 import { useLiveUploads } from './useLiveUploads.ts'
 import { useChatLink } from './useChatLink.ts'
@@ -174,6 +177,8 @@ export function WorkspacesPage() {
   const layoutWrites = useLayoutWrites(import.meta.env.DEV && live, data, (workspace, chat, tab) => {
     changeUi(followTab(liveData, uiRef.current, workspace, chat, tab))
   })
+  // The live list's edits (R41, R42): renames and the workspaces' order, shown from the next list read.
+  const workspaceEdits = useWorkspaceEdits(import.meta.env.DEV && live, data)
   // The file chips of a chat that left for a new ID on its pane go, as its draft stays behind: the server holds each
   // upload for the chat that started it, so the new chat's send could not name them.
   // Its pending send goes as its pane stops reading its transcript (livePending.ts).
@@ -299,6 +304,7 @@ export function WorkspacesPage() {
         viewport="desktop"
         drafts={drafts}
         layoutWrites={layoutWrites}
+        edits={workspaceEdits}
         onUiChange={changeUi}
         onRetry={() => void router.invalidate()}
         transcripts={transcripts}

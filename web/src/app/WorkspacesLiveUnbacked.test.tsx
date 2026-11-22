@@ -14,11 +14,12 @@ import { resetAllStores } from '../state/resetStores.ts'
 import { stubLiveServer } from './liveServerStub.ts'
 import { routeTree } from './routeTree.gen.ts'
 
-// Reviews R41 and R42: the live page offers only what a server route backs. The phone's and the tablet's list has no
-// Edit, as no route renames, orders or closes a workspace or a chat; a live chat's actions are New chat (`POST
-// /api/chats`), Close pane… (`POST /api/chats/:chat/close`, after its confirm), Compact context… and Clear context…
-// (`POST /api/chats/:chat/command`), and none of the sample's Fork, Side chat, Subtask, Move to workspace or Rename.
-// The fixture states keep Edit and every action. Each live test takes the owner's path: the app with no URL, then
+// Reviews R41 and R42: the live page offers only what a server route backs. The phone's and the tablet's list has
+// Edit, which renames and orders the workspaces since backend #423 (WorkspacesLiveEdits.test.tsx); a live chat's
+// actions are New chat (`POST /api/chats`), Rename chat (`POST /api/chats/:chat/rename`), Close pane… (`POST
+// /api/chats/:chat/close`, after its confirm), Compact context… and Clear context… (`POST /api/chats/:chat/command`),
+// and none of the sample's Fork, Side chat, Subtask or Move to workspace. The fixture states keep Edit and every
+// action. Each live test takes the owner's path: the app with no URL, then
 // Workspaces, with the contract-checked fakes as the server; nothing reaches a real server.
 document.documentElement.classList.add('dark')
 document.documentElement.dataset.pandaTheme = 'viewscreen'
@@ -125,19 +126,21 @@ const sheetLabels = () =>
     .elements()
     .map((e) => e.getAttribute('aria-label') ?? e.closest('label')?.textContent.trim() ?? '')
 
-const kept = ['New chat', 'Close pane…', 'Compact context…', 'Clear context…']
+const kept = ['New chat', 'Rename chat', 'Close pane…', 'Compact context…', 'Clear context…']
+// The phone's sheet names Rename as M4 does.
+const keptOnPhone = ['New chat', 'Rename', 'Close pane…', 'Compact context…', 'Clear context…']
 
-describe('the live list has no Edit (R41)', () => {
+describe('the live list has Edit (R41, backend #423)', () => {
   for (const [name, size] of [
     ['phone', phone],
     ['tablet', tablet],
   ] as const)
-    it(`shows + and no Edit on the ${name}`, async () => {
+    it(`shows + and Edit on the ${name}`, async () => {
       withChats()
       await tapWorkspaces(size)
       await expect.element(page.getByText('sketch the plan', { exact: true })).toBeVisible()
       await expect.element(addButton()).toBeVisible()
-      expect(editButton().elements()).toHaveLength(0)
+      await expect.element(editButton()).toBeVisible()
     })
 
   for (const [entry, size] of [
@@ -153,8 +156,8 @@ describe('the live list has no Edit (R41)', () => {
     })
 })
 
-describe("a live chat's actions are the four the server backs (R42)", () => {
-  it('lists New chat, Close pane…, Compact context… and Clear context… in the tablet menu', async () => {
+describe("a live chat's actions are the five the server backs (R42)", () => {
+  it('lists New chat, Rename chat, Close pane…, Compact context… and Clear context… in the tablet menu', async () => {
     withChats()
     await tapWorkspaces(tablet)
     await tapChat('sketch the plan')
@@ -163,16 +166,16 @@ describe("a live chat's actions are the four the server backs (R42)", () => {
     expect(menuLabels()).toEqual(kept)
   })
 
-  it('lists the same four in the phone sheet', async () => {
+  it('lists the same five in the phone sheet', async () => {
     withChats()
     await tapWorkspaces(phone)
     await tapChat('sketch the plan')
     await userEvent.click(actionsButton('sketch the plan'))
     await expect.element(page.getByText('Close pane…', { exact: true })).toBeVisible()
-    for (const label of kept) await expect.element(page.getByText(label, { exact: true })).toBeVisible()
-    for (const label of ['Fork', 'Side chat', 'Subtask', 'Move to workspace', 'Rename', 'Rename chat'])
+    for (const label of keptOnPhone) await expect.element(page.getByText(label, { exact: true })).toBeVisible()
+    for (const label of ['Fork', 'Side chat', 'Subtask', 'Move to workspace'])
       expect(page.getByText(label, { exact: true }).elements()).toHaveLength(0)
-    expect(sheetLabels()).toHaveLength(kept.length)
+    expect(sheetLabels()).toHaveLength(keptOnPhone.length)
   })
 
   it('starts a chat beside this one from New chat on the tablet', async () => {

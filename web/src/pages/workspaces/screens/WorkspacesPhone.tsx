@@ -46,7 +46,9 @@
 // in place of M20's sheet.
 // A live Claude chat's ⋯ offers /compact and /clear after any other actions
 // (W5); the screen draws their dialog. A live chat's ⋯ ends with Close
-// pane… (W2), whose dialog the screen draws too; the phone and the tablet's
+// pane… (W2), whose dialog the screen draws too; a live chat's Rename saves
+// through `edits.renameChat` (R42), and the live list's edit mode through
+// `edits` (R41, PhoneWorkspaceList); the phone and the tablet's
 // chat have no zoom, swap or focus, as one chat fills the screen. // Later phone frames add their views here. Props only; WorkspacesScreen keeps the ui
 // and passes `onUiChange`.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
@@ -82,7 +84,7 @@ import { isChatCommand, withCommands } from '../blocks/chatCommands.ts'
 import { type LayoutWrites, tabOf, withLayoutActions } from '../blocks/layoutActions.ts'
 import { modelText } from '../blocks/modelText.ts'
 import { type NewChatStarter, startOf } from '../blocks/newChatStart.ts'
-import type { PhoneText, WorkspacesData, WorkspacesUi } from '../types.ts'
+import type { PhoneText, WorkspaceEdits, WorkspacesData, WorkspacesUi } from '../types.ts'
 import type { ComposerAnswer } from '../blocks/useComposerActions.ts'
 import type { PushSwitch } from '../../../lib/pushSwitch.ts'
 
@@ -122,6 +124,8 @@ export type WorkspacesPhoneProps = {
   layoutWrites?: LayoutWrites | undefined
   /** Starts a live chat from New chat (W3); none on a fixture. */
   newChat?: NewChatStarter | undefined
+  /** The live list's edits (R41, R42): renames and the order go to the server; none on a fixture. */
+  edits?: WorkspaceEdits | undefined
 }
 
 export function WorkspacesPhone({
@@ -144,6 +148,7 @@ export function WorkspacesPhone({
   notice,
   layoutWrites,
   newChat,
+  edits,
 }: WorkspacesPhoneProps) {
   // The tab bar's More opens the More drawer over it (Toolkit M4); picking a page navigates.
   const [moreOpen, setMoreOpen] = useState(false)
@@ -419,7 +424,12 @@ export function WorkspacesPhone({
                     <ChatNameField
                       name={chat.head.title}
                       onSave={(name) => {
-                        onUiChange({ ...afterRename, names: { ...ui.names, [chat.id]: name } })
+                        // Live, the name goes to the server and shows from the next list read, never from `ui`.
+                        if (edits === undefined) onUiChange({ ...afterRename, names: { ...ui.names, [chat.id]: name } })
+                        else {
+                          edits.renameChat(chat.id, name, chat.head.title)
+                          onUiChange(afterRename)
+                        }
                       }}
                       onCancel={() => {
                         onUiChange(afterRename)
@@ -638,6 +648,7 @@ export function WorkspacesPhone({
               layers={data.layers}
               heldRow={heldRowRef}
               notice={notice}
+              edits={edits}
             />
           </SlotBoundary>
         }
