@@ -386,14 +386,16 @@ describe('Workspaces on the live source by default (d-117)', () => {
   it('shows the timeout text after 8 s with no answer, with no sample rows', async () => {
     vi.stubGlobal(
       'fetch',
-      vi.fn(
-        (_input: RequestInfo | URL, init?: RequestInit) =>
-          new Promise<Response>((_resolve, reject) => {
-            init?.signal?.addEventListener('abort', () => {
-              const reason: unknown = init.signal?.reason
-              reject(reason instanceof Error ? reason : new Error('aborted'))
-            })
-          }),
+      vi.fn((input: RequestInfo | URL, init?: RequestInit) =>
+        // The app opens on the Inbox, which reads the live Inbox: an empty one, so the tap reaches Workspaces.
+        (typeof input === 'string' ? input : input instanceof URL ? input.href : input.url).includes('/api/inbox')
+          ? Promise.resolve(new Response(JSON.stringify({ items: [], counts: { needsYou: 0, total: 0 } })))
+          : new Promise<Response>((_resolve, reject) => {
+              init?.signal?.addEventListener('abort', () => {
+                const reason: unknown = init.signal?.reason
+                reject(reason instanceof Error ? reason : new Error('aborted'))
+              })
+            }),
       ),
     )
     await tapWorkspacesOnPhone()

@@ -49,6 +49,8 @@ export const InboxRowView = z.object({
   tags: z.array(z.string()).optional(),
   /** The item's prompt and notes, which the search matches besides the title and the meta line. */
   text: z.array(z.string()).optional(),
+  /** A live item the owner cannot snooze, mark done or dismiss here (a brain item): its row has no actions sheet. */
+  readOnly: z.boolean().optional(),
 })
 export type InboxRowView = z.infer<typeof InboxRowView>
 
@@ -412,6 +414,23 @@ export const InboxData = z.object({
   /** The open task's discussion; the task bar then shows Discuss. */
   discussion: InboxDiscussion.optional(),
   toast: InboxToast.optional(),
+  /**
+   * The live Inbox (liveInbox.ts): one short line under the list tools when the list read missed, else null, and
+   * each item's source, its chat and what the owner can do to it here.
+   */
+  live: z
+    .object({
+      line: z.string().nullable(),
+      items: z.array(
+        z.object({
+          id: InboxItemId,
+          source: z.enum(['chat', 'brain']),
+          chat: z.string().nullable(),
+          actions: z.array(z.enum(['snooze', 'done', 'dismiss'])),
+        }),
+      ),
+    })
+    .optional(),
 })
 export type InboxData = z.infer<typeof InboxData>
 

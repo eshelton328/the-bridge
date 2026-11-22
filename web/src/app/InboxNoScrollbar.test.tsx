@@ -36,8 +36,11 @@ describe('the Inbox list draws no scroll bar', () => {
   for (const [name, width, height] of sizes) {
     it(`hides the scroll bar of each scrolling box of the list at the ${name} size`, async () => {
       await page.viewport(width, height)
-      // The Inbox as the owner opens it: /inbox with no state, its home.
-      const router = createRouter({ routeTree, history: createMemoryHistory({ initialEntries: ['/inbox'] }) })
+      // The Inbox as the owner opens it: /inbox with no state, its home, with its sample data.
+      const router = createRouter({
+        routeTree,
+        history: createMemoryHistory({ initialEntries: ['/inbox?source=fixtures'] }),
+      })
       view = await testRender(<RouterProvider router={router} />)
       await expect.element(page.getByText('Pick the header logo', { exact: true })).toBeVisible()
       const boxes = scrollers()

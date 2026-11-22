@@ -7,7 +7,11 @@ import { page, userEvent } from 'vitest/browser'
 import { setViewport } from '../lib/rendering.ts'
 import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
+import { stubLiveServer } from './liveServerStub.ts'
 import { routeTree } from './routeTree.gen.ts'
+
+// The Inbox home reads the live Inbox (d-117): a stubbed server, never the one on this machine.
+stubLiveServer()
 
 // /artifacts with no ?state= opens the page's home (pages/artifacts/home.ts),
 // here with its sample data (`?source=fixtures`; the live library is

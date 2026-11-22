@@ -141,6 +141,7 @@ describe('toClientErrorReport', () => {
         `An artifacts request missed: add internal 500 (${secret})`,
         'add internal 500',
       ),
+      new NamedError('InboxMissError', `An inbox request missed: done internal 500 (${secret})`, 'done internal 500'),
     ]
     for (const error of misses) {
       const body = toClientErrorReport(entry(error, 'live'))
