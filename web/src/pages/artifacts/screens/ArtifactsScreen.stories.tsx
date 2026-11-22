@@ -37,7 +37,11 @@ export const ArtifactOpen: Story = {
     await expect(canvas.getByRole('heading', { level: 2, name: 'Skill eval pass rates' })).toBeVisible()
     await expect(canvas.getByText('found 12m ago by the Artifact hook')).toBeVisible()
     await expect(canvas.getByText('Published from chat quiet-nebula')).toBeVisible()
-    await expect(canvas.getByRole('button', { name: 'Open artifact' })).toBeVisible()
+    // R40: Open artifact is a link to the artifact's https address in a new tab.
+    const open = canvas.getByRole('link', { name: 'Open artifact' })
+    await expect(open).toBeVisible()
+    await expect(open).toHaveAttribute('href', 'https://claude.ai/artifact/8f3c2a91-skill-evals')
+    await expect(open).toHaveAttribute('target', '_blank')
     await expect(canvas.getByText('Skill eval pass rates', { selector: '.list-row__title' })).toBeVisible()
   },
 }
