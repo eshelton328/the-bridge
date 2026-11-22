@@ -8,7 +8,6 @@
 // shows its own data's number and the Inbox page watches the stream itself,
 // as before the feed.
 import { createContext, use, useEffect, useRef } from 'react'
-import { watchInboxChanges } from './inboxClient.ts'
 
 export type InboxFeed = {
   /** The server's `counts.needsYou`; undefined until a read answers. */
@@ -52,7 +51,17 @@ export function useInboxChanges(live: boolean, onChange: () => void, count: numb
     const call = () => {
       changeRef.current()
     }
-    return follow === undefined ? watchInboxChanges({ onChange: call }) : follow(call)
+    if (follow !== undefined) return follow(call)
+    // The client loads only in development, so a build has none of it (as the page's live loader).
+    let stop: (() => void) | undefined
+    let gone = false
+    void import('./inboxClient.ts').then((client) => {
+      if (!gone) stop = client.watchInboxChanges({ onChange: call })
+    })
+    return () => {
+      gone = true
+      stop?.()
+    }
   }, [follow, live])
   useEffect(() => {
     if (live) publish?.(count)

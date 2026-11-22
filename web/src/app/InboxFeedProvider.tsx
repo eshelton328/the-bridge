@@ -10,7 +10,6 @@
 // and is reported by a fixed message.
 import { type ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { report } from '../errors/reporter.ts'
-import { InboxMissError, readInboxList, watchInboxChanges } from '../lib/inboxClient.ts'
 import { type InboxFeed, InboxFeedContext } from '../lib/inboxFeed.ts'
 
 /** A badge read whose reply the contract refused, with no part of the reply. */
@@ -27,29 +26,36 @@ export function InboxFeedProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!import.meta.env.DEV) return undefined
     let reading: AbortController | undefined
-    const changed = () => {
-      if (followers.size > 0) {
-        for (const follower of followers) follower()
-        return
+    let stop: (() => void) | undefined
+    let gone = false
+    const start = ({ InboxMissError, readInboxList, watchInboxChanges }: typeof import('../lib/inboxClient.ts')) => {
+      const changed = () => {
+        if (followers.size > 0) {
+          for (const follower of followers) follower()
+          return
+        }
+        reading?.abort()
+        const mine = new AbortController()
+        reading = mine
+        readInboxList('badge', mine.signal).then(
+          (answer) => {
+            if (answer.ok) setCount(answer.value.counts.needsYou)
+            else if (answer.error.status !== undefined) report(new InboxMissError('badge', answer.error), 'live')
+          },
+          () => {
+            // A read the next one replaced, or the app's end, is no miss. A reply the contract refuses is reported by
+            // a fixed message: the parse error can quote the reply, and a report never holds a title.
+            if (!mine.signal.aborted) report(new InboxRefusedError(), 'live')
+          },
+        )
       }
-      reading?.abort()
-      const mine = new AbortController()
-      reading = mine
-      readInboxList('badge', mine.signal).then(
-        (answer) => {
-          if (answer.ok) setCount(answer.value.counts.needsYou)
-          else if (answer.error.status !== undefined) report(new InboxMissError('badge', answer.error), 'live')
-        },
-        () => {
-          // A read the next one replaced, or the app's end, is no miss. A reply the contract refuses is reported by
-          // a fixed message: the parse error can quote the reply, and a report never holds a title.
-          if (!mine.signal.aborted) report(new InboxRefusedError(), 'live')
-        },
-      )
+      if (!gone) stop = watchInboxChanges({ onChange: changed })
     }
-    const stop = watchInboxChanges({ onChange: changed })
+    // The client loads only in development, so a build has none of it (as the pages' live loaders).
+    void import('../lib/inboxClient.ts').then(start)
     return () => {
-      stop()
+      gone = true
+      stop?.()
       reading?.abort()
     }
   }, [followers])
