@@ -10,7 +10,9 @@ D2's (`../D02/deviations.md`).
 
 ## Checks
 
-- Text: passes. Nothing is missing, hidden or extra.
+- Text: one extra text since R40 (2026-11-22): "Copy link" beside Open
+  artifact (see Copy link beside Open artifact below). Nothing is missing
+  or hidden.
 - Position: 20 of 24 layers pass (`top bar`, `button · Discuss`,
   `button · copy`, `button · trash`, `title block`, `status`,
   `pill · New`, `chip · Claude artifact`, `project · File in a project`,
@@ -19,7 +21,8 @@ D2's (`../D02/deviations.md`).
   see below.
   The shared navigation's items pass too: `tab · Home`, `tab · Inbox`,
   `tab · Workspaces`, `tab · Projects`, `tab · Artifacts` and
-  `tab · More`.
+  `tab · More`. Since R40, `button · Open artifact` fails too (w -137.5,
+  x +2), as Copy link sits beside it.
 - Rules: pass.
 
 ## Deviations
@@ -53,9 +56,20 @@ D2's (`../D02/deviations.md`).
   12 is on the 4 px icon scale, in the same `fg.muted` as the address.
   The `link` layer passes. D2's mark in the preview's footer is drawn the
   same way.
+- **Copy link beside Open artifact (R40, 2026-11-22).** A Copy link
+  button (`CopyLinkButton size="xl"`) sits to the right of Open artifact,
+  8 apart, so Open artifact is 137.5 px narrower than Figma's full-width
+  button (405:467) and the render has one extra text, "Copy link". No
+  Figma layer draws it. Reason: bridge-coord's decision for screen review
+  R40, after Erik's "We also should be able to copy link like how we had
+  it before": a Copy link next to Open artifact on every layout. The Back
+  bar keeps its copy icon as Figma draws it.
+- **Open artifact is a link.** Since R40 Open artifact is an `<a>` to the
+  artifact's https address in a new tab, drawn with the library's
+  primary `button` recipe; it looks the same as the `Button` before.
 - **Buttons with no screen yet.** Discuss opens the discussion page (T4).
-  Copy link, Remove, the project chip, Open artifact and Open in
-  workspace have no action, as in D2. Back returns to the library (T1).
+  Remove and the project chip act on the live library; Open in workspace
+  has no action, as in D2. Back returns to the library (T1).
 
 ## Values picked (d-100)
 
@@ -68,6 +82,7 @@ D2's (`../D02/deviations.md`).
 - Discuss: the 28 px `Button size="sm"` (Figma 87 × 30 with 11 px sides);
   it is the nearest in width, and the 32 px `md` was 8.8 px wider.
 - Copy link and Remove: icon-only 36 px buttons (`size="lg"`), as Figma.
-- Open artifact: the 44 px `Button size="xl"` the full width (Figma 46).
+- Open artifact: 44 px high (`size="xl"`, Figma 46), the width the
+  Copy link beside it leaves (R40).
 - Link mark: `LinkMarkIcon size="12"` (Figma 13, on the 4 px icon
   scale).
