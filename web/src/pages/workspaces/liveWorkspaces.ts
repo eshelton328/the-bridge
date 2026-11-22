@@ -909,8 +909,16 @@ export function watchLiveWorkspaces({
   const closed = () => abort.signal.aborted
   const run = async () => {
     while (!closed()) {
+      // A stream that gives no answer (no headers) within `liveReadTimeoutMs` is a miss, so an outage after a drop is
+      // shown even when the reconnect hangs (R43); the limit ends once the headers come.
+      const late = new AbortController()
+      const limit = setTimeout(() => {
+        late.abort()
+      }, liveReadTimeoutMs)
       try {
-        const res = await open(abort.signal)
+        const res = await open(AbortSignal.any([abort.signal, late.signal])).finally(() => {
+          clearTimeout(limit)
+        })
         // A 5xx is the server or its proxy with no answer for now, such as the Vite proxy while the server is down:
         // connect again, so the page loads again, and the notice goes, once the server answers.
         if (res.status >= 500) throw new Error(`the server answered ${String(res.status)} for the event stream`)
@@ -928,14 +936,18 @@ export function watchLiveWorkspaces({
         outage()
       } catch (thrown) {
         // The watcher stopped (the page closed the stream; fetch rejects with an AbortError): end, with no report.
-        if (closed() || (thrown instanceof DOMException && thrown.name === 'AbortError')) return
+        if (closed() || (thrown instanceof DOMException && thrown.name === 'AbortError' && !late.signal.aborted)) return
         // The network dropped: connect again after the retry time. Within the grace a miss is quiet, as the server
         // restarts; after it the status bar keeps the error. A long outage tells the page once, on its first error
         // shown, not once for each reconnect; the status bar says it, so it is not reported.
         outage()
         if (grace.timer === undefined || grace.over) {
           const first = lost === undefined
-          const why = thrown instanceof Error ? thrown.message : String(thrown)
+          const why = late.signal.aborted
+            ? `no answer within ${String(liveReadTimeoutMs / 1000)} s`
+            : thrown instanceof Error
+              ? thrown.message
+              : String(thrown)
           lost = `Live updates lost the event stream (${why}); connecting again.`
           if (first) changed()
         }
