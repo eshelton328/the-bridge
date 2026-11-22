@@ -1,0 +1,15 @@
+{
+  "missing": [
+    {
+      "text": "Opus 5.5",
+      "layers": ["402:5801"],
+      "reason": "Screen review R45 (the owner: \"sometimes the chat box closes all the way and sometimes it stays as the expanded form\"): the tablet's chat composer is one row at rest in every chat state, so the working chat's composer here is collapsed (library beta.103 `collapsed` with `running`: paperclip, text, Stop, Send) and draws no model. Figma draws it expanded with the model chip, which shows again when the box has the focus, a draft or a file."
+    }
+  ],
+  "position": [
+    {
+      "layer": "402:5783",
+      "reason": "Screen review R45: the working chat's composer is the 50 px collapsed row at rest, with Stop beside Send, where Figma draws the 75 px expanded composer; its top is 28 lower, at y 1074 over a 50 px row."
+    }
+  ]
+}

@@ -9,7 +9,7 @@ last fidelity run (`pnpm fidelity workspaces T07`, 2026-11-18, library
 with D3's `NewChatDialog` (`Dialog size="lg"`, 540) open over it, with
 T7's layers (`layers.newChatDialog`). The chat has no tab bar, so the
 render has no Artifacts tab, and the dialog makes the chat under it
-inert, so its composer's text is not counted: no exception is needed.
+inert, so its composer's text is not counted: the only exceptions are R45's (the last deviation).
 
 ## Checks
 
@@ -124,4 +124,14 @@ inert, so its composer's text is not counted: no exception is needed.
   `Composer` draws its resting `border.default` (#24314f), which the
   scrim makes near-invisible; it takes no prop for the focus border
   without the focus (review T08 F2, T10 F1, the same case).
-- **No exceptions.**
+- **The composer is one row, with no model (screen review R45,
+  library beta.103).** The chat works and its box has no focus, no
+  draft and no file, so the composer draws its collapsed row
+  (paperclip, text, Stop, Send; 50 high) where Figma draws the
+  expanded composer (420:298, 75 high) with the model chip
+  (420:308, "Opus 5.5"). The owner's comment on R45 ("sometimes the
+  chat box closes all the way and sometimes it stays as the expanded
+  form") replaced R31's rule that a working chat stays expanded.
+  `exceptions.json` covers the model text (420:308) and the
+  composer's place (420:298): its top is 24 lower
+  (y 1074).
