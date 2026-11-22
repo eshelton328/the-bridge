@@ -6,11 +6,9 @@ import { join } from 'node:path'
 import { after, test } from 'node:test'
 import {
   createEnabledHandler,
-  createExperimentHandler,
   createTraceHandler,
   findTraceDir,
   KEYBOARD_TRACE_ENABLED_PATH,
-  KEYBOARD_TRACE_EXPERIMENT_PATH,
   KEYBOARD_TRACE_PATH,
   keyboardTracePlugin,
   type TraceHandler,
@@ -54,8 +52,8 @@ void test('the plugin runs only on the dev server, never in a build', () => {
   assert.equal(plugin.apply, 'serve')
   const used: string[] = []
   plugin.configureServer({ middlewares: { use: (path) => used.push(path) } })
-  // The switches come first, as connect matches the trace endpoint's path as a prefix.
-  assert.deepEqual(used, [KEYBOARD_TRACE_ENABLED_PATH, KEYBOARD_TRACE_EXPERIMENT_PATH, KEYBOARD_TRACE_PATH])
+  // The switch comes first, as connect matches the trace endpoint's path as a prefix.
+  assert.deepEqual(used, [KEYBOARD_TRACE_ENABLED_PATH, KEYBOARD_TRACE_PATH])
 })
 
 void test('the switch answers enabled true while the traces folder has ENABLED, else false, never cached', async () => {
@@ -95,44 +93,6 @@ void test('the switch is off with no traces folder, and takes only GET', async (
   assert.deepEqual(readdirSync(dir), ['ENABLED'])
 })
 
-void test('the experiment switch names proxy or prevent from the file EXPERIMENT, else null, never its text', async () => {
-  const dir = tempDir()
-  const url = await serve(createExperimentHandler({ traceDir: () => dir }))
-  const ask = async () => {
-    const res = await fetch(url)
-    assert.equal(res.status, 200)
-    assert.equal(res.headers.get('cache-control'), 'no-store')
-    assert.match(res.headers.get('content-type') ?? '', /^application\/json/)
-    const body: unknown = await res.json()
-    return body
-  }
-  assert.deepEqual(await ask(), { experiment: null })
-  writeFileSync(join(dir, 'EXPERIMENT'), 'proxy\n')
-  assert.deepEqual(await ask(), { experiment: 'proxy' })
-  writeFileSync(join(dir, 'EXPERIMENT'), '  prevent  ')
-  assert.deepEqual(await ask(), { experiment: 'prevent' })
-  writeFileSync(join(dir, 'EXPERIMENT'), 'secret text')
-  assert.deepEqual(await ask(), { experiment: null })
-  writeFileSync(join(dir, 'EXPERIMENT'), `proxy${' '.repeat(40)}x`)
-  assert.deepEqual(await ask(), { experiment: 'proxy' })
-  rmSync(join(dir, 'EXPERIMENT'))
-  mkdirSync(join(dir, 'EXPERIMENT'))
-  assert.deepEqual(await ask(), { experiment: null })
-})
-
-void test('the experiment switch is null with no traces folder, and takes only GET and HEAD', async () => {
-  const off = await serve(createExperimentHandler({ traceDir: () => undefined }))
-  const body: unknown = await (await fetch(off)).json()
-  assert.deepEqual(body, { experiment: null })
-  const dir = tempDir()
-  writeFileSync(join(dir, 'EXPERIMENT'), 'proxy')
-  const url = await serve(createExperimentHandler({ traceDir: () => dir }))
-  assert.equal((await fetch(url, { method: 'HEAD' })).status, 200)
-  const refused = await post(url, '{}')
-  assert.equal(refused.status, 405)
-  assert.equal(refused.headers.get('allow'), 'GET, HEAD')
-})
-
 void test('the dev server routes the switch to the switch and a POST to the trace endpoint', async () => {
   const dir = tempDir()
   writeFileSync(join(dir, 'ENABLED'), '')
@@ -155,10 +115,10 @@ void test('the dev server routes the switch to the switch and a POST to the trac
   const body: unknown = await res.json()
   assert.deepEqual(body, { enabled: true })
   assert.equal((await post(`${url}${KEYBOARD_TRACE_ENABLED_PATH}`, trace())).status, 405)
-  writeFileSync(join(dir, 'EXPERIMENT'), 'prevent')
-  const experiment: unknown = await (await fetch(`${url}${KEYBOARD_TRACE_EXPERIMENT_PATH}`)).json()
-  assert.deepEqual(experiment, { experiment: 'prevent' })
-  assert.equal((await post(`${url}${KEYBOARD_TRACE_EXPERIMENT_PATH}`, trace())).status, 405)
+  // The keyboard experiment switch is gone (the proxy focus is the app's own path): its old path is the trace
+  // endpoint's, which takes only POST, and a file EXPERIMENT is not read.
+  writeFileSync(join(dir, 'EXPERIMENT'), 'proxy')
+  assert.equal((await fetch(`${url}${KEYBOARD_TRACE_PATH}/experiment`)).status, 405)
   assert.equal((await post(`${url}${KEYBOARD_TRACE_PATH}`, trace())).status, 204)
   assert.deepEqual(readdirSync(dir).sort(), ['2026-11-19T09-58-12-345Z.json', 'ENABLED', 'EXPERIMENT'])
 })

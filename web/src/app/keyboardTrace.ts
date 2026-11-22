@@ -55,7 +55,7 @@ export type KeyboardTraceHeader = {
   safeArea: SafeArea
   /** Whether `prefers-reduced-motion: reduce` matches. */
   reducedMotion: boolean
-  /** The `kb-experiment` search param when it is a short key (`KB_EXPERIMENT`), or the switch's experiment in force, else null; no other search param is read. */
+  /** The `kb-experiment` search param when it is a short key (`KB_EXPERIMENT`), else null; no other search param is read. */
   kbExperiment: string | null
   /** True when `navigator.webdriver` is: a trace from Playwright or other automation. */
   automated: boolean
@@ -124,14 +124,10 @@ export function readDisplayMode(win: Window = window): KeyboardTraceHeader['disp
 /** A `kb-experiment` key: letters, digits, `_` and `-`, at most 32, so no free text gets in. */
 const KB_EXPERIMENT = /^[A-Za-z0-9_-]{1,32}$/
 
-/**
- * The `kb-experiment` search param when it is a short key; with no param, the experiment in force from the dev
- * server's switch, which keyboardExperiment.ts writes on the root element as `data-kb-experiment`; else null.
- */
+/** The `kb-experiment` search param when it is a short key, a label for a trace taken in a browser; else null. */
 export function readKbExperiment(win: Window = window): string | null {
-  const value =
-    new URLSearchParams(win.location.search).get('kb-experiment') ?? win.document.documentElement.dataset.kbExperiment
-  return value !== undefined && KB_EXPERIMENT.test(value) ? value : null
+  const value = new URLSearchParams(win.location.search).get('kb-experiment')
+  return value !== null && KB_EXPERIMENT.test(value) ? value : null
 }
 
 /** Whether the user asks for reduced motion. */

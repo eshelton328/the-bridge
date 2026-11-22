@@ -121,9 +121,8 @@ Both modes record the same way:
   the device's insets; without it every side is 0. The header also has
   `reducedMotion` (whether `prefers-reduced-motion: reduce` matches),
   `kbExperiment` (the `kb-experiment` search param when it is a key of
-  letters, digits, `_` and `-`, at most 32, else the experiment that the
-  dev server's switch put in force, else null; no other search param is
-  recorded) and `automated` (`navigator.webdriver`).
+  letters, digits, `_` and `-`, at most 32, a label for a trace taken in a
+  browser, else null; no other search param is recorded) and `automated` (`navigator.webdriver`).
 - With the param, a fixed overlay in the top right corner shows the live
   values; from the switch there is none. It is
   `inert`, `aria-hidden` and `pointer-events: none`, so it takes no tap,
@@ -135,29 +134,27 @@ Both modes record the same way:
   the session's file `<startedAt>.json` in the brain's
   `engine/_local/phone-review/traces/`.
 
-## Keyboard experiments
+## Proxy focus
 
-`keyboardExperiment.ts` (dev only) tries two ways to give the composer the
-focus with no iOS scroll into view (screen reviews R26 and R27):
+`keyboardProxy.ts` gives the composer the focus with no iOS scroll into
+view (screen reviews R26, R27 and R37). `main.ts` starts it in every build
+where an on-screen keyboard slides in and out: a touch screen whose browser
+has no VirtualKeyboard API (iOS Safari and the installed app).
 
-- `prevent`: a touch tap on a composer that has no focus cancels its
-  `touchend`, calls `focus({ preventScroll: true })` in that same handler
-  and puts the caret at the end. The tap may land on the field or on the
-  composer box around it (the `data-keyboard-keep` wrapper), but not on a
-  control in it: the field is one line in a box about 112 px tall, and
-  iOS moves a tap near the field to the field and scrolls it into view
-  itself. A tap in a focused composer and a long press (over 450 ms) keep
-  their default, so the caret, the selection and the paste menu still
-  work.
-- `proxy`: the same tap focuses a transparent field at the place where
-  the composer docks above the keyboard, then moves the focus and any
-  typed text to the composer when the keyboard is up. An IME composition
-  holds the move until it ends. The proxy is `aria-hidden` with
-  `tabindex="-1"`.
-
-`?kb-experiment=proxy` or `?kb-experiment=prevent` picks one in a
-browser. With no param, the app asks `GET /__keyboard-trace/experiment` at
-the start, every 5 s while it is visible and when it becomes visible.
-bridge-coord writes `proxy` or `prevent` in the file `EXPERIMENT` in the
-traces folder, and deletes the file to stop the experiment. Under
-automation the app does not ask the switch.
+- A touch tap on a composer that has no focus cancels its `touchend` and
+  focuses a transparent field at the place where the composer docks above
+  the keyboard, so iOS has nothing to scroll into view. The tap may land
+  on the field or on the composer box around it (the `data-keyboard-keep`
+  wrapper), but not on a control in it. A tap in a focused composer, a long
+  press (over 450 ms), a mouse, a pen and a touch that moves keep their
+  default.
+- At the tap the proxy sends `bridge-keyboard-proxy` (detail `true`) on the
+  field, and the Workspaces composer expands as on its own focus (R31).
+- When the keyboard is up, the composer is above it and AppShell's dock
+  has stopped (its root's `data-keyboard-end`), the focus and any typed
+  text move to the composer. iOS draws no frame for 40 to 56 ms after that
+  move, so it waits for a still page. An IME composition holds the move
+  until it ends.
+- If the proxy loses the focus to something else first, its text still
+  goes to the composer and it sends the event with detail `false`.
+- The proxy is `aria-hidden` with `tabindex="-1"`.

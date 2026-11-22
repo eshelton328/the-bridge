@@ -8,11 +8,9 @@
 // load and traces without the URL param when the file `ENABLED` is in the
 // traces folder, so bridge-coord can turn tracing on and off in the
 // installed Home Screen app, where no one can type a URL.
-// `GET /__keyboard-trace/experiment` is the same kind of switch for the
-// keyboard experiments: it names the experiment in the file `EXPERIMENT`.
 import { randomUUID } from 'node:crypto'
 import { existsSync, statSync } from 'node:fs'
-import { mkdir, open, rename, rm, stat, writeFile } from 'node:fs/promises'
+import { mkdir, rename, rm, stat, writeFile } from 'node:fs/promises'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { dirname, join, resolve } from 'node:path'
 
@@ -22,12 +20,6 @@ export const KEYBOARD_TRACE_PATH = '/__keyboard-trace'
 export const KEYBOARD_TRACE_ENABLED_PATH = '/__keyboard-trace/enabled'
 /** The file in the traces folder that turns tracing on without the URL param. */
 export const KEYBOARD_TRACE_SWITCH_FILE = 'ENABLED'
-/** The experiment switch the app asks while it is visible: `{ experiment }`, the name in the file `EXPERIMENT` or null. */
-export const KEYBOARD_TRACE_EXPERIMENT_PATH = '/__keyboard-trace/experiment'
-/** The file in the traces folder that names the keyboard experiment to run without the URL param. */
-export const KEYBOARD_TRACE_EXPERIMENT_FILE = 'EXPERIMENT'
-/** The experiments the switch can name (web/src/app/keyboardExperiment.ts). */
-const EXPERIMENTS = ['proxy', 'prevent'] as const
 /** The largest body the endpoint takes, in bytes. */
 export const KEYBOARD_TRACE_MAX_BYTES = 10 * 1024 * 1024
 /** How far a trace's `startedAt` may be from the server's clock: older or later is refused. */
@@ -296,50 +288,6 @@ export function createEnabledHandler({
   }
 }
 
-/**
- * The experiment switch: `GET` answers `{ "experiment": "proxy" }` or `"prevent"` when the file `EXPERIMENT` in
- * the traces folder holds that name (space around it is cut), else `{ "experiment": null }`, never cached. It takes
- * no input, reads at most the file's first 32 bytes and answers only one of the two names, never the file's text.
- */
-export function createExperimentHandler({
-  traceDir = () => findTraceDir(),
-}: {
-  traceDir?: () => string | undefined
-} = {}): TraceHandler {
-  const readExperiment = async (): Promise<(typeof EXPERIMENTS)[number] | null> => {
-    const dir = traceDir()
-    if (dir === undefined) return null
-    try {
-      const file = await open(join(dir, KEYBOARD_TRACE_EXPERIMENT_FILE), 'r')
-      try {
-        const { buffer, bytesRead } = await file.read(Buffer.alloc(32), 0, 32, 0)
-        const name = buffer.subarray(0, bytesRead).toString('utf8').trim()
-        return EXPERIMENTS.find((experiment) => experiment === name) ?? null
-      } finally {
-        await file.close()
-      }
-    } catch {
-      return null
-    }
-  }
-  const handle = async (req: IncomingMessage, res: ServerResponse): Promise<void> => {
-    res.setHeader('cache-control', 'no-store')
-    if (req.method !== 'GET' && req.method !== 'HEAD') {
-      res.setHeader('allow', 'GET, HEAD')
-      send(res, 405, 'keyboard-trace/experiment takes only GET')
-      return
-    }
-    const body = JSON.stringify({ experiment: await readExperiment() })
-    res.statusCode = 200
-    res.setHeader('content-type', 'application/json; charset=utf-8')
-    res.setHeader('x-content-type-options', 'nosniff')
-    res.end(req.method === 'HEAD' ? undefined : body)
-  }
-  return (req, res, next) => {
-    handle(req, res).catch(next)
-  }
-}
-
 /** The structural part of Vite's dev server this plugin uses. */
 type DevServer = { middlewares: { use: (path: string, handler: TraceHandler) => unknown } }
 
@@ -349,11 +297,10 @@ export function keyboardTracePlugin(options: Parameters<typeof createTraceHandle
     name: 'bridge-keyboard-trace',
     apply: 'serve' as const,
     configureServer(server: DevServer) {
-      // The switches first: connect matches by prefix, so the trace endpoint
-      // would also take `/__keyboard-trace/enabled` and `/experiment`.
+      // The switch first: connect matches by prefix, so the trace endpoint
+      // would also take `/__keyboard-trace/enabled`.
       const switchOptions = options.traceDir ? { traceDir: options.traceDir } : {}
       server.middlewares.use(KEYBOARD_TRACE_ENABLED_PATH, createEnabledHandler(switchOptions))
-      server.middlewares.use(KEYBOARD_TRACE_EXPERIMENT_PATH, createExperimentHandler(switchOptions))
       server.middlewares.use(KEYBOARD_TRACE_PATH, createTraceHandler(options))
     },
   }

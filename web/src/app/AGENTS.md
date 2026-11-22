@@ -48,7 +48,9 @@ tracing on or off, or change what a trace records.
   and a short `kb-experiment` key (`keyboardTrace.test.ts`).
 - Under automation (`navigator.webdriver`) the switch starts no trace;
   the param still traces, marked `automated` (`keyboardTraceSwitch.test.ts`).
-- `keyboardExperiment.ts` (dev only) runs `?kb-experiment=proxy|prevent`
-  of screen reviews R26 and R27; it acts only on a tap on a composer
-  field or its box, never on Send, Stop, Attach or another control, and
-  never on a long press (`keyboardExperiment.test.ts`).
+- `keyboardProxy.ts` gives the composer the focus through a proxy field on
+  iOS, in every build (screen reviews R27 and R37). It acts only on a
+  touch tap on a composer field or its box, never on Send, Stop, Attach or
+  another control, and never on a long press; it moves the focus only
+  after AppShell's dock has stopped (`keyboardProxy.test.ts`). The
+  composer expands at the tap (`WorkspacesComposerCollapsed.test.tsx`).

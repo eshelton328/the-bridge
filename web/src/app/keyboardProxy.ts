@@ -1,51 +1,28 @@
-// The keyboard experiments of screen reviews R26 and R27, dev only. When a
-// tap gives the composer the focus, iOS scrolls the document to bring the
-// field above the keyboard: for one frame the layout viewport is the visible
-// area with scrollY at the keyboard's height, and the whole page, its top bar
-// too, is drawn low and slides back (the recording of R27). The shell's
-// scroll reset cannot stop that slide. Two ways to take the focus with no
-// scroll are tried on the owner's phone:
-// - 'prevent': the tap's default (the browser's own focus) is cancelled at
-//   'touchend' and the field is focused by script with 'preventScroll',
-//   inside the gesture. WebKit honours 'preventScroll' for the keyboard's
-//   scroll only for a focus from script (WebKit bug 236584).
-// - 'proxy': the same tap focuses a transparent field that is already where
-//   the composer docks above the keyboard, so iOS has nothing to scroll into
-//   view, and moves the focus (and any text typed meanwhile) to the composer
-//   once the keyboard is up and the composer is above it (after an IME
-//   composition ends). iOS keeps the keyboard open when the focus moves
-//   between fields. The proxy is aria-hidden with tabindex -1, so VoiceOver
-//   reaches only the real field.
+// The composer's focus through a proxy field (screen reviews R26, R27 and
+// R37). When a tap gives the composer the focus, iOS scrolls the document to
+// bring the field above the keyboard: for one frame the layout viewport is
+// the visible area with scrollY at the keyboard's height, and the whole page,
+// its top bar too, is drawn low and slides back (the recording of R27). The
+// shell's scroll reset cannot stop that slide. So a touch tap on a composer
+// with no focus focuses a transparent field that is already where the
+// composer docks above the keyboard, and iOS has nothing to scroll into view.
+// Once the keyboard is up and the shell's dock has stopped, the focus (and
+// any text typed meanwhile) moves to the composer; an IME composition holds
+// the move until it ends. iOS keeps the keyboard open when the focus moves
+// between fields. The proxy is aria-hidden with tabindex -1, so VoiceOver
+// reaches only the real field.
 // A press on a control (Send, Stop, Attach), a mouse or a pen, a touch that
-// moves (a scroll) and a field that already has the focus are left alone.
-// The experiment comes from '?kb-experiment=' or, without the param, from
-// the dev server's switch (scripts/keyboardTracePlugin.ts), asked every 5 s
-// while the page is visible, so bridge-coord changes it in the installed
-// Home Screen app with one file. main.ts imports this module only in
-// development, so a build has none of it.
+// moves (a scroll), a long press and a field that already has the focus are
+// left alone. main.ts starts it where an on-screen keyboard slides in and
+// out (a touch screen with no VirtualKeyboard API: iOS), in every build. It
+// ran as the dev-only 'proxy' experiment from 2026-11-19 to 2026-11-21; the
+// iPhone 17 Simulator showed the R27 slide on each open without it.
 
 import { token } from '../../styled-system/tokens/index.js'
-import { report } from '../errors/reporter.ts'
+import { KEYBOARD_PROXY_EVENT } from '../lib/keyboardProxyEvent.ts'
 
-/** An experiment's name, from '?kb-experiment=' or the dev server's switch. */
-export type KeyboardExperiment = 'proxy' | 'prevent'
-
-/** The URL param that picks an experiment in a browser. */
-const KEYBOARD_EXPERIMENT_PARAM = 'kb-experiment'
-/** The switch the app asks when the URL has no param. */
-export const KEYBOARD_EXPERIMENT_SWITCH_URL = '/__keyboard-trace/experiment'
 /** The attribute of the proxy field, which the chat trace takes as the composer (keyboardChatTrace.ts). */
-const KEYBOARD_PROXY_ATTRIBUTE = 'data-keyboard-experiment-proxy'
-
-/** 'value' as an experiment, or null for anything else. */
-export function parseExperiment(value: unknown): KeyboardExperiment | null {
-  return value === 'proxy' || value === 'prevent' ? value : null
-}
-
-/** The experiment that 'search' (a URL's query string) picks, or null. */
-export function experimentFromSearch(search: string): KeyboardExperiment | null {
-  return parseExperiment(new URLSearchParams(search).get(KEYBOARD_EXPERIMENT_PARAM))
-}
+const KEYBOARD_PROXY_ATTRIBUTE = 'data-keyboard-proxy'
 
 type Field = HTMLTextAreaElement | HTMLInputElement
 
@@ -88,8 +65,11 @@ const TAP_SLOP_PX = 10
  * 500 ms, so a longer touch keeps its default.
  */
 const TAP_MAX_MS = 450
-/** How long the proxy waits, after the keyboard's report, for the shell to move the composer above the keyboard, in ms. */
-const DOCK_WAIT_MS = 400
+/**
+ * How long the proxy waits, after the keyboard's report, for the shell's dock to stop with the composer above the
+ * keyboard, in ms: the dock moves for `durations.keyboard` (300) from about the report.
+ */
+const DOCK_WAIT_MS = 500
 /** The attributes that pick the keyboard iOS draws, copied to the proxy so the keyboard does not change at the move. */
 const KEYBOARD_ATTRIBUTES = ['inputmode', 'enterkeyhint', 'autocapitalize', 'autocorrect', 'autocomplete', 'spellcheck']
 
@@ -126,6 +106,11 @@ function takeEdits(field: Field, proxy: Field): void {
   field.setSelectionRange(proxy.selectionStart, proxy.selectionEnd, proxy.selectionDirection ?? 'none')
 }
 
+/** Tells the composer of 'field' that a proxy holds the focus for it (true) or went without giving it (false). */
+function tell(field: Field, holding: boolean): void {
+  field.dispatchEvent(new CustomEvent(KEYBOARD_PROXY_EVENT, { bubbles: true, detail: holding }))
+}
+
 /**
  * Focuses 'field' through a transparent field at its docked place; resolves when the proxy is gone: after the focus
  * moved to 'field', or when the proxy lost the focus to something else first.
@@ -143,7 +128,7 @@ function focusThroughProxy(win: Window, field: Field, waitMs: number): Promise<v
     if (value !== null) proxy.setAttribute(name, value)
   }
   const box = dockedBox(field, lastKeyboard ?? tokenKeyboard, win)
-  // Outside the design, for the experiment only: fixed where the composer docks, 16 px so iOS does not zoom to it,
+  // Outside the design: fixed where the composer docks, 16 px so iOS does not zoom to it,
   // transparent (not hidden, which iOS does not focus) and never hit by a tap.
   proxy.style.cssText =
     'position:fixed;margin:0;padding:0;border:0;outline:0;resize:none;background:transparent;color:transparent;' +
@@ -162,6 +147,8 @@ function focusThroughProxy(win: Window, field: Field, waitMs: number): Promise<v
   doc.body.append(proxy)
   proxy.setSelectionRange(proxy.value.length, proxy.value.length)
   const openHeight = vv?.height ?? win.innerHeight
+  // The composer expands now, as on its own focus, so the hand-off below changes no layout.
+  tell(field, true)
   proxy.focus({ preventScroll: true })
   return new Promise((done) => {
     let finished = false
@@ -200,11 +187,19 @@ function focusThroughProxy(win: Window, field: Field, waitMs: number): Promise<v
       if (finished) return
       if (field.isConnected && !field.disabled) takeEdits(field, proxy)
       end()
+      tell(field, false)
     }
-    // The composer is above the keyboard: its foot is in the visible area.
+    // The composer is above the keyboard (its foot is in the visible area) and the shell's dock has stopped. iOS draws
+    // no frame of the page for 40 to 56 ms after the focus moves between the fields (the iPhone and iPad traces of
+    // 2026-11-21: one frame of 36 to 56 ms at the move, 17 ms around it), so the move waits for a still page, where
+    // that frame shows nothing late. AppShell writes the time its dock's move ends on its root (`keyboardEnd`).
     const docked = () => vv === null || field.getBoundingClientRect().bottom <= vv.offsetTop + vv.height + 1
+    const stopped = () => {
+      const end = Number(field.closest<HTMLElement>('.app-shell__root')?.dataset.keyboardEnd)
+      return !Number.isFinite(end) || win.performance.now() >= end
+    }
     const whenDocked = (deadline: number) => {
-      if (docked() || win.performance.now() >= deadline) move()
+      if ((docked() && stopped()) || win.performance.now() >= deadline) move()
       else
         frame = win.requestAnimationFrame(() => {
           whenDocked(deadline)
@@ -231,23 +226,21 @@ function focusThroughProxy(win: Window, field: Field, waitMs: number): Promise<v
   })
 }
 
-export type ExperimentOptions = {
+export type KeyboardProxyOptions = {
   win?: Window
-  /** The experiment in force at the tap; null runs none. */
-  current: () => KeyboardExperiment | null
   /** How long the proxy waits for the keyboard's report before it moves the focus, in ms. */
   proxyWaitMs?: number
 }
 
-/** Starts the experiments' tap handler; returns a function that stops it. */
-export function installKeyboardExperiment({ win = window, current, proxyWaitMs = 600 }: ExperimentOptions): () => void {
+/** Starts the tap handler that focuses a composer through the proxy; returns a function that stops it. */
+export function installKeyboardProxy({ win = window, proxyWaitMs = 600 }: KeyboardProxyOptions = {}): () => void {
   const doc = win.document
   // The touch that is down on a composer field with no focus, until it moves, is cancelled or ends.
   let press: { field: Field; x: number; y: number; at: number } | undefined
   let proxying = false
   const onPointerDown = (event: PointerEvent) => {
     press = undefined
-    if (event.pointerType !== 'touch' || current() === null) return
+    if (event.pointerType !== 'touch') return
     const field = pressedField(event.target)
     if (field === null || field === doc.activeElement || field.disabled) return
     press = { field, x: event.clientX, y: event.clientY, at: event.timeStamp }
@@ -264,19 +257,12 @@ export function installKeyboardExperiment({ win = window, current, proxyWaitMs =
   const onTouchEnd = (event: Event) => {
     const taken = press
     press = undefined
-    const experiment = current()
-    if (taken === undefined || experiment === null || !event.cancelable) return
+    if (taken === undefined || !event.cancelable) return
     // A long press keeps its default: iOS's magnifier and paste menu.
     if (event.timeStamp - taken.at > TAP_MAX_MS) return
     const { field } = taken
     if (!field.isConnected || field.disabled || field === doc.activeElement) return
     event.preventDefault()
-    if (experiment === 'prevent') {
-      field.focus({ preventScroll: true })
-      // The tap's own caret placement was cancelled with its default: the caret goes to the end of the draft.
-      field.setSelectionRange(field.value.length, field.value.length)
-      return
-    }
     if (proxying) return
     proxying = true
     void focusThroughProxy(win, field, proxyWaitMs).then(() => {
@@ -309,78 +295,13 @@ export function installKeyboardExperiment({ win = window, current, proxyWaitMs =
   }
 }
 
-export type ExperimentSwitchOptions = {
-  win?: Window
-  fetchSwitch?: (url: string, init: RequestInit) => Promise<Response>
-  /** How often the switch is asked while the page is visible, in ms. */
-  pollMs?: number
-  proxyWaitMs?: number
-}
-
 /**
- * Runs the experiment that the URL param names, else the one the dev server's switch names, asked at the start, every
- * 'pollMs' while the page is visible and each time it becomes visible. The param wins and stops the asking; automation
- * ('navigator.webdriver') never asks, as for the trace. The experiment in force is on the root element as
- * 'data-kb-experiment', which the trace's header reads. A failed answer keeps the experiment as it is.
+ * Whether the composer takes its focus through the proxy here: where an on-screen keyboard slides in and out that only
+ * the visual viewport reports, a touch screen whose browser has no VirtualKeyboard API (iOS Safari and the installed
+ * app), as AppShell's dock reads it. Chromium on Android has the API and resizes the layout for its keyboard.
  */
-export function startKeyboardExperiment({
-  win = window,
-  fetchSwitch = (url, init) => win.fetch(url, init),
-  pollMs = 5000,
-  proxyWaitMs,
-}: ExperimentSwitchOptions = {}): { stop: () => void; current: () => KeyboardExperiment | null } {
-  const doc = win.document
-  const fromUrl = experimentFromSearch(win.location.search)
-  let active = fromUrl
-  const mark = () => {
-    if (active === null) delete doc.documentElement.dataset.kbExperiment
-    else doc.documentElement.dataset.kbExperiment = active
-  }
-  mark()
-  const stopTaps = installKeyboardExperiment({
-    win,
-    current: () => active,
-    ...(proxyWaitMs === undefined ? {} : { proxyWaitMs }),
-  })
-  let stopped = false
-  // A function, not the variable: the lint narrows the variable to false across the await, but stop() can run meanwhile.
-  const isStopped = () => stopped
-  let asking = false
-  const ask = async () => {
-    if (stopped || asking || doc.visibilityState !== 'visible') return
-    asking = true
-    try {
-      const res = await fetchSwitch(KEYBOARD_EXPERIMENT_SWITCH_URL, { cache: 'no-store' })
-      if (!res.ok) return
-      const body: unknown = await res.json()
-      if (isStopped() || typeof body !== 'object' || body === null) return
-      active = parseExperiment(Reflect.get(body, 'experiment'))
-      mark()
-    } catch (error) {
-      // The dev server is away for a moment: the experiment stays, and the reporter drops a repeated report.
-      report(error, 'handler')
-    } finally {
-      asking = false
-    }
-  }
-  const onVisible = () => {
-    void ask()
-  }
-  let timer = 0
-  if (fromUrl === null && !win.navigator.webdriver) {
-    timer = win.setInterval(onVisible, pollMs)
-    doc.addEventListener('visibilitychange', onVisible)
-    void ask()
-  }
-  return {
-    stop: () => {
-      stopped = true
-      win.clearInterval(timer)
-      doc.removeEventListener('visibilitychange', onVisible)
-      stopTaps()
-      active = null
-      mark()
-    },
-    current: () => active,
-  }
+export function proxyFocusApplies(
+  win: { matchMedia: (query: string) => { matches: boolean }; navigator: object } = window,
+): boolean {
+  return win.matchMedia('(pointer: coarse)').matches && Reflect.get(win.navigator, 'virtualKeyboard') === undefined
 }

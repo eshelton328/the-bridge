@@ -58,12 +58,12 @@ export function traceRoute(current: { pathname: string; search: string }): Trace
 const COMPOSER_FOOTER =
   ':is(.app-shell__root--size_phone, .app-shell__root--size_tablet) > .app-shell__detail > .scroll-frame__root > .scroll-frame__footer'
 
-/** The proxy field of the `proxy` keyboard experiment (keyboardExperiment.ts), which takes the focus for the composer. */
-const PROXY = '[data-keyboard-experiment-proxy]'
+/** The proxy field (keyboardProxy.ts), which takes the focus for the composer until the keyboard is up. */
+const PROXY = '[data-keyboard-proxy]'
 
 /**
  * The layout of the chat whose composer `target` is, or undefined when it is not a phone or tablet chat's composer.
- * The keyboard experiment's proxy field counts as the composer of the chat on the page, so a session starts at the
+ * The proxy field (keyboardProxy.ts) counts as the composer of the chat on the page, so a session starts at the
  * focus that opens the keyboard.
  */
 export function chatComposerDevice(target: EventTarget | null): TraceChat['device'] | undefined {
