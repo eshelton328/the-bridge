@@ -4,14 +4,16 @@
 // props-only screen. Copy link writes the open artifact's link to the
 // clipboard here, and the screen shows "Copied" or "Copy failed" on the
 // control for `copiedFor` ms (audit W-6). On the live library (liveArtifacts.ts)
-// it holds the visit, posts seen once its first list shows, and reads a partial
-// list once more.
+// it holds the visit, posts seen once its first list shows, reads a partial
+// list once more, and sends Add a link, a project pick and Remove to the server
+// (useArtifactWrites.ts).
 import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { report } from '../../errors/reporter.ts'
 import { copyText } from '../../lib/copyText.ts'
 import { enterVisit, sendSeen, takeFollowUp } from './liveArtifacts.ts'
 import { ArtifactsScreen } from './screens/ArtifactsScreen.tsx'
+import { useArtifactWrites } from './useArtifactWrites.ts'
 import type { ArtifactsUi, CopiedLink } from './types.ts'
 import { usePushSwitch } from '../../state/pushStore.ts'
 
@@ -45,6 +47,10 @@ export function ArtifactsPage() {
   // Another ?state= starts from its own ui.
   const [changed, setChanged] = useState<Changed>({ of: search.state, ui: {} })
   const ui = { ...state.ui, ...(changed.of === search.state ? changed.ui : {}) }
+  const changeUi = (change: Partial<ArtifactsUi>) => {
+    setChanged((c) => ({ of: search.state, ui: { ...(c.of === search.state ? c.ui : {}), ...change } }))
+  }
+  const writes = useArtifactWrites(changeUi, () => router.invalidate())
   // A new object on each press, so a second press starts the time again.
   const [copiedLink, setCopiedLink] = useState<CopiedLink | undefined>(undefined)
   useEffect(() => {
@@ -67,7 +73,8 @@ export function ArtifactsPage() {
         if (page === 'inbox' || page === 'workspaces' || page === 'toolkit') void navigate({ to: `/${page}` })
       }}
       onUiChange={(change) => {
-        setChanged((c) => ({ of: search.state, ui: { ...(c.of === search.state ? c.ui : {}), ...change } }))
+        if (change.addLinkOpen === true) writes.clearAddLink()
+        changeUi(change)
       }}
       onCopyLink={(link) => {
         // Copy link on an open artifact (D2, T2, M2); without clipboard access it shows Copy failed.
@@ -76,6 +83,9 @@ export function ArtifactsPage() {
         })
       }}
       copiedLink={copiedLink}
+      {...(isLive
+        ? { onAddLink: writes.onAddLink, onFile: writes.onFile, onRemove: writes.onRemove, notice: writes.notice }
+        : {})}
     />
   )
 }

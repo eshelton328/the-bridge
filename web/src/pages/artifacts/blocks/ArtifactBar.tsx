@@ -37,7 +37,9 @@ export function ArtifactBar({
           <Badge label={badge} icon={<SparkIcon size="12" />} tone="working" size="sm" />
         </span>
       )}
-      <span className={found}>{text}</span>
+      <span className={found} role="status">
+        {text}
+      </span>
       <span data-figma="button · Discuss">
         {/* Open, its border is accent.discuss; Figma's violet fill has no token (LIBRARY_GAPS.md). */}
         <Button textSize="sm" pressed={discussOpen} pressedBorder="discuss" onClick={onDiscuss}>

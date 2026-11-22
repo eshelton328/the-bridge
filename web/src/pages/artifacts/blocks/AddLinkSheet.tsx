@@ -8,7 +8,7 @@ import { BottomSheet, BottomSheetClose, Button, Stack } from '@eshelton328/compo
 import { useRef } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { AddLinkForm } from '../types.ts'
-import { AddLinkFields, type AddLinkSource } from './AddLinkFields.tsx'
+import { type AddLinkEntry, AddLinkFields, type AddLinkSource } from './AddLinkFields.tsx'
 
 // M6 408:712 to 408:742: the description and the fields sit 4 in from the sheet's 13 px inset (BottomSheet pads 12 in a
 // 1 px border), as the sheet's title row (408:706 at x 17). Figma puts them 14 apart; no spacing token is 14, so a tie
@@ -30,9 +30,24 @@ export type AddLinkSheetProps = {
   onSourceChange?: ((source: AddLinkSource) => void) | undefined
   /** Add was pressed. */
   onSubmit?: (() => void) | undefined
+  /** The typed link and title (the live library); without it the fields keep what is typed. */
+  entry?: AddLinkEntry | undefined
+  /** The picked project; the form's `project.value` when not set. */
+  project?: string | undefined
+  onProjectChange?: ((project: string) => void) | undefined
 }
 
-export function AddLinkSheet({ form, open, source, onOpenChange, onSourceChange, onSubmit }: AddLinkSheetProps) {
+export function AddLinkSheet({
+  form,
+  open,
+  source,
+  onOpenChange,
+  onSourceChange,
+  onSubmit,
+  entry,
+  project,
+  onProjectChange,
+}: AddLinkSheetProps) {
   const linkRef = useRef<HTMLDivElement>(null)
   return (
     <BottomSheet
@@ -57,7 +72,16 @@ export function AddLinkSheet({ form, open, source, onOpenChange, onSourceChange,
     >
       <Stack gap="16" className={body}>
         <p className={description}>{form.description}</p>
-        <AddLinkFields form={form} layout="sheet" source={source} onSourceChange={onSourceChange} linkRef={linkRef} />
+        <AddLinkFields
+          form={form}
+          layout="sheet"
+          source={source}
+          onSourceChange={onSourceChange}
+          linkRef={linkRef}
+          entry={entry}
+          project={project}
+          onProjectChange={onProjectChange}
+        />
       </Stack>
     </BottomSheet>
   )

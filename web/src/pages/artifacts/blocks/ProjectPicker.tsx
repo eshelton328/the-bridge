@@ -18,10 +18,13 @@ const value = css({ flex: '1', textAlign: 'start' })
 
 export type ProjectPickerProps = {
   field: AddLinkForm['project']
+  /** The picked project; the field's `value` when not set. */
+  value?: string | undefined
   onValueChange?: ((project: string) => void) | undefined
 }
 
-export function ProjectPicker({ field, onValueChange }: ProjectPickerProps) {
+export function ProjectPicker({ field, value: picked, onValueChange }: ProjectPickerProps) {
+  const shown = picked ?? field.value
   const labelId = useId()
   const valueId = useId()
   return (
@@ -33,14 +36,14 @@ export function ProjectPicker({ field, onValueChange }: ProjectPickerProps) {
         <RadioMenu
           label={field.label}
           options={projectChoices(field)}
-          value={field.value}
+          value={shown}
           onValueChange={onValueChange}
           width="sm"
           trigger={
             <Button size="xl" className={trigger} aria-labelledby={`${labelId} ${valueId}`}>
               <FolderIcon />
               <span id={valueId} className={value}>
-                {projectChoices(field).find((choice) => choice.value === field.value)?.label ?? field.value}
+                {projectChoices(field).find((choice) => choice.value === shown)?.label ?? shown}
               </span>
               <ChevronDownIcon />
             </Button>

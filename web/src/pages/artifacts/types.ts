@@ -428,6 +428,10 @@ export const ArtifactsUi = z.object({
   addLinkSource: ArtifactSource.optional(),
   /** The project the Add a link dialog has picked (D5); the form's `project.value` when not set. */
   addLinkProject: z.string().optional(),
+  /** The link typed in Add a link (the live library); the form's `link.value` when not set. */
+  addLinkLink: z.string().optional(),
+  /** The title typed in Add a link (the live library); the form's `name.value` when not set. */
+  addLinkTitle: z.string().optional(),
   /**
    * The card the owner opened from the library (a card on D1 or T1, a row on M1 or D2's list): it opens as `data.open` does
    * (D2, T2, M2). `data.open`'s artifact when not set.
@@ -471,3 +475,18 @@ export type CopyLinkStatus = 'copied' | 'failed'
 
 /** The last Copy link's result and the link it was for, which the page entry holds. */
 export type CopiedLink = { link: string; status: CopyLinkStatus }
+
+/** What Add a link sends (the live library): the link with its scheme, the source, the title and the project. */
+export type AddLinkInput = {
+  link: string
+  source: z.infer<typeof ArtifactSource>
+  title: string
+  /** The project, or null for none. */
+  project: string | null
+}
+
+/**
+ * The line of the live library's last write that missed (ArtifactsPage): under Add a link's link field (`addLink`),
+ * or in the open artifact's status line (`artifact`, for the artifact `id`).
+ */
+export type ArtifactsNotice = { at: 'addLink'; text: string } | { at: 'artifact'; id: string; text: string }

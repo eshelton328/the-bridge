@@ -1,13 +1,15 @@
 // The library as a list beside an open artifact (Figma "library list", D2
 // 403:143): the header with the count and Add a link, the source chips,
 // the search with Sort and Filter, and a RowGroup per group. The rows come
-// from libraryView, as the grid's cards do. Props only; changes go out
-// through onUiChange.
+// from libraryView, as the grid's cards do. Add a link opens the same
+// dialog as the library's (LibraryAddLink), so the owner adds a link with an
+// artifact open. Props only; changes go out through onUiChange.
 import { Button, FilterChips, PageHeader, PlusIcon, Stack } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import { RowGroup } from '../blocks/RowGroup.tsx'
 import { LibraryTools } from '../blocks/LibraryTools.tsx'
 import { type ArtifactsData, type ArtifactsUi, ArtifactChip } from '../types.ts'
+import { LibraryAddLink } from './LibraryAddLink.tsx'
 import { libraryView } from './libraryView.ts'
 
 // 403:143: the pane fills the shell's list column, 12 in, as the Inbox list pane does; it scrolls.
@@ -32,9 +34,22 @@ export type LibraryListProps = {
   onUiChange?: ((change: Partial<ArtifactsUi>) => void) | undefined
   onOpenArtifact?: ((id: string) => void) | undefined
   onAddLink?: (() => void) | undefined
+  /** Add artifact sends the link (the live library); without it Add artifact only closes the dialog. */
+  onSubmitAddLink?: (() => void) | undefined
+  /** The last Add's miss, under the link field. */
+  addLinkError?: string | undefined
 }
 
-export function LibraryList({ data, ui, selectedId, onUiChange, onOpenArtifact, onAddLink }: LibraryListProps) {
+export function LibraryList({
+  data,
+  ui,
+  selectedId,
+  onUiChange,
+  onOpenArtifact,
+  onAddLink,
+  onSubmitAddLink,
+  addLinkError,
+}: LibraryListProps) {
   const groups = libraryView(data, ui)
   const sort = data.sorts.find((s) => s.value === ui.sort) ?? data.sorts[0]
   return (
@@ -49,12 +64,31 @@ export function LibraryList({ data, ui, selectedId, onUiChange, onOpenArtifact, 
             countSize="lg"
           >
             <span data-figma="button · Add a link">
-              <Button iconOnly aria-label={data.addLink} onClick={onAddLink}>
+              <Button
+                iconOnly
+                aria-label={data.addLink}
+                onClick={
+                  data.addLinkForm === undefined
+                    ? onAddLink
+                    : () => {
+                        onUiChange?.({ addLinkOpen: true })
+                      }
+                }
+              >
                 <PlusIcon />
               </Button>
             </span>
           </PageHeader>
         </div>
+        {data.addLinkForm === undefined ? null : (
+          <LibraryAddLink
+            form={data.addLinkForm}
+            ui={ui}
+            onUiChange={onUiChange}
+            onSubmit={onSubmitAddLink}
+            error={addLinkError}
+          />
+        )}
         <div className={chips} data-figma="filter · chips">
           <FilterChips
             label="Filter by source"

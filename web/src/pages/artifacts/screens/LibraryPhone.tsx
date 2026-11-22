@@ -18,6 +18,7 @@ import { LibraryHeader } from '../blocks/LibraryHeader.tsx'
 import { LibraryTools } from '../blocks/LibraryTools.tsx'
 import { RowGroup } from '../blocks/RowGroup.tsx'
 import { type ArtifactsData, type ArtifactsUi, ArtifactChip } from '../types.ts'
+import { addLinkEntry, shownSource } from './addLinkView.ts'
 import { libraryView, matchLine, searchMatches } from './libraryView.ts'
 
 // 406:69: the library starts 4 under the status bar and 12 in; its end scrolls clear of the tab bar (AppShell).
@@ -38,9 +39,21 @@ export type LibraryPhoneProps = {
   onUiChange?: ((change: Partial<ArtifactsUi>) => void) | undefined
   onOpenArtifact?: ((id: string) => void) | undefined
   onAddLink?: (() => void) | undefined
+  /** Add sends the link (the live library); without it Add only closes the sheet. */
+  onSubmitAddLink?: (() => void) | undefined
+  /** The last Add's miss, under the link field. */
+  addLinkError?: string | undefined
 }
 
-export function LibraryPhone({ data, ui, onUiChange, onOpenArtifact, onAddLink }: LibraryPhoneProps) {
+export function LibraryPhone({
+  data,
+  ui,
+  onUiChange,
+  onOpenArtifact,
+  onAddLink,
+  onSubmitAddLink,
+  addLinkError,
+}: LibraryPhoneProps) {
   const groups = libraryView(data, ui)
   const sort = data.sorts.find((s) => s.value === ui.sort) ?? data.sorts[0]
   const shown = groups.reduce((n, group) => n + group.cards.length, 0)
@@ -72,16 +85,26 @@ export function LibraryPhone({ data, ui, onUiChange, onOpenArtifact, onAddLink }
             <AddLinkSheet
               form={addLinkForm}
               open={ui.addLinkOpen ?? false}
-              source={ui.addLinkSource ?? 'claude'}
+              source={shownSource(addLinkForm, ui)}
+              entry={
+                onSubmitAddLink === undefined ? undefined : addLinkEntry(addLinkForm, ui, onUiChange, addLinkError)
+              }
               onOpenChange={(addLinkOpen) => {
                 onUiChange?.({ addLinkOpen })
               }}
               onSourceChange={(addLinkSource) => {
                 onUiChange?.({ addLinkSource })
               }}
-              onSubmit={() => {
-                onUiChange?.({ addLinkOpen: false })
+              project={ui.addLinkProject}
+              onProjectChange={(addLinkProject) => {
+                onUiChange?.({ addLinkProject })
               }}
+              onSubmit={
+                onSubmitAddLink ??
+                (() => {
+                  onUiChange?.({ addLinkOpen: false })
+                })
+              }
             />
           )}
           <div className={chipRow} data-figma="filter · chips">
