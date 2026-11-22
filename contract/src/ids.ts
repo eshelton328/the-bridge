@@ -59,6 +59,16 @@ export const ArtifactId = z
   .brand<'ArtifactId'>()
 export type ArtifactId = z.infer<typeof ArtifactId>
 
+/**
+ * An item of the Inbox: 16 hex characters of a sha256 that the server makes, of a chat ID and the end of its turn,
+ * or of a brain record's path, so no path goes in a URL and a chat's next turn is a new item.
+ */
+export const InboxId = z
+  .string()
+  .regex(/^[0-9a-f]{16}$/)
+  .brand<'InboxId'>()
+export type InboxId = z.infer<typeof InboxId>
+
 /** The machine ID and the local part of a workspace, chat, pane or tab ID. */
 export function splitId(id: WorkspaceId | ChatId | PaneId | TabId): { machine: MachineId; local: string } {
   const at = id.indexOf('/')

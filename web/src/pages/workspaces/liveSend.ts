@@ -159,7 +159,8 @@ async function missOf(
     case 'too-large':
     case 'unsupported-media':
     case 'storage-full':
-      // Only an upload gets these kinds, never a send, a stop, a clear or a command.
+    case 'inbox-read-only':
+      // Only an upload or an Inbox action gets these kinds, never a send, a stop, a clear or a command.
       return unexpected(action, error.kind, res.status)
   }
 }

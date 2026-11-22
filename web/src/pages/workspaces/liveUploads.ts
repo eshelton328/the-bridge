@@ -115,7 +115,8 @@ function missOf(step: Step, status: number, text: string): Miss {
     case 'forbidden':
       return { why: error.kind, transient: false, restart: false }
     case 'invalid-input':
-      // The page sends only what the contract takes, so the server's refusal is a bug.
+    case 'inbox-read-only':
+      // The page sends only what the contract takes, and an upload never gets an Inbox answer: a bug.
       return { why: error.kind, transient: false, restart: true, report: { kind: error.kind, status } }
   }
 }

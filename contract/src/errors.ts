@@ -75,6 +75,8 @@ export const ErrorKind = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('upload-conflict'), ...common }),
   /** The server's disk has no space for the file (507). */
   z.object({ kind: z.literal('storage-full'), ...common }),
+  /** The Inbox item cannot take this action here (409): a brain item changes in the brain, not in the app. */
+  z.object({ kind: z.literal('inbox-read-only'), ...common }),
   /** The client sent more requests of this kind than the server takes in a minute (429). */
   z.object({ kind: z.literal('too-many-requests'), ...common }),
   /** A bug in the server (500); the server's log has the cause under the request ID. */
@@ -97,6 +99,7 @@ export const errorStatus = {
   'unsupported-media': 415,
   'upload-conflict': 409,
   'storage-full': 507,
+  'inbox-read-only': 409,
   'too-many-requests': 429,
   internal: 500,
 } as const satisfies Record<ErrorKind['kind'], number>
