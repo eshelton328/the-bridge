@@ -31,6 +31,8 @@ import { routeTree } from './routeTree.gen.ts'
 stubLiveServer()
 
 afterEach(async () => {
+  Reflect.deleteProperty(document, 'visibilityState')
+  Reflect.deleteProperty(document, 'hidden')
   await unmountRendered()
   vi.unstubAllGlobals()
   clearReports()
@@ -52,6 +54,18 @@ function withInbox(items: readonly unknown[] = [question, review, request]): Fak
     return answer === undefined ? stub(input, init) : Promise.resolve(answer)
   })
   return server
+}
+
+/** Makes the page hidden (`hidden` true) or visible again, with the events Safari sends. */
+function setHidden(hidden: boolean) {
+  Object.defineProperty(document, 'visibilityState', {
+    configurable: true,
+    get: () => (hidden ? 'hidden' : 'visible'),
+  })
+  Object.defineProperty(document, 'hidden', { configurable: true, get: () => hidden })
+  if (hidden) window.dispatchEvent(new PageTransitionEvent('pagehide', { persisted: true }))
+  document.dispatchEvent(new Event('visibilitychange'))
+  if (!hidden) window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }))
 }
 
 /** The app at `path` at the device's size, with the live Inbox feed when `feed` (as mountApp gives it) or without. */
@@ -150,6 +164,25 @@ describe('the live Inbox badge', () => {
       ['InboxRefusedError', 'An inbox request missed: badge refused by the contract'],
     ])
     expect(badge(device)).toBeNull()
+  })
+
+  it('closes its stream in the background and keeps one open stream after three trips there', async () => {
+    const server = withInbox()
+    const device = devices[0]
+    await openApp(device, '/')
+    await expect.poll(() => badge(device)).toBe(2)
+    await expect.poll(() => server.streams()).toBe(1)
+    for (let trip = 1; trip <= 3; trip += 1) {
+      setHidden(true)
+      await expect.poll(() => server.streams()).toBe(0)
+      setHidden(false)
+      await expect.poll(() => server.streams()).toBe(1)
+    }
+    await quiet()
+    expect(server.streams()).toBe(1)
+    // The stream that opened on the last return still carries changes to the badge.
+    server.put(chatItem(4, 'Another sample question', 'question', 1))
+    await expect.poll(() => badge(device)).toBe(3)
   })
 
   it('reads the list once for each inbox.changed while the Inbox page shows: the page loads it for the badge', async () => {

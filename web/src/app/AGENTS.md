@@ -14,6 +14,9 @@ error hooks (`errors/rootErrorOptions.ts`) and renders `AppBoundary` >
   and passes the count to its screen, so `AppRail` and `AppTabBar` stay
   props-only. A live page shows no sample number; `?state=`,
   `?source=fixtures` and stories keep theirs (`InboxBadgeLive.test.tsx`).
+  The stream closes when the page goes to the background and opens again
+  when it shows. Follow-up: share one `/api/events` stream between
+  `InboxFeedProvider` and the Workspaces page, which opens its own.
   `router.ts` sets `RouteError` and `NotFound` as the default error and
   not-found components, so no route needs a boundary of its own (d-084).
 

@@ -1,5 +1,6 @@
 // The app's live Inbox feed (lib/inboxFeed.ts): in development, one stream of
-// `GET /api/events` for the app, and the server's `counts.needsYou` for the
+// `GET /api/events` for the app while the page shows (closed in the
+// background, opened again on return), and the server's `counts.needsYou` for the
 // Inbox badge of every page. On each burst of `inbox.changed`, and each time
 // the stream opens, it reads `GET /api/inbox`, unless the Inbox page shows its
 // live list: then that page loads the list and gives the feed its count, so
@@ -27,8 +28,10 @@ export function InboxFeedProvider({ children }: { children: ReactNode }) {
     if (!import.meta.env.DEV) return undefined
     let reading: AbortController | undefined
     let stop: (() => void) | undefined
+    let unlisten: (() => void) | undefined
     let gone = false
     const start = ({ InboxMissError, readInboxList, watchInboxChanges }: typeof import('../lib/inboxClient.ts')) => {
+      if (gone) return
       const changed = () => {
         if (followers.size > 0) {
           for (const follower of followers) follower()
@@ -49,14 +52,38 @@ export function InboxFeedProvider({ children }: { children: ReactNode }) {
           },
         )
       }
-      if (!gone) stop = watchInboxChanges({ onChange: changed })
+      // The stream runs only while the page shows: it closes when the page goes to the background, where iOS would
+      // close it anyway, and opens again when the page shows, which reads the count again. So no stream is left
+      // behind by a trip to the background.
+      const close = () => {
+        stop?.()
+        stop = undefined
+        reading?.abort()
+      }
+      const open = () => {
+        if (!gone && stop === undefined && document.visibilityState !== 'hidden')
+          stop = watchInboxChanges({ onChange: changed })
+      }
+      const onVisibility = () => {
+        if (document.visibilityState === 'hidden') close()
+        else open()
+      }
+      document.addEventListener('visibilitychange', onVisibility)
+      window.addEventListener('pagehide', close)
+      window.addEventListener('pageshow', open)
+      unlisten = () => {
+        document.removeEventListener('visibilitychange', onVisibility)
+        window.removeEventListener('pagehide', close)
+        window.removeEventListener('pageshow', open)
+        close()
+      }
+      open()
     }
     // The client loads only in development, so a build has none of it (as the pages' live loaders).
     void import('../lib/inboxClient.ts').then(start)
     return () => {
       gone = true
-      stop?.()
-      reading?.abort()
+      unlisten?.()
     }
   }, [followers])
   const follow = useCallback(
