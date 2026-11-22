@@ -53,6 +53,15 @@ from the outside world.
   chat is `restarting`. It also counts each other request to the chat
   in progress: a restart waits for none (`busy`), and no request enters
   while a restart runs (`restarts.test.ts`).
+- `artifacts.ts` is the Artifacts library (R26, R27) and its ports:
+  the finder of published Claude artifacts and the store. A list
+  reads what the finder found since the last list and keeps it: a new
+  link is added with its chat and `foundAt`, and a republished one gets
+  its newer title. An artifact's ID is the first 16 hex characters of its
+  link's sha256. An owner link that the library has answers that entry
+  (`added: false`), a removed entry stays as removed so a find does not
+  add it again, and an add brings it back. One change at a time; a
+  store fault is its code only (`artifacts.test.ts`).
 - No polling (d-112): a service reads a port when a request or a
   subscription asks. `liveEvents.ts` shares one port subscription among
   all clients of `/api/events`, so with no client open (and no push
