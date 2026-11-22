@@ -47,7 +47,8 @@
 // box is not focused and holds no text and no files (library beta.97):
 // focus expands it, and a blur with the box empty collapses it again. A
 // draft, a file or a disabled box keeps it expanded; a running chat does
-// not, as the row draws Stop beside Send (review R45). Props only.
+// not, as the row draws Stop beside Send (review R45, library beta.103).
+// Props only.
 import {
   appShellDockEvent,
   Composer,
