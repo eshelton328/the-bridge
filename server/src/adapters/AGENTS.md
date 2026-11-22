@@ -266,16 +266,12 @@ client of a socket or a file sits beside them.
   missing file is an empty library; a file that the schema does not take
   is the fault `EBADDATA`, never an empty library, so no save writes
   over it. A fault gives its errno code only (`diskArtifacts.test.ts`).
-- The Inbox's adapters (`diskInbox.ts`, R20): the brain's attention
-  requests come from `<brain>/projects/<project>/inbox/*.md`, a plain
-  file only, whose real path stays in that folder (a symlink and a
-  linked folder are skipped), at most 256 KiB. Only an open or snoozed
-  `attention-request` is listed, from its front matter (scalars and
-  lists of "- " lines, as the brain writes them); the body after it goes
-  only to a detail, at most 64 KiB. An item's ID hashes its project and
-  file name. The owner's marks are `inbox.json` in a 0700 folder
-  beside the database, 0600 and replaced in one rename; a file the
-  schema does not take is `EBADDATA` (`diskInbox.test.ts`).
+- `diskInbox.ts` (R20) lists the open and snoozed attention requests in
+  `<brain>/projects/<project>/inbox/*.md` from their front matter: plain
+  files of at most 256 KiB whose real path stays in that folder, never a
+  symlink; a record it cannot decode is skipped. The body goes only to a
+  detail. The marks are `inbox.json`, 0600, as `diskArtifacts.ts` keeps
+  its file (`diskInbox.test.ts`).
 - The upload store (`diskUploads.ts`, fake `fakeUploads.ts`, suite
   `uploadStoreContract.ts`) keeps each upload in a 0700 folder with
   0600 files, under the folder beside the database. Each chunk goes to
