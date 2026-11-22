@@ -158,6 +158,30 @@ describe('the live library writes', () => {
       await expect.poll(() => server.calls('list').length).toBeGreaterThanOrEqual(2)
     })
 
+    if (!phone(device))
+      it('sends a second project pick made while the first is saving, on the desktop', async () => {
+        const server = withServer()
+        // The first pick's answer comes late and changes nothing; the second pick puts the artifact back in its project.
+        server.answerNext(
+          'file',
+          () =>
+            new Promise<Response>((resolve) => {
+              setTimeout(() => {
+                resolve(new Response(null, { status: 204 }))
+              }, 600)
+            }),
+        )
+        await tapArtifacts(device)
+        await openCard(device, 'Sample plan')
+        await pickProject(device, 'Not in a project')
+        await expect.poll(() => server.calls('file').length).toBe(1)
+        await pickProject(device, 'sample-project')
+        await expect
+          .poll(() => server.calls('file').map((c) => c.body))
+          .toEqual([{ project: null }, { project: 'sample-project' }])
+        await expect.poll(() => server.artifacts().find((a) => a.id === plan.id)?.project).toBe('sample-project')
+      })
+
     it(`says in the artifact's line that filing failed, and reports its kind and status only, on ${device.name}`, async () => {
       const server = withServer()
       server.answerNext('file', () => artifactsError('internal', 500))

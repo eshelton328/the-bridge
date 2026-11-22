@@ -7,6 +7,8 @@
 //   last looked"; a link the library had (200) closes it and opens that
 //   artifact, as no error says it twice.
 // - A project pick shows at once; a miss puts the artifact's own project back.
+//   A pick made while another write runs waits for it, and only the last
+//   such pick goes, so what shows is what the server gets.
 // - Remove closes the artifact on a tablet or phone; on the desktop the list
 //   read drops it, and the library shows.
 import { useRef, useState } from 'react'
@@ -31,12 +33,20 @@ export function useArtifactWrites(
 ): ArtifactWrites {
   const [notice, setNotice] = useState<ArtifactsNotice | undefined>(undefined)
   const busyRef = useRef(false)
-  const run = (work: () => Promise<void>) => {
-    if (busyRef.current) return
+  // The last project pick made while a write ran; it goes when that write ends.
+  const queuedRef = useRef<(() => Promise<void>) | undefined>(undefined)
+  const run = (work: () => Promise<void>, queue = false) => {
+    if (busyRef.current) {
+      if (queue) queuedRef.current = work
+      return
+    }
     busyRef.current = true
     setNotice(undefined)
     void work().finally(() => {
       busyRef.current = false
+      const next = queuedRef.current
+      queuedRef.current = undefined
+      if (next !== undefined) run(next)
     })
   }
   return {
@@ -62,7 +72,7 @@ export function useArtifactWrites(
         // The pick was for this artifact; with no artifact named, the chip shows its own project again.
         onUiChange({ fileFor: '' })
         setNotice({ at: 'artifact', id, text: filed.error })
-      })
+      }, true)
     },
     onRemove: (id) => {
       run(async () => {
