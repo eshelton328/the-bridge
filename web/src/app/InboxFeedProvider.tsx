@@ -6,11 +6,20 @@
 // no second list read runs. No read runs on a timer. A read with no answer
 // around a trip to the background is quiet and goes again when the page
 // shows (lib/pageResume.ts); a miss keeps the last count and report() gets
-// only its kind and status.
+// only its kind and status. A reply the contract refuses keeps the last count
+// and is reported by a fixed message.
 import { type ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { report } from '../errors/reporter.ts'
 import { InboxMissError, readInboxList, watchInboxChanges } from '../lib/inboxClient.ts'
 import { type InboxFeed, InboxFeedContext } from '../lib/inboxFeed.ts'
+
+/** A badge read whose reply the contract refused, with no part of the reply. */
+class InboxRefusedError extends Error {
+  constructor() {
+    super('An inbox request missed: badge refused by the contract')
+    this.name = 'InboxRefusedError'
+  }
+}
 
 export function InboxFeedProvider({ children }: { children: ReactNode }) {
   const [count, setCount] = useState<number | undefined>(undefined)
@@ -31,8 +40,11 @@ export function InboxFeedProvider({ children }: { children: ReactNode }) {
           if (answer.ok) setCount(answer.value.counts.needsYou)
           else if (answer.error.status !== undefined) report(new InboxMissError('badge', answer.error), 'live')
         },
-        // A read the next one replaced, or the app's end.
-        () => undefined,
+        () => {
+          // A read the next one replaced, or the app's end, is no miss. A reply the contract refuses is reported by
+          // a fixed message: the parse error can quote the reply, and a report never holds a title.
+          if (!mine.signal.aborted) report(new InboxRefusedError(), 'live')
+        },
       )
     }
     const stop = watchInboxChanges({ onChange: changed })

@@ -3,6 +3,7 @@ import { createElement, type ReactElement } from 'react'
 import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
 import { RouteError } from '../errors/RouteError.tsx'
+import { clearReports, getReports } from '../errors/reporter.ts'
 import { fakeInboxServer, type FakeInboxServer } from '../lib/fakeInboxServer.ts'
 import { setViewport } from '../lib/rendering.ts'
 import { testRender, unmountRendered } from '../lib/testRender.ts'
@@ -32,6 +33,7 @@ stubLiveServer()
 afterEach(async () => {
   await unmountRendered()
   vi.unstubAllGlobals()
+  clearReports()
   resetAllStores()
   await setViewport(1512, 982)
 })
@@ -133,6 +135,22 @@ describe('the live Inbox badge', () => {
       })
     }
   }
+
+  it('reports a badge reply the contract refuses by a fixed message, with no part of the reply', async () => {
+    const server = withInbox()
+    const refused = { items: [{ title: 'Sample title that never goes to a report' }], counts: 'none' }
+    server.answerNext('list', () => new Response(JSON.stringify(refused), { status: 200 }), 1)
+    const device = devices[0]
+    const router = await openApp(device, '/workspaces')
+    await expect.poll(() => router.state.resolvedLocation?.pathname).toBe('/workspaces')
+    // The Workspaces stub reports its own transcript misses; only the Inbox's reports matter here.
+    const inbox = () => getReports().filter((r) => r.error.name.startsWith('Inbox'))
+    await expect.poll(() => inbox().length).toBe(1)
+    expect(inbox().map((r) => [r.error.name, r.error.message])).toEqual([
+      ['InboxRefusedError', 'An inbox request missed: badge refused by the contract'],
+    ])
+    expect(badge(device)).toBeNull()
+  })
 
   it('reads the list once for each inbox.changed while the Inbox page shows: the page loads it for the badge', async () => {
     const server = withInbox()
