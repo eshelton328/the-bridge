@@ -43,6 +43,12 @@ type Limits = {
 const claudeLink = /^https:\/\/claude\.ai\/(?:code\/)?artifact\/[A-Za-z0-9_-]+$/
 /** The size of each read. */
 const chunkBytes = 1024 * 1024
+/**
+ * The most bytes one scan reads. The time cap is the limit that counts: a first scan of a large projects folder
+ * (several GiB) must not take hundreds of lists. This cap only stops a scan of a very fast disk at a size that
+ * the time cap allows.
+ */
+const defaultMaxBytes = 1024 * 1024 * 1024
 /** A line longer than this is skipped, so one line cannot hold the scan. */
 const maxLineBytes = 8 * 1024 * 1024
 
@@ -75,12 +81,17 @@ type Pending = { readonly title: string | undefined; readonly description: strin
 /** Where the next read of a file starts: `offset` is a line's start, and `carry` the bytes read after it. */
 type FileState = { offset: number; carry: Buffer; skipLine: boolean; readonly pending: Map<string, Pending> }
 
+/** A line can hold an Artifact call or the result it waits for only when it has one of these bytes. */
+const callMark = Buffer.from('"Artifact"')
+const resultMark = Buffer.from('"tool_result"')
+
 /** The artifacts of one line, and the calls it starts or ends in `pending`. */
-function readLine(line: string, pending: Map<string, Pending>, found: FoundArtifact[]) {
-  if (!line.includes('"Artifact"') && (pending.size === 0 || !line.includes('"tool_result"'))) return
+function readLine(line: Buffer, pending: Map<string, Pending>, found: FoundArtifact[]) {
+  // Most lines hold neither mark: the check reads bytes, so such a line is never decoded or parsed.
+  if (!line.includes(callMark) && (pending.size === 0 || !line.includes(resultMark))) return
   let value: unknown
   try {
-    value = JSON.parse(line)
+    value = JSON.parse(line.toString('utf8'))
   } catch {
     return
   }
@@ -134,7 +145,7 @@ async function sessionFiles(projects: string): Promise<{ path: string; size: num
 
 export function createArtifactScanner(
   projects: string,
-  { maxMs = 1500, maxBytes = 32 * 1024 * 1024, now = Date.now }: Limits = {},
+  { maxMs = 1500, maxBytes = defaultMaxBytes, now = Date.now }: Limits = {},
 ): ArtifactScanner {
   const states = new Map<string, FileState>()
   // One scan at a time: two at once would read the same bytes from the same offset.
@@ -178,7 +189,7 @@ export function createArtifactScanner(
             const line = bytes.subarray(0, end)
             state.offset += end + 1
             if (state.skipLine) state.skipLine = false
-            else readLine(line.toString('utf8'), state.pending, found)
+            else readLine(line, state.pending, found)
             bytes = bytes.subarray(end + 1)
             end = bytes.indexOf(10)
           }

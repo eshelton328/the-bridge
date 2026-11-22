@@ -167,6 +167,14 @@ describe('the Claude artifact scanner', () => {
     expect(found.map((a) => a.link)).toEqual([link(1)])
   })
 
+  it('reads a file of more than 32 MiB in one scan with the default caps, as the time cap is the limit', async () => {
+    const { root, file } = projects()
+    const filler = `${JSON.stringify({ type: 'assistant', message: { content: [{ type: 'text', text: 'marker-5150 '.repeat(80) }] } })}\n`
+    writeFileSync(file, filler.repeat(Math.ceil((40 * 1024 * 1024) / filler.length)) + publish(1))
+    const scan = await createArtifactScanner(root).scan()
+    expect([scan.partial, scan.found.map((a) => a.link)]).toEqual([false, [link(1)]])
+  })
+
   it('gives each artifact once when two scans run at the same time', async () => {
     const { root, file } = projects()
     writeFileSync(file, publish(1) + publish(2))
