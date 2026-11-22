@@ -1,6 +1,7 @@
 // The live transcript (slice 3b): the merge by entry ID, the order of the
 // stream and the read, a reconnect that reads again, the earlier and cut
-// lines, the 404 of a server with no stream route yet, the quiet end of a
+// lines, the 404 of a server with no stream route yet, the quiet reconnect
+// after a drop within the grace (review R43), the quiet end of a
 // chat that left the list (a not-found error event), and what reaches
 // report(). The server is the contract-checked fake (lib/fakeTranscriptServer.ts).
 import type { TranscriptEntry } from '@bridge/contract'
@@ -148,24 +149,21 @@ describe('watchTranscript', () => {
     await expect.poll(ids).toEqual(['u1', 'a1'])
   })
 
-  it('shows the drop under the entries, connects again after the retry time and reads again', async () => {
+  it('connects again quietly after a drop within the grace (R43), and the read again brings the change meanwhile', async () => {
     const server = fakeTranscriptServer()
     server.set(chat, [user('u1', 'go')])
-    watch(server)
+    // The read again waits until the test has changed the transcript.
+    watch(server, 100)
     await expect.poll(ids).toEqual(['u1'])
     server.drop(chat)
-    await expect.poll(() => view()?.problem).toBe(transcriptText.dropped)
-    // The entries stay while it connects again.
-    expect(ids()).toEqual(['u1'])
     // A change while the stream was down comes with the read again.
     server.set(chat, [user('u1', 'go'), reply('a1', 'while down')])
     await expect.poll(() => server.reads.length).toBe(2)
     await expect.poll(ids).toEqual(['u1', 'a1'])
     expect(view()?.problem).toBeUndefined()
     expect(server.opens).toEqual([chat, chat])
-    expect(getReports().map((r) => r.error.message)).toEqual([
-      'A chat transcript stream missed: ended (chat mac-mini/c1)',
-    ])
+    // A server restart ends the stream with no error event: no line and no report while it connects again.
+    expect(getReports()).toEqual([])
   })
 
   it('shows a failed watch (an error event) as one outage: the line while it connects again, a read, one report', async () => {
@@ -218,13 +216,14 @@ describe('watchTranscript', () => {
     expect(getReports()).toEqual([])
   })
 
-  it('ends quietly on not-found while the read still runs, and takes away the line of an earlier drop', async () => {
+  it('ends quietly on not-found while the read still runs, and takes away the line of an earlier outage', async () => {
     const server = fakeTranscriptServer()
     server.set(chat, [user('u1', 'go')])
     // Each read waits 300 ms, so the chat leaves the list while the second connection's read runs.
     watch(server, 300)
     await expect.poll(ids).toEqual(['u1'])
-    server.drop(chat)
+    // A failed watch shows its line at once (a drop is quiet within the grace, R43).
+    server.fail(chat)
     await expect.poll(() => view()?.problem).toBe(transcriptText.dropped)
     await expect.poll(() => server.openStreams()).toEqual([chat])
     server.gone(chat)
@@ -232,9 +231,9 @@ describe('watchTranscript', () => {
     await settle(500)
     expect(server.opens).toEqual([chat, chat])
     expect(view()?.problem).toBeUndefined()
-    // The drop's report only: the end is not an outage.
+    // The failed watch's report only: the end is not an outage.
     expect(getReports().map((r) => r.error.message)).toEqual([
-      'A chat transcript stream missed: ended (chat mac-mini/c1)',
+      'A chat transcript stream missed: ended herdr-unavailable (chat mac-mini/c1)',
     ])
   })
 

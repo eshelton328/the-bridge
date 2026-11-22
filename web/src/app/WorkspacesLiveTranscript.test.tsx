@@ -388,7 +388,7 @@ describe("a live chat's transcript (slice 3b)", () => {
     expect(getReports()).toHaveLength(1)
   })
 
-  it('shows a dropped stream in the pane, not only in the status bar, and connects again', async () => {
+  it('connects again quietly after a dropped stream, and reads again (review R43)', async () => {
     const server = withPlan()
     await tapWorkspaces([390, 844])
     await tapChat('plan the slice')
@@ -396,16 +396,15 @@ describe("a live chat's transcript (slice 3b)", () => {
     await expect.element(page.getByText('Looking at the build now.')).toBeVisible()
     await expect.poll(() => server.openStreams()).toEqual([plan])
     server.drop(plan)
-    await expect.element(chat.getByText('Transcript updates lost — connecting again')).toBeVisible()
-    await expect.element(chat.getByRole('button', { name: 'Retry' })).toBeVisible()
-    // The entries stay, and the stream comes back after the server's retry time (100 ms in the fake).
-    await expect.element(page.getByText('Looking at the build now.')).toBeVisible()
+    server.set(plan, [user('u1', 'Fix the build'), tool('t1', false), reply('a1', 'Looking at the build now.')])
+    // The entries stay, and the stream comes back after the server's retry time (100 ms in the fake), well within the
+    // grace: no line, no report, and the read again shows the tool call that ended meanwhile.
     await expect.poll(() => server.reads.length).toBe(2)
-    await expect.element(chat.getByText('Transcript updates lost — connecting again')).not.toBeInTheDocument()
-    expect(getReports().map((r) => r.error.message)).toEqual([
-      'A chat transcript stream missed: ended (chat mac-mini/c1)',
-    ])
-    for (const r of getReports()) expect(JSON.stringify([r.error.message, r.error.stack])).not.toMatch(/build|pnpm/)
+    await expect.poll(() => server.openStreams()).toEqual([plan])
+    await expect.element(page.getByText('Looking at the build now.')).toBeVisible()
+    await expect.element(chat.getByText(outageLine)).not.toBeInTheDocument()
+    await expect.element(chat.getByRole('button', { name: 'Retry' })).not.toBeInTheDocument()
+    expect(getReports()).toEqual([])
   })
 
   // #313: a chat that leaves the list (after /clear, or when its pane closes) ends its stream with one `error` event of
@@ -565,17 +564,22 @@ describe("a live chat's transcript (slice 3b)", () => {
       await expect.poll(() => server.openStreams()).toContain(plan)
       await expect.poll(() => server.reads.length).toBe(reads + 1)
       expect(getReports()).toEqual([])
-      // The page is visible, and the connection it made after it showed drops: an outage.
+      // The page is visible, and the connection it made after it showed drops, and the server does not answer again
+      // within the grace (R43): an outage. The page's clock moves only when the test moves it (lib/holdTimers.ts).
+      server.answerStreams(() => new Response('Bad Gateway', { status: 502 }))
+      const release = holdTimers()
       server.drop(plan)
-      const chat = chatRegion('plan the slice')
-      await expect.element(chat.getByText('Transcript updates lost — connecting again')).toBeVisible()
-      await expect.poll(() => getReports().length).toBe(1)
+      for (let at = 0; at < 11_000; at += 250) await vi.advanceTimersByTimeAsync(250)
+      const shown = () => document.body.textContent.includes('Transcript updates lost — connecting again')
+      await renderedUntil(shown)
       expect(getReports().map((r) => r.error.message)).toEqual([
-        'A chat transcript stream missed: ended (chat mac-mini/c1)',
+        'A chat transcript stream missed: status 502 (chat mac-mini/c1)',
       ])
-      // It connects again after the retry time.
-      await expect.poll(() => server.reads.length).toBe(reads + 2)
-      await expect.element(chat.getByText('Transcript updates lost — connecting again')).not.toBeInTheDocument()
+      // It connects again after the retry time once the server answers.
+      server.answerStreams(undefined)
+      for (let at = 0; at < 1000; at += 250) await vi.advanceTimersByTimeAsync(250)
+      await renderedUntil(() => server.reads.length === reads + 2 && !shown())
+      release()
       expect(getReports()).toHaveLength(1)
     })
 
