@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, statSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { ArtifactId, ChatId } from '@bridge/contract'
@@ -56,5 +56,14 @@ describe('the artifacts store on disk', () => {
     writeFileSync(join(base, 'file'), '')
     const saved = await createDiskArtifactStore(join(base, 'file', 'artifacts')).save(library)
     expect(saved).toEqual({ ok: false, error: { reason: 'failed', code: 'ENOTDIR' } })
+  })
+
+  it('removes its temporary file when the rename fails', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'bridge-artifacts-'))
+    mkdirSync(join(root, 'library.json'))
+    writeFileSync(join(root, 'library.json', 'keep'), '')
+    const saved = await createDiskArtifactStore(root).save(library)
+    expect(saved.ok).toBe(false)
+    expect(readdirSync(root)).toEqual(['library.json'])
   })
 })

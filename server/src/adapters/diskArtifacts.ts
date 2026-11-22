@@ -4,7 +4,7 @@
 // so a save cannot write over it. A fault gives its errno code only; no
 // link or title goes into a log or an error.
 import { randomUUID } from 'node:crypto'
-import { chmod, mkdir, readFile, rename, writeFile } from 'node:fs/promises'
+import { chmod, mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { Artifact } from '@bridge/contract'
 import { err, ok } from '@bridge/shared'
@@ -45,6 +45,7 @@ export function createDiskArtifactStore(root: string): ArtifactStore {
       return ok(library)
     },
     async save(library) {
+      let temporary: string | undefined
       try {
         await mkdir(root, { recursive: true, mode: 0o700 })
         await chmod(root, 0o700)
@@ -52,11 +53,13 @@ export function createDiskArtifactStore(root: string): ArtifactStore {
           lastSeenAt: library.lastSeenAt,
           artifacts: library.artifacts.map(({ removed, ...artifact }) => ({ artifact, removed })),
         }
-        const temporary = `${path}.${randomUUID()}.tmp`
+        temporary = `${path}.${randomUUID()}.tmp`
         await writeFile(temporary, JSON.stringify(stored), { mode: 0o600 })
         await rename(temporary, path)
         return ok(undefined)
       } catch (thrown) {
+        // A failed write or rename must not leave its temporary file, or each retry adds one.
+        if (temporary !== undefined) await rm(temporary, { force: true }).catch(() => undefined)
         return err({ reason: 'failed', code: codeOf(thrown) })
       }
     },
