@@ -71,5 +71,14 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
   chat that published it; an owner link is any https link. Strict
   objects, no path. An add of a link the library has answers 200 with
   that entry, not an error (`artifacts.test.ts`).
+- The Inbox (R20, f-003, `inbox.ts`): an item is named by its
+  `InboxId` (16 hex characters of a sha256 the server makes), so no path
+  goes in a URL. A chat item names its chat and may take snooze, done
+  and dismiss; a brain item names none and takes no action here (the
+  server answers 409 `inbox-read-only`). `needsYou` marks what waits on
+  the owner, and `counts.needsYou` is the tab badge. A brain record's
+  text goes only in the detail's `body`; no prompt or transcript text
+  in an item (`inbox.test.ts`). `inbox.changed` on `/api/events`
+  says to read the list again.
 - A `ClientErrorReport` holds only its listed fields (a strict object),
   so a report carries no page text or app state (`clientErrors.test.ts`).

@@ -27,6 +27,15 @@ export type WorkspacesChangedEvent = z.infer<typeof WorkspacesChangedEvent>
 export const LayoutChangedEvent = eventOf('layout.changed', z.object({ workspace: WorkspaceId }))
 export type LayoutChangedEvent = z.infer<typeof LayoutChangedEvent>
 
+/** The Inbox changed (a chat's turn ended or a brain request changed): read `GET /api/inbox` again. */
+export const InboxChangedEvent = eventOf('inbox.changed', z.object({}))
+export type InboxChangedEvent = z.infer<typeof InboxChangedEvent>
+
 /** One event of the stream. Its `type` is also the SSE event name, and its `seq` the SSE id. */
-export const LiveEvent = z.discriminatedUnion('type', [ChatStatusEvent, LayoutChangedEvent, WorkspacesChangedEvent])
+export const LiveEvent = z.discriminatedUnion('type', [
+  ChatStatusEvent,
+  InboxChangedEvent,
+  LayoutChangedEvent,
+  WorkspacesChangedEvent,
+])
 export type LiveEvent = z.infer<typeof LiveEvent>

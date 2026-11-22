@@ -1,6 +1,7 @@
 // The package entry. Name each export; no `export *`.
 export {
   ArtifactId,
+  InboxId,
   LocalIdPart,
   ChatId,
   MachineId,
@@ -28,6 +29,19 @@ export {
   maxArtifactTitle,
 } from './artifacts.ts'
 export { ClientErrorReport, ClientErrorSource } from './clientErrors.ts'
+export {
+  InboxAction,
+  InboxActionRequest,
+  InboxDetail,
+  InboxDetailResponse,
+  InboxItem,
+  InboxKind,
+  InboxResponse,
+  InboxSource,
+  maxInboxBody,
+  maxInboxTitle,
+  SnoozeInboxRequest,
+} from './inbox.ts'
 export { ErrorBody, ErrorKind, errorStatus } from './errors.ts'
 export { EventEnvelope, EventSource, eventOf } from './events.ts'
 export {
@@ -89,7 +103,13 @@ export {
   PushUnsubscribeRequest,
 } from './push.ts'
 export { ChatSkill, ChatSkillsResponse, maxSkillDescription, maxSkills, SkillSource } from './skills.ts'
-export { ChatStatusEvent, LayoutChangedEvent, LiveEvent, WorkspacesChangedEvent } from './liveEvents.ts'
+export {
+  ChatStatusEvent,
+  InboxChangedEvent,
+  LayoutChangedEvent,
+  LiveEvent,
+  WorkspacesChangedEvent,
+} from './liveEvents.ts'
 export {
   AssistantEntry,
   ErrorEntry,

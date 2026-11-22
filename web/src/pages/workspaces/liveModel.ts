@@ -94,6 +94,7 @@ async function answerOf(res: Response): Promise<ModelAnswer> {
     case 'unsupported-media':
     case 'upload-conflict':
     case 'storage-full':
+    case 'inbox-read-only':
       return unexpected(error.kind, res.status)
   }
 }
