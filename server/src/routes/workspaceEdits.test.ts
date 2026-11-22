@@ -51,5 +51,9 @@ describe('the edit routes', () => {
       state: 'orderStale',
     })
     expect((await post('/api/workspaces/order', { workspaces: [ids[0], ids[0]] })).status).toBe(400)
+    // A list of 300 workspaces is over 4 KiB, and still reaches the order check.
+    const many = Array.from({ length: 300 }, (_, i) => `test-mac/w${String(i)}`)
+    const large = await post('/api/workspaces/order', { workspaces: many })
+    expect(ErrorBody.parse(await large.json()).error).toMatchObject({ state: 'orderStale' })
   })
 })

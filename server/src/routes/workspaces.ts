@@ -21,7 +21,10 @@ import type { Logger } from '../logger.ts'
 import type { AgentPort, AgentPortError } from '../services/agentPort.ts'
 import { listWorkspaces, orderWorkspaces, readLayout, renameWorkspace } from '../services/workspaces.ts'
 import { setSplitRatio } from '../services/layoutWrites.ts'
-import { jsonBody, jsonOnly, smallJson } from './jsonBody.ts'
+import { jsonBody, jsonLimit, jsonOnly, smallJson } from './jsonBody.ts'
+
+/** The most bytes in an order's body: a list of every workspace, so more than a small JSON object. */
+const maxOrderBytes = 65_536
 
 export function workspacesRoutes(agents: AgentPort, log: Logger) {
   const failed = (c: Context<AppEnv>, error: AgentPortError) => {
@@ -48,7 +51,7 @@ export function workspacesRoutes(agents: AgentPort, log: Logger) {
         return errorJson(c, 'not-found', { path: c.req.path, message: 'no workspace has this ID' })
       return c.json(WorkspaceLayout.parse(read.value), 200)
     })
-    .post('/order', smallJson, jsonOnly, jsonBody(WorkspaceOrderRequest), async (c) => {
+    .post('/order', jsonLimit(maxOrderBytes), jsonOnly, jsonBody(WorkspaceOrderRequest), async (c) => {
       const done = await orderWorkspaces(agents, c.req.valid('json').workspaces)
       if (!done.ok) return failed(c, done.error)
       if (done.value === 'done') return c.body(null, 204)
