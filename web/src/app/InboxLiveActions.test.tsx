@@ -125,6 +125,37 @@ describe('a live Inbox item', () => {
       expect(getReports()).toEqual([])
     })
 
+    it(`snoozes for the evening when the hour's time shows the same, on ${device.name}`, async () => {
+      // Loaded at 19:00, "In 1 hour" and "This evening" both show 20:00; picked at 19:30, the evening still ends at 20:00.
+      const at = (h: number, m: number) => {
+        const day = new Date()
+        day.setHours(h, m, 0, 0)
+        return day
+      }
+      vi.useFakeTimers({ toFake: ['Date'] })
+      try {
+        vi.setSystemTime(at(19, 0))
+        const server = withServer(undefined, { details })
+        await openInbox(device)
+        await openRow('Sample question from a chat')
+        await expect.element(page.getByText('sample chat one')).toBeVisible()
+        // The list the stream's open reads again is loaded at 19:00 too.
+        await expect.poll(() => server.streams()).toBe(1)
+        await quiet()
+        const from = server.requests.length
+        vi.setSystemTime(at(19, 30))
+        await snoozeMenuPick(device, 'This evening')
+        await expect.poll(() => server.calls('snooze')).toHaveLength(1)
+        // No list read between 19:30 and the snooze: the menu is still the one loaded at 19:00.
+        const sent = server.requests.slice(from).map((r) => r.call)
+        expect(sent.slice(0, sent.indexOf('snooze'))).not.toContain('list')
+        const until = String(Reflect.get(Object(server.calls('snooze')[0]?.body), 'until'))
+        expect(new Date(until)).toEqual(at(20, 0))
+      } finally {
+        vi.useRealTimers()
+      }
+    })
+
     it(`marks a chat item done and dismisses another through the routes, on ${device.name}`, async () => {
       const server = withServer(undefined, { details })
       await openInbox(device)

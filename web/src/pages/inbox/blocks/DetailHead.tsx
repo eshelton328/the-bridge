@@ -41,7 +41,8 @@ export type SnoozeControl = {
   menu?: InboxSnoozeMenu | undefined
   open: boolean
   onOpenChange?: ((open: boolean) => void) | undefined
-  onPick?: ((until: string | null) => void) | undefined
+  /** A snooze time and the menu choice it came from (`value`), or `null` for Mark done. */
+  onPick?: ((until: string | null, value?: string) => void) | undefined
   onDismiss?: (() => void) | undefined
 }
 
@@ -88,7 +89,7 @@ function SnoozeButton({ snooze, iconOnly }: { snooze: SnoozeControl; iconOnly: b
       onOpenChange={onOpenChange}
       onSelect={(value) => {
         const time = menu.times.find((t) => t.value === value)?.time
-        if (time !== undefined) onPick?.(time)
+        if (time !== undefined) onPick?.(time, value)
         else if (value === 'done') onPick?.(null)
       }}
       placement="bottom-end"

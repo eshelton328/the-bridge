@@ -498,7 +498,8 @@ export type InboxUi = z.infer<typeof InboxUi>
 /** Takes an item out of the list: snoozed until a time, or finished (marked done or dismissed). */
 export type InboxPutAway = (
   id: InboxItemId,
-  to: { until: string } | { result: InboxUi['finished'][number]['result'] },
+  // `value` is the Snooze menu's choice, when the time came from it: two choices can show the same time.
+  to: { until: string; value?: string | undefined } | { result: InboxUi['finished'][number]['result'] },
 ) => void
 
 /** The schema of one Inbox state, for the state checks. */

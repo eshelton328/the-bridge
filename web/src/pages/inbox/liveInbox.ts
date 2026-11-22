@@ -220,7 +220,8 @@ export async function markItem(
   const item = api.api.inbox[':item']
   let call: (signal: AbortSignal) => Promise<Answer>
   if ('until' in to) {
-    const value = menu.times.find((t) => t.time === to.until)?.value
+    // The menu's choice, else the choice that shows this time.
+    const value = to.value ?? menu.times.find((t) => t.time === to.until)?.value
     const at = value === undefined ? undefined : snoozeAt(value, now)
     if (at === undefined) return err(`${markLead.snooze} — pick a time from the menu`)
     call = (signal) => item.snooze.$post({ ...param, json: { until: at.toISOString() } }, { init: { signal } })

@@ -257,8 +257,8 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
           onOpenChange: (snoozeOpen) => {
             onUiChange?.({ snoozeOpen })
           },
-          onPick: (until) => {
-            putAway(rowOpened.id, until === null ? { result: 'done' } : { until })
+          onPick: (until, value) => {
+            putAway(rowOpened.id, until === null ? { result: 'done' } : { until, value })
           },
           onDismiss: () => {
             putAway(rowOpened.id, { result: 'dismissed' })

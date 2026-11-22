@@ -438,8 +438,8 @@ export function InboxListPane({
         onOpenChange={(open) => {
           if (!open) onUiChange?.({ actionsFor: null })
         }}
-        onPick={(until) => {
-          onPutAway?.(acted.id, until === null ? { result: 'done' } : { until })
+        onPick={(until, value) => {
+          onPutAway?.(acted.id, until === null ? { result: 'done' } : { until, value })
         }}
         onDismiss={() => {
           onPutAway?.(acted.id, { result: 'dismissed' })
