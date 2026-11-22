@@ -151,7 +151,8 @@ function focusThroughProxy(win: Window, field: Field, waitMs: number): Promise<v
   doc.body.append(proxy)
   proxy.setSelectionRange(proxy.value.length, proxy.value.length)
   const openHeight = vv?.height ?? win.innerHeight
-  // The composer expands now, as on its own focus, so the hand-off below changes no layout.
+  // The composer learns that the proxy holds its focus: it expands as the shell's dock starts to rise, so the hand-off
+  // below changes no layout (R37, R39).
   tell(field, true)
   proxy.focus({ preventScroll: true })
   return new Promise((done) => {
@@ -202,8 +203,16 @@ function focusThroughProxy(win: Window, field: Field, waitMs: number): Promise<v
       const end = Number(field.closest<HTMLElement>('.app-shell__root')?.dataset.keyboardEnd)
       return !Number.isFinite(end) || win.performance.now() >= end
     }
+    // The dock's last frame (its move's end: the layout takes the keyboard's inset as the animations end, library
+    // beta.102) is drawn in the frame where it has stopped; the move waits one frame more, so iOS's frame gap at the
+    // focus move falls after it, on a still page (screen review R39: the hand-off came 263 to 303 ms after the report,
+    // before the dock's last frame, which then came 38 to 40 ms late).
     const whenDocked = (deadline: number) => {
-      if ((docked() && stopped()) || win.performance.now() >= deadline) move()
+      if (docked() && stopped())
+        frame = win.requestAnimationFrame(() => {
+          move()
+        })
+      else if (win.performance.now() >= deadline) move()
       else
         frame = win.requestAnimationFrame(() => {
           whenDocked(deadline)

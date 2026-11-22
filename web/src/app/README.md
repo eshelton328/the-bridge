@@ -149,11 +149,14 @@ has no VirtualKeyboard API (iOS Safari and the installed app).
   press (over 450 ms), a mouse, a pen and a touch that moves keep their
   default.
 - At the tap the proxy sends `bridge-keyboard-proxy` (detail `true`) on the
-  field, and the Workspaces composer expands as on its own focus (R31).
+  field. The Workspaces composer expands as AppShell's dock starts to rise
+  (the library's `appShellDockEvent`), so the growth moves with the
+  keyboard (R31, R39).
 - When the keyboard is up, the composer is above it and AppShell's dock
   has stopped (its root's `data-keyboard-end`), the focus and any typed
-  text move to the composer. iOS draws no frame for 40 to 56 ms after that
-  move, so it waits for a still page. An IME composition holds the move
+  text move to the composer one frame later. iOS draws no frame for 40 to
+  56 ms after that move, so it waits for a still page, after the dock's
+  last frame (R39). An IME composition holds the move
   until it ends.
 - If the proxy loses the focus to something else first, its text still
   goes to the composer and it sends the event with detail `false`.

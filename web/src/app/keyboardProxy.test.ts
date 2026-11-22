@@ -261,7 +261,8 @@ describe('keyboard proxy', () => {
     onTestFinished(() => wrapper?.removeEventListener(KEYBOARD_PROXY_EVENT, listener))
     run()
     tap(field)
-    // Synchronous, before the proxy's focus: the composer expands at the tap (R31), not at the move (R37).
+    // Synchronous, before the proxy's focus: the composer knows from the tap on, and expands as the shell's dock rises
+    // (R31, R39), not at the move (R37).
     expect(told).toEqual([true])
     await expect.poll(() => document.activeElement).toBe(field)
     expect(told).toEqual([true])
@@ -316,6 +317,51 @@ describe('keyboard proxy', () => {
     shell.dataset.keyboardEnd = String(performance.now())
     await expect.poll(() => document.activeElement).toBe(field)
     expect(proxyOf()).toBeNull()
+  })
+
+  it("moves the focus a frame after the one where the shell's dock stops, never in it (R39)", async () => {
+    const { field } = mountComposer()
+    const shell = document.createElement('div')
+    shell.className = 'app-shell__root'
+    const footer = field.closest('.scroll-frame__footer')
+    if (footer === null || window.visualViewport === null) throw new Error('no footer or visual viewport')
+    footer.before(shell)
+    shell.append(footer)
+    const vv = window.visualViewport
+    const full = vv.height
+    let height = full
+    Object.defineProperty(vv, 'height', { configurable: true, get: () => height })
+    let frame = 0
+    let loop = 0
+    onTestFinished(() => {
+      cancelAnimationFrame(loop)
+      Reflect.deleteProperty(vv, 'height')
+      document.body.append(footer)
+      shell.remove()
+    })
+    shell.dataset.keyboardEnd = String(performance.now() + 5000)
+    run(5000)
+    tap(field)
+    // The keyboard's report: the proxy waits for the dock in each frame from here.
+    height = full - 300
+    vv.dispatchEvent(new Event('resize'))
+    // A frame counter that runs after the proxy's check in each frame. In its third frame the dock's move ends: the
+    // shell draws the dock's last frame there (it lays the page out as its animations end), after the proxy looked.
+    const stopFrame = 3
+    let focusFrame = 0
+    field.addEventListener('focus', () => {
+      focusFrame = frame
+    })
+    const count = () => {
+      frame += 1
+      if (frame === stopFrame) shell.dataset.keyboardEnd = String(performance.now() - 1)
+      loop = requestAnimationFrame(count)
+    }
+    loop = requestAnimationFrame(count)
+    await expect.poll(() => document.activeElement).toBe(field)
+    // The proxy sees the stop in the next frame and moves the focus in the one after: not in the frame right after the
+    // dock's last, where iOS's frame gap at the focus move would hold that frame back.
+    expect(focusFrame).toBeGreaterThan(stopFrame)
   })
 
   it('applies only on a touch screen with no VirtualKeyboard API (iOS)', () => {
