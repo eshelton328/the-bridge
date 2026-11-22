@@ -712,6 +712,20 @@ describe('herdr agents: input to a chat', () => {
       })
       const closes = sent('workspace.close').length
       expect(await coord.closeWorkspace(w17, 2)).toEqual({ ok: true, value: 'holdsServer' })
+      // With no herdr name, the pane's terminal title (Claude's session name) or its label still guards it.
+      const unnamed = results['agent.list'].agents.map((a) => (a.pane_id === 'w17:p1' ? { ...a, name: null } : a))
+      const panes = results['pane.list'].panes
+      for (const pane of [
+        { ...panes[0], terminal_title_stripped: 'bridge-coord' },
+        { ...panes[0], label: 'bridge-coord' },
+      ]) {
+        socket.set('agent.list', { type: 'agent_list', agents: unnamed })
+        socket.set('pane.list', { type: 'pane_list', panes: [pane, ...panes.slice(1)] })
+        const closed = await coord.closeWorkspace(w17, 2)
+        socket.set('agent.list', undefined)
+        socket.set('pane.list', undefined)
+        expect(closed).toEqual({ ok: true, value: 'holdsServer' })
+      }
       expect(sent('workspace.close')).toHaveLength(closes)
     })
 
