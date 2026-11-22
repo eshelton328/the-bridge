@@ -397,8 +397,9 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
     let loaded = false
     // Set by `take` while the stream runs: an event the page cannot read, the kind of the server's `error` event, and
     // whether that kind says the chat left the list.
-    const seen: { unreadable: boolean; serverKind: string | undefined; gone: boolean } = {
+    const seen: { unreadable: boolean; errored: boolean; serverKind: string | undefined; gone: boolean } = {
       unreadable: false,
+      errored: false,
       serverKind: undefined,
       gone: false,
     }
@@ -407,6 +408,8 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
       if (frame.retry !== undefined) retryMs = frame.retry
       if (frame.event === 'error') {
         const body = ErrorBody.safeParse(readJson(frame.data))
+        // Any `error` event is the server's answer, a body the page cannot read too: never the quiet end of a restart.
+        seen.errored = true
         seen.serverKind = body.success ? body.data.error.kind : undefined
         // The chat left the list: end this connection, and the read that may still run, with nothing more.
         if (seen.serverKind === 'not-found') {
@@ -465,7 +468,7 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
     if (!read) return 'wait'
     // An end with no `error` event, or a drop, as iOS makes of a page in the background, or a server restart.
     if (seen.serverKind === undefined && quietMiss(mark)) return 'resume'
-    if (seen.serverKind === undefined && graced(true)) return 'again'
+    if (!seen.errored && graced(true)) return 'again'
     fail(transcriptText.dropped, { part: 'stream', kind: 'ended', errorKind: seen.serverKind })
     return 'again'
   }

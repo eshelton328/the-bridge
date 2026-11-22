@@ -237,6 +237,36 @@ describe('watchTranscript', () => {
     ])
   })
 
+  it('shows an error event whose body it cannot read at once: the line and one report, no quiet grace (R43)', async () => {
+    const server = fakeTranscriptServer()
+    server.set(chat, [user('u1', 'go')])
+    let opens = 0
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+        const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
+        const path = new URL(url, window.location.origin).pathname
+        opens += path.endsWith('/events') ? 1 : 0
+        // The second stream sends an `error` event that is not an ErrorBody, then ends.
+        if (opens === 2 && path.endsWith('/events'))
+          return Promise.resolve(
+            new Response('event: open\nretry: 50\ndata: {}\n\nevent: error\ndata: {not json\n\n', {
+              headers: { 'content-type': 'text/event-stream' },
+            }),
+          )
+        const answer = server.handle(path, init)
+        return answer === undefined ? Promise.reject(new TypeError(`no stub for ${url}`)) : Promise.resolve(answer)
+      }),
+    )
+    stops.push(watchTranscript(chat, { retryMs: 50 }))
+    await expect.poll(ids).toEqual(['u1'])
+    server.drop(chat)
+    await expect.poll(() => view()?.problem).toBe(transcriptText.dropped)
+    expect(getReports().map((r) => r.error.message)).toEqual([
+      'A chat transcript stream missed: ended (chat mac-mini/c1)',
+    ])
+  })
+
   it('keeps the outage for an error event of another kind: the line, a read again and one report', async () => {
     const server = fakeTranscriptServer()
     server.set(chat, [user('u1', 'go')])
