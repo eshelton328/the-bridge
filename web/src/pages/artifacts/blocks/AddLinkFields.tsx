@@ -39,6 +39,16 @@ const linkDialog = { icon: <LinkIcon />, valueStyle: 'mono' } satisfies Partial<
 
 export type AddLinkSource = AddLinkForm['source']['options'][number]['value']
 
+/** The typed link and title, where they go, and the line of a miss under the link (the live library). */
+export type AddLinkEntry = {
+  link: string
+  title: string
+  onLinkChange?: ((link: string) => void) | undefined
+  onTitleChange?: ((title: string) => void) | undefined
+  /** Why the last Add missed, such as "Not added — the server answered 500"; the link field shows it. */
+  error?: string | undefined
+}
+
 export type AddLinkFieldsProps = {
   form: AddLinkForm
   /** `dialog` for D5, `sheet` for M6. */
@@ -51,6 +61,8 @@ export type AddLinkFieldsProps = {
   onProjectChange?: ((project: string) => void) | undefined
   /** The link field's box; the dialog or sheet focuses its input when it opens. */
   linkRef: RefObject<HTMLDivElement | null>
+  /** The typed link and title; without it the fields start from the form's values and keep what is typed. */
+  entry?: AddLinkEntry | undefined
 }
 
 export function AddLinkFields({
@@ -61,6 +73,7 @@ export function AddLinkFields({
   project,
   onProjectChange,
   linkRef,
+  entry,
 }: AddLinkFieldsProps) {
   // A focus trap selects the text of the field it focuses first. Figma draws the link focused with the caret after it
   // (D5 403:7552, M6 408:717), so the first focus puts the caret at the end instead.
@@ -85,7 +98,9 @@ export function AddLinkFields({
           {...field[layout]}
           {...(dialog ? linkDialog : {})}
           label={form.link.label}
-          defaultValue={form.link.value}
+          {...(entry === undefined
+            ? { defaultValue: form.link.value }
+            : { value: entry.link, onValueChange: entry.onLinkChange, error: entry.error })}
           helperText={form.link.hint}
         />
       </div>
@@ -117,7 +132,9 @@ export function AddLinkFields({
         <TextField
           {...field[layout]}
           label={form.name.label}
-          defaultValue={form.name.value}
+          {...(entry === undefined
+            ? { defaultValue: form.name.value }
+            : { value: entry.title, onValueChange: entry.onTitleChange })}
           helperText={form.name.hint}
         />
       </div>

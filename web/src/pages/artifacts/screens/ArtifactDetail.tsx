@@ -47,6 +47,8 @@ export type ArtifactDetailProps = {
   madeInLayer?: string | undefined
   /** The menu the project chip opens; without it the chip is text. */
   projectMenu?: ProjectMenu | undefined
+  /** Remove was pressed (the live library); without it Remove does nothing. */
+  onRemove?: (() => void) | undefined
 }
 
 export function ArtifactDetail({
@@ -58,6 +60,7 @@ export function ArtifactDetail({
   side,
   madeInLayer,
   projectMenu,
+  onRemove,
 }: ArtifactDetailProps) {
   const parts = (
     <>
@@ -68,6 +71,7 @@ export function ArtifactDetail({
         onDiscuss={onDiscuss}
         onCopyLink={onCopyLink}
         copyLinkStatus={copyLinkStatus}
+        onRemove={onRemove}
       />
       <ArtifactTitleBlock artifact={artifact} projectMenu={projectMenu} />
       {/* d-084: a preview that fails to render shows its fallback; the bar and the title stay. */}

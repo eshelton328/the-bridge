@@ -7,7 +7,7 @@
 import { Button, Dialog, DialogClose, PlusIcon } from '@eshelton328/component-library-1701'
 import { useRef } from 'react'
 import type { AddLinkForm } from '../types.ts'
-import { AddLinkFields, type AddLinkSource } from './AddLinkFields.tsx'
+import { type AddLinkEntry, AddLinkFields, type AddLinkSource } from './AddLinkFields.tsx'
 
 export type AddLinkDialogProps = {
   form: AddLinkForm
@@ -21,6 +21,8 @@ export type AddLinkDialogProps = {
   onProjectChange?: ((project: string) => void) | undefined
   /** Add artifact was pressed. */
   onSubmit?: (() => void) | undefined
+  /** The typed link and title (the live library); without it the fields keep what is typed. */
+  entry?: AddLinkEntry | undefined
 }
 
 export function AddLinkDialog({
@@ -32,6 +34,7 @@ export function AddLinkDialog({
   project,
   onProjectChange,
   onSubmit,
+  entry,
 }: AddLinkDialogProps) {
   const linkRef = useRef<HTMLDivElement>(null)
   return (
@@ -66,6 +69,7 @@ export function AddLinkDialog({
         project={project}
         onProjectChange={onProjectChange}
         linkRef={linkRef}
+        entry={entry}
       />
     </Dialog>
   )

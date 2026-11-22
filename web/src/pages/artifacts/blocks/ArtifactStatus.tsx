@@ -22,7 +22,9 @@ export function ArtifactStatus({ badge, found: text }: ArtifactStatusProps) {
           <Badge label={badge} icon={<SparkIcon size="12" />} tone="working" size="sm" />
         </span>
       )}
-      <p className={found}>{text}</p>
+      <p className={found} role="status">
+        {text}
+      </p>
     </Inline>
   )
 }

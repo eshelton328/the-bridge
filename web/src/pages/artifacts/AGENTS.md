@@ -60,8 +60,26 @@ the Artifacts page; their saved copies are in `references/artifacts/`.
     `ArtifactsMissError` with the step, kind and status. A read with no
     answer around a trip to the background is quiet and goes again once
     the page shows (`lib/pageResume.ts`).
-  - Tests: `liveLibrary.test.ts`, `app/ArtifactsLive.test.tsx` (the
-    owner's path, with the fake `lib/fakeArtifactsServer.ts`). An
+  - The writes (`useArtifactWrites.ts`): Add a link posts
+    `POST /api/artifacts` with what the form holds (`screens/addLinkView.ts`:
+    `https://` before a link typed without it, the source read from the
+    link unless picked, null for Not in a project). A 201 closes the form
+    and the list shows the link as found; a 200 (a link the library has)
+    closes it and opens that artifact. A project pick (the chip's menu, the
+    phone's sheet) sends `PATCH /api/artifacts/:artifact`; Remove (the
+    bar's, the tablet's, the sheet's) sends `DELETE`, and a 404 is gone
+    already. One write at a time; each that goes through reads the list
+    again. A miss keeps the page as it was and shows one line by status:
+    under Add a link's link field ("Not added — the server answered 500";
+    a 400 "Not added — check the link and the title"), else in the open
+    artifact's status line and, on the phone, in File in a project's sheet,
+    which hides the page under it. report() gets only an answered miss
+    other than a 400 add or a 404, with its step, kind and status. No
+    Figma frame draws these lines; they use the status line's own text
+    and the library's `TextField error`.
+  - Tests: `liveLibrary.test.ts`, `addLinkView.test.ts`,
+    `app/ArtifactsLive.test.tsx` and `app/ArtifactsLiveWrites.test.tsx`
+    (the owner's path, with the fake `lib/fakeArtifactsServer.ts`). An
     artifact made inside a REPL script writes no Artifact record, so the
     server never finds it; the owner adds it with Add a link.
 - The route tests are in `app/`: `ArtifactsRoute.test.tsx`,

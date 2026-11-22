@@ -17,6 +17,7 @@ import { LibraryHeader } from '../blocks/LibraryHeader.tsx'
 import { LibraryTools } from '../blocks/LibraryTools.tsx'
 import { type ArtifactsData, type ArtifactsUi, ArtifactChip } from '../types.ts'
 import { LibraryRows } from './LibraryRows.tsx'
+import { addLinkEntry, shownSource } from './addLinkView.ts'
 import { libraryView } from './libraryView.ts'
 
 // D1 402:15370: the library starts 32 in from the rail and 24 down; its rows are 12 apart.
@@ -38,9 +39,22 @@ export type ArtifactsLibraryProps = {
   onUiChange?: ((change: Partial<ArtifactsUi>) => void) | undefined
   onOpenArtifact?: ((id: string) => void) | undefined
   onAddLink?: (() => void) | undefined
+  /** Add artifact sends the link (the live library); without it Add artifact only closes the dialog. */
+  onSubmitAddLink?: (() => void) | undefined
+  /** The last Add's miss, under the link field. */
+  addLinkError?: string | undefined
 }
 
-export function ArtifactsLibrary({ data, ui, layout, onUiChange, onOpenArtifact, onAddLink }: ArtifactsLibraryProps) {
+export function ArtifactsLibrary({
+  data,
+  ui,
+  layout,
+  onUiChange,
+  onOpenArtifact,
+  onAddLink,
+  onSubmitAddLink,
+  addLinkError,
+}: ArtifactsLibraryProps) {
   const groups = libraryView(data, ui)
   const sort = data.sorts.find((s) => s.value === ui.sort) ?? data.sorts[0]
   const shown = groups.reduce((n, group) => n + group.cards.length, 0)
@@ -64,7 +78,10 @@ export function ArtifactsLibrary({ data, ui, layout, onUiChange, onOpenArtifact,
         <AddLinkDialog
           form={data.addLinkForm}
           open={ui.addLinkOpen ?? false}
-          source={ui.addLinkSource ?? 'claude'}
+          source={shownSource(data.addLinkForm, ui)}
+          entry={
+            onSubmitAddLink === undefined ? undefined : addLinkEntry(data.addLinkForm, ui, onUiChange, addLinkError)
+          }
           onOpenChange={(addLinkOpen) => {
             onUiChange?.({ addLinkOpen })
           }}
@@ -75,9 +92,12 @@ export function ArtifactsLibrary({ data, ui, layout, onUiChange, onOpenArtifact,
           onProjectChange={(addLinkProject) => {
             onUiChange?.({ addLinkProject })
           }}
-          onSubmit={() => {
-            onUiChange?.({ addLinkOpen: false })
-          }}
+          onSubmit={
+            onSubmitAddLink ??
+            (() => {
+              onUiChange?.({ addLinkOpen: false })
+            })
+          }
         />
       )}
       <div className={chips} data-figma="filter · chips">

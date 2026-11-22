@@ -50,6 +50,8 @@ export type ArtifactPageProps = {
   copyLinkStatus?: CopyLinkStatus | undefined
   /** The phone's ⋯ button was pressed: File in a project opens (M7). */
   onMore?: (() => void) | undefined
+  /** The tablet's Remove was pressed (the live library); without it Remove does nothing. */
+  onRemove?: (() => void) | undefined
   /** The menu the tablet's project chip opens; on the phone the chip opens File in a project, as the ⋯ button. */
   projectMenu?: ProjectMenu | undefined
 }
@@ -65,6 +67,7 @@ export function ArtifactPage({
   onCopyLink,
   copyLinkStatus,
   onMore,
+  onRemove,
   projectMenu,
 }: ArtifactPageProps) {
   const phone = layout === 'phone'
@@ -80,6 +83,7 @@ export function ArtifactPage({
           onCopyLink={onCopyLink}
           copyLinkStatus={copyLinkStatus}
           onMore={onMore}
+          onRemove={onRemove}
         />
       }
     >

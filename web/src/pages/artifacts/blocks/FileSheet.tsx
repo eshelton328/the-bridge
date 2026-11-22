@@ -49,6 +49,8 @@ export type FileSheetProps = {
   onProjectChange?: ((project: string) => void) | undefined
   /** Remove from the library was pressed. */
   onRemove?: (() => void) | undefined
+  /** The line of the last pick or Remove that missed (the live library), under the note; the sheet hides the page's. */
+  notice?: string | undefined
 }
 
 export function FileSheet({
@@ -59,6 +61,7 @@ export function FileSheet({
   onOpenChange,
   onProjectChange,
   onRemove,
+  notice,
 }: FileSheetProps) {
   // The sheet opens with the focus on the sheet itself: Figma draws no focus ring on a choice (M7 407:1079).
   const titleRef = useRef<HTMLSpanElement>(null)
@@ -118,6 +121,11 @@ export function FileSheet({
         <span className={muted} data-figma="remove note">
           {menu.note}
         </span>
+        {notice === undefined ? null : (
+          <span className={muted} role="status">
+            {notice}
+          </span>
+        )}
       </Stack>
     </BottomSheet>
   )

@@ -111,8 +111,9 @@ export function fakeArtifactsServer({
   const add = (init: RequestInit | undefined): Response => {
     const parsed = AddArtifactRequest.safeParse(bodyOf(init))
     if (new Headers(init?.headers).get('content-type') !== 'application/json' || !parsed.success) return invalid()
+    // The library's entry for the link, whatever ID a test gave it; a new link's ID comes from the link.
+    const known = [...library.values()].find((s) => s.artifact.link === parsed.data.link)
     const id = fakeArtifactId(parsed.data.link)
-    const known = library.get(id)
     if (known !== undefined) {
       known.removed = false
       return json({ artifact: known.artifact }, 200)

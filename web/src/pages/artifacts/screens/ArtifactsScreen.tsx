@@ -15,7 +15,9 @@
 // own with no tab bar, as on a tablet (M9); the phone's More opens the shared
 // More drawer over the tab bar (M8). A card or row of the library opens its
 // artifact the same way (`ui.openId`, openView.ts). A state file's data and ui are its props; the
-// callbacks are optional, so a story or a canvas board needs none.
+// callbacks are optional, so a story or a canvas board needs none. On the live library the entry passes
+// `onAddLink`, `onFile` and `onRemove`, which send the owner's Add, project pick and Remove to the server, and
+// `notice`, the line of the last one that missed.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
 import { reportShellDiagnostic } from '../../../errors/shellDiagnostic.ts'
 import { AppRail } from '../../../blocks/AppRail.tsx'
@@ -23,7 +25,7 @@ import { AppTabBar } from '../../../blocks/AppTabBar.tsx'
 import { MoreDrawer } from '../../../blocks/MoreDrawer.tsx'
 import { ViewportFrame } from '../../../blocks/ViewportFrame.tsx'
 import type { Viewport } from '../../../lib/screenState.ts'
-import type { ArtifactsData, ArtifactsUi, CopiedLink } from '../types.ts'
+import type { AddLinkInput, ArtifactsData, ArtifactsNotice, ArtifactsUi, CopiedLink } from '../types.ts'
 import type { ProposalAct } from '../blocks/ArtifactProposal.tsx'
 import { DiscussionPanel } from '../blocks/DiscussionPanel.tsx'
 import { FileSheet } from '../blocks/FileSheet.tsx'
@@ -31,6 +33,7 @@ import { ArtifactDetail } from './ArtifactDetail.tsx'
 import { ArtifactDiscussionPage } from './ArtifactDiscussionPage.tsx'
 import { ArtifactPage } from './ArtifactPage.tsx'
 import { ArtifactsLibrary } from './ArtifactsLibrary.tsx'
+import { addLinkInput } from './addLinkView.ts'
 import { appliedView, discussionEntries, proposalEffect } from './discussionView.ts'
 import { LibraryList } from './LibraryList.tsx'
 import { LibraryPhone } from './LibraryPhone.tsx'
@@ -51,6 +54,14 @@ export type ArtifactsScreenProps = {
   onCopyLink?: ((link: string) => void) | undefined
   /** The last Copy link's result, which the open artifact's Copy link shows while its link is the one copied. */
   copiedLink?: CopiedLink | undefined
+  /** Add a link's Add was pressed, with what it sends (the live library); without it Add only closes the form. */
+  onAddLink?: ((input: AddLinkInput) => void) | undefined
+  /** A project was picked for the artifact `id`, or `noProject` (the live library). */
+  onFile?: ((id: string, project: string) => void) | undefined
+  /** Remove was pressed on the artifact `id` (the live library); without it Remove does nothing. */
+  onRemove?: ((id: string) => void) | undefined
+  /** The line of the last write that missed: under Add a link's link field, or in the artifact's status line. */
+  notice?: ArtifactsNotice | undefined
 }
 
 export function ArtifactsScreen({
@@ -62,6 +73,10 @@ export function ArtifactsScreen({
   onUiChange,
   onCopyLink,
   copiedLink,
+  onAddLink,
+  onFile,
+  onRemove,
+  notice,
 }: ArtifactsScreenProps) {
   return (
     <ViewportFrame initial={viewport}>
@@ -71,7 +86,12 @@ export function ArtifactsScreen({
         // A card or row opened from the library (`ui.openId`) opens the same way (openView.ts).
         const open = openArtifact(data, ui, layout)
         // D9: after Apply the artifact shows Updated and the proposal its applied form.
-        const view = open === undefined ? undefined : appliedView(open.artifact, open.discussion, ui)
+        const applied = open === undefined ? undefined : appliedView(open.artifact, open.discussion, ui)
+        // The live library's write that missed for this artifact says so in its status line.
+        const view =
+          applied !== undefined && notice?.at === 'artifact' && notice.id === applied.artifact.id
+            ? { ...applied, artifact: { ...applied.artifact, found: notice.text } }
+            : applied
         // D2, T2: the project chip opens the project menu; picking a project files the artifact in it, as M7's sheet.
         const projectMenu =
           view === undefined || data.fileMenu === undefined
@@ -81,6 +101,7 @@ export function ArtifactsScreen({
                 value: filedProject(ui, data.open?.id, view.artifact),
                 onValueChange: (fileProject: string) => {
                   onUiChange?.({ fileProject, fileFor: view.artifact.id })
+                  onFile?.(view.artifact.id, fileProject)
                 },
               }
         // D2, T2, M2: Copy link copies the address the artifact's link opens; every artifact in the library has one.
@@ -125,6 +146,21 @@ export function ArtifactsScreen({
                   onUiChange?.({ discussSent: [...sent, text], discussDraft: '' })
                 },
               }
+        const remove =
+          view === undefined || onRemove === undefined
+            ? undefined
+            : () => {
+                onRemove(view.artifact.id)
+              }
+        // Add a link's Add sends what the form holds (the live library); the miss's line shows under the link.
+        const addLinkForm = layout === 'phone' ? (data.addLinkSheet ?? data.addLinkForm) : data.addLinkForm
+        const submitAddLink =
+          onAddLink === undefined || addLinkForm === undefined
+            ? undefined
+            : () => {
+                onAddLink(addLinkInput(addLinkForm, ui))
+              }
+        const addLinkError = notice?.at === 'addLink' ? notice.text : undefined
         const closeDiscussion = () => {
           onUiChange?.({ discussOpen: false })
         }
@@ -170,7 +206,14 @@ export function ArtifactsScreen({
               detail={
                 (open === undefined || view === undefined) && layout === 'phone' ? (
                   // M1: on a phone the library is a list of rows with small previews.
-                  <LibraryPhone data={data} ui={ui} onUiChange={onUiChange} onOpenArtifact={openCard} />
+                  <LibraryPhone
+                    data={data}
+                    ui={ui}
+                    onUiChange={onUiChange}
+                    onOpenArtifact={openCard}
+                    onSubmitAddLink={submitAddLink}
+                    addLinkError={addLinkError}
+                  />
                 ) : open === undefined || view === undefined ? (
                   <ArtifactsLibrary
                     data={data}
@@ -178,6 +221,8 @@ export function ArtifactsScreen({
                     layout={layout}
                     onUiChange={onUiChange}
                     onOpenArtifact={openCard}
+                    onSubmitAddLink={submitAddLink}
+                    addLinkError={addLinkError}
                   />
                 ) : layout !== 'desktop' && discussing && thread !== undefined ? (
                   <ArtifactDiscussionPage
@@ -210,6 +255,7 @@ export function ArtifactsScreen({
                     onMore={() => {
                       onUiChange?.({ fileOpen: true })
                     }}
+                    onRemove={remove}
                   />
                 ) : (
                   <ArtifactDetail
@@ -226,6 +272,7 @@ export function ArtifactsScreen({
                     copyLinkStatus={copyLinkStatus}
                     madeInLayer={discussion?.layers.madeIn}
                     projectMenu={projectMenu}
+                    onRemove={remove}
                     side={
                       discussing && thread !== undefined ? (
                         <DiscussionPanel {...thread} artifactId={view.artifact.id} onClose={closeDiscussion} />
@@ -236,7 +283,7 @@ export function ArtifactsScreen({
               }
             />
             {/* M7: File in a project, a sheet the phone's ⋯ button opens over the artifact. Picking a project checks
-                it; Done, the scrim and Escape close it. Remove does nothing yet, as the desktop's Remove (D2). A wider
+                it; Done, the scrim and Escape close it. Remove (and the desktop's, D2) goes to `onRemove`. A wider
                 screen opens the project menu from the project chip instead, but shows this sheet when a state
                 sets `fileOpen`, as a story at the width Storybook gives it does. */}
             {view === undefined || data.fileMenu === undefined ? undefined : (
@@ -250,7 +297,16 @@ export function ArtifactsScreen({
                 }}
                 onProjectChange={(fileProject) => {
                   onUiChange?.({ fileProject, fileFor: view.artifact.id })
+                  onFile?.(view.artifact.id, fileProject)
                 }}
+                notice={notice?.at === 'artifact' && notice.id === view.artifact.id ? notice.text : undefined}
+                onRemove={
+                  onRemove === undefined
+                    ? undefined
+                    : () => {
+                        onRemove(view.artifact.id)
+                      }
+                }
               />
             )}
             {/* M8: the shared More drawer, Artifacts selected with its count. Only the phone's More opens it; a state

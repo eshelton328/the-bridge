@@ -22,7 +22,14 @@
 // again is iOS closing it in the background (lib/pageResume.ts): no line and
 // no report, and the list is read again once the page shows; one such miss
 // for each trip. A reply the contract refuses throws, for RouteError.
-import { ArtifactsResponse, ErrorBody, type ErrorKind } from '@bridge/contract'
+//
+// The writes (`addArtifact`, `fileArtifact`, `removeArtifact`) send Add a link,
+// a project pick and Remove; each answers either what happened or the miss's
+// line ("Not added — the server answered 500"). An add answers 201 for a new
+// link and 200 with the library's own entry for a link it has. A 400 add and a
+// 404 file are the owner's to fix and are not reported; a 404 remove found the
+// artifact gone already, which is what Remove wanted.
+import { AddArtifactResponse, ArtifactsResponse, ErrorBody, type ErrorKind } from '@bridge/contract'
 import { err, ok, type Result } from '@bridge/shared'
 import { report } from '../../errors/reporter.ts'
 import { api } from '../../lib/api.ts'
@@ -37,7 +44,7 @@ import {
 } from '../../lib/pageResume.ts'
 import type { ScreenState } from '../../lib/screenState.ts'
 import { liveLibrary } from './liveLibrary.ts'
-import type { ArtifactsData, ArtifactsUi } from './types.ts'
+import { type AddLinkInput, type ArtifactsData, type ArtifactsUi, noProject } from './types.ts'
 
 /** How long a read or a write waits for the server, in ms, as the Workspaces reads do (d-101). */
 const artifactsTimeoutMs = 8000
@@ -211,4 +218,58 @@ export async function withLiveArtifacts(
   const response = ArtifactsResponse.parse(readJson(answer.value.body))
   if (visit.seenAt === undefined) visit.seenAt = response.lastSeenAt
   return { ...state, data: liveLibrary(state.data, response, { seenAt: visit.seenAt, now: now() }) }
+}
+
+/** A write's miss line: what did not happen, then why, by status. */
+const missLine = (lead: string, miss: ArtifactsMiss) =>
+  miss.status === undefined
+    ? `${lead} — the server did not answer`
+    : `${lead} — the server answered ${String(miss.status)}`
+
+/** Adds a link (`POST /api/artifacts`): the artifact's ID and whether it is new (201) or one the library had (200). */
+export async function addArtifact(input: AddLinkInput): Promise<Result<{ id: string; added: boolean }, string>> {
+  const sent = await send((signal) =>
+    api.api.artifacts.$post(
+      {
+        json: {
+          link: input.link,
+          source: input.source,
+          title: input.title,
+          ...(input.project === null ? {} : { project: input.project }),
+        },
+      },
+      { init: { signal } },
+    ),
+  )
+  if (sent.ok) {
+    const { artifact } = AddArtifactResponse.parse(readJson(sent.value.body))
+    return ok({ id: artifact.id, added: sent.value.status === 201 })
+  }
+  if (sent.error.status === 400) return err('Not added — check the link and the title')
+  reportMiss('add', sent.error)
+  return err(missLine('Not added', sent.error))
+}
+
+/** Files the artifact `id` in `project`, or in none for `noProject` (`PATCH /api/artifacts/:artifact`). */
+export async function fileArtifact(id: string, project: string): Promise<Result<void, string>> {
+  const sent = await send((signal) =>
+    api.api.artifacts[':artifact'].$patch(
+      { param: { artifact: id }, json: { project: project === noProject ? null : project } },
+      { init: { signal } },
+    ),
+  )
+  if (sent.ok) return ok(undefined)
+  if (sent.error.status === 404) return err('Not filed — it is no longer in the library')
+  reportMiss('file', sent.error)
+  return err(missLine('Not filed', sent.error))
+}
+
+/** Removes the artifact `id` from the library (`DELETE /api/artifacts/:artifact`); a 404 is gone already. */
+export async function removeArtifact(id: string): Promise<Result<void, string>> {
+  const sent = await send((signal) =>
+    api.api.artifacts[':artifact'].$delete({ param: { artifact: id } }, { init: { signal } }),
+  )
+  if (sent.ok || sent.error.status === 404) return ok(undefined)
+  reportMiss('remove', sent.error)
+  return err(missLine('Not removed', sent.error))
 }
