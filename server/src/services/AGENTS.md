@@ -61,7 +61,9 @@ from the outside world.
   link's sha256. An owner link that the library has answers that entry
   (`added: false`), a removed entry stays as removed so a find does not
   add it again, and an add brings it back. One change at a time; a
-  store fault is its code only (`artifacts.test.ts`).
+  store fault is its code only. After each list whose save succeeds, it
+  calls the scan's `keep`, so the finder saves how far it read only for
+  artifacts the library holds (`artifacts.test.ts`).
 - No polling (d-112): a service reads a port when a request or a
   subscription asks. `liveEvents.ts` shares one port subscription among
   all clients of `/api/events`, so with no client open (and no push
