@@ -28,6 +28,7 @@ import {
 import { useLayoutEffect, useRef } from 'react'
 import { css, cx } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
+import { kindValue } from '../types.ts'
 import { AppliedFilters } from '../blocks/AppliedFilters.tsx'
 import { InboxRow } from '../blocks/InboxRow.tsx'
 import { ListTools } from '../blocks/ListTools.tsx'
@@ -432,7 +433,7 @@ export function InboxListPane({
     acted === undefined ? null : (
       <RowActionsSheet
         row={acted}
-        kindLabel={kinds.find((k) => k.value === acted.kind)?.label ?? ''}
+        kindLabel={kinds.find((k) => k.value === kindValue(acted.kind))?.label ?? ''}
         menu={data.snoozeMenu}
         open
         onOpenChange={(open) => {

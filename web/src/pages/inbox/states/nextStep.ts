@@ -3,6 +3,7 @@
 // references/inbox/D01/frame.json.
 import { InboxItemId } from '@bridge/shared'
 import type { ScreenState } from '../../../lib/screenState.ts'
+import { kindValue, projectValue, tagValue } from '../types.ts'
 import type { InboxData, InboxGroupView, InboxRunCard, InboxRunIn, InboxUi } from '../types.ts'
 
 const selected = InboxItemId.parse('write-the-tickets')
@@ -145,7 +146,12 @@ const snoozed = { id: 'snoozed', label: 'Snoozed', count: 1, dot: null, rows: []
 /** D1's groups, which the other states start from. */
 export const nextStepGroups = { needsYou, nextSteps, snoozed }
 
-const item = (value: string, count: number) => ({ value, label: value, count })
+/** A box of the Filter menu: its label, and its value with the section's prefix (`kindValue` and its kin in types.ts). */
+const item = (valueOf: (label: string) => string, label: string, count: number) => ({
+  value: valueOf(label),
+  label,
+  count,
+})
 
 // The Sort and Filter menus (Figma D9 346:3566 and D4 346:1310), which every state's list tools open.
 const sortMenu = {
@@ -167,29 +173,44 @@ const filterMenu = {
       label: 'Kind',
       mono: false,
       items: [
-        { value: 'approval', label: 'Approval', count: 1 },
-        { value: 'question', label: 'Question', count: 1 },
-        { value: 'review', label: 'Review', count: 1 },
-        { value: 'action', label: 'Action', count: 1 },
-        { value: 'next', label: 'Next step', count: 3 },
+        { value: kindValue('approval'), label: 'Approval', count: 1 },
+        { value: kindValue('question'), label: 'Question', count: 1 },
+        { value: kindValue('review'), label: 'Review', count: 1 },
+        { value: kindValue('action'), label: 'Action', count: 1 },
+        { value: kindValue('next'), label: 'Next step', count: 3 },
       ],
     },
-    { label: 'Project', mono: true, items: [item('ncc-1701', 5), item('omni-brain', 1), item('skill-evals', 1)] },
+    {
+      label: 'Project',
+      mono: true,
+      items: [
+        item(projectValue, 'ncc-1701', 5),
+        item(projectValue, 'omni-brain', 1),
+        item(projectValue, 'skill-evals', 1),
+      ],
+    },
     {
       label: 'Tags · global',
       mono: true,
-      items: [item('global/decision', 1), item('global/planning', 1), item('global/review', 1)],
+      items: [
+        item(tagValue, 'global/decision', 1),
+        item(tagValue, 'global/planning', 1),
+        item(tagValue, 'global/review', 1),
+      ],
     },
     {
       label: 'Tags · project ncc-1701',
       mono: true,
-      items: [item('project/ncc-1701/the-bridge', 2), item('project/ncc-1701/design', 1)],
+      items: [item(tagValue, 'project/ncc-1701/the-bridge', 2), item(tagValue, 'project/ncc-1701/design', 1)],
     },
   ],
 } satisfies InboxData['filterMenu']
 
 /** The Filter menu with every kind and project checked and no tag, as Figma T14 draws it before a change: no filter. */
-export const noFilter = ['approval', 'question', 'review', 'action', 'next', 'ncc-1701', 'omni-brain', 'skill-evals']
+export const noFilter = [
+  ...(['approval', 'question', 'review', 'action', 'next'] as const).map(kindValue),
+  ...['ncc-1701', 'omni-brain', 'skill-evals'].map(projectValue),
+]
 
 /** The Snooze menu of an open item's task bar (Figma D12 346:4878). */
 const snoozeMenu = {

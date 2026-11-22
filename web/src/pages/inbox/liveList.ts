@@ -10,6 +10,7 @@
 // dropped. Pure; tested in liveList.test.ts.
 import type { InboxItem, InboxResponse } from '@bridge/contract'
 import { InboxItemId } from '@bridge/shared'
+import { kindValue, projectValue, tagValue } from './types.ts'
 import type { InboxData, InboxFilterMenu, InboxGroupView, InboxRowView, InboxSnoozeMenu, InboxUi } from './types.ts'
 
 const minute = 60_000
@@ -87,12 +88,20 @@ function liveRow(item: InboxItem, now: Date): InboxRowView {
 
 const countOf = <T>(items: readonly T[], test: (item: T) => boolean) => items.filter(test).length
 
-/** The values of `items` in first-seen order, each with how many items have it. */
-function tally(values: readonly string[]): { value: string; label: string; count: number }[] {
+/** The labels of `items` in first-seen order, each with how many items have it and its box's value (`valueOf`). */
+function tally(
+  labels: readonly string[],
+  valueOf: (label: string) => string,
+): { value: string; label: string; count: number }[] {
   const counts = new Map<string, number>()
-  for (const value of values) counts.set(value, (counts.get(value) ?? 0) + 1)
-  return [...counts].map(([value, count]) => ({ value, label: value, count }))
+  for (const label of labels) counts.set(label, (counts.get(label) ?? 0) + 1)
+  return [...counts].map(([label, count]) => ({ value: valueOf(label), label, count }))
 }
+
+/** A tag's scope: the global tags, or the tags of one project (`project/<name>/…`), kept apart from a project "global". */
+type TagScope = { readonly project: string | null }
+const scopeOf = (tag: string): TagScope =>
+  tag.startsWith('project/') ? { project: tag.split('/')[1] ?? '' } : { project: null }
 
 /**
  * The Filter menu of the live items: the home's kinds that some item has, the projects, and the tags in a section
@@ -101,22 +110,24 @@ function tally(values: readonly string[]): { value: string; label: string; count
 function liveFilterMenu(base: InboxFilterMenu, items: readonly InboxItem[]): InboxFilterMenu {
   const kinds = base.sections[0]
   const kindItems = (kinds?.items ?? [])
-    .map((k) => ({ ...k, count: countOf(items, (i) => i.kind === k.value) }))
+    .map((k) => ({ ...k, count: countOf(items, (i) => kindValue(i.kind) === k.value) }))
     .filter((k) => k.count > 0)
   // Each row's place, as listView matches it: a project, or "chat" or "brain" for an item with none, so a chat can be
   // filtered out of a list with one project.
-  const projects = tally(items.map(placeOf))
+  const projects = tally(items.map(placeOf), projectValue)
   const tags = items.flatMap((i) => i.tags)
-  const scopes = [...new Set(tags.map((t) => (t.startsWith('project/') ? (t.split('/')[1] ?? '') : 'global')))]
+  // By the scope's project, null for the global tags, so a project named "global" has a section of its own.
+  const scopes = [...new Set(tags.map((t) => scopeOf(t).project))]
   return {
     sections: [
       { label: kinds?.label ?? 'Kind', mono: false, items: kindItems },
       ...(projects.length === 0 ? [] : [{ label: 'Project', mono: true, items: projects }]),
-      ...scopes.map((scope) => ({
-        label: scope === 'global' ? 'Tags · global' : `Tags · project ${scope}`,
+      ...scopes.map((project) => ({
+        label: project === null ? 'Tags · global' : `Tags · project ${project}`,
         mono: true,
         items: tally(
-          tags.filter((t) => (scope === 'global' ? !t.startsWith('project/') : t.startsWith(`project/${scope}/`))),
+          tags.filter((t) => scopeOf(t).project === project),
+          tagValue,
         ),
       })),
     ],

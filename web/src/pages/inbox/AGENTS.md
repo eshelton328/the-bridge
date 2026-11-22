@@ -36,6 +36,13 @@ in `references/inbox/`.
   `GET /api/events` and each time the stream opens, never on a timer. The
   tab badge is the server's `counts.needsYou`. `?state=` and
   `?source=fixtures` show the sample data.
+- The stream and the list read are the app's (`app/InboxFeedProvider.tsx`,
+  `lib/inboxFeed.ts`): the page follows the feed and gives it the count it
+  loaded, so the app reads the list once per burst. Every page's rail and
+  tab bar show that count on a live page (`app/InboxBadgeLive.test.tsx`).
+- A Filter box's value has its section's prefix (`kindValue`, `projectValue`,
+  `tagValue` in `types.ts`), so a project named like a kind is its own box; a
+  project named `global` has its own tag section. The menu shows the label.
 - On the live Inbox a row opens its item at any width (`LiveDetail`, read
   from `GET /api/inbox/:item` in `useLiveItem.ts`). No row shows Allow or
   Deny (v1); a chat item's Open chat goes to `/workspaces?chat=`. Snooze,

@@ -82,7 +82,15 @@ describe('listView filters', () => {
   it('hides the rows of a project left out, and drops the counts by them', () => {
     const view = listView(filtered.data, filtered.ui, '')
     expect(titles(view, 'nextSteps')).toEqual(['Commit the brain: 34 changes'])
-    expect(view.applied).toEqual([{ label: 'Project', values: ['ncc-1701', 'omni-brain'] }])
+    expect(view.applied).toEqual([
+      {
+        label: 'Project',
+        values: [
+          { value: 'project:ncc-1701', label: 'ncc-1701' },
+          { value: 'project:omni-brain', label: 'omni-brain' },
+        ],
+      },
+    ])
     expect(view.hidden).toBe(1)
     expect(view.count).toBe(6)
     expect(chip(view, 'all')).toBe(6)
@@ -100,9 +108,9 @@ describe('listView filters', () => {
   it('applies nothing when every box is checked, and narrows to a checked tag', () => {
     const all = allChecks(list.data.filterMenu)
     expect(listView(list.data, { ...list.ui, filters: all }, '').hidden).toBe(0)
-    const tagged = listView(list.data, { ...list.ui, filters: all.filter((v) => !v.startsWith('global/')) }, '')
+    const tagged = listView(list.data, { ...list.ui, filters: all.filter((v) => !v.startsWith('tag:global/')) }, '')
     expect(tagged.hidden).toBe(0)
-    const planning = listView(list.data, { ...list.ui, filters: ['global/planning'] }, '')
+    const planning = listView(list.data, { ...list.ui, filters: ['tag:global/planning'] }, '')
     expect(planning.count).toBe(1)
     expect(titles(planning, 'nextSteps')).toEqual(['Write the tickets for increment one'])
   })

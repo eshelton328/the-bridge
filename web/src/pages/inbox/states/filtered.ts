@@ -5,11 +5,12 @@
 // hidden-count text's layer name, and frame.png shows the text.
 import type { ScreenState } from '../../../lib/screenState.ts'
 import type { InboxData, InboxUi } from '../types.ts'
+import { projectValue } from '../types.ts'
 import { noFilter } from './nextStep.ts'
 import { runningTask } from './runningTask.ts'
 
 /** Every kind, and the projects but skill-evals: the filter hides the skill-evals next step. */
-export const projectFilter = noFilter.filter((value) => value !== 'skill-evals')
+export const projectFilter = noFilter.filter((value) => value !== projectValue('skill-evals'))
 
 export const filtered = {
   title: 'filtered',
