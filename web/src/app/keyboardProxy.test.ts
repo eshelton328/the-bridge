@@ -150,6 +150,21 @@ describe('keyboard proxy', () => {
     expect(field.value).toBe('draf')
   })
 
+  it('a Send that clears the draft before the move keeps the field empty: the sent text does not come back', async () => {
+    const { field } = mountComposer()
+    field.value = 'draft'
+    run()
+    tap(field)
+    const proxy = proxyOf()
+    if (!(proxy instanceof HTMLTextAreaElement)) throw new Error('no proxy')
+    expect(proxy.value).toBe('draft')
+    // A tap on Send is a control, so it keeps its default and the proxy keeps the focus; Send clears the composer.
+    field.value = ''
+    field.dispatchEvent(new Event('input', { bubbles: true }))
+    await expect.poll(() => document.activeElement).toBe(field)
+    expect(field.value).toBe('')
+  })
+
   it('an IME composition holds the move until it ends, and its text moves whole', async () => {
     const { field } = mountComposer()
     run(10)

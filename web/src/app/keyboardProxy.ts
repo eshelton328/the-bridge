@@ -95,10 +95,13 @@ export function dockedBox(
 }
 
 /**
- * Gives 'field' the proxy's text and selection. The proxy starts as a copy of the field's draft, so typing, Backspace
- * and a paste in the proxy all edit that draft. The text goes in as typing does, so React's change handler sees it.
+ * Gives 'field' the proxy's text and selection. The proxy starts as a copy of the field's draft ('draft'), so typing,
+ * Backspace and a paste in the proxy all edit that draft. The text goes in as typing does, so React's change handler
+ * sees it. When the field no longer holds 'draft' (Send, which a tap reaches while the proxy holds the focus, cleared
+ * it), the field's own text stays: the proxy's copy is stale.
  */
-function takeEdits(field: Field, proxy: Field): void {
+function takeEdits(field: Field, proxy: Field, draft: string): void {
+  if (field.value !== draft) return
   if (proxy.value !== field.value) {
     field.setRangeText(proxy.value, 0, field.value.length, 'end')
     field.dispatchEvent(new Event('input', { bubbles: true }))
@@ -143,7 +146,8 @@ function focusThroughProxy(win: Window, field: Field, waitMs: number): Promise<v
     String(box.height) +
     'px'
   // A copy of the draft with the caret at its end, as a tap at the end of the composer puts it.
-  proxy.value = field.value
+  const draft = field.value
+  proxy.value = draft
   doc.body.append(proxy)
   proxy.setSelectionRange(proxy.value.length, proxy.value.length)
   const openHeight = vv?.height ?? win.innerHeight
@@ -177,7 +181,7 @@ function focusThroughProxy(win: Window, field: Field, waitMs: number): Promise<v
       if (doc.activeElement === proxy && field.isConnected && !field.disabled) {
         proxy.removeEventListener('focusout', onLost)
         field.focus({ preventScroll: true })
-        takeEdits(field, proxy)
+        takeEdits(field, proxy, draft)
       }
       end()
     }
@@ -185,7 +189,7 @@ function focusThroughProxy(win: Window, field: Field, waitMs: number): Promise<v
     // code): no focus move, but its edits still go to the composer, so nothing typed is lost.
     const onLost = () => {
       if (finished) return
-      if (field.isConnected && !field.disabled) takeEdits(field, proxy)
+      if (field.isConnected && !field.disabled) takeEdits(field, proxy, draft)
       end()
       tell(field, false)
     }
