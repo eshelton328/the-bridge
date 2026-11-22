@@ -38,6 +38,32 @@ the Artifacts page; their saved copies are in `references/artifacts/`.
   the tab bar, as Figma does (d-089).
 - The discussion blocks use the same library parts as the Inbox's
   discussion blocks; copy the pattern, never import the Inbox page.
+- In development the home reads the live library (`liveArtifacts.ts`,
+  `liveLibrary.ts`), as the Workspaces home does (d-117): with no
+  `?state=` and no `?source=`, and with `?source=live`;
+  `?source=fixtures` shows the sample data, and a `?state=` its fixture
+  state. The server's `GET /api/artifacts` fills every card, count,
+  project and the status line; only the Discussion and its proposals stay
+  sample, as no route has them. The server has no preview, so a Claude
+  artifact draws the `doc` thumbnail and a Codex site the `ui` one; an
+  artifact in no project is `noProject`, and its meta line names none.
+  - A visit's first list fixes what is New (the server's `lastSeenAt`
+    then); the page then posts `POST /api/artifacts/seen` once, and every
+    list of the visit keeps those marks.
+  - A list with `partial: true` shows what came, says "Checked part of
+    Claude — the rest comes next", and the page reads once more; a second
+    partial list waits for the next list the owner causes. No read runs
+    on a timer.
+  - A miss shows no artifacts, never the sample ones, and one line in the
+    status line by status ("Library not read — the server answered
+    500"). report() gets only a miss the server answered, as
+    `ArtifactsMissError` with the step, kind and status. A read with no
+    answer around a trip to the background is quiet and goes again once
+    the page shows (`lib/pageResume.ts`).
+  - Tests: `liveLibrary.test.ts`, `app/ArtifactsLive.test.tsx` (the
+    owner's path, with the fake `lib/fakeArtifactsServer.ts`). An
+    artifact made inside a REPL script writes no Artifact record, so the
+    server never finds it; the owner adds it with Add a link.
 - The route tests are in `app/`: `ArtifactsRoute.test.tsx`,
   `ArtifactsHome.test.tsx` (the home at 390, 756 and 1512 and on a
   resize) and `ArtifactsHomeOpen.test.tsx`. Run them after a change to

@@ -20,7 +20,7 @@ import {
 } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import { BlockBoundary } from '../../../errors/BlockBoundary.tsx'
-import type { ArtifactCard } from '../types.ts'
+import { type ArtifactCard, projectOf } from '../types.ts'
 
 // Figma's row preview is 64 × 40 on the desktop (403:194, `Thumbnail size="sm"`) and 76 × 48 on the phone (406:122,
 // `size="md"`), each centred down the row. Since library beta.71 (PR 221) `md` draws Figma's phone row drawing
@@ -98,7 +98,7 @@ export function ArtifactRow({
             </BlockBoundary>
           </span>
         }
-        meta={<MetaLine leading={<KindMark kind={card.source} size="12" />} items={[card.project]} />}
+        meta={<MetaLine leading={<KindMark kind={card.source} size="12" />} items={[projectOf(card)]} />}
         {...metaEnd}
         trailing={
           layout === 'phone' && !phoneSearch ? (

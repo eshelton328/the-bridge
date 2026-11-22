@@ -7,7 +7,7 @@
 import { Button, ChevronDownIcon, FolderIcon, RadioMenu, Stack } from '@eshelton328/component-library-1701'
 import { useId } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
-import type { AddLinkForm } from '../types.ts'
+import { type AddLinkForm, projectChoices } from '../types.ts'
 
 // TextField's label and helper text: `small` in `fg.muted`, 6 from the control.
 const label = css({ textStyle: 'small', color: 'fg.muted' })
@@ -32,7 +32,7 @@ export function ProjectPicker({ field, onValueChange }: ProjectPickerProps) {
         </span>
         <RadioMenu
           label={field.label}
-          options={field.projects.map((project) => ({ value: project, label: project }))}
+          options={projectChoices(field)}
           value={field.value}
           onValueChange={onValueChange}
           width="sm"
@@ -40,7 +40,7 @@ export function ProjectPicker({ field, onValueChange }: ProjectPickerProps) {
             <Button size="xl" className={trigger} aria-labelledby={`${labelId} ${valueId}`}>
               <FolderIcon />
               <span id={valueId} className={value}>
-                {field.value}
+                {projectChoices(field).find((choice) => choice.value === field.value)?.label ?? field.value}
               </span>
               <ChevronDownIcon />
             </Button>

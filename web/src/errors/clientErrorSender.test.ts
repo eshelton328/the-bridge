@@ -136,6 +136,11 @@ describe('toClientErrorReport', () => {
         `A layout close missed: herdr-unavailable 503 (${secret})`,
         'herdr-unavailable',
       ),
+      new NamedError(
+        'ArtifactsMissError',
+        `An artifacts request missed: add internal 500 (${secret})`,
+        'add internal 500',
+      ),
     ]
     for (const error of misses) {
       const body = toClientErrorReport(entry(error, 'live'))

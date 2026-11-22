@@ -8,6 +8,10 @@ import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
 import { setViewport } from '../lib/rendering.ts'
+import { stubLiveServer } from './liveServerStub.ts'
+
+// A tap on Artifacts opens its home, which reads the live library in development.
+stubLiveServer()
 
 // /toolkit with no ?state= opens the page's home (pages/toolkit/home.ts): the
 // list with nothing open, laid out for the window's width (D1 on a desktop,

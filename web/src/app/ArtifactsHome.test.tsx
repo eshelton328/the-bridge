@@ -9,7 +9,9 @@ import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
 
-// /artifacts with no ?state= opens the page's home (pages/artifacts/home.ts):
+// /artifacts with no ?state= opens the page's home (pages/artifacts/home.ts),
+// here with its sample data (`?source=fixtures`; the live library is
+// ArtifactsLive.test.tsx):
 // the library with every menu, sheet and dialog closed, laid out for the
 // window's width. A ?state= still draws its own frame.
 document.documentElement.classList.add('dark')
@@ -45,7 +47,7 @@ afterEach(async () => {
 describe('the Artifacts home', () => {
   it('draws the phone list at 390 with nothing open', async () => {
     await page.viewport(390, 844)
-    view = await renderAt('/artifacts')
+    view = await renderAt('/artifacts?source=fixtures')
     await expect.poll(tabBar).not.toBeNull()
     expect(rail()).toBeNull()
     await expect.poll(() => rows().length).toBeGreaterThan(0)
@@ -56,7 +58,7 @@ describe('the Artifacts home', () => {
 
   it('draws the tablet grid at 756 with nothing open', async () => {
     await page.viewport(756, 1024)
-    view = await renderAt('/artifacts')
+    view = await renderAt('/artifacts?source=fixtures')
     await expect.poll(tabBar).not.toBeNull()
     expect(rail()).toBeNull()
     await expect.poll(() => cards().length).toBeGreaterThan(0)
@@ -65,7 +67,7 @@ describe('the Artifacts home', () => {
 
   it('draws the desktop grid at 1512 with nothing open', async () => {
     await page.viewport(1512, 982)
-    view = await renderAt('/artifacts')
+    view = await renderAt('/artifacts?source=fixtures')
     await expect.poll(rail).not.toBeNull()
     expect(tabBar()).toBeNull()
     await expect.poll(() => cards().length).toBeGreaterThan(0)
@@ -74,7 +76,7 @@ describe('the Artifacts home', () => {
 
   it('changes from the desktop to the phone layout and back as the window narrows and widens', async () => {
     await page.viewport(1512, 982)
-    view = await renderAt('/artifacts')
+    view = await renderAt('/artifacts?source=fixtures')
     await expect.poll(rail).not.toBeNull()
     // setViewport waits for the rendering steps that bring ViewportFrame's ResizeObserver the new width.
     await setViewport(390, 844)
@@ -88,7 +90,7 @@ describe('the Artifacts home', () => {
 
   it('opens the Filter sheet from the phone home', async () => {
     await page.viewport(390, 844)
-    view = await renderAt('/artifacts')
+    view = await renderAt('/artifacts?source=fixtures')
     await expect.poll(tabBar).not.toBeNull()
     await userEvent.click(page.getByRole('button', { name: 'Filter' }))
     await expect.element(page.getByRole('dialog', { name: 'Filter' })).toBeVisible()
@@ -96,7 +98,7 @@ describe('the Artifacts home', () => {
 
   it('opens the Sort menu from the desktop home', async () => {
     await page.viewport(1512, 982)
-    view = await renderAt('/artifacts')
+    view = await renderAt('/artifacts?source=fixtures')
     await expect.poll(rail).not.toBeNull()
     await userEvent.click(page.getByRole('button', { name: 'Newest' }))
     await expect.element(page.getByRole('menuitemradio', { name: /Newest first/ })).toBeVisible()
@@ -104,7 +106,7 @@ describe('the Artifacts home', () => {
 
   it('goes to the Inbox from the tablet tab bar', async () => {
     await page.viewport(756, 1024)
-    view = await renderAt('/artifacts')
+    view = await renderAt('/artifacts?source=fixtures')
     await expect.poll(tabBar).not.toBeNull()
     // The tab, not the "Inbox task lifecycle" card, which is a button too now that a card opens its artifact.
     const tab = document.querySelector('[data-figma="tab · Inbox"]')
@@ -115,7 +117,7 @@ describe('the Artifacts home', () => {
 
   it('opens the More drawer from the phone tab bar and goes to Toolkit from it', async () => {
     await page.viewport(390, 844)
-    view = await renderAt('/artifacts')
+    view = await renderAt('/artifacts?source=fixtures')
     await expect.poll(tabBar).not.toBeNull()
     await userEvent.click(page.getByRole('button', { name: /^More/ }))
     await userEvent.click(page.getByRole('button', { name: /^Toolkit/ }))

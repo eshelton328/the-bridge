@@ -2,6 +2,10 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
 import { resetAllStores } from '../state/resetStores.ts'
 import { renderInbox, showState, dialog, removeDialog, searchbox, box } from './inboxRouteHelpers.ts'
+import { stubLiveServer } from './liveServerStub.ts'
+
+// A tap on Artifacts opens its home, which reads the live library in development.
+stubLiveServer()
 
 // The Inbox through the real route, loader and page store: what the
 // props-only stories cannot show, because they have no state owner. The

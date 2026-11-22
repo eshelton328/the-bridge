@@ -65,7 +65,7 @@ import {
   type ResumeMark,
   resumeMark,
   whenVisible,
-} from './pageResume.ts'
+} from '../../lib/pageResume.ts'
 import type {
   LiveTab,
   PaneAction,

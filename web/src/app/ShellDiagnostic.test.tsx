@@ -158,7 +158,7 @@ describe('AppShell reports an undocked field to the app (audit L-8)', () => {
   })
 
   // The Workspaces home reads the live source in development (d-117); its sample data needs no server.
-  for (const path of ['/inbox', '/workspaces?source=fixtures', '/artifacts', '/toolkit'])
+  for (const path of ['/inbox', '/workspaces?source=fixtures', '/artifacts?source=fixtures', '/toolkit'])
     for (const [width, height] of [
       [390, 844],
       [1512, 982],

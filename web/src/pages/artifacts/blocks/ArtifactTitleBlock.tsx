@@ -56,7 +56,8 @@ type ProjectChipProps = {
 }
 
 function ProjectChip({ project, projectMenu, onPress }: ProjectChipProps) {
-  if (projectMenu === undefined) return <MetaChip label={project} icon={<FolderIcon />} />
+  if (projectMenu === undefined)
+    return project === noProject ? null : <MetaChip label={project} icon={<FolderIcon />} />
   const { menu, value, onValueChange } = projectMenu
   const label = value === noProject ? menu.none.label : value
   if (onPress !== undefined)

@@ -5,14 +5,15 @@
 // cards the mock data draws. The sort (D6) orders the cards inside each
 // group; the groups keep their order, so what the library found since the owner
 // last looked stays at the top. Pure; tested in libraryView.test.ts.
-import type {
-  ArtifactCard,
-  ArtifactFilter,
-  ArtifactGroup,
-  ArtifactSearch,
-  ArtifactsData,
-  ArtifactsUi,
-  MatchPlace,
+import {
+  type ArtifactCard,
+  type ArtifactFilter,
+  type ArtifactGroup,
+  type ArtifactSearch,
+  type ArtifactsData,
+  type ArtifactsUi,
+  type MatchPlace,
+  noProject,
 } from '../types.ts'
 
 const passes = (card: ArtifactCard, filter: ArtifactFilter) =>
@@ -23,7 +24,7 @@ const places = (card: ArtifactCard): [MatchPlace, string][] => [
   ['title', card.title],
   ['description', card.description],
   ['link', card.link],
-  ['project', card.project],
+  ['project', card.project === noProject ? '' : card.project],
 ]
 
 /** Where `query` first matches the card, in any case; undefined when it does not, or the query is blank. */
