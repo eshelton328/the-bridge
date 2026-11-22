@@ -54,11 +54,10 @@ export function ArtifactPreview({ artifact, href, onCopyLink, copyLinkStatus }: 
             <a className={link} href={href} target="_blank" rel="noopener noreferrer">
               {artifact.link}
             </a>
-            {/* R40: Copy link next to Open artifact, as on the tablet and phone; the bar keeps its own. */}
-            <Inline gap="8" align="center" data-figma="open actions">
-              <span data-figma="button · Copy link">
-                <CopyLinkButton status={copyLinkStatus} onClick={onCopyLink} />
-              </span>
+            {/* R40: Copy link next to Open artifact, as on the tablet and phone; the bar keeps its own. No Figma layer
+                draws this one, so it has no data-figma name. */}
+            <Inline gap="8" align="center" data-testid="open-actions">
+              <CopyLinkButton status={copyLinkStatus} onClick={onCopyLink} />
               <span data-figma="button · Open artifact">
                 <OpenArtifactLink href={href} />
               </span>

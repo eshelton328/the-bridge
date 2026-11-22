@@ -57,7 +57,7 @@ async function openCard(device: Device, title: string) {
 }
 
 /** Open artifact and the Copy link next to it; the test waits for them first (`openActionsShown`). */
-const openActionsSelector = '[data-figma="open actions"]'
+const openActionsSelector = '[data-testid="open-actions"]'
 const openActions = () => {
   const group = document.querySelector(openActionsSelector)
   if (group === null) throw new Error('no Open artifact group')

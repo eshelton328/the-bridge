@@ -46,7 +46,7 @@ function fakeClipboard(): string[] {
 const copyPlace = {
   desktop: '[data-figma="artifact bar"]',
   tablet: '[data-figma="top bar"]',
-  phone: '[data-figma="open actions"]',
+  phone: '[data-testid="open-actions"]',
 } as const
 type Layout = keyof typeof copyPlace
 

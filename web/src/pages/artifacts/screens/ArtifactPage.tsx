@@ -108,7 +108,7 @@ export function ArtifactPage({
           </BlockBoundary>
         </div>
         {phone ? (
-          <Stack gap="16" data-figma="open actions">
+          <Stack gap="16" data-testid="open-actions">
             {href === undefined ? null : (
               <span data-figma="button · Open artifact">
                 <OpenArtifactLink href={href} size="xl" className={wide} />
@@ -132,13 +132,12 @@ export function ArtifactPage({
           </Stack>
         ) : href === undefined ? null : (
           // R40: Copy link beside Open artifact, at its height; the bar keeps its icon.
-          <Inline gap="8" align="center" data-figma="open actions">
+          // No T2 layer draws this Copy link, so it has no data-figma name.
+          <Inline gap="8" align="center" data-testid="open-actions">
             <span className={grow} data-figma="button · Open artifact">
               <OpenArtifactLink href={href} size="xl" className={wide} />
             </span>
-            <span data-figma="button · Copy link">
-              <CopyLinkButton size="xl" status={copyLinkStatus} onClick={onCopyLink} />
-            </span>
+            <CopyLinkButton size="xl" status={copyLinkStatus} onClick={onCopyLink} />
           </Inline>
         )}
         {phone ? null : (
