@@ -37,7 +37,7 @@ export type BrainRequest = {
 type Fault = { readonly reason: 'failed'; readonly code: string }
 
 /** The brain's open and snoozed attention requests. It only reads, and only when called. */
-type BrainRequests = {
+export type BrainRequests = {
   list(): Promise<Result<readonly BrainRequest[], Fault>>
   /** The record's Markdown after its front matter; null when no open or snoozed request has the ID. */
   body(id: InboxId): Promise<Result<string | null, Fault>>
@@ -50,7 +50,7 @@ type ChatTurns = { endOf(chat: ChatSummary): Promise<string | null> }
 type Mark = { readonly state: 'done' | 'dismissed' } | { readonly state: 'snoozed'; readonly until: string }
 export type InboxMarks = Readonly<Record<string, Mark>>
 
-type InboxMarkStore = {
+export type InboxMarkStore = {
   load(): Promise<Result<InboxMarks, Fault>>
   save(marks: InboxMarks): Promise<Result<void, Fault>>
 }
