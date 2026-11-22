@@ -44,7 +44,7 @@ export type BrainRequests = {
 }
 
 /** When a chat's turn ended (its session file's last write); null when the adapter cannot tell. */
-type ChatTurns = { endOf(chat: ChatSummary): Promise<string | null> }
+type ChatTurns = { endOf(chat: ChatSummary): Promise<Result<string | null, AgentPortError>> }
 
 /** The owner's mark of one chat item. */
 type Mark = { readonly state: 'done' | 'dismissed' } | { readonly state: 'snoozed'; readonly until: string }
@@ -76,13 +76,8 @@ export type Inbox = {
   act(id: InboxId, change: InboxChange): Promise<Result<ActOutcome, InboxError>>
 }
 
-/** The turn ends that the agents port gives; a port fault reads as no known end, so the item takes no action. */
-const chatTurns = (agents: AgentPort): ChatTurns => ({
-  endOf: async (chat) => {
-    const end = await agents.turnEnd(chat.id)
-    return end.ok ? end.value : null
-  },
-})
+/** The turn ends that the agents port gives. A port fault fails the read, so no mark is dropped meanwhile. */
+const chatTurns = (agents: AgentPort): ChatTurns => ({ endOf: (chat) => agents.turnEnd(chat.id) })
 
 const chatActions: readonly InboxAction[] = ['snooze', 'done', 'dismiss']
 const hashId = (text: string) => InboxId.parse(createHash('sha256').update(text).digest('hex').slice(0, 16))
@@ -120,7 +115,9 @@ export function createInbox({ agents, brain, turns = chatTurns(agents), marks, n
           firstSeen.delete(chat.id)
           continue
         }
-        const ended = await turns.endOf(chat)
+        const turn = await turns.endOf(chat)
+        if (!turn.ok) return turn
+        const ended = turn.value
         let shownAt = ended
         if (shownAt === null) {
           const seen = firstSeen.get(chat.id)
