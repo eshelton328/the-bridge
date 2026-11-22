@@ -135,6 +135,14 @@ Thin Hono sub-apps, one file for each area, named after the area
   hex characters. `POST /seen` marks the library as seen: 204. A
   store fault is 500 and logs its errno code only; no link or title goes
   into a log line or an `ErrorBody` (`artifacts.test.ts`).
+- `/api/inbox` (R20): `GET /` lists the items, newest first, with the
+  badge count; `GET /:item` gives one item and its detail.
+  `POST /:item/snooze` (`{ until }`), `/done` and `/dismiss` (`{}`)
+  mark a chat item: 204, 404 for an unknown ID, 400 for an ID that is
+  not 16 hex characters, and 409 `inbox-read-only` for a brain item or
+  a chat item with no known turn end. A fault is 500 with its errno code
+  in the log only; no title or record text goes into a log line
+  (`inbox.test.ts`).
 - The JSON checks of each POST route are in `jsonBody.ts`.
 - A route takes its services or ports as function arguments; it never
   imports an adapter.

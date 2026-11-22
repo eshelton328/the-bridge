@@ -7,6 +7,7 @@ import { dirname, join } from 'node:path'
 import { serve } from '@hono/node-server'
 import { createClaudeArtifactFinder } from './adapters/claudeArtifacts.ts'
 import { createDiskArtifactStore } from './adapters/diskArtifacts.ts'
+import { createBrainRequests, createDiskInboxMarks } from './adapters/diskInbox.ts'
 import { createDiskPushStore } from './adapters/diskPush.ts'
 import { createDiskUploads } from './adapters/diskUploads.ts'
 import { createWebPushSender } from './adapters/webPushSender.ts'
@@ -18,6 +19,7 @@ import { createLogger, dailyFiles, type LogSink, teeSinks } from './logger.ts'
 import { formatEntry, parseLine } from './logs.ts'
 import { handleProcessErrors } from './processErrors.ts'
 import { createArtifacts } from './services/artifacts.ts'
+import { createInbox } from './services/inbox.ts'
 import { createPushSeen } from './services/push.ts'
 import { createPushNotifier } from './services/pushNotifier.ts'
 
@@ -66,9 +68,15 @@ const artifacts = createArtifacts({
   }),
   machine,
 })
+// The Inbox reads the brain's attention requests only, and keeps the owner's marks beside the database (R20).
+const inbox = createInbox({
+  agents,
+  brain: createBrainRequests(config.value.brainDir),
+  marks: createDiskInboxMarks(join(dirname(dbFile), 'inbox')),
+})
 const server = serve(
   {
-    fetch: createApp({ agents, owner, log, uploads, push, seen, pushChanged, artifacts }).fetch,
+    fetch: createApp({ agents, owner, log, uploads, push, seen, pushChanged, artifacts, inbox }).fetch,
     port,
     hostname: '127.0.0.1',
   },

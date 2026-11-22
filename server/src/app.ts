@@ -8,6 +8,7 @@ import { type AppEnv, errorJson, internalMessage, isPlainErrorKind } from './err
 import type { Logger } from './logger.ts'
 import { createRateLimit } from './rateLimit.ts'
 import { artifactsRoutes } from './routes/artifacts.ts'
+import { inboxRoutes } from './routes/inbox.ts'
 import { chatsRoutes } from './routes/chats.ts'
 import { clientErrorsRoutes } from './routes/clientErrors.ts'
 import { eventsRoutes } from './routes/events.ts'
@@ -16,6 +17,7 @@ import { uploadsRoutes } from './routes/uploads.ts'
 import { workspacesRoutes } from './routes/workspaces.ts'
 import type { AgentPort } from './services/agentPort.ts'
 import { type Artifacts, createArtifacts } from './services/artifacts.ts'
+import { createInbox, type Inbox } from './services/inbox.ts'
 import { createLiveEvents } from './services/liveEvents.ts'
 import { createPushSeen, type PushSeen, type PushStore } from './services/push.ts'
 import { defaultChunkBytes, type UploadStore } from './services/uploadStore.ts'
@@ -35,6 +37,8 @@ export type AppDeps = {
   readonly pushChanged?: () => void
   /** The Artifacts library (R26, R27); with none, each artifacts route answers 500. main.ts gives the disk store. */
   readonly artifacts?: Artifacts
+  /** The Inbox (R20); with none, each inbox route answers 500. main.ts gives the brain and the disk marks. */
+  readonly inbox?: Inbox
 }
 
 /** The store of an app with none: each call fails, so an upload answers 500 and is logged. */
@@ -58,6 +62,20 @@ const noArtifacts = (agents: AgentPort) =>
     machine: agents.machine,
   })
 
+/** The Inbox of an app with none: its brain and its marks fail each call. */
+const noInbox = (agents: AgentPort) =>
+  createInbox({
+    agents,
+    brain: {
+      list: () => Promise.resolve(err({ reason: 'failed', code: 'no-store' })),
+      body: () => Promise.resolve(err({ reason: 'failed', code: 'no-store' })),
+    },
+    marks: {
+      load: () => Promise.resolve(err({ reason: 'failed', code: 'no-store' })),
+      save: () => Promise.resolve(err({ reason: 'failed', code: 'no-store' })),
+    },
+  })
+
 /** The push store of an app with none: each call fails. */
 const noPush: PushStore = {
   keys: () => Promise.resolve(err({ reason: 'failed', code: 'no-store' })),
@@ -75,6 +93,7 @@ export function createApp({
   seen = createPushSeen(),
   pushChanged,
   artifacts = noArtifacts(agents),
+  inbox = noInbox(agents),
 }: AppDeps) {
   return (
     new Hono<AppEnv>()
@@ -109,6 +128,7 @@ export function createApp({
       .route('/api/events', eventsRoutes(createLiveEvents(agents), log))
       .route('/api/push', pushRoutes(push, seen, log, pushChanged))
       .route('/api/artifacts', artifactsRoutes(artifacts, agents, log))
+      .route('/api/inbox', inboxRoutes(inbox, log))
       .route('/api/client-errors', clientErrorsRoutes(log, createRateLimit(60, 60_000)))
       .notFound((c) => errorJson(c, 'not-found', { path: c.req.path, message: 'no route has this path' }))
       // A throw that no route caught: the log gets the error and its causes, the client the request ID.

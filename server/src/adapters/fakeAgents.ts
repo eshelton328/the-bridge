@@ -58,6 +58,9 @@ export function fakeTranscript(): TranscriptRead {
   }
 }
 
+/** When each fake Claude chat's last turn ended, until `setTurnEnd` changes it. */
+export const fakeTurnEnd = '2026-11-21T10:00:00.000Z'
+
 /** The fake's default data: two workspaces of `machine`, one with a chat that needs the owner, one with a shell. */
 export function fakeWorkspaces(machine: MachineId): WorkspaceSummary[] {
   const chat = (local: string) => ChatId.parse(`${machine}/${local}`)
@@ -127,6 +130,8 @@ export type FakeAgents = AgentPort & {
   readonly subscriptions: () => number
   /** Gives a chat a new status, as an agent would, and tells each subscription. */
   readonly setStatus: (chat: ChatId, status: ChatStatus) => void
+  /** Sets when a Claude chat's last turn ended; each Claude chat starts with `fakeTurnEnd`. */
+  readonly setTurnEnd: (chat: ChatId, at: string) => void
   /** Tells each subscription that the layout of `workspace` changed. */
   readonly changeLayout: (workspace: WorkspaceId) => void
   /** Tells each subscription that the list changed. */
@@ -248,6 +253,7 @@ export function createFakeAgents(
   let reads = 0
   const transcriptReads: ChatId[] = []
   const transcripts = new Map<ChatId, { entries: TranscriptEntry[]; earlier: boolean }>()
+  const turnEnds = new Map<ChatId, string>()
   const watchers = new Set<{ readonly chat: ChatId; readonly onChange: () => void }>()
   /** The fake's transcript of `chat`, made the first time it is asked for; undefined for no such chat. */
   const transcriptOf = (chat: ChatId) => {
@@ -334,6 +340,14 @@ export function createFakeAgents(
       transcriptReads.push(chat)
       const found = transcriptOf(chat)
       return Promise.resolve(ok(found === undefined ? null : structuredClone(found)))
+    },
+    turnEnd(chat) {
+      if ('error' in answer) return Promise.resolve(err(answer.error))
+      const found = (data ?? []).flatMap((w) => w.chats).find((c) => c.id === chat)
+      return Promise.resolve(ok(found?.kind === 'claude' ? (turnEnds.get(chat) ?? fakeTurnEnd) : null))
+    },
+    setTurnEnd(chat, at) {
+      turnEnds.set(chat, at)
     },
     readSkills(chat) {
       if ('error' in answer) return Promise.resolve(err(answer.error))

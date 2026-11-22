@@ -318,6 +318,21 @@ export function describeAgentPort(name: string, setup: () => Promise<ContractSet
       expect(await port.readTranscript(shell.id)).toEqual({ ok: true, value: { entries: [], earlier: false } })
     })
 
+    it("gives a Claude chat's turn end as an ISO time, and null for a shell", async () => {
+      const { port, expected, transcript } = await setup()
+      const list = await port.listWorkspaces()
+      if (!list.ok) throw new Error(list.error.message)
+      const chat = list.value.flatMap((w) => w.chats).find((c) => c.title === transcript.chat)
+      if (!chat) throw new Error(`no chat ${transcript.chat}`)
+      const end = await port.turnEnd(chat.id)
+      if (!end.ok) throw new Error(end.error.message)
+      if (end.value === null) throw new Error('no turn end for a Claude chat with a session file')
+      expect(new Date(end.value).toISOString()).toBe(end.value)
+      const shell = list.value.find((w) => w.label === expected.shell.workspace)?.chats.find((c) => c.kind === 'shell')
+      if (!shell) throw new Error('no shell chat')
+      expect(await port.turnEnd(shell.id)).toEqual({ ok: true, value: null })
+    })
+
     it('gives a Claude chat\'s "/" list in the contract\'s shape, the built-in commands first, and none for a shell', async () => {
       const { port, expected, transcript } = await setup()
       const list = await port.listWorkspaces()

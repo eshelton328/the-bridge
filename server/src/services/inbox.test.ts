@@ -17,7 +17,9 @@ const request: BrainRequest = {
   snoozedUntil: null,
 }
 
-function setup(options: { requests?: BrainRequest[]; turnEnd?: string | null; fault?: 'marks' | 'brain' } = {}) {
+function setup(
+  options: { requests?: BrainRequest[]; turnEnd?: string | null; fault?: 'marks' | 'brain' | 'turns' } = {},
+) {
   const agents = createFakeAgents(machine)
   let stored: InboxMarks = {}
   const saves: InboxMarks[] = []
@@ -32,7 +34,10 @@ function setup(options: { requests?: BrainRequest[]; turnEnd?: string | null; fa
         ),
       body: (id) => Promise.resolve(ok(id === request.id ? '# Example\n\nThe body.' : null)),
     },
-    turns: { endOf: () => Promise.resolve(turnEnd) },
+    turns: {
+      endOf: () =>
+        Promise.resolve(options.fault === 'turns' ? err({ reason: 'unreachable', message: 'down' }) : ok(turnEnd)),
+    },
     marks: {
       load: () => Promise.resolve(ok(stored)),
       save: (marks) => {
@@ -81,7 +86,7 @@ describe('the inbox', () => {
     const inbox = createInbox({
       agents,
       brain: { list: () => Promise.resolve(ok([])), body: () => Promise.resolve(ok(null)) },
-      turns: { endOf: () => Promise.resolve(turn.end) },
+      turns: { endOf: () => Promise.resolve(ok(turn.end)) },
       marks: { load: () => Promise.resolve(ok(stored)), save: (m) => ((stored = m), Promise.resolve(ok(undefined))) },
     })
     const first = await inbox.list()
@@ -147,6 +152,33 @@ describe('the inbox', () => {
       chat: { chat: question, workspace: 'test-mac/omni-brain', title: 'drift check', model: 'gpt-5.5' },
     })
     expect(await inbox.get(InboxId.parse('0000000000000000'))).toEqual(ok('notFound'))
+  })
+
+  it('fails the read when a turn end fails, and keeps the saved marks', async () => {
+    const turns = { fail: false }
+    const agents = createFakeAgents(machine)
+    let stored: InboxMarks = {}
+    const inbox = createInbox({
+      agents,
+      brain: { list: () => Promise.resolve(ok([])), body: () => Promise.resolve(ok(null)) },
+      turns: {
+        endOf: () =>
+          Promise.resolve(
+            turns.fail ? err({ reason: 'unreachable', message: 'down' }) : ok('2026-11-21T10:00:00.000Z'),
+          ),
+      },
+      marks: { load: () => Promise.resolve(ok(stored)), save: (m) => ((stored = m), Promise.resolve(ok(undefined))) },
+    })
+    const first = await inbox.list()
+    const id = first.ok ? first.value.items[0]?.id : undefined
+    if (id === undefined) throw new Error('no item')
+    await inbox.act(id, { action: 'dismiss' })
+    turns.fail = true
+    expect(await inbox.list()).toEqual(err({ reason: 'unreachable', message: 'down' }))
+    expect(Object.keys(stored)).toEqual([id])
+    turns.fail = false
+    const after = await inbox.list()
+    expect(after.ok && after.value.items).toEqual([])
   })
 
   it('gives a fault of the brain or the store by its code', async () => {

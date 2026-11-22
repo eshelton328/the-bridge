@@ -44,7 +44,7 @@ export type BrainRequests = {
 }
 
 /** When a chat's turn ended (its session file's last write); null when the adapter cannot tell. */
-type ChatTurns = { endOf(chat: ChatSummary): Promise<string | null> }
+type ChatTurns = { endOf(chat: ChatSummary): Promise<Result<string | null, AgentPortError>> }
 
 /** The owner's mark of one chat item. */
 type Mark = { readonly state: 'done' | 'dismissed' } | { readonly state: 'snoozed'; readonly until: string }
@@ -58,7 +58,8 @@ export type InboxMarkStore = {
 type Deps = {
   readonly agents: AgentPort
   readonly brain: BrainRequests
-  readonly turns: ChatTurns
+  /** When a chat's turn ended; the agents' `turnEnd` when not given. */
+  readonly turns?: ChatTurns
   readonly marks: InboxMarkStore
   readonly now?: () => Date
 }
@@ -75,10 +76,13 @@ export type Inbox = {
   act(id: InboxId, change: InboxChange): Promise<Result<ActOutcome, InboxError>>
 }
 
+/** The turn ends that the agents port gives. A port fault fails the read, so no mark is dropped meanwhile. */
+const chatTurns = (agents: AgentPort): ChatTurns => ({ endOf: (chat) => agents.turnEnd(chat.id) })
+
 const chatActions: readonly InboxAction[] = ['snooze', 'done', 'dismiss']
 const hashId = (text: string) => InboxId.parse(createHash('sha256').update(text).digest('hex').slice(0, 16))
 
-export function createInbox({ agents, brain, turns, marks, now = () => new Date() }: Deps): Inbox {
+export function createInbox({ agents, brain, turns = chatTurns(agents), marks, now = () => new Date() }: Deps): Inbox {
   // The time the server first saw a chat in a status, shown as the item's time when the turn port cannot tell
   // the turn's end. Such an item takes no action: the server sees no status change between reads, so a mark
   // could hide the chat's next turn, and the time is lost on a restart.
@@ -111,7 +115,9 @@ export function createInbox({ agents, brain, turns, marks, now = () => new Date(
           firstSeen.delete(chat.id)
           continue
         }
-        const ended = await turns.endOf(chat)
+        const turn = await turns.endOf(chat)
+        if (!turn.ok) return turn
+        const ended = turn.value
         let shownAt = ended
         if (shownAt === null) {
           const seen = firstSeen.get(chat.id)
