@@ -58,10 +58,10 @@ export function fakeTranscript(): TranscriptRead {
   }
 }
 
-/** The fake's default data: two workspaces of `machine`, one with a chat that needs the owner, one with a shell. */
 /** When each fake Claude chat's last turn ended, until `setTurnEnd` changes it. */
 export const fakeTurnEnd = '2026-11-21T10:00:00.000Z'
 
+/** The fake's default data: two workspaces of `machine`, one with a chat that needs the owner, one with a shell. */
 export function fakeWorkspaces(machine: MachineId): WorkspaceSummary[] {
   const chat = (local: string) => ChatId.parse(`${machine}/${local}`)
   const pane = (local: string) => PaneId.parse(`${machine}/pane-${local}`)
