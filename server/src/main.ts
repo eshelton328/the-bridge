@@ -12,6 +12,7 @@ import { createDiskPushStore } from './adapters/diskPush.ts'
 import { createDiskUploads } from './adapters/diskUploads.ts'
 import { createWebPushSender } from './adapters/webPushSender.ts'
 import { createHerdrAgents } from './adapters/herdrAgents.ts'
+import { processAncestors } from './adapters/processAncestors.ts'
 import { sipsConvert } from './adapters/sipsConvert.ts'
 import { createApp } from './app.ts'
 import { readConfig } from './config.ts'
@@ -49,6 +50,9 @@ const agents = createHerdrAgents({
   home: homedir(),
   uploads: uploadsRoot,
   chatRoot: config.value.chatRoot,
+  serverPids: () => processAncestors(process.pid),
+  // The coordinator's chat runs the served server and Vite; its workspace never closes from the page.
+  guardedAgents: ['bridge-coord'],
 })
 const uploads = createDiskUploads({ root: uploadsRoot, convert: sipsConvert })
 // The VAPID keys and push subscriptions go beside the database too, 0700 and 0600 (d-118). The notifier

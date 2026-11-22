@@ -3,10 +3,13 @@
 // with its ID URL-encoded; POST /:workspace/layout/ratio sets the ratio of
 // one split of one of its tabs (slice W2, 204); POST /:workspace/rename
 // gives it a new label and POST /order puts the workspaces in the owner's
-// order (R41, 204; 409 workspace-not-ready orderStale). Each answer is checked against the contract;
+// order (R41, 204; 409 workspace-not-ready orderStale); POST
+// /:workspace/close closes it after the owner's confirm (204; 409
+// workspace-not-ready). Each answer is checked against the contract;
 // when herdr fails, an ErrorBody: 503 herdr-unavailable or 502
 // herdr-bad-reply (d-115).
 import {
+  CloseWorkspaceRequest,
   RenameWorkspaceRequest,
   SetSplitRatioRequest,
   WorkspaceId,
@@ -19,7 +22,7 @@ import { Hono } from 'hono'
 import { type AppEnv, agentErrorJson, errorJson } from '../errors.ts'
 import type { Logger } from '../logger.ts'
 import type { AgentPort, AgentPortError } from '../services/agentPort.ts'
-import { listWorkspaces, orderWorkspaces, readLayout, renameWorkspace } from '../services/workspaces.ts'
+import { closeWorkspace, listWorkspaces, orderWorkspaces, readLayout, renameWorkspace } from '../services/workspaces.ts'
 import { setSplitRatio } from '../services/layoutWrites.ts'
 import { jsonBody, jsonLimit, jsonOnly, smallJson } from './jsonBody.ts'
 
@@ -60,6 +63,42 @@ export function workspacesRoutes(agents: AgentPort, log: Logger) {
         state: 'orderStale',
         message: 'the order does not name each workspace of the list once',
       })
+    })
+    .post('/:workspace/close', smallJson, jsonOnly, jsonBody(CloseWorkspaceRequest), async (c) => {
+      const id = WorkspaceId.safeParse(c.req.param('workspace'))
+      if (!id.success) return invalid(c)
+      const done = await closeWorkspace(agents, id.data, c.req.valid('json'))
+      if (!done.ok) return failed(c, done.error)
+      switch (done.value) {
+        case 'done':
+          return c.body(null, 204)
+        case 'notFound':
+          return errorJson(c, 'not-found', { path: c.req.path, message: 'no workspace has this ID' })
+        case 'notConfirmed':
+          return errorJson(c, 'invalid-input', {
+            message: 'the confirm does not name this workspace',
+            issues: ['confirm: must be the workspace ID'],
+          })
+        case 'working':
+          return errorJson(c, 'workspace-not-ready', { state: 'working', message: 'a chat in it works' })
+        case 'needsYou':
+          return errorJson(c, 'workspace-not-ready', { state: 'needsYou', message: 'a chat in it waits for you' })
+        case 'panesChanged':
+          return errorJson(c, 'workspace-not-ready', {
+            state: 'panesChanged',
+            message: 'the workspace has other chats now',
+          })
+        case 'holdsServer':
+          return errorJson(c, 'workspace-not-ready', {
+            state: 'holdsServer',
+            message: 'it runs this server or the chat that started it',
+          })
+        case 'group':
+          return errorJson(c, 'workspace-not-ready', {
+            state: 'group',
+            message: 'herdr groups it with worktree workspaces',
+          })
+      }
     })
     .post('/:workspace/rename', smallJson, jsonOnly, jsonBody(RenameWorkspaceRequest), async (c) => {
       const id = WorkspaceId.safeParse(c.req.param('workspace'))

@@ -24,6 +24,8 @@ from the outside world.
 - `layoutWrites.ts` sends the layout writes of slice W2 (a move too) to the port;
   a close goes to the port only when its confirm names the chat, and a
   ratio only for a tab of the workspace in the path.
+- `workspaces.ts` sends a workspace close to the port only when its
+  `confirm` names the workspace (R41).
 - `push.ts` is the port of the Web Push keys and subscriptions
   (d-118), the hosts a subscription may name, and `PushSeen`, when a
   page of the owner was last visible.

@@ -140,6 +140,8 @@ export type FakeAgents = AgentPort & {
   readonly renewSession: (chat: ChatId, next: ChatId) => void
   /** Ends each subscription with `error`, as a host that stops answering. */
   readonly endAll: (error: AgentPortError) => void
+  /** Marks a workspace as one whose pane runs the server, which no close may end. */
+  readonly holdServer: (workspace: WorkspaceId) => void
   /** Each prompt and stop that a chat got, in order. */
   readonly inputs: () => FakeInput[]
   /** Puts `text` in a chat's input box, as the owner typing in its terminal; '' empties the box. */
@@ -277,6 +279,7 @@ export function createFakeAgents(
   /** The focused chat of each workspace whose focus a caller changed, and the workspaces that are zoomed. */
   const focus = new Map<WorkspaceId, ChatId>()
   const zooms = new Set<WorkspaceId>()
+  const serverHeld = new Set<WorkspaceId>()
   /** The split tree of each workspace's tab, from its first layout write on. */
   const trees = new Map<WorkspaceId, PaneTree>()
   const treeOf = (workspace: WorkspaceSummary) => trees.get(workspace.id) ?? chainOf(workspace.chats.map((c) => c.pane))
@@ -548,6 +551,22 @@ export function createFakeAgents(
       found.title = label
       tell({ type: 'workspacesChanged' })
       return Promise.resolve(ok('done'))
+    },
+    closeWorkspace(workspace, count) {
+      if ('error' in answer) return Promise.resolve(err(answer.error))
+      const found = (data ?? []).find((w) => w.id === workspace)
+      if (found === undefined) return Promise.resolve(ok('notFound'))
+      if (found.chats.length !== count) return Promise.resolve(ok('panesChanged'))
+      if (serverHeld.has(workspace)) return Promise.resolve(ok('holdsServer'))
+      if (found.chats.some((c) => c.status === 'needsYou')) return Promise.resolve(ok('needsYou'))
+      if (found.chats.some((c) => c.kind !== 'shell' && c.status !== 'idle' && c.status !== 'done'))
+        return Promise.resolve(ok('working'))
+      data?.splice(data.indexOf(found), 1)
+      tell({ type: 'workspacesChanged' })
+      return Promise.resolve(ok('done'))
+    },
+    holdServer(workspace) {
+      serverHeld.add(workspace)
     },
     orderWorkspaces(order) {
       if ('error' in answer) return Promise.resolve(err(answer.error))

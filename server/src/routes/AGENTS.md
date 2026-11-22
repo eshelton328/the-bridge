@@ -102,6 +102,12 @@ Thin Hono sub-apps, one file for each area, named after the area
   workspaces in that order: 204, 400 for an order that repeats one, or
   409 `workspace-not-ready` `orderStale` for an order that leaves out
   a listed workspace or names another (`workspaceEdits.test.ts`).
+  `POST /api/workspaces/:workspace/close` (`{ confirm, panes }`)
+  closes a workspace and each chat in it: 204, 400 when `confirm` is
+  not this workspace (no call to the port), 404 for an unknown one, or
+  409 `workspace-not-ready` with the state `working`, `needsYou`,
+  `panesChanged` (another count than `panes`), `holdsServer` or
+  `group` (`workspaceEdits.test.ts`).
 - `POST /api/chats/:chat/effort` (slice W10) takes `{ effort }` (`low`,
   `medium`, `high` or `xhigh`; `max` is 400) and sets an idle
   Claude chat's effort for its session only: 204, or 409 as a command

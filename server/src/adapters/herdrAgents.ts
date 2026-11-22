@@ -327,6 +327,13 @@ export type HerdrAgentsOptions = {
   readonly log: Logger
   /** The folder under which a start may open a chat (slice W3); none: every start is `folderNotAllowed`. */
   readonly chatRoot?: string
+  /**
+   * The server's own process and each one above it, which no workspace close may end (`processAncestors`);
+   * undefined when the walk failed, which refuses each close.
+   */
+  readonly serverPids?: () => Promise<ReadonlySet<number> | undefined>
+  /** The herdr names of the chats whose workspace never closes (the coordinator's). */
+  readonly guardedAgents?: readonly string[]
   /** The time in ms, for the stop hold; a test can move it. */
   readonly now?: () => number
 }
@@ -381,6 +388,8 @@ export function createHerdrAgents({
   watch: watchFs = (path, listener) => watch(path, listener),
   now = Date.now,
   chatRoot,
+  serverPids = () => Promise.resolve(new Set<number>()),
+  guardedAgents = [],
 }: HerdrAgentsOptions): AgentPort {
   const unknownSeen = new Set<string>()
   /** The chat's status for herdr's `status`; one it does not know is `unknown`, logged once. */
@@ -1326,6 +1335,56 @@ export function createHerdrAgents({
       // herdr sends no list event for a pane's label.
       if (written.ok && written.value === 'done') for (const tellList of listTellers) tellList()
       return written
+    },
+    async closeWorkspace(workspace, count) {
+      const { machine: on, local } = splitId(workspace)
+      if (on !== machine) return ok('notFound')
+      const workspaces = await call('workspace.list', WorkspaceList)
+      if (!workspaces.ok) return workspaces
+      if (!workspaces.value.workspaces.some((w) => w.workspace_id === local)) return ok('notFound')
+      // The workspace's panes, with the status and herdr name of each chat in them.
+      const snapshot = async () => {
+        const [agents, panes] = await Promise.all([call('agent.list', AgentList), call('pane.list', PaneList)])
+        if (!agents.ok) return agents
+        if (!panes.ok) return panes
+        const chats = new Map(agents.value.agents.filter(isChat).map((a) => [a.pane_id, a]))
+        const own = panes.value.panes.filter((p) => p.workspace_id === local).map((p) => p.pane_id)
+        const statuses = own.map((p) => {
+          const chat = chats.get(p)
+          return chat === undefined ? 'idle' : statusOf(chat.agent_status)
+        })
+        const guardedName = own.some((p) => guardedAgents.includes(chats.get(p)?.name ?? ''))
+        return ok({ own, statuses, guardedName })
+      }
+      const first = await snapshot()
+      if (!first.ok) return first
+      if (first.value.own.length !== count) return ok('panesChanged')
+      // The coordinator's chat never closes, wherever the server runs.
+      if (first.value.guardedName) return ok('holdsServer')
+      // Nor a pane whose shell or foreground process is the server or above it; a walk that fails proves nothing.
+      const guarded = await serverPids()
+      if (guarded === undefined) return ok('holdsServer')
+      for (const pane of first.value.own) {
+        const info = await call('pane.process_info', ProcessInfo, { pane_id: pane })
+        if (!info.ok) return info
+        const { shell_pid: shell, foreground_processes: foreground } = info.value.process_info
+        if ([shell, ...foreground.map((f) => f.pid)].some((pid) => typeof pid === 'number' && guarded.has(pid)))
+          return ok('holdsServer')
+      }
+      // Another client can add a pane or start a turn during those reads, so the lists are read again just before.
+      const last = await snapshot()
+      if (!last.ok) return last
+      const { own, statuses, guardedName } = last.value
+      if (own.length !== first.value.own.length || own.some((p) => !first.value.own.includes(p)))
+        return ok('panesChanged')
+      if (guardedName) return ok('holdsServer')
+      if (statuses.includes('needsYou')) return ok('needsYou')
+      // As for a chat's close: a state herdr cannot tell may work.
+      if (statuses.some((s) => s !== 'idle' && s !== 'done')) return ok('working')
+      const reply = await herdrRequest(socket, 'workspace.close', { workspace_id: local, close_group: false })
+      if (reply.ok) return ok('done')
+      if (reply.error.kind === 'herdrError' && reply.error.code === 'workspace_group_close_required') return ok('group')
+      return writeFailed('workspace.close', reply.error)
     },
     async orderWorkspaces(order) {
       const listed = await call('workspace.list', WorkspaceList)
