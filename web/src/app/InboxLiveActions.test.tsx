@@ -86,14 +86,15 @@ describe('a live Inbox item', () => {
       expect(server.calls('detail').map((r) => r.path)).toEqual([`/api/inbox/${question.id}`])
       await expect.element(page.getByRole('button', { name: 'Allow once' })).not.toBeInTheDocument()
       await expect.element(page.getByRole('button', { name: 'Deny' })).not.toBeInTheDocument()
-      // Where Open chat goes, as the router is asked; the Workspaces page may change its own URL once it shows.
+      // Where Open chat goes, as the router is asked: the phone's Inbox and the Workspaces page may change their own URL
+      // around it.
       const went: { pathname: string; search: unknown }[] = []
       const stop = router.subscribe('onBeforeNavigate', ({ toLocation }) => {
         went.push({ pathname: toLocation.pathname, search: toLocation.search })
       })
       await userEvent.click(page.getByRole('button', { name: device.name === 'the phone' ? 'Open' : 'Open chat' }))
       await expect
-        .poll(() => went[0], { timeout: 5000 })
+        .poll(() => went.find((to) => to.pathname === '/workspaces'), { timeout: 5000 })
         .toEqual({ pathname: '/workspaces', search: { chat: question.chat } })
       stop()
     })
