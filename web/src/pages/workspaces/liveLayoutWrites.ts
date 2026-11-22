@@ -118,6 +118,7 @@ async function missOf(action: LayoutWrite, res: Response): Promise<WriteAnswer> 
     case 'upload-conflict':
     case 'storage-full':
     case 'inbox-read-only':
+    case 'workspace-not-ready':
       // The page sends only bodies the contract takes, for a chat it lists: the server's refusal is a bug.
       return reported(action, error.kind, res.status)
   }

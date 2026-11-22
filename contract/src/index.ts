@@ -115,6 +115,18 @@ export {
   PushSubscriptionRequest,
   PushUnsubscribeRequest,
 } from './push.ts'
+export {
+  ChatOrderRequest,
+  CloseWorkspaceRequest,
+  ForkChatRequest,
+  Label,
+  maxLabel,
+  MoveToWorkspaceRequest,
+  MoveToWorkspaceResponse,
+  RenameChatRequest,
+  RenameWorkspaceRequest,
+  WorkspaceOrderRequest,
+} from './workspaceEdits.ts'
 export { ChatSkill, ChatSkillsResponse, maxSkillDescription, maxSkills, SkillSource } from './skills.ts'
 export {
   ChatStatusEvent,
