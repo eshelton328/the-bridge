@@ -187,12 +187,16 @@ client of a socket or a file sits beside them.
 - A workspace close (R41) reads the workspace, agent and pane lists and
   calls `workspace.close` with `close_group: false`, never herdr's
   group close (`group` when herdr asks for it). It refuses a workspace
-  with another pane count than the owner saw (`panesChanged`), a pane
-  whose shell or foreground process is the server or a process above
-  it (`holdsServer`, from `pane.process_info` and
-  `processAncestors.ts`, which runs `ps` with an argument list), then
-  a chat that waits (`needsYou`) or works or has a state herdr cannot
-  tell (`working`), all with no close (`herdrAgents.test.ts`).
+  with another pane count than the owner saw (`panesChanged`), and
+  `holdsServer` for a chat with a guarded herdr name (`bridge-coord`,
+  from `main.ts`) or a pane whose shell or foreground process is the
+  server or a process above it (`pane.process_info` and
+  `processAncestors.ts`, which runs `ps` with an argument list; a walk
+  that fails refuses too). Then it reads the lists again, as another
+  client can add a pane or start a turn during those reads, and refuses
+  another pane set, a chat that waits (`needsYou`) or works or has a
+  state herdr cannot tell (`working`), all with no close
+  (`herdrAgents.test.ts`).
 - A new chat (slice W3) starts in a new pane: `pane.split` beside a
   chat in its folder, or `tab.create` in the folder of the workspace's
   first pane, both with no focus change. The folder must be in the chat

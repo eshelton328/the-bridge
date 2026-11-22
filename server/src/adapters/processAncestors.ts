@@ -1,7 +1,8 @@
 // The server's own process and each process above it (R41), so a workspace
 // close can refuse a workspace whose pane runs the server or the chat that
 // started it. It runs `ps` with an argument list, never a shell, and stops
-// at pid 1, at a loop or after 64 steps; a `ps` that fails ends the walk.
+// at pid 1. A `ps` that fails, a loop or more than 64 steps give undefined,
+// so the caller refuses the close: a part of the tree proves nothing.
 import { execFile } from 'node:child_process'
 
 const maxSteps = 64
@@ -16,15 +17,19 @@ function parentOf(pid: number): Promise<number | undefined> {
   })
 }
 
-/** `pid` and each process above it, up to and without pid 1. */
-export async function processAncestors(pid: number): Promise<ReadonlySet<number>> {
+/** `pid` and each process above it, up to and without pid 1; undefined when the walk cannot finish. */
+export async function processAncestors(
+  pid: number,
+  parent: (pid: number) => Promise<number | undefined> = parentOf,
+): Promise<ReadonlySet<number> | undefined> {
   const found = new Set([pid])
   let at = pid
   for (let step = 0; step < maxSteps; step += 1) {
-    const parent = await parentOf(at)
-    if (parent === undefined || parent === 1 || found.has(parent)) break
-    found.add(parent)
-    at = parent
+    const above = await parent(at)
+    if (above === 1) return found
+    if (above === undefined || found.has(above)) return undefined
+    found.add(above)
+    at = above
   }
-  return found
+  return undefined
 }
