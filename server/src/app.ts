@@ -7,6 +7,7 @@ import { type Access, access } from './auth.ts'
 import { type AppEnv, errorJson, internalMessage, isPlainErrorKind } from './errors.ts'
 import type { Logger } from './logger.ts'
 import { createRateLimit } from './rateLimit.ts'
+import { artifactsRoutes } from './routes/artifacts.ts'
 import { chatsRoutes } from './routes/chats.ts'
 import { clientErrorsRoutes } from './routes/clientErrors.ts'
 import { eventsRoutes } from './routes/events.ts'
@@ -14,6 +15,7 @@ import { pushRoutes } from './routes/push.ts'
 import { uploadsRoutes } from './routes/uploads.ts'
 import { workspacesRoutes } from './routes/workspaces.ts'
 import type { AgentPort } from './services/agentPort.ts'
+import { type Artifacts, createArtifacts } from './services/artifacts.ts'
 import { createLiveEvents } from './services/liveEvents.ts'
 import { createPushSeen, type PushSeen, type PushStore } from './services/push.ts'
 import { defaultChunkBytes, type UploadStore } from './services/uploadStore.ts'
@@ -31,6 +33,8 @@ export type AppDeps = {
   readonly seen?: PushSeen
   /** Runs after a push subscription is saved or removed. */
   readonly pushChanged?: () => void
+  /** The Artifacts library (R26, R27); with none, each artifacts route answers 500. main.ts gives the disk store. */
+  readonly artifacts?: Artifacts
 }
 
 /** The store of an app with none: each call fails, so an upload answers 500 and is logged. */
@@ -42,6 +46,17 @@ const noUploads: UploadStore = {
   remove: () => Promise.resolve(err({ reason: 'failed', code: 'no-store' })),
   attachment: () => Promise.resolve(err({ reason: 'failed', code: 'no-store' })),
 }
+
+/** The artifacts library of an app with none: its store fails each call, and its finder finds nothing. */
+const noArtifacts = (agents: AgentPort) =>
+  createArtifacts({
+    store: {
+      load: () => Promise.resolve(err({ reason: 'failed', code: 'no-store' })),
+      save: () => Promise.resolve(err({ reason: 'failed', code: 'no-store' })),
+    },
+    finder: { scan: () => Promise.resolve({ found: [], partial: false }) },
+    machine: agents.machine,
+  })
 
 /** The push store of an app with none: each call fails. */
 const noPush: PushStore = {
@@ -59,6 +74,7 @@ export function createApp({
   push = noPush,
   seen = createPushSeen(),
   pushChanged,
+  artifacts = noArtifacts(agents),
 }: AppDeps) {
   return (
     new Hono<AppEnv>()
@@ -92,6 +108,7 @@ export function createApp({
       .route('/api/uploads', uploadsRoutes(uploads, log))
       .route('/api/events', eventsRoutes(createLiveEvents(agents), log))
       .route('/api/push', pushRoutes(push, seen, log, pushChanged))
+      .route('/api/artifacts', artifactsRoutes(artifacts, agents, log))
       .route('/api/client-errors', clientErrorsRoutes(log, createRateLimit(60, 60_000)))
       .notFound((c) => errorJson(c, 'not-found', { path: c.req.path, message: 'no route has this path' }))
       // A throw that no route caught: the log gets the error and its causes, the client the request ID.

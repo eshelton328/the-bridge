@@ -122,6 +122,19 @@ Thin Hono sub-apps, one file for each area, named after the area
   it, the form the host check read) and `DELETE /subscriptions` removes one;
   `POST /seen` marks a page as visible for 30 s. No endpoint or key goes
   into a log line or an `ErrorBody` (`push.test.ts`).
+- `/api/artifacts` (R26, R27): `GET /` lists the library, newest
+  first, after a read of what the session files got since the last
+  list; `GET /:artifact` gives one artifact and `madeIn`, the chat
+  that published it when the workspace list has it now (else null, also
+  when herdr does not answer). `POST /` adds an owner link: 201, or
+  200 with the library's entry for a link it has. Its body may be as
+  large as a link and a title of the most characters at 6 bytes each, so
+  a link the contract takes is never too large. `PATCH /:artifact`
+  (`{ project }`) files it and `DELETE /:artifact` removes it: 204,
+  404 for an ID the library does not have, 400 for an ID that is not 16
+  hex characters. `POST /seen` marks the library as seen: 204. A
+  store fault is 500 and logs its errno code only; no link or title goes
+  into a log line or an `ErrorBody` (`artifacts.test.ts`).
 - The JSON checks of each POST route are in `jsonBody.ts`.
 - A route takes its services or ports as function arguments; it never
   imports an adapter.
