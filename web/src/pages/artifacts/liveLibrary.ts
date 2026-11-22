@@ -94,7 +94,12 @@ function liveFilterMenu(
     const isProjects = section.items.some((item) => item.value.startsWith('project:'))
     const kept = section.items
       .filter((item) => Object.hasOwn(counts, item.value))
-      .map((item) => ({ ...item, count: counts[item.value] ?? 0 }))
+      .map((item) => ({
+        ...item,
+        // Not in a project gets its own value, so a project named "none" (`project:none`) is not taken for it.
+        ...(item.value === 'project:none' ? { value: `project:${noProject}` } : {}),
+        count: counts[item.value] ?? 0,
+      }))
     return { ...section, items: isProjects ? [...projects, ...kept] : kept }
   })
   return { ...menu, sections, note: 'All artifacts', show: `Show ${String(cards.length)}` }

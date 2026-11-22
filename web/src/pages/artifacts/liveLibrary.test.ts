@@ -2,7 +2,7 @@ import { ArtifactsResponse } from '@bridge/contract'
 import { describe, expect, it } from 'vitest'
 import { artifactsHome } from './home.ts'
 import { ageOf, foundLine, liveLibrary } from './liveLibrary.ts'
-import { noProject } from './types.ts'
+import { noProject, projectOf } from './types.ts'
 
 // Made-up artifacts only: no real link, title or project.
 const now = new Date('2026-03-10T12:00:00.000Z')
@@ -85,6 +85,23 @@ describe('liveLibrary', () => {
     ])
   })
 
+  it('keeps a project named none apart from an artifact in no project', () => {
+    const named = { ...plan, project: 'none' }
+    const data = liveLibrary(
+      artifactsHome.data,
+      ArtifactsResponse.parse({ checkedAt: minutesAgo(2), lastSeenAt: null, partial: false, artifacts: [named, site] }),
+      { seenAt: null, now },
+    )
+    expect(data.groups.flatMap((g) => g.cards).map((c) => projectOf(c))).toEqual(['none', null])
+    expect(data.fileMenu?.projects).toEqual([{ value: 'none', count: '1 artifact' }])
+    expect(data.fileMenu?.none.count).toBe('1')
+    const values = data.filterMenu?.sections.flatMap((s) => s.items.map((i) => [i.value, i.count]))
+    expect(values?.filter(([v]) => String(v).startsWith('project:'))).toEqual([
+      ['project:none', 1],
+      [`project:${noProject}`, 1],
+    ])
+  })
+
   it('drops the scheme of a link whatever its case', () => {
     const shouting = { ...site, link: 'HTTPS://sample-site.example.com/page' }
     const data = liveLibrary(
@@ -107,7 +124,7 @@ describe('liveLibrary', () => {
       ['source:claude', 1],
       ['source:codex', 1],
       ['project:sample-project', 1],
-      ['project:none', 1],
+      [`project:${noProject}`, 1],
       ['found:hook', 1],
       ['found:hand', 1],
       ['updated:today', 1],

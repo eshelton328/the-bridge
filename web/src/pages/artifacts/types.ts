@@ -233,8 +233,11 @@ const ArtifactFileMenu = z.object({
 })
 export type ArtifactFileMenu = z.infer<typeof ArtifactFileMenu>
 
-/** The value of the menu's Not in a project choice. */
-export const noProject = 'none'
+/**
+ * The value of the menu's Not in a project choice. A project's name never takes it (`ArtifactProject` starts with a
+ * letter or digit), so a project named "none" stays a project.
+ */
+export const noProject = '(none)'
 
 /** The project field's choices: Not in a project first when the field names it, then each project in mono. */
 export const projectChoices = (field: { readonly projects: readonly string[]; readonly none?: string | undefined }) => [
