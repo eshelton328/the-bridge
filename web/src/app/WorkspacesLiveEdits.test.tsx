@@ -289,7 +289,7 @@ describe("a live chat's Rename (R42)", () => {
 })
 
 describe('the fixtures keep every edit control (R41)', () => {
-  it('draws × and the chat handles in M2 on the phone', async () => {
+  it('draws × and no workspace drag handle in M2 on the phone', async () => {
     await render(phone, '/workspaces?state=phoneEdit')
     await expect.element(page.getByRole('button', { name: 'Done', exact: true })).toBeVisible()
     expect(page.getByRole('button', { name: /^Close / }).elements().length).toBeGreaterThan(0)
