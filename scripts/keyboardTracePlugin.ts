@@ -8,8 +8,9 @@
 // load and traces without the URL param when the file `ENABLED` is in the
 // traces folder, so bridge-coord can turn tracing on and off in the
 // installed Home Screen app, where no one can type a URL.
+import { execFileSync } from 'node:child_process'
 import { randomUUID } from 'node:crypto'
-import { existsSync, statSync } from 'node:fs'
+import { existsSync, readFileSync, statSync } from 'node:fs'
 import { mkdir, rename, rm, stat, writeFile } from 'node:fs/promises'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { dirname, join, resolve } from 'node:path'
@@ -27,6 +28,57 @@ const MAX_AGE_MS = 24 * 60 * 60 * 1000
 const MAX_AHEAD_MS = 5 * 60 * 1000
 
 const repoRoot = resolve(import.meta.dirname, '..')
+
+/** The component library the app runs, whose version a trace records. */
+const LIBRARY_PACKAGE = '@eshelton328/component-library-1701'
+/** The name of the define that carries the build into the app (keyboardTrace.ts reads it). */
+export const KEYBOARD_TRACE_BUILD_DEFINE = '__KEYBOARD_TRACE_BUILD__'
+
+/** The build a trace was taken on: the served tree's commit and the component library's version, null when unknown. */
+export type TraceBuild = { commit: string | null; libraryVersion: string | null }
+
+/** A short or full commit sha. */
+const COMMIT = /^[0-9a-f]{7,40}$/
+/** A package version, such as `1.0.0-beta.102`: letters, digits, `.`, `+` and `-`, at most 64. */
+const VERSION = /^[0-9A-Za-z.+-]{1,64}$/
+
+/** Runs `git` in `cwd` and returns its output; throws when git is missing or fails. */
+const runGit = (args: string[], cwd: string): string =>
+  execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], timeout: 5000 })
+
+/**
+ * Reads the build once, when the dev server starts: `git rev-parse --short HEAD` in the repository and the `version`
+ * of the component library's package.json under `web/node_modules`. Each is null when it cannot be read (no git, no
+ * install, an odd value), and nothing here throws, so the dev server always starts.
+ */
+export function readTraceBuild({
+  root = repoRoot,
+  git = runGit,
+}: {
+  root?: string
+  git?: (args: string[], cwd: string) => string
+} = {}): TraceBuild {
+  const readCommit = (): string | null => {
+    try {
+      const sha = git(['rev-parse', '--short', 'HEAD'], root).trim()
+      return COMMIT.test(sha) ? sha : null
+    } catch {
+      return null
+    }
+  }
+  const readLibraryVersion = (): string | null => {
+    try {
+      const manifest: unknown = JSON.parse(
+        readFileSync(join(root, 'web', 'node_modules', ...LIBRARY_PACKAGE.split('/'), 'package.json'), 'utf8'),
+      )
+      const version = isRecord(manifest) ? manifest.version : undefined
+      return typeof version === 'string' && VERSION.test(version) ? version : null
+    } catch {
+      return null
+    }
+  }
+  return { commit: readCommit(), libraryVersion: readLibraryVersion() }
+}
 
 /**
  * The traces folder: `KEYBOARD_TRACE_DIR` when set, else
@@ -103,6 +155,15 @@ const PATHNAME = /^(?:\/[A-Za-z0-9_-]+)*\/?$/
 const CHAT_DEVICES = new Set(['phone', 'tablet'])
 /** A `kb-experiment` key, as the app reads it: letters, digits, `_` and `-`, at most 32. */
 const KB_EXPERIMENT = /^[A-Za-z0-9_-]{1,32}$/
+/** `build`: `{ commit, libraryVersion }`, a commit sha and a package version, each may be null. */
+function isTraceBuild(build: unknown): boolean {
+  return (
+    hasOnly(build, ['commit', 'libraryVersion']) &&
+    (build.commit === null || (typeof build.commit === 'string' && COMMIT.test(build.commit))) &&
+    (build.libraryVersion === null || (typeof build.libraryVersion === 'string' && VERSION.test(build.libraryVersion)))
+  )
+}
+
 const isStateKey = (value: unknown) => value === null || (typeof value === 'string' && STATE_KEY.test(value))
 /** Whether `value` is a record with exactly `keys`, so a field with other text in it is refused. */
 const hasOnly = (value: unknown, keys: readonly string[]): value is Record<string, unknown> =>
@@ -132,8 +193,8 @@ function isTraceChat(chat: unknown): boolean {
 /**
  * Whether a trace's header is valid: `userAgent` and `samples[]` always, and
  * `displayMode`, `screenHeight`, `screenWidth`, `devicePixelRatio`,
- * `safeArea`, `reducedMotion`, `automated`, `kbExperiment`, `route` and
- * `chat` checked when present, so a trace from a
+ * `safeArea`, `reducedMotion`, `automated`, `kbExperiment`, `route`,
+ * `chat` and `build` checked when present, so a trace from a
  * client older than those fields is still taken.
  */
 export function isTraceHeader(trace: unknown): trace is Record<string, unknown> & { samples: unknown[] } {
@@ -158,6 +219,7 @@ export function isTraceHeader(trace: unknown): trace is Record<string, unknown> 
     return false
   if (trace.route !== undefined && !isTraceRoute(trace.route)) return false
   if (trace.chat !== undefined && !isTraceChat(trace.chat)) return false
+  if (trace.build !== undefined && !isTraceBuild(trace.build)) return false
   const safeArea = trace.safeArea
   if (safeArea === undefined) return true
   return isRecord(safeArea) && SAFE_AREA_SIDES.every((side) => isNumber(safeArea[side]))
@@ -215,7 +277,7 @@ export function createTraceHandler({
       send(
         res,
         400,
-        'keyboard-trace body needs { startedAt, userAgent, samples[] }, and a valid displayMode, screenHeight, screenWidth, devicePixelRatio, safeArea, reducedMotion, automated, kbExperiment, route and chat when present',
+        'keyboard-trace body needs { startedAt, userAgent, samples[] }, and a valid displayMode, screenHeight, screenWidth, devicePixelRatio, safeArea, reducedMotion, automated, kbExperiment, route, chat and build when present',
       )
       return
     }
@@ -291,17 +353,26 @@ export function createEnabledHandler({
 /** The structural part of Vite's dev server this plugin uses. */
 type DevServer = { middlewares: { use: (path: string, handler: TraceHandler) => unknown } }
 
-/** The Vite plugin: the trace endpoint and its switch on the dev server only (`apply: 'serve'`). */
-export function keyboardTracePlugin(options: Parameters<typeof createTraceHandler>[0] = {}) {
+/**
+ * The Vite plugin: the trace endpoint and its switch on the dev server only (`apply: 'serve'`), and the define
+ * `__KEYBOARD_TRACE_BUILD__` with the build (`readTraceBuild`), read once when the dev server starts.
+ */
+export function keyboardTracePlugin(
+  options: Parameters<typeof createTraceHandler>[0] & { build?: () => TraceBuild } = {},
+) {
+  const { build = () => readTraceBuild(), ...handlerOptions } = options
   return {
     name: 'bridge-keyboard-trace',
     apply: 'serve' as const,
+    config() {
+      return { define: { [KEYBOARD_TRACE_BUILD_DEFINE]: JSON.stringify(build()) } }
+    },
     configureServer(server: DevServer) {
       // The switch first: connect matches by prefix, so the trace endpoint
       // would also take `/__keyboard-trace/enabled`.
-      const switchOptions = options.traceDir ? { traceDir: options.traceDir } : {}
+      const switchOptions = handlerOptions.traceDir ? { traceDir: handlerOptions.traceDir } : {}
       server.middlewares.use(KEYBOARD_TRACE_ENABLED_PATH, createEnabledHandler(switchOptions))
-      server.middlewares.use(KEYBOARD_TRACE_PATH, createTraceHandler(options))
+      server.middlewares.use(KEYBOARD_TRACE_PATH, createTraceHandler(handlerOptions))
     },
   }
 }

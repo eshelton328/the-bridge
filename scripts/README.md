@@ -78,7 +78,9 @@ numbers), `reducedMotion` and `automated` (booleans), `kbExperiment` (a
 key of letters, digits, `_` and `-`, at most 32, or null), `route` (`{ pathname, state }`: a path of `/`-separated
 letters, digits, `_` and `-`, and a state key of letters and digits or
 null) and `chat` (`{ state, device }`: a state key or null, and `phone`
-or `tablet`); `route` and `chat` take no other keys. Each is checked when
+or `tablet`), and `build` (`{ commit, libraryVersion }`: a 7 to 40
+character hex sha or null, and a version of letters, digits, `.`, `+`
+and `-` or null); `route`, `chat` and `build` take no other keys. Each is checked when
 present (400) and may be missing, so a trace from an older client is
 still taken. Each chat session has its own `startedAt`, so its own file. A trace whose last
 sample is older than the one already written gets 409 and does not
@@ -87,6 +89,15 @@ out. The traces folder is
 `KEYBOARD_TRACE_DIR` when set, else `engine/_local/phone-review/traces/`
 in the first folder above the repository that has `engine/` (the
 ncc-1701 root); it answers 500 when there is none.
+
+When the dev server starts, the plugin's `config` hook reads the build
+once (`readTraceBuild`: `git rev-parse --short HEAD` in the repository
+and the `version` of
+`web/node_modules/@eshelton328/component-library-1701/package.json`) and
+defines it for the app as `__KEYBOARD_TRACE_BUILD__`, which the trace
+records as its `build`. Either value is null when git or the install is
+missing; reading it never stops the dev server. A Vite restart (as after
+each pull of the served app) reads it again.
 
 `GET /__keyboard-trace/enabled` is the switch for the installed Home
 Screen app, where no one can add the URL param. It answers

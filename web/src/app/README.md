@@ -101,9 +101,16 @@ Both modes record the same way:
   (`document.scrollingElement.scrollTop`), `rootTop` (the top of `#root`,
   which is fixed at 0, so any other value is a moved page), `composerTop`
   (the top of the composer's `data-keyboard-keep` wrapper in a ScrollFrame
-  footer; null with none) and `keyboard`, the computed
+  footer; null with none), `keyboard`, the computed
   `--app-shell-keyboard` of `.app-shell__root` (empty when AppShell has
-  not set it). `pnpm keyboard:slide <trace.json>` lists the samples that
+  not set it), `keyboardTop` (the keyboard's top in layout px,
+  `visualViewport.offsetTop + visualViewport.height`; null with no
+  `visualViewport`) and `dockInset` (the `inset` of the last
+  `appShellDockEvent`, the height the shell's dock moves to, 0 for a
+  close; null before the first). `keyboardTop` and `dockInset` read no
+  layout: the dock event only stores its inset for the next sample.
+  Together with `composerTop` they show whether the composer's first
+  step matches the keyboard or jumps. `pnpm keyboard:slide <trace.json>` lists the samples that
   show a moved page (screen review R27). A focus or pointer sample (`focusin`, `focusout`,
   `pointerdown`, `pointerup`) adds the target's `targetTag` and
   `targetRole`, never its text, value, name or id. The pointer target
@@ -122,7 +129,15 @@ Both modes record the same way:
   `reducedMotion` (whether `prefers-reduced-motion: reduce` matches),
   `kbExperiment` (the `kb-experiment` search param when it is a key of
   letters, digits, `_` and `-`, at most 32, a label for a trace taken in a
-  browser, else null; no other search param is recorded) and `automated` (`navigator.webdriver`).
+  browser, else null; no other search param is recorded), `automated` (`navigator.webdriver`)
+  and `build` (`{ commit, libraryVersion }`: the served tree's
+  `git rev-parse --short HEAD` and the component library's version, read
+  once when the dev server starts and passed in as the define
+  `__KEYBOARD_TRACE_BUILD__` by `scripts/keyboardTracePlugin.ts`; each is
+  null when it cannot be read, and the dev server still starts).
+  For example `"build": { "commit": "1a2b3c4", "libraryVersion":
+  "1.0.0-beta.99" }` and, in a sample, `"keyboardTop": 412.5,
+  "dockInset": 336`.
 - With the param, a fixed overlay in the top right corner shows the live
   values; from the switch there is none. It is
   `inert`, `aria-hidden` and `pointer-events: none`, so it takes no tap,

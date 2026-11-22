@@ -3,12 +3,21 @@
 // has `?keyboard-trace` or the dev server's switch is on
 // (keyboardTraceSwitch.ts), so a build leaves it out. It only reads: one
 // sample on each animation frame and on the focus, pointer, resize and scroll
-// events (each with the document's scroll and the tops of `#root` and the
-// composer, so a page that iOS moves shows), a small overlay with the live values (the param only), and a POST of
+// events (each with the document's scroll, the tops of `#root` and the
+// composer, so a page that iOS moves shows, the keyboard's top and the
+// shell's last dock target), a small overlay with the live values (the param only), and a POST of
 // the whole trace every 2 s to the dev server's endpoint
 // (scripts/keyboardTracePlugin.ts), which writes it to disk. With the param
 // it traces the whole page; from the switch keyboardChatTrace.ts runs one
 // short trace per keyboard open in a Workspaces chat, with the same recorder.
+
+import { appShellDockEvent } from '@eshelton328/component-library-1701'
+
+/**
+ * The build, as the dev server's plugin defines it when it starts (scripts/keyboardTracePlugin.ts); undefined where
+ * no plugin ran it (a test without the plugin, a build).
+ */
+declare const __KEYBOARD_TRACE_BUILD__: KeyboardTraceBuild | undefined
 
 /** One reading of the viewport and the shell's keyboard inset. */
 export type KeyboardTraceSample = {
@@ -29,10 +38,23 @@ export type KeyboardTraceSample = {
   composerTop: number | null
   /** The computed `--app-shell-keyboard` of `.app-shell__root`; empty when there is none. */
   keyboard: string
+  /**
+   * The keyboard's top in layout px, `visualViewport.offsetTop + visualViewport.height`: the bottom of what the
+   * keyboard leaves visible. Null with no `visualViewport`.
+   */
+  keyboardTop: number | null
+  /**
+   * The inset the shell's keyboard dock moves to, from the last `appShellDockEvent` (`detail.inset`, CSS px; 0 for a
+   * close). Null before the first.
+   */
+  dockInset: number | null
   /** Focus and pointer events only: the target's tag name and role, never its text, value, name or id. */
   targetTag?: string
   targetRole?: string | null
 }
+
+/** The build the trace ran on: the served tree's commit and the component library's version, null when unknown. */
+export type KeyboardTraceBuild = { commit: string | null; libraryVersion: string | null }
 
 /** The safe-area insets, in px, as `env(safe-area-inset-*)` gives them. */
 type SafeArea = { top: number; right: number; bottom: number; left: number }
@@ -59,6 +81,8 @@ export type KeyboardTraceHeader = {
   kbExperiment: string | null
   /** True when `navigator.webdriver` is: a trace from Playwright or other automation. */
   automated: boolean
+  /** The build, read when the dev server started; both fields null where the server defined none. */
+  build: KeyboardTraceBuild
   /** A chat session only (keyboardChatTrace.ts). */
   route?: TraceRoute
   /** A chat session only (keyboardChatTrace.ts). */
@@ -89,8 +113,23 @@ export function createRing<T>(cap: number): Ring<T> {
 
 const round = (n: number) => Math.round(n * 10) / 10
 
-/** Reads one sample from `win`. For a focus event, `target` gives only its tag name and role. */
-export function readSample(type: string, target: EventTarget | null, win: Window = window): KeyboardTraceSample {
+/** The build the dev server defined, or nulls where it defined none. */
+export function readBuild(): KeyboardTraceBuild {
+  return typeof __KEYBOARD_TRACE_BUILD__ === 'undefined'
+    ? { commit: null, libraryVersion: null }
+    : { commit: __KEYBOARD_TRACE_BUILD__.commit, libraryVersion: __KEYBOARD_TRACE_BUILD__.libraryVersion }
+}
+
+/**
+ * Reads one sample from `win`. For a focus event, `target` gives only its tag name and role. `dockInset` is the last
+ * dock target the recorder saw; it reads no layout, nor does `keyboardTop` (visual viewport fields only).
+ */
+export function readSample(
+  type: string,
+  target: EventTarget | null,
+  win: Window = window,
+  dockInset: number | null = null,
+): KeyboardTraceSample {
   const vv = win.visualViewport
   const doc = win.document
   const root = doc.querySelector('.app-shell__root')
@@ -107,6 +146,8 @@ export function readSample(type: string, target: EventTarget | null, win: Window
     rootTop: top(doc.getElementById('root')),
     composerTop: top(doc.querySelector('.scroll-frame__footer [data-keyboard-keep]')),
     keyboard: root === null ? '' : win.getComputedStyle(root).getPropertyValue('--app-shell-keyboard').trim(),
+    keyboardTop: vv === null ? null : round(vv.offsetTop + vv.height),
+    dockInset,
   }
   if (type === 'focusin' || type === 'focusout' || type === 'pointerdown' || type === 'pointerup') {
     sample.targetTag = target instanceof Element ? target.tagName.toLowerCase() : target === null ? 'none' : 'window'
@@ -198,12 +239,13 @@ function readHeaderNow(win: Window, startedAt: string): Omit<KeyboardTraceHeader
     reducedMotion: readReducedMotion(win),
     kbExperiment: readKbExperiment(win),
     automated: win.navigator.webdriver,
+    build: readBuild(),
   }
 }
 
 /**
  * The trace's header: its start time, the browser, the display mode, the screen, the safe area, reduced motion, the
- * `kb-experiment` key and whether automation runs the page.
+ * `kb-experiment` key, whether automation runs the page and the build.
  */
 export async function readHeader(
   win: Window = window,
@@ -223,6 +265,8 @@ export type TraceOptions = {
   endpoint?: string
   post?: (endpoint: string, body: string) => Promise<unknown>
   overlay?: boolean
+  /** The build to record; the dev server's define by default. */
+  build?: KeyboardTraceBuild
 }
 
 const postJson = (endpoint: string, body: string) =>
@@ -246,7 +290,7 @@ function overlayText(s: KeyboardTraceSample, count: number, sent: string): strin
   return [
     `vv h ${String(s.vvHeight)} top ${String(s.vvOffsetTop)} page ${String(s.vvPageTop)}`,
     `inner ${String(s.innerHeight)} scrollY ${String(s.scrollY)}`,
-    `kb ${s.keyboard || '-'}  n ${String(count)}  ${sent}`,
+    `kb ${s.keyboard || '-'} top ${String(s.keyboardTop)} dock ${String(s.dockInset)}  n ${String(count)}  ${sent}`,
   ].join('\n')
 }
 
@@ -269,6 +313,7 @@ export function recordKeyboardTrace({
   endpoint = '/__keyboard-trace',
   post = postJson,
   overlay = true,
+  build,
   extra = {},
   onSample,
 }: TraceOptions & {
@@ -281,6 +326,7 @@ export function recordKeyboardTrace({
   let header: KeyboardTraceHeader = {
     ...readHeaderNow(win, new Date().toISOString()),
     safeArea: { top: 0, right: 0, bottom: 0, left: 0 },
+    ...(build === undefined ? {} : { build }),
     ...extra,
   }
   const ready = readSafeArea(win).then(
@@ -292,16 +338,26 @@ export function recordKeyboardTrace({
   const trace = (): KeyboardTrace => ({ ...header, samples: ring.toArray() })
   const view = overlay ? makeOverlay(win.document) : undefined
   let sent = 'not sent'
+  // The dock's target inset from the last `appShellDockEvent`, carried into each sample.
+  let dockInset: number | null = null
   const record = (type: string, target: EventTarget | null) => {
-    const sample = readSample(type, target, win)
+    const sample = readSample(type, target, win, dockInset)
     ring.push(sample)
     onSample?.(sample)
     return sample
   }
   const onWindow = (event: Event) => record(event.type, event.target)
   const onViewport = (event: Event) => record(`vv-${event.type}`, null)
+  // The shell sends the dock event to its root without bubbling; a capture listener on the window still sees it.
+  // It only keeps the inset for the next sample: a sample here would read layout while the shell starts its move.
+  const onDock = (event: Event) => {
+    const detail: unknown = event instanceof CustomEvent ? event.detail : undefined
+    const inset: unknown = typeof detail === 'object' && detail !== null ? Reflect.get(detail, 'inset') : undefined
+    dockInset = typeof inset === 'number' && Number.isFinite(inset) ? round(inset) : null
+  }
   const options = { capture: true, passive: true }
   for (const type of WINDOW_EVENTS) win.addEventListener(type, onWindow, options)
+  win.addEventListener(appShellDockEvent, onDock, options)
   for (const type of VIEWPORT_EVENTS) win.visualViewport?.addEventListener(type, onViewport, options)
 
   let frame = 0
@@ -349,6 +405,7 @@ export function recordKeyboardTrace({
     win.clearInterval(timer)
     win.document.removeEventListener('visibilitychange', onHidden)
     for (const type of WINDOW_EVENTS) win.removeEventListener(type, onWindow, options)
+    win.removeEventListener(appShellDockEvent, onDock, options)
     for (const type of VIEWPORT_EVENTS) win.visualViewport?.removeEventListener(type, onViewport, options)
     view?.remove()
     if (flush) send(true)
