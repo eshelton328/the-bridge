@@ -35,7 +35,10 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   `blocks/useWorkspaceReorder.ts`) and Rename in place of ×. A drag on
   the handle, or an arrow key on the focused handle, posts `POST
   /api/workspaces/order` with the whole list in the new order; the page
-  holds that order until the list read after `workspaces.changed`. Rename
+  holds that order until the list read after `workspaces.changed`. While
+  a drag runs every group shows its header only, a pointer held near the
+  list's top or bottom edge scrolls it, and only the pointer that started
+  the drag moves or ends it. Rename
   opens the name as a field, which posts `POST
   /api/workspaces/:workspace/rename`. A chat's Rename posts `POST
   /api/chats/:chat/rename`, herdr's label of its pane, which the list
