@@ -412,7 +412,8 @@ export function ChatPane(props: ChatPaneProps) {
     const onDock = (event: Event) => {
       if (!(event instanceof CustomEvent) || !proxyHoldsRef.current) return
       const detail: unknown = event.detail
-      if (typeof detail !== 'object' || detail === null || !('inset' in detail) || typeof detail.inset !== 'number') return
+      if (typeof detail !== 'object' || detail === null || !('inset' in detail) || typeof detail.inset !== 'number')
+        return
       if (detail.inset <= 0) return
       proxyHoldsRef.current = false
       setFocused(true)
