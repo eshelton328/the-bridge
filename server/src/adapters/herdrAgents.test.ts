@@ -726,6 +726,19 @@ describe('herdr agents: input to a chat', () => {
         socket.set('pane.list', undefined)
         expect(closed).toEqual({ ok: true, value: 'holdsServer' })
       }
+      // The app renames the coordinator's label: its terminal title, or its herdr name, still guards it.
+      const agentsNow = results['agent.list'].agents
+      for (const [agents, pane] of [
+        [unnamed, { ...panes[0], label: 'release notes', terminal_title_stripped: 'bridge-coord' }],
+        [agentsNow, { ...panes[0], label: 'release notes', terminal_title_stripped: 'release notes' }],
+      ] as const) {
+        socket.set('agent.list', { type: 'agent_list', agents })
+        socket.set('pane.list', { type: 'pane_list', panes: [pane, ...panes.slice(1)] })
+        const closed = await coord.closeWorkspace(w17, 2)
+        socket.set('agent.list', undefined)
+        socket.set('pane.list', undefined)
+        expect(closed).toEqual({ ok: true, value: 'holdsServer' })
+      }
       expect(sent('workspace.close')).toHaveLength(closes)
     })
 
