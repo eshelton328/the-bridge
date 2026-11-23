@@ -35,8 +35,9 @@ folder with `frame.png`, `reference.json` and `note.txt`, and no
 CSS px, its device, its mode (`light` or `dark`), its `source` and the
 original picture's file, size and sha256. `frame.png` is the original
 scaled to that size. A folder holds `frame.json` or `reference.json`,
-never both. The fidelity tools run only the rule check on a PNG
-reference and give the reviewer a pixel diff
+never both. On a PNG reference the fidelity tools run the rule check and
+need a `fidelity-reviewer` record with no P1 or P2 finding, and give the
+reviewer a pixel diff
 ([../scripts/fidelity/README.md](../scripts/fidelity/README.md)).
 
 - `settings/` holds the lab screenshots the owner approved; each note names

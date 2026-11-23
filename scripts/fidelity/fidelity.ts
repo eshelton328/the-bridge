@@ -8,15 +8,18 @@
 //   <frameId>.sideBySide.png  Figma left, render right, for the reviewer
 // With no frame ids it checks every frame that a state file lists.
 // A page with no Figma frame has PNG references (reference.json, d-119):
-// they run only the rule check, and the report adds a pixel diff and its
-// picture (<frameId>.diff.png) for the reviewer; text, position and icons
-// need Figma layers, so naming one in --checks fails the frame.
+// they run the rule check and pass only with a fidelity-reviewer record of
+// the render with no P1 or P2 finding (--review <file>, one frame); the
+// report adds a pixel diff and its picture (<frameId>.diff.png) for the
+// reviewer. Text, position and icons need Figma layers, so naming one in
+// --checks fails the frame.
 // Exits 1 when any check fails. Flags: --skip-build reuses
 // web/storybook-static; --tolerance <px> overrides frame.json;
 // --checks text,rules makes only those checks decide the result (CI runs
 // text and rules); the report still holds all three.
 import { execFileSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { join } from 'node:path'
 import { parseArgs } from 'node:util'
 import { chromium, type Browser, type BrowserContext, type Page } from 'playwright'
@@ -43,6 +46,7 @@ import {
   reportsDir,
 } from './references.ts'
 import { comparePngs } from './pixelDiff.ts'
+import { parseReview, pngLabel, pngReviewGate } from './pngReview.ts'
 import { composeSideBySide } from './sideBySide.ts'
 import { serveStatic, stateForFrame, storybookDir, storyForState } from './storyServer.ts'
 
@@ -52,12 +56,13 @@ const { values, positionals } = parseArgs({
     'skip-build': { type: 'boolean', default: false },
     tolerance: { type: 'string' },
     checks: { type: 'string' },
+    review: { type: 'string' },
   },
 })
 const [page, ...requested] = positionals
 if (page === undefined || !existsSync(join(referencesDir, page))) {
   console.error(
-    'Usage: pnpm fidelity <page> [frameId…] [--skip-build] [--tolerance <px>] [--checks text,rules[,icons]]',
+    'Usage: pnpm fidelity <page> [frameId…] [--skip-build] [--tolerance <px>] [--checks text,rules[,icons]] [--review <file>]',
   )
   console.error(`Pages with references: ${existsSync(referencesDir) ? readdirSync(referencesDir).join(', ') : 'none'}`)
   process.exit(2)
@@ -80,6 +85,12 @@ const frameIds =
   requested.length > 0
     ? requested.map(normaliseFrameId)
     : allFrames.filter((id) => stateForFrame(page, codeOf(id)) !== undefined)
+// A reviewer record is for one frame's render, so --review takes exactly one frame id.
+if (values.review !== undefined && requested.length !== 1) {
+  console.error('--review <file> takes one frame id: pnpm fidelity <page> <frameId> --review <file>')
+  process.exit(2)
+}
+const reviewFile = values.review === undefined ? undefined : resolve(values.review)
 
 if (!values['skip-build'] || !existsSync(join(storybookDir, 'index.json'))) {
   console.error('Building Storybook (pass --skip-build to reuse web/storybook-static)…')
@@ -101,11 +112,16 @@ const summary: {
   text?: boolean
   position?: boolean
   rules?: boolean
+  review?: boolean
+  label?: string
   error?: string
 }[] = []
 
 try {
   for (const frameId of frameIds) {
+    // A PNG frame carries its label in the report and the summary, also when it stops with an error.
+    const png = existsSync(join(frameDir(page, frameId), 'reference.json'))
+    const label = png ? { label: pngLabel } : {}
     try {
       summary.push(
         frameKind(frameDir(page, frameId)) === 'png'
@@ -116,9 +132,9 @@ try {
       const message = error instanceof Error ? error.message : String(error)
       writeFileSync(
         join(outDir, `${frameId}.json`),
-        `${JSON.stringify({ frameId, ok: false, error: message }, null, 2)}\n`,
+        `${JSON.stringify({ frameId, ...label, ok: false, error: message }, null, 2)}\n`,
       )
-      summary.push({ frameId, ok: false, gate: false, error: message })
+      summary.push({ frameId, ...label, ok: false, gate: false, error: message })
     }
   }
 } finally {
@@ -211,10 +227,15 @@ async function runPngFrame(b: Browser, origin: string, frameId: string) {
   const flat = { ...ref, layers: [], exclude: [] }
   const url = `${origin}/iframe.html?id=${story}&viewMode=story`
   const errors: string[] = []
+  const renderPng = join(outDir, `${frameId}.render.png`)
+  // The render the reviewer saw: the one the last run left, read before this run replaces it.
+  const reviewed = reviewFile !== undefined && existsSync(renderPng) ? readFileSync(renderPng) : undefined
+  const review =
+    reviewFile === undefined ? undefined : parseReview(JSON.parse(readFileSync(reviewFile, 'utf8')), reviewFile)
   const shown = await openStory(b, url, ref.w, ref.h, errors, ref.mode)
   const measured = await shown.tab.evaluate<PageMeasure>(collectPageScript('#storybook-root'))
-  const renderPng = join(outDir, `${frameId}.render.png`)
   await shown.tab.screenshot({ path: renderPng })
+  const sameRender = reviewed?.equals(readFileSync(renderPng)) === true
 
   const referencePng = join(frameDir(page, frameId), 'frame.png')
   const sideBySide = join(outDir, `${frameId}.sideBySide.png`)
@@ -224,12 +245,14 @@ async function runPngFrame(b: Browser, origin: string, frameId: string) {
   await shown.context.close()
 
   const rules = checkRules(flat, exceptions, measured)
-  // checksForPng allows only the rule check, so the gate is the frame's result.
-  const ok = rules.ok && errors.length === 0
+  const reviewGate = pngReviewGate(review, sameRender)
+  // checksForPng allows only the rule check, and the reviewer's gate always applies, so the gate is the frame's result.
+  const ok = rules.ok && reviewGate.ok && errors.length === 0
   const gate = ok
   const report = {
     frameId,
     name: ref.name,
+    label: pngLabel,
     reference: 'png',
     source: ref.source,
     state: `${page}/${state}`,
@@ -242,12 +265,13 @@ async function runPngFrame(b: Browser, origin: string, frameId: string) {
     gate,
     pageErrors: errors,
     rules,
+    review: { ...reviewGate, file: reviewFile ?? null },
     pixels,
     images: { reference: referencePng, render: renderPng, sideBySide, diff: diffPng },
     note: join(frameDir(page, frameId), 'note.txt'),
   }
   writeFileSync(join(outDir, `${frameId}.json`), `${JSON.stringify(report, null, 2)}\n`)
-  return { frameId, ok, gate, rules: rules.ok }
+  return { frameId, label: pngLabel, ok, gate, rules: rules.ok, review: reviewGate.ok }
 }
 
 /**
