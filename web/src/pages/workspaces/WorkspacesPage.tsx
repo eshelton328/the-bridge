@@ -202,7 +202,14 @@ export function WorkspacesPage() {
     herdrTabs: liveData.liveTabs,
     ui: currentUi,
     change: changeUi,
-    readList: () => void router.invalidate(),
+    // A fresh server read through the open watcher, not the cache the events keep (liveWorkspaces.ts); with no
+    // watcher the route's load reads the server.
+    readList: () => {
+      void import('./liveWorkspaces.ts').then((m) => {
+        m.readListAgain()
+        void router.invalidate()
+      })
+    },
     fail: (line) => {
       forkFailRef.current(line)
     },

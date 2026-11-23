@@ -9,7 +9,9 @@
 //
 // The wait is bounded, as Claude can still end at its start in the new pane,
 // which herdr then lists as a shell (the real run of #443; since #446 the
-// server refuses a session with no saved turn before it makes a pane). A list read after the answer that shows the pane as a
+// server refuses a session with no saved turn before it makes a pane). Only
+// a list the server answered counts (`listReads`), never a load from the
+// cache or a render with new transcripts or ui (Codex review of #449). A list read after the answer that shows the pane as a
 // shell reads the list once more after `shellCheckMs`; a read after that one
 // that still shows a shell there ends the wait with `shellLine`, as a shell
 // before Claude starts is never listed after the answer. With no chat by
@@ -17,6 +19,7 @@
 import type { StartChatResponse } from '@bridge/contract'
 import { useCallback, useEffect, useLayoutEffect, useRef } from 'react'
 import { showNotice } from './livePending.ts'
+import { listReads } from './listReads.ts'
 import { listedChats, openListedChat } from './openListedChat.ts'
 import type { WorkspacesData, WorkspacesUi } from './types.ts'
 import { needsYouLine } from './useNewChat.ts'
@@ -35,19 +38,19 @@ export type ForkedChatDeps = {
   readonly herdrTabs: WorkspacesData['liveTabs']
   readonly ui: () => WorkspacesUi
   readonly change: (change: Partial<WorkspacesUi>) => void
-  /** Reads the workspace list again. */
+  /** Reads the workspace list again from the server. */
   readonly readList: () => void
   /** Shows the line of a fork that did not start. */
   readonly fail: (line: string) => void
 }
 
-/** The followed fork: its pane, whether its answer said ready, the data then, and its timers. */
+/** The followed fork: its pane, whether its answer said ready, the server's list reads then, and its timers. */
 type Follow = {
   readonly pane: string
   readonly ready: boolean
-  readonly answered: WorkspacesData
-  /** The data when a read first listed the pane as a shell, once it did. */
-  shellSeen?: WorkspacesData | undefined
+  readonly answered: number
+  /** The server's list reads when one after the answer first listed the pane as a shell, once one did. */
+  shellSeen?: number | undefined
   wait: ReturnType<typeof setTimeout> | undefined
   shellCheck: ReturnType<typeof setTimeout> | undefined
 }
@@ -80,12 +83,13 @@ export function useForkedChat(deps: ForkedChatDeps): (started: StartChatResponse
     const hit = listedChats(data).find(({ chat }) => chat.pane === follow.pane)
     if (hit === undefined) return
     if (hit.chat.kind === 'shell') {
-      // Only a read after the answer counts, and a second read after the check confirms it.
-      if (data === follow.answered) return
+      // Only a server read after the answer counts, and a second server read after the check confirms it.
+      const reads = listReads()
+      if (reads === follow.answered) return
       if (follow.shellSeen === undefined) {
-        follow.shellSeen = data
+        follow.shellSeen = reads
         follow.shellCheck = setTimeout(readList, shellCheckMs)
-      } else if (data !== follow.shellSeen) end(shellLine)
+      } else if (reads > follow.shellSeen) end(shellLine)
       return
     }
     follow.shellSeen = undefined
@@ -115,7 +119,7 @@ export function useForkedChat(deps: ForkedChatDeps): (started: StartChatResponse
       const follow: Follow = {
         pane,
         ready: state === 'ready' && chat !== undefined,
-        answered: depsRef.current.data,
+        answered: listReads(),
         wait: undefined,
         shellCheck: undefined,
       }

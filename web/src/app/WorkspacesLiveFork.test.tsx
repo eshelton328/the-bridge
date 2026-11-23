@@ -272,6 +272,35 @@ describe('Fork on a live Claude chat (backend #443)', () => {
     await expect.element(page.getByRole('heading', { name: 'sketch the plan' })).toBeVisible()
   })
 
+  it('keeps waiting while only cached reloads show the forked pane as a shell (Codex review of #449)', async () => {
+    const fakes = withChats()
+    fakes.list.startAs('starting')
+    await openChat('tablet', 'sketch the plan')
+    await tapFork('tablet', 'sketch the plan')
+    await expect.poll(() => fakes.list.chats().map((c) => c.id)).toContain(forked)
+    const claude = fakes.list.chats().find((c) => c.id === forked)
+    if (claude === undefined) throw new Error('no forked chat')
+    const shell = ChatSummary.parse({
+      ...summary('test-box/term-9', 'zsh'),
+      kind: 'shell',
+      model: 'zsh',
+      modelId: null,
+      pane: claude.pane,
+    })
+    const reads = listReads()
+    fakes.list.putOnPane(forked, shell)
+    await expect.poll(listReads).toBeGreaterThan(reads)
+    // Layout events reload the page from the cached list: new data, but no new list from the server.
+    for (const { id } of fakes.list.workspaces()) fakes.list.layoutChanged(id)
+    await new Promise((done) => setTimeout(done, 300))
+    for (const { id } of fakes.list.workspaces()) fakes.list.layoutChanged(id)
+    await new Promise((done) => setTimeout(done, 300))
+    // Claude came up after all: the next server list shows it, and it opens with no line.
+    fakes.list.putOnPane('test-box/term-9', { ...claude, status: 'idle' })
+    await expectOpen('tablet', 'sketch the plan-fork')
+    await expect.element(page.getByText(/^Fork did not start/)).not.toBeInTheDocument()
+  })
+
   for (const size of ['phone', 'tablet', 'desktop', 'workbench'] as const)
     it(`offers no Fork for a Codex chat or a shell, which the server refuses, on the ${size}`, async () => {
       const fakes = withChats()

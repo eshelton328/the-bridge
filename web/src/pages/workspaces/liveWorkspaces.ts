@@ -57,6 +57,7 @@ import { report } from '../../errors/reporter.ts'
 import { api } from '../../lib/api.ts'
 import { type Frame, frames, reconnectGraceMs } from '../../lib/eventFrames.ts'
 import { queryClient } from '../../lib/queryClient.ts'
+import { countListRead } from './listReads.ts'
 import type { ScreenState } from '../../lib/screenState.ts'
 import { modelFamilies } from './blocks/modelFamilies.ts'
 import { maxPanes } from './blocks/workspaceLayout.ts'
@@ -1104,6 +1105,7 @@ export async function withLiveWorkspaces(
       answer = await fetch(AbortSignal.any([cancel, AbortSignal.timeout(liveReadTimeoutMs)]))
     }
     if (!answer.ok) throw new LiveMissError(answer.error)
+    countListRead()
     endListGrace()
     if (taken !== before)
       setTimeout(() => {
