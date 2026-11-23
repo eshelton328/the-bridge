@@ -1692,12 +1692,18 @@ export function createHerdrAgents({
           })
           stream = mine
         })
-      // A move gives the chat's pane a new herdr ID, and its status stream then follows the new one.
+      /** The pane that the last move gave the chat, and whether the status stream was started yet. */
+      let movedTo: string | undefined
+      let watching = false
+      // A move gives the chat's pane a new herdr ID, and its status stream then follows the new one. A move while the
+      // watch starts leaves it to the start; a stream that ended first (the old ID is gone) starts again.
       const onMoved = (moved: ChatId, pane: string) => {
-        if (over || moved !== chat || stream === undefined) return
+        if (over || moved !== chat) return
+        movedTo = pane
+        if (!watching) return
         const old = stream
         stream = undefined
-        old.close()
+        old?.close()
         void statusWatch(pane)
       }
       moveTellers.add(onMoved)
@@ -1713,7 +1719,8 @@ export function createHerdrAgents({
         session = path
         attach(false)
         if (pane === undefined) return
-        await statusWatch(pane)
+        watching = true
+        await statusWatch(movedTo ?? pane)
       })
       return { ready, close }
     },

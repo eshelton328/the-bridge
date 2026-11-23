@@ -2047,6 +2047,35 @@ describe('herdr adapter transcripts', () => {
     expect(ends).toEqual([])
   })
 
+  it('follows a move that comes while a transcript watch starts (#435 fix review)', async () => {
+    const fake = await startFakeHerdrSocket(
+      withAgent({
+        agent_status: 'idle',
+        agent_session: { agent: 'claude', kind: 'id', source: 'herdr:claude', value: 'session-t' },
+      }),
+    )
+    const adapter = createHerdrAgents({ socket: fake.path, machine, log, claudeProjects: projects, home })
+    // The watch's first read is slow, so the move ends first and the read still gives the old pane.
+    fake.delayOnce('agent.list', 300)
+    const watch = adapter.watchTranscript(
+      ChatId.parse('test-mac/session-t'),
+      () => undefined,
+      () => undefined,
+    )
+    fake.once('pane.move', {
+      type: 'pane_move',
+      move_result: { changed: true, pane: { pane_id: 'w18:p3', terminal_id: 'term_1', workspace_id: 'w18' } },
+    })
+    const moved = await adapter.moveToWorkspace(ChatId.parse('test-mac/session-t'), WorkspaceId.parse(`${machine}/w18`))
+    expect(moved.ok && typeof moved.value === 'object').toBe(true)
+    await watch.ready
+    const watched = JSON.stringify(fake.streams())
+    watch.close()
+    await fake.close()
+    expect(watched).toContain('w18:p3')
+    expect(watched).not.toContain('w17:p1')
+  })
+
   it("keeps a transcript watch open, with no end, when the chat's pane closed before its status stream", async () => {
     const fake = await startFakeHerdrSocket(
       withAgent({
