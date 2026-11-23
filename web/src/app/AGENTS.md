@@ -11,8 +11,10 @@ not-found components, so no route needs a boundary of its own (d-084).
 
 - `InboxFeedProvider` is the app's live Inbox badge (only in the app that
   reads the live server, never in a test): one event stream, one
-  `GET /api/inbox` per `inbox.changed` burst and per stream open, no
-  timer. A page entry reads it with `useInboxBadge` (`lib/inboxFeed.ts`)
+  `GET /api/inbox` per `inbox.changed` burst and per stream open, and
+  no timer but the restart grace: a read with no answer (or a 5xx with no
+  error body) keeps the count with no report for 10 s, then reads once
+  more and reports one miss for the outage (review R43b). A page entry reads it with `useInboxBadge` (`lib/inboxFeed.ts`)
   and passes the count to its screen, so `AppRail` and `AppTabBar` stay
   props-only. A live page shows no sample number; `?state=`,
   `?source=fixtures` and stories keep theirs (`InboxBadgeLive.test.tsx`).

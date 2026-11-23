@@ -65,6 +65,10 @@
 // set a result (`setSendResult`) or answer the read itself
 // (`answerSendResults`). Each read's send ID is in `resultReads`.
 //
+// R43b: `ping` writes the server's ping comment to a chat's open streams
+// (backend #424), and `hang` forgets them with no end, as a killed server
+// behind the Vite proxy leaves them.
+//
 // R32 (backend #371): `toolCall` makes a tool entry as the server sends it,
 // with its kind, its readable title and its label (the call's own
 // description, "" when it has none), checked against the contract.
@@ -483,6 +487,14 @@ export function fakeTranscriptServer({ streams: mode = 'open', uploads: uploadOp
         open.splice(open.indexOf(s), 1)
         s.control.error(new TypeError('network error'))
       }
+    },
+    /** Writes the server's ping comment to each open stream of `chat` (backend #424). */
+    ping: (chat: string) => {
+      for (const s of open) if (s.chat === chat) s.control.enqueue(encoder.encode(': ping\n\n'))
+    },
+    /** Forgets each open stream of `chat` with no end, as a killed server behind the Vite proxy leaves it (R43b). */
+    hang: (chat: string) => {
+      for (const s of open.filter((o) => o.chat === chat)) open.splice(open.indexOf(s), 1)
     },
     /** Ends each open stream of `chat` with no event, as iOS closes the connections of a page in the background. */
     close: (chat: string) => {

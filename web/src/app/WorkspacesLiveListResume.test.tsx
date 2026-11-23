@@ -14,7 +14,7 @@ import { fakeWorkspacesServer } from '../lib/fakeWorkspacesServer.ts'
 import { holdTimers } from '../lib/holdTimers.ts'
 import { answerLateServerReads } from '../lib/lateServerReads.ts'
 import { queryClient } from '../lib/queryClient.ts'
-import { setViewport } from '../lib/rendering.ts'
+import { renderedUntil, setViewport } from '../lib/rendering.ts'
 import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { markApp } from './appMarker.ts'
@@ -25,7 +25,8 @@ import { routeTree } from './routeTree.gen.ts'
 // background, and the page sees the close only when it shows again. A list read that gets no answer at all then (no
 // status) while the page is hidden, after it hid during the read or within 5 s after it showed again shows no
 // notice, and the list is read again once the page shows, as the layout read does since #364 (pageResume.ts). A
-// second one in the same trip, or any answer from the server, shows the notice as before. Each test takes the
+// second one in the same trip, or any answer from the server, is a server outage: the page keeps its list for the
+// 10 s grace and then shows the notice (review R43b, `WorkspacesQuietReconnect.test.tsx`). Each test takes the
 // owner's path: the app with no URL parameters, then Workspaces, with the contract-checked fake as the server.
 document.documentElement.classList.add('dark')
 document.documentElement.dataset.pandaTheme = 'viewscreen'
@@ -171,6 +172,9 @@ function setHidden(hidden: boolean) {
 }
 
 const notice = () => page.getByRole('alert').filter({ hasText: 'Live data unavailable — no workspaces shown' })
+/** The grace of a live read with no answer after the page showed a list (`reconnectGraceMs`, review R43b). */
+const graceMs = 10_000
+
 const quiet = (ms = 300) => new Promise((resolve) => setTimeout(resolve, ms))
 
 describe('the Workspaces list read back from the background', () => {
@@ -223,14 +227,23 @@ describe('the Workspaces list read back from the background', () => {
       await expect.element(page.getByText('renamed work').first()).toBeVisible()
       await quiet()
       await expect.element(notice()).not.toBeInTheDocument()
-      // One quiet miss for each trip: a list read with no answer after it shows the notice, as before.
+      // One quiet miss for each trip: a list read with no answer after it is an outage, which shows the notice once
+      // the grace passes (R43b).
       server.answer(noAnswer)
+      const held = holdTimers()
       server.workspaces.listChanged()
+      await vi.advanceTimersByTimeAsync(100)
+      await renderedUntil(() => server.reads() === reads + 3)
+      expect(notice().query()).toBeNull()
+      // The grace's end loads the page again (the event's settle time), and that read misses too.
+      await vi.advanceTimersByTimeAsync(graceMs)
+      for (let at = 0; at < 10 && server.reads() < reads + 4; at += 1) await vi.advanceTimersByTimeAsync(100)
+      held()
       await expect.element(notice()).toBeVisible()
       await expect
         .element(notice().getByText('The-bridge server did not answer. Start it or check the tailnet, then retry.'))
         .toBeVisible()
-      expect(server.reads()).toBe(reads + 3)
+      expect(server.reads()).toBe(reads + 4)
       expect(getReports()).toEqual([])
     })
 
@@ -248,14 +261,22 @@ describe('the Workspaces list read back from the background', () => {
       await expect.element(notice()).not.toBeInTheDocument()
       // The proxy answers for a server that is down: an answer, not the background's close.
       server.answer(() => new Response('Bad Gateway', { status: 502 }))
+      const held = holdTimers()
       setHidden(false)
+      // The app client tries a 5xx twice more, as before; the page keeps its list for the grace (R43b).
+      for (let at = 0; at < 10 && server.reads() < reads + 4; at += 1) await vi.advanceTimersByTimeAsync(100)
+      await renderedUntil(() => server.reads() === reads + 4)
+      expect(notice().query()).toBeNull()
+      await vi.advanceTimersByTimeAsync(graceMs)
+      for (let at = 0; at < 10 && server.reads() < reads + 7; at += 1) await vi.advanceTimersByTimeAsync(100)
+      held()
       await expect.element(notice()).toBeVisible()
       await expect
         .element(
           notice().getByText('The-bridge server did not answer (502). Start it or check the tailnet, then retry.'),
         )
         .toBeVisible()
-      // The app client tries a 5xx twice more, as before.
-      expect(server.reads()).toBe(reads + 4)
+      // The load after the grace reads again, and the app client tries it twice more.
+      expect(server.reads()).toBe(reads + 7)
     })
 })

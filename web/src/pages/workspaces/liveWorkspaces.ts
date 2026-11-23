@@ -55,7 +55,7 @@ import type { QueryClient, QueryKey } from '@tanstack/react-query'
 import { err, ok, type Result } from '@bridge/shared'
 import { report } from '../../errors/reporter.ts'
 import { api } from '../../lib/api.ts'
-import { type Frame, frames } from '../../lib/eventFrames.ts'
+import { type Frame, frames, reconnectGraceMs } from '../../lib/eventFrames.ts'
 import { queryClient } from '../../lib/queryClient.ts'
 import type { ScreenState } from '../../lib/screenState.ts'
 import { modelFamilies } from './blocks/modelFamilies.ts'
@@ -358,13 +358,6 @@ function liveOnly(
 export const liveReadTimeoutMs = 8000
 
 /**
- * How long a live stream that ended or dropped may take to connect again before the page shows it, in ms (review R43,
- * bridge-coord's decision): a restart of the server ends every stream, and the server is back within the first two
- * retries (5 s each). A miss within this window is quiet; one after it shows, as before.
- */
-export const reconnectGraceMs = 10_000
-
-/**
  * A live read that missed in a way the page expects; `message` says what happened, for the status bar and the
  * ErrorTray, with the error body's message when there is one. Each kind has its own notice (`noticeOf`).
  * - `unreachable`: the server gave no answer. The request failed (`status` undefined: the server or the tailnet is
@@ -558,6 +551,51 @@ function quietMiss(key: QueryKey, mark: ResumeMark): boolean {
   if (!fromBackground(mark) || quietMissFor.get(read) === hidesSoFar()) return false
   quietMissFor.set(read, hidesSoFar())
   return true
+}
+
+/**
+ * What the page last showed of the server while the events watch it: the list and the layouts that a list read with
+ * no answer keeps within the grace (R43b). It is kept here and not read from the cache, which drops a query no one
+ * observes after five minutes (TanStack's `gcTime`).
+ */
+let lastShown:
+  | {
+      readonly workspaces: Workspace[]
+      readonly machine: WorkspacesResponse['machine']
+      readonly layouts: Map<string, WorkspaceLayout>
+      readonly tabs: Map<string, LiveTab[]>
+    }
+  | undefined
+
+/**
+ * R43b: the grace of a list read that got no answer (no answer, a timeout or a 5xx that is not an error body: the
+ * Vite proxy for a server that is down) after the page had shown the server's list, as a restart makes. Undefined
+ * when none runs; `over` once `reconnectGraceMs` passed, when it loads the page again so a miss then shows.
+ */
+let listGrace: { readonly timer: ReturnType<typeof setTimeout>; over: boolean } | undefined
+
+const endListGrace = () => {
+  clearTimeout(listGrace?.timer)
+  listGrace = undefined
+}
+
+/**
+ * Whether a list read's `miss`, after the page had shown a list, is quiet: one with no answer from the server, within
+ * the grace that the first such miss starts. A 4xx or an error body is never quiet.
+ */
+function quietListMiss(miss: LiveMiss): boolean {
+  if (!(miss.kind === 'timeout' || miss.kind === 'unreachable')) return false
+  if (listGrace === undefined) {
+    const started: { readonly timer: ReturnType<typeof setTimeout>; over: boolean } = {
+      timer: setTimeout(() => {
+        started.over = true
+        reload?.()
+      }, reconnectGraceMs),
+      over: false,
+    }
+    listGrace = started
+  }
+  return !listGrace.over
 }
 
 /** The status bar's line while a layout read misses: the page draws each such workspace's first chats. */
@@ -973,8 +1011,12 @@ export function watchLiveWorkspaces({
     if (reload === invalidate) reload = undefined
     if (watchSignal === abort.signal) watchSignal = undefined
     watching -= 1
-    // The owner left the page: a layout miss on his next visit is reported again.
-    if (watching === 0) layoutOutage = false
+    // The owner left the page: a layout miss on his next visit is reported again, and a list miss then is not kept.
+    if (watching === 0) {
+      layoutOutage = false
+      lastShown = undefined
+      endListGrace()
+    }
     clearTimeout(timer)
     endOutage()
     abort.abort()
@@ -1038,6 +1080,7 @@ export async function withLiveWorkspaces(
       answer = await fetch(AbortSignal.any([cancel, AbortSignal.timeout(liveReadTimeoutMs)]))
     }
     if (!answer.ok) throw new LiveMissError(answer.error)
+    endListGrace()
     if (taken !== before)
       setTimeout(() => {
         reload?.()
@@ -1052,6 +1095,9 @@ export async function withLiveWorkspaces(
     )
   } catch (thrown) {
     if (!(thrown instanceof LiveMissError)) throw thrown
+    // A restart (R43b): the page keeps the list and the layouts it read last, with no notice, until the grace passes.
+    if (lastShown !== undefined && quietListMiss(thrown.miss))
+      return liveOnly(state, lastShown.workspaces, lastShown.machine, lastShown.layouts, lastShown.tabs)
     // The notice and the status bar say it: an expected miss is not reported (d-117).
     const alert = `Live data is not available (${thrown.miss.message}); the page shows no workspaces.`
     const empty = liveOnly(state, [])
@@ -1063,6 +1109,7 @@ export async function withLiveWorkspaces(
   const workspaces = toWorkspaces(response)
   const herdr = await untilAborted(layoutsOf(response, workspaces, client, readLayout), signal)
   noteLayoutMiss(herdr.missed)
+  if (watching > 0) lastShown = { workspaces, machine: response.machine, layouts: herdr.layouts, tabs: herdr.tabs }
   const live = liveOnly(state, workspaces, response.machine, herdr.layouts, herdr.tabs)
   const alert = stopped ?? lost
   const hints = herdr.missed === undefined ? live.data.status.hints : [layoutMissLine, ...live.data.status.hints]

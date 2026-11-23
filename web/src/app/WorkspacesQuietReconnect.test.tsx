@@ -78,6 +78,11 @@ function withServer() {
   )
   return {
     chats,
+    workspaces,
+    /** Every request answers 502 from now, with the open streams left as they are. */
+    down: () => {
+      down = true
+    },
     restart: () => {
       down = true
       chats.close(plan)
@@ -213,4 +218,113 @@ describe('a server restart (review R43)', () => {
       await expect.element(page.getByRole('button', { name: 'Retry' })).not.toBeInTheDocument()
       expect(getReports()).toHaveLength(1)
     })
+})
+
+// Review R43b: a list read that lands while the server is down keeps the page's list within the grace, and a stream
+// that gives no byte for 45 s (a server killed behind the Vite proxy) is closed and connects again quietly.
+describe('a server restart, the list and a silent stream (review R43b)', () => {
+  const notice = /^Live data unavailable/
+
+  it('keeps the chat and shows no notice for a list read that misses within the grace, then recovers', async () => {
+    const server = withServer()
+    await openPlan(server, [390, 844])
+    const release = holdTimers()
+    // The list changes, and its read lands while the server restarts.
+    server.workspaces.listChanged()
+    server.restart()
+    await pass(9000)
+    expect(shows(notice)).toBe(false)
+    expect(shows(outageLine)).toBe(false)
+    expect(shows(/^Here is a first sketch\.$/)).toBe(true)
+    expect(getReports()).toEqual([])
+    server.up()
+    await pass(1500)
+    release()
+    await expect.element(page.getByRole('heading', { name: 'plan the slice' })).toBeVisible()
+    await expect.element(page.getByText('Here is a first sketch.')).toBeVisible()
+    await expect.element(page.getByText(notice)).not.toBeInTheDocument()
+    expect(getReports()).toEqual([])
+  })
+
+  it('keeps the chat for a list read that misses within the grace after 6 min with no change', async () => {
+    const server = withServer()
+    await openPlan(server, [390, 844])
+    const release = holdTimers()
+    // The query client drops a query no one observes after 5 min (gcTime), on a timer it starts once a read ends: a
+    // list change reads on the held clock. The server pings each stream meanwhile.
+    server.workspaces.listChanged()
+    await pass(1000)
+    for (let at = 0; at < 24; at += 1) {
+      await pass(15_000, 5000)
+      server.chats.ping(plan)
+      server.workspaces.pingEvents()
+    }
+    server.workspaces.listChanged()
+    server.restart()
+    await pass(9000)
+    expect(shows(notice)).toBe(false)
+    expect(shows(/^Here is a first sketch\.$/)).toBe(true)
+    server.up()
+    await pass(1500)
+    release()
+    await expect.element(page.getByText('Here is a first sketch.')).toBeVisible()
+    expect(getReports()).toEqual([])
+  })
+
+  it('shows the notice once the list read still misses after the grace', async () => {
+    const server = withServer()
+    await openPlan(server, [390, 844])
+    const release = holdTimers()
+    server.workspaces.listChanged()
+    server.restart()
+    await pass(9000)
+    expect(shows(notice)).toBe(false)
+    // The load after the window reads again, and the query client tries a 5xx twice more (1 s and 2 s apart).
+    for (let at = 0; at < 40 && !shows(notice); at += 1) await pass(250)
+    expect(shows(notice)).toBe(true)
+    release()
+    // The list's miss is a state the page shows, not a report (d-117); the transcript's outage is reported once.
+    expect(getReports().map((r) => r.error.message)).toEqual([
+      'A chat transcript stream missed: status 502 (chat mac-mini/c1)',
+    ])
+  })
+
+  it('closes a stream that gives no byte for 45 s, connects again quietly and reads the entries meanwhile', async () => {
+    const server = withServer()
+    await openPlan(server, [390, 844])
+    const reads = server.chats.reads.length
+    const release = holdTimers()
+    // A ping on the held clock starts each stream's idle limit on it. Then a killed server behind the Vite proxy: the
+    // streams stay open and give nothing.
+    server.chats.ping(plan)
+    server.workspaces.pingEvents()
+    await pass(250)
+    server.chats.hang(plan)
+    server.workspaces.hangEvents()
+    server.chats.set(plan, [...before, reply('a2', 'Written while the stream gave nothing.')])
+    await pass(44_000, 1000)
+    expect(server.chats.reads.length).toBe(reads)
+    await pass(2000)
+    await renderedUntil(() => server.chats.reads.length > reads && server.chats.openStreams().includes(plan))
+    release()
+    await expect.element(page.getByText('Written while the stream gave nothing.')).toBeVisible()
+    await expect.element(page.getByText(outageLine)).not.toBeInTheDocument()
+    expect(getReports()).toEqual([])
+  })
+
+  it('keeps a stream open through 2 min of pings every 15 s with no event', async () => {
+    const server = withServer()
+    await openPlan(server, [390, 844])
+    const opens = server.chats.opens.length
+    const release = holdTimers()
+    for (let at = 0; at < 8; at += 1) {
+      await pass(15_000, 1000)
+      server.chats.ping(plan)
+      server.workspaces.pingEvents()
+    }
+    release()
+    expect(server.chats.opens.length).toBe(opens)
+    expect(server.chats.openStreams()).toEqual([plan])
+    expect(getReports()).toEqual([])
+  })
 })

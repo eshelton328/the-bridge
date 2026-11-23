@@ -63,8 +63,8 @@ import {
 import type { Result } from '@bridge/shared'
 import { report } from '../../errors/reporter.ts'
 import { api } from '../../lib/api.ts'
-import { type Frame, frames } from '../../lib/eventFrames.ts'
-import { type LiveMiss, liveReadTimeoutMs, readChecked, readJson, reconnectGraceMs } from './liveWorkspaces.ts'
+import { type Frame, frames, reconnectGraceMs } from '../../lib/eventFrames.ts'
+import { type LiveMiss, liveReadTimeoutMs, readChecked, readJson } from './liveWorkspaces.ts'
 import {
   followPageVisibility,
   fromBackground,

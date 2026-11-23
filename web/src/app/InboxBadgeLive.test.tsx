@@ -5,7 +5,8 @@ import { page, userEvent } from 'vitest/browser'
 import { RouteError } from '../errors/RouteError.tsx'
 import { clearReports, getReports } from '../errors/reporter.ts'
 import { fakeInboxServer, type FakeInboxServer } from '../lib/fakeInboxServer.ts'
-import { setViewport } from '../lib/rendering.ts'
+import { holdTimers } from '../lib/holdTimers.ts'
+import { afterRendering, renderedUntil, setViewport } from '../lib/rendering.ts'
 import { testRender, unmountRendered } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import {
@@ -253,5 +254,87 @@ describe('the live Inbox badge', () => {
     await expect.poll(() => badge(device)).toBe(3)
     await quiet()
     expect(server.calls('list').length - before).toBe(1)
+  })
+})
+
+// Review R43b: a server restart. The Vite proxy answers 502 with no error body for a server that is down; a badge read
+// that gets it, or no answer, keeps the count with no report for the 10 s grace. A stream that gives no byte for 45 s
+// (a killed server behind the proxy) is closed, and the feed connects again.
+describe('the live Inbox badge through a server restart (review R43b)', () => {
+  const inbox = () => getReports().filter((r) => r.error.name.startsWith('Inbox'))
+  const down = () => new Response('', { status: 502 })
+  const device = devices[0]
+
+  /** Opens the app at `/` as the owner does, taps Artifacts, whose badge the feed's own stream follows. */
+  async function onArtifacts() {
+    const router = await openApp(device, '/')
+    await expect.poll(() => router.state.location.pathname).toBe('/inbox')
+    await tapTo(device, 'artifacts')
+    await expect
+      .poll(() => router.state.status === 'idle' && router.state.resolvedLocation?.pathname)
+      .toBe('/artifacts')
+    await expect.poll(() => badge(device)).toBe(2)
+    await quiet()
+  }
+
+  it('keeps the count with no report for a read with no answer within the grace, then reads it', async () => {
+    const server = withInbox()
+    await onArtifacts()
+    const lists = server.calls('list').length
+    const release = holdTimers()
+    server.answerNext('list', down)
+    server.put(chatItem(4, 'Another sample question', 'question', 1))
+    await vi.advanceTimersByTimeAsync(200)
+    await renderedUntil(() => server.calls('list').length === lists + 1)
+    await afterRendering()
+    expect(badge(device)).toBe(2)
+    expect(inbox()).toEqual([])
+    // The grace's end reads once more, and the server answers.
+    await vi.advanceTimersByTimeAsync(10_000)
+    await renderedUntil(() => badge(device) === 3)
+    release()
+    expect(inbox()).toEqual([])
+  })
+
+  it('reports once when the reads still get no answer past the grace', async () => {
+    const server = withInbox()
+    await onArtifacts()
+    const before = server.calls('list').length
+    const release = holdTimers()
+    server.answerNext('list', down, 5)
+    server.put(chatItem(4, 'Another sample question', 'question', 1))
+    await vi.advanceTimersByTimeAsync(200)
+    await renderedUntil(() => server.calls('list').length === before + 1)
+    await afterRendering()
+    expect(inbox()).toEqual([])
+    await vi.advanceTimersByTimeAsync(10_000)
+    await renderedUntil(() => inbox().length === 1)
+    // Another change in the same outage gives no second report.
+    server.put(chatItem(5, 'One more sample question', 'question', 1))
+    const lists = server.calls('list').length
+    await vi.advanceTimersByTimeAsync(200)
+    await renderedUntil(() => server.calls('list').length === lists + 1)
+    release()
+    expect(inbox().map((r) => r.error.message)).toEqual(['An inbox request missed: badge status 502'])
+    expect(badge(device)).toBe(2)
+  })
+
+  it('closes a stream that gives no byte for 45 s, connects again and reads the count', async () => {
+    const server = withInbox()
+    await onArtifacts()
+    const opens = server.calls('events').length
+    const release = holdTimers()
+    // A change on the held clock starts the stream's idle limit on it; then the stream gives nothing.
+    server.put(chatItem(4, 'Another sample question', 'question', 1))
+    await vi.advanceTimersByTimeAsync(200)
+    await renderedUntil(() => badge(device) === 3)
+    const lists = server.calls('list').length
+    await vi.advanceTimersByTimeAsync(44_000)
+    expect(server.calls('events').length).toBe(opens)
+    // The stream closes at 45 s, and the feed connects again after the server's retry time (5 s).
+    await vi.advanceTimersByTimeAsync(6200)
+    await renderedUntil(() => server.calls('events').length === opens + 1 && server.calls('list').length === lists + 1)
+    release()
+    expect(inbox()).toEqual([])
   })
 })
