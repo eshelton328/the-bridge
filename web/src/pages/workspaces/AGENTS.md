@@ -22,11 +22,12 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   Retry in every layout; any other error goes to RouteError
   (`app/WorkspacesLiveDefault.test.tsx`). The live page offers only what
   a route backs (reviews R41, R42): a live chat's actions are New chat,
-  Move to workspace, Rename chat (Rename in the phone's sheet), Close
-  pane…, Compact context… and Clear context… (with the layout actions in
-  a desktop pane, whose menu has no Rename, as it has no name field).
-  Fork, Side chat and Subtask stay hidden until their routes come. The fixture states keep every action, and their edit mode every
-  control (`app/WorkspacesLiveUnbacked.test.tsx`).
+  Fork (a Claude chat only), Move to workspace, Rename chat (Rename in the
+  phone's sheet), Close pane…, Compact context… and Clear context… (with
+  the layout actions in a desktop pane, whose menu has no Rename, as it
+  has no name field). Side chat and Subtask stay hidden until their
+  routes come. The fixture states keep every action, and their edit mode
+  every control (`app/WorkspacesLiveUnbacked.test.tsx`).
 - The live list's edits (R41, R42, backend #423 and #427; `useWorkspaceEdits.ts`,
   `liveWorkspaceEdits.ts`): the phone's and tablet's Edit opens edit
   mode with Done, which on live draws only what a route backs. Each
@@ -87,6 +88,29 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   says "Not moved — that chat or workspace is gone" and reads the list
   again. It is one of the list's edits, so one at a time and report()
   only for a 5xx or an unexpected answer (`app/WorkspacesLiveMove.test.tsx`).
+- Fork (backend #443, `liveWorkspaceEdits.ts` `forkChat`,
+  `useForkedChat.ts`): a live Claude chat's Fork, in the phone's sheet, the
+  tablet's menu and the desktop's chat and pane menus, after New chat,
+  posts `POST /api/chats/:chat/fork` with the contract's `ForkChatRequest`
+  holding a new create ID only, at once with no form: the server names the
+  copy "<name>-fork" and splits it beside the chat to the right. Figma's
+  Fork form (D15, T8, M18) stays the fixtures' own, as no route forks up
+  to a picked message. A Codex chat and a shell have no Fork on the live
+  page (`blocks/chatCommands.ts` `withCommands`), as the server answers
+  them 409 `noSession`. The answer (201, `StartChatResponse`) names the
+  new pane: the chat opens as a new chat does (`openListedChat.ts`, shared
+  with `useNewChat.ts`) once the list shows it on that pane ready or
+  needing the owner, and one that needs the owner gets "This chat needs
+  you on the Mac" under its composer; a `starting` answer waits for
+  `workspaces.changed`. The chat it came from goes on. A fork is one of
+  the list's edits, so one at a time with them, its miss one line with
+  Dismiss: 409 `noSession`, `nameTaken` ("another chat has the fork’s
+  name", as a second fork of a chat gets the same name) and
+  `folderNotAllowed` each have their line, a 404 says "Not forked — that
+  chat is gone" and reads the list again, a 5xx "Not forked — <kind>"
+  with a report (kind and status only), and no answer in 75 s says the
+  list shows the chat if it started (`app/WorkspacesLiveFork.test.tsx`;
+  the fake is `lib/fakeWorkspacesServer.ts`).
 - Each live workspace's panes are its herdr layout's active tab (slice
   3a): `liveWorkspaces.ts` reads `GET /api/workspaces/:workspace/layout`
   on load, on `workspaces.changed` and on that workspace's

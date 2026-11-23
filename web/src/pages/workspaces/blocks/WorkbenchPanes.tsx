@@ -91,6 +91,8 @@ export type WorkbenchPanesProps = {
   onResize?: ((part: SplitPart, sizes: number[], drawn?: readonly number[]) => void) | undefined
   /** Moves a live chat to another workspace, or asks first (backend #435, moveToWorkspace.ts); none on a fixture. */
   onMoveChat?: ((chat: string, workspace: string) => void) | undefined
+  /** Forks a live Claude chat beside it (backend #443); none on a fixture. */
+  onForkChat?: ((chat: string) => void) | undefined
 }
 
 export function WorkbenchPanes({
@@ -109,6 +111,7 @@ export function WorkbenchPanes({
   layout,
   onResize,
   onMoveChat,
+  onForkChat,
 }: WorkbenchPanesProps) {
   const targets = data.workspaces.filter((w) => w.id !== data.current)
   const panes = data.layers?.panes ?? paneLayers
@@ -197,6 +200,11 @@ export function WorkbenchPanes({
               newChatBeside: pane.id,
               newChatStart: null,
             })
+          // A live Claude chat's Fork starts its copy beside it (backend #443); it needs no layout write either.
+          if (action === 'fork' && onForkChat !== undefined) {
+            onUiChange?.({ menuFor: null, moveOpen: false })
+            onForkChat(pane.id)
+          }
           if (live !== undefined && (action === 'zoom' || action === 'unzoom')) {
             onUiChange?.({ menuFor: null, moveOpen: false })
             live.zoom(pane.id, action === 'zoom')

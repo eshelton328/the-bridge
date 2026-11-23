@@ -53,6 +53,8 @@ export type WorkspaceTabsProps = {
   layout?: LayoutWrites | undefined
   /** Moves a live chat to another workspace, or asks first (backend #435, moveToWorkspace.ts); none on a fixture. */
   onMoveChat?: ((chat: string, workspace: string) => void) | undefined
+  /** Forks a live Claude chat beside it (backend #443); none on a fixture. */
+  onForkChat?: ((chat: string) => void) | undefined
 }
 
 // The box that sees a press on a handle draws no box of its own: the panes lay out as they do without it.
@@ -77,6 +79,7 @@ export function WorkspaceTabs({
   notice,
   layout,
   onMoveChat,
+  onForkChat,
 }: WorkspaceTabsProps) {
   const shown = shownWorkspace(data, ui)
   const current = data.workspaces.find((w) => w.id === shown)
@@ -106,6 +109,7 @@ export function WorkspaceTabs({
         onCopy={onCopy}
         layout={layout}
         onMoveChat={onMoveChat}
+        onForkChat={onForkChat}
       />
     </div>
   )

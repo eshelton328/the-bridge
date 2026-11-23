@@ -33,7 +33,9 @@
 // the chat with another model by resume (useLiveModel.ts), never by sending /model: while the restart runs the chat's
 // composer is off, and a restart that ended the chat and started none opens a dialog with the command to resume it.
 // A live workspace's rename, a live chat's rename (herdr's pane label) and the workspaces' order go to the server one
-// at a time and show from the list read after `workspaces.changed` (useWorkspaceEdits.ts, reviews R41, R42).
+// at a time and show from the list read after `workspaces.changed` (useWorkspaceEdits.ts, reviews R41, R42). A live
+// Claude chat's Fork is one of those edits (backend #443), and its new chat opens once the list shows it
+// (useForkedChat.ts).
 import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { report } from '../../errors/reporter.ts'
@@ -61,6 +63,7 @@ import { useLivePending } from './useLivePending.ts'
 import { useLiveUploads } from './useLiveUploads.ts'
 import { useChatLink } from './useChatLink.ts'
 import { useNewChat } from './useNewChat.ts'
+import { useForkedChat } from './useForkedChat.ts'
 import {
   useSeenPanes,
   useWorkspacesActions,
@@ -190,11 +193,19 @@ export function WorkspacesPage() {
   // workspace, which is not its active one, so once a layout read lists that tab the workbench shows it, as it does
   // after a Move to tab (W2d, `followTab`).
   const movedRef = useRef<{ readonly chat: string; readonly workspace: string } | undefined>(undefined)
-  const workspaceEdits = useWorkspaceEdits(import.meta.env.DEV && live, data, (chat, next) => {
-    const owner = next.workspaces.find((w) => w.chats?.some((c) => c.id === chat))?.id
-    movedRef.current = owner === undefined ? undefined : { chat, workspace: owner }
-    changeUi(openMoved(next, uiRef.current, chat))
-  })
+  // A fork (backend #443) is one of the edits: its new chat opens as a new chat does, once the list shows it.
+  const currentUi = useCallback(() => uiRef.current, [])
+  const followFork = useForkedChat({ data, herdrTabs: liveData.liveTabs, ui: currentUi, change: changeUi })
+  const workspaceEdits = useWorkspaceEdits(
+    import.meta.env.DEV && live,
+    data,
+    (chat, next) => {
+      const owner = next.workspaces.find((w) => w.chats?.some((c) => c.id === chat))?.id
+      movedRef.current = owner === undefined ? undefined : { chat, workspace: owner }
+      changeUi(openMoved(next, uiRef.current, chat))
+    },
+    followFork,
+  )
   useEffect(() => {
     const moved = movedRef.current
     const tab =
@@ -211,7 +222,6 @@ export function WorkspacesPage() {
     for (const old of moves.keys()) files.drop(old)
   }, [moves, files])
   // A tap on a push notification links to one chat (`?chat=`, d-118): it opens as a tap on its row would.
-  const currentUi = useCallback(() => uiRef.current, [])
   const clearChatLink = useCallback(() => {
     void navigate({ search: (prev) => ({ ...prev, chat: undefined }), replace: true })
   }, [navigate])

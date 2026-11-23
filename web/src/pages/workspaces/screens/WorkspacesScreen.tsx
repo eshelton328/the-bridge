@@ -507,6 +507,11 @@ function WorkspacesLayout({
                 newChatStart: null,
               })
             if (action === 'rename') change({ menuFor: null, moveOpen: false, renaming: true })
+            // A live Claude chat's Fork starts its copy beside it (backend #443).
+            if (action === 'fork' && edits !== undefined) {
+              change({ menuFor: null, moveOpen: false })
+              edits.forkChat(chat.id)
+            }
             if (isChatCommand(action))
               change({ menuFor: null, moveOpen: false, chatDialog: action, commandFor: chat.id })
             if (action === 'focus' && layoutWrites !== undefined) {
@@ -646,6 +651,7 @@ function WorkspacesLayout({
                   onCopy={onCopy}
                   layout={layoutWrites}
                   onMoveChat={moveChat}
+                  onForkChat={edits?.forkChat}
                 />
               </SlotBoundary>
             ) : (
@@ -759,6 +765,7 @@ function WorkspacesLayout({
               notice={notice}
               layout={layoutWrites}
               onMoveChat={moveChat}
+              onForkChat={edits?.forkChat}
             />
           </SlotBoundary>
         }

@@ -20,9 +20,13 @@
 // with the list read that shows it in that workspace (`onMoved`), however
 // late that read comes, and never with a read that shows another change
 // (Codex review of #438); a workspace it left empty leaves with that read.
-import { Label, maxLabel } from '@bridge/contract'
+// A fork (backend #443) is one of these edits too, so it waits for the others
+// and they for it: its answer's new chat goes to `onForked`, which opens it
+// once the list shows it (useForkedChat.ts), and a miss is one line.
+import { Label, maxLabel, type StartChatResponse } from '@bridge/contract'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { report } from '../../errors/reporter.ts'
+import { newSendId } from './draftStorage.ts'
 import type { EditAnswer, WorkspaceEdit } from './liveWorkspaceEdits.ts'
 import type { WorkspaceEdits, WorkspacesData } from './types.ts'
 
@@ -45,6 +49,7 @@ const lead: Record<WorkspaceEdit, string> = {
   order: 'Not reordered',
   close: 'Not closed',
   moveChat: 'Not moved',
+  forkChat: 'Not forked',
 }
 
 const viaLive = (run: (live: Live) => Promise<EditAnswer>): Promise<EditAnswer> =>
@@ -69,12 +74,15 @@ export function useWorkspaceEdits(
   live: boolean,
   data: WorkspacesData,
   onMoved?: (chat: string, data: WorkspacesData) => void,
+  onForked?: (started: StartChatResponse) => void,
 ): WorkspaceEdits | undefined {
   const onMovedRef = useRef(onMoved)
+  const onForkedRef = useRef(onForked)
   /** The chat a move took, and its workspace, until a list read shows it there. */
   const movedRef = useRef<{ readonly chat: string; readonly workspace: string } | undefined>(undefined)
   useLayoutEffect(() => {
     onMovedRef.current = onMoved
+    onForkedRef.current = onForked
   })
   const [pending, setPending] = useState<Pending>()
   const [line, setLine] = useState<string>()
@@ -209,6 +217,17 @@ export function useWorkspaceEdits(
             if (answer.kind !== 'done') return { ...answer, line: answer.line.replaceAll('{workspace}', label) }
             movedRef.current = { chat, workspace }
             return answer
+          }),
+        )
+      },
+      forkChat: (chat) => {
+        // A new create ID for each Fork; the page never sends it again, so the server starts one chat for it.
+        const createId = newSendId()
+        start('forkChat', (m, machine) =>
+          m.forkChat(`${machine}/${chat}`, createId).then((answer): EditAnswer => {
+            if (answer.kind !== 'forked') return answer
+            onForkedRef.current?.(answer.started)
+            return { kind: 'done' }
           }),
         )
       },
