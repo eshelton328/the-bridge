@@ -1,8 +1,8 @@
 {
   "frameId": "T02",
-  "inputs": "9db7ce2d9fcce2d74ca00790952a4ca6b23aaa65d4eddba0ee84ad87716eafe8",
+  "inputs": "a4b5fde2e72be1e33c9c52b36dbee8ecf6438de7b4b3fc7893a270b63b6a8e32",
   "library": "1.0.0-beta.106",
-  "recordSha256": "25186a34fef0a885756377a60c4b838ff65380a6032def6f5583d99d2d7c79ac",
+  "recordSha256": "0cf1d60f92016dc556915c6bcc97dbda33d1319d9bc7d07f4dac4a909a8d54ad",
   "record": {
     "verdict": "match",
     "viewport": "iPad portrait 820 x 1180, Light",
@@ -12,7 +12,7 @@
       "render": "reports/fidelity/settings/T02.sideBySide.png",
       "reference_side": "left"
     },
-    "summary": "The render matches the reference except for the accepted deviations. The header, Appearance, Navigation, the lower part of New chat defaults that is still visible, and the tab bar are the same.",
+    "summary": "Apart from the accepted deviations, the render matches the reference.",
     "findings": [],
     "accepted_deviations": [
       {
@@ -20,27 +20,40 @@
         "as_given": "Text size: the control is disabled (muted labels) and its line under it says \"Coming soon\" in place of \"Scales the whole app: Small 87.5 %, Default 100 %, Large 112.5 %.\" (step D adds text size later). On a narrow screen the one-line note makes every section below it sit about one text line higher.",
         "status": "as-described",
         "finding": null,
-        "note": "Small, Default and Large are muted, Default is still selected, and the note says \"Coming soon\". At 820 px the reference note fits on one line, so the Navigation card starts at the same height in both pictures and nothing moves up."
+        "note": "Small, Default and Large are muted and the note says \"Coming soon\". At this width the reference note also fits on one line, so the Navigation card starts at the same height (about y 460) in both pictures."
       },
       {
         "id": "A2",
         "as_given": "A new \"NOTIFICATIONS\" section with one \"Notifications\" switch (off) sits between the Navigation section and the New chat defaults section. So New chat defaults sits lower, or below the bottom edge.",
         "status": "as-described",
         "finding": null,
-        "note": "The NOTIFICATIONS card with an off switch sits at about y 927-1019. New chat defaults starts at about y 1045, and the tab bar cuts it off at the dropdown row. The \"Saved on this device\" note is below the bottom edge, which this deviation covers."
+        "note": "The NOTIFICATIONS card has one Notifications switch, which is off. New chat defaults is below the bottom edge."
       },
       {
         "id": "A3",
         "as_given": "The Notifications switch moved to that section: the desktop rail no longer has the \"Notifications / Blocked in Settings\" switch at its bottom, and the More drawer no longer has the \"Notifications / Blocked in Settings\" row at its end. So the drawer is shorter and its top edge sits lower.",
         "status": "not-seen",
         "finding": null,
-        "note": "Neither picture shows the desktop rail or an open More drawer. The tab bar (Home, Inbox, Workspaces, Projects, Artifacts, More) is the same in both."
+        "note": "This tablet screen does not show the desktop rail or the open More drawer. The tab bar is the same in both pictures."
+      },
+      {
+        "id": "A4",
+        "as_given": "The Navigation list has a new last row, \"Settings\", with the line \"Always shown: in the bar or under More.\" under it and up and down buttons but no switch (the owner's decision: Settings is an entry of the bar order that cannot be hidden). So Toolkit's down button is now enabled, the Navigation card is taller, and every section below it sits lower or below the bottom edge.",
+        "status": "as-described",
+        "finding": null,
+        "note": "The Settings row has its line under it and up and down buttons but no switch. Toolkit's down button is enabled in the render and muted in the reference."
+      },
+      {
+        "id": "A5",
+        "as_given": "On the phone and the tablet only: a thin rule line with the text \"Under More on this device\" under it sits after the last page that the tab bar shows (Projects on the phone, Artifacts on the tablet), so the rows after it sit lower by about 40 px.",
+        "status": "as-described",
+        "finding": null,
+        "note": "The rule and \"Under More on this device\" are after Artifacts. The Toolkit row moved from about y 867 to y 908, so about 41 px lower."
       }
     ],
     "limits": [
-      "Neither picture shows the desktop rail or the open More drawer, so the parts of A3 about them could not be checked.",
-      "Only part of New chat defaults is visible in the render, and its bottom note is below the edge, so the rest of that card could not be compared.",
-      "No region crops were given. I compared the side-by-side image at the size shown and did not check differences under about 2 px."
+      "The More drawer and the desktop rail are not in this screen, so A3 could not be checked.",
+      "The New chat defaults section is below the bottom edge of the render, so its content could not be compared."
     ]
   }
 }

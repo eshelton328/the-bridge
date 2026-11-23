@@ -1,8 +1,8 @@
 {
   "frameId": "D01",
-  "inputs": "899c8266569bc330f23f8aad46395a74943976bfa4435c041c36157584fe589c",
+  "inputs": "5f49588b0b2723652e03d6f5e079ad9f2273724caf7710e6140e519198a8e332",
   "library": "1.0.0-beta.106",
-  "recordSha256": "a40438736ceb1eb5011494708ef963f3bccce13e22ccef26a7ee50fe7c5c321f",
+  "recordSha256": "951e48f32868657d3b7445242b6164cbe416a507eb2924f7b381efde9eb5b13b",
   "record": {
     "verdict": "match",
     "viewport": "desktop 1512x982, Dark",
@@ -12,7 +12,7 @@
       "render": "reports/fidelity/settings/D01.sideBySide.png",
       "reference_side": "left"
     },
-    "summary": "The render matches the reference. Its only differences are the three accepted deviations, and none goes further than its description.",
+    "summary": "Apart from the four accepted deviations, the render matches the reference.",
     "findings": [],
     "accepted_deviations": [
       {
@@ -20,27 +20,34 @@
         "as_given": "Text size: the control is disabled (muted labels) and its line under it says \"Coming soon\" in place of \"Scales the whole app: Small 87.5 %, Default 100 %, Large 112.5 %.\" (step D adds text size later). On a narrow screen the one-line note makes every section below it sit about one text line higher.",
         "status": "as-described",
         "finding": null,
-        "note": "Small, Default and Large are muted, and the note under them reads \"Coming soon\". On this desktop width the original note was also one line, so nothing below it moves."
+        "note": "The Small, Default and Large labels are muted and the line under them says \"Coming soon\". This is a desktop viewport, so the sections below do not move."
       },
       {
         "id": "A2",
         "as_given": "A new \"NOTIFICATIONS\" section with one \"Notifications\" switch (off) sits between the Navigation section and the New chat defaults section. So New chat defaults sits lower, or below the bottom edge.",
         "status": "as-described",
         "finding": null,
-        "note": "The NOTIFICATIONS card starts where NEW CHAT DEFAULTS starts in the reference (about y 795 of 982). It has a \"Notifications\" label and an off switch at the right edge. New chat defaults is below the bottom edge."
+        "note": "Only the top edge of the next card shows at the bottom of the render, below the Navigation card. The section's content and New chat defaults are below the bottom edge."
       },
       {
         "id": "A3",
         "as_given": "The Notifications switch moved to that section: the desktop rail no longer has the \"Notifications / Blocked in Settings\" switch at its bottom, and the More drawer no longer has the \"Notifications / Blocked in Settings\" row at its end. So the drawer is shorter and its top edge sits lower.",
         "status": "as-described",
         "finding": null,
-        "note": "The bottom of the rail is empty where the reference has the switch and the label \"Notifications Blocked in Settings\". The More drawer is closed in this frame, so the drawer part cannot be seen here."
+        "note": "The bottom of the rail has no switch in the render. The More drawer is closed in both pictures, so the drawer part cannot be seen."
+      },
+      {
+        "id": "A4",
+        "as_given": "The Navigation list has a new last row, \"Settings\", with the line \"Always shown: in the bar or under More.\" under it and up and down buttons but no switch (the owner's decision: Settings is an entry of the bar order that cannot be hidden). So Toolkit's down button is now enabled, the Navigation card is taller, and every section below it sits lower or below the bottom edge.",
+        "status": "as-described",
+        "finding": null,
+        "note": "The Settings row shows the line \"Always shown: in the bar or under More.\", an up button and a down button, and no switch. Toolkit's down button is enabled and the card is taller."
       }
     ],
     "limits": [
-      "The side-by-side image (3048x1010) was shown scaled down to about 85 %, so differences under about 2 px could not be checked. The pixel diff shows only antialiasing along text edges outside the accepted areas.",
-      "The More drawer is closed in this frame, so the drawer part of A3 cannot be checked here.",
-      "The frame ends inside the new Notifications section. The sections below it, including New chat defaults in the render, are out of view."
+      "The side-by-side image (3048x1010) was shown scaled to 2576x854, so differences under about 2 px could not be checked.",
+      "The Notifications section and New chat defaults in the render are below the bottom edge, so their content could not be compared.",
+      "The More drawer is closed in both pictures, so the drawer part of A3 could not be checked."
     ]
   }
 }
