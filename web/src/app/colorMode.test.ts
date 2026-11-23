@@ -59,6 +59,10 @@ describe('the inline colour mode script', () => {
     expect(page.documentElement.classList.contains('dark')).toBe(true)
     expect(themeMeta?.getAttribute('content')).toBe(themeDark)
     expect(themeLight).not.toBe(themeDark)
+    // "default" lets the iOS Home Screen app's status bar follow theme-color; "black" keeps it black after a change.
+    expect(page.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]')?.getAttribute('content')).toBe(
+      'default',
+    )
   })
 
   it('applies Light, Dark and System as followColorMode does, reading only the settings key', () => {
@@ -94,7 +98,8 @@ describe('followColorMode', () => {
     doc.head.append(theme)
     // A stand-in for Panda's bg.canvas variable, which the dark class changes.
     const canvasOf = () => (root.classList.contains('dark') ? '#000001' : '#fffffe')
-    const color = () => theme.getAttribute('content')
+    const metas = () => doc.querySelectorAll('meta[name="theme-color"]')
+    const color = () => metas()[0]?.getAttribute('content')
     const listeners = new Set<() => void>()
     const query = {
       matches: true,
@@ -109,6 +114,12 @@ describe('followColorMode', () => {
     mode.apply('light')
     expect(root.classList.contains('dark')).toBe(false)
     expect(color()).toBe('#fffffe')
+    // A new element in the old one's place: the iOS Home Screen app's bar follows only that.
+    expect(metas()).toHaveLength(1)
+    expect(metas()[0]).not.toBe(theme)
+    const lightMeta = metas()[0]
+    mode.apply('light')
+    expect(metas()[0], 'no new element when the colour stays').toBe(lightMeta)
     mode.apply('system')
     expect(root.classList.contains('dark')).toBe(true)
     expect(color()).toBe('#000001')

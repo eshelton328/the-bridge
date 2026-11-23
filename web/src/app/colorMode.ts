@@ -6,7 +6,9 @@
 // with the same rule; this keeps it applied after each change
 // (startSettingsStorage's onChange, main.ts). The theme-color meta, which
 // colours the iOS status bar and the browser's bar, follows the class: it
-// takes the bg.canvas value the class gives.
+// takes the bg.canvas value the class gives. In the iOS Home Screen app the
+// bar follows only a new meta element, and only with index.html's
+// apple-mobile-web-app-status-bar-style "default" (Simulator, PR #450).
 import type { Mode } from '../lib/deviceSettings.ts'
 
 /** Whether `mode` draws the dark values when the device prefers dark (`deviceDark`). */
@@ -42,7 +44,13 @@ export function followColorMode(win: ModeWindow = window): { apply: (mode: Mode)
     const root = win.document.documentElement
     root.classList.toggle('dark', isDark(mode, query.matches))
     const canvas = win.getComputedStyle(root).getPropertyValue(canvasVariable).trim()
-    if (canvas !== '') win.document.querySelector('meta[name="theme-color"]')?.setAttribute('content', canvas)
+    const old = win.document.querySelector('meta[name="theme-color"]')
+    if (canvas === '' || old === null || old.getAttribute('content') === canvas) return
+    // A new element, not a changed attribute: the iOS Home Screen app keeps its status bar after an attribute change.
+    const next = old.cloneNode()
+    if (!(next instanceof Element)) return
+    next.setAttribute('content', canvas)
+    old.replaceWith(next)
   }
   query.addEventListener('change', set)
   return {

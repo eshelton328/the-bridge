@@ -106,23 +106,24 @@ describe('a change on the Settings page', () => {
     onTestFinished(() => {
       stop()
       colorMode.stop()
-      theme.remove()
+      for (const meta of document.querySelectorAll('meta[name="theme-color"]')) meta.remove()
       document.documentElement.classList.add('dark')
     })
+    const themeColor = () => document.querySelector('meta[name="theme-color"]')?.getAttribute('content')
     const canvas = () => getComputedStyle(document.documentElement).getPropertyValue(canvasVariable).trim()
     const view = await renderAt('/settings')
     onTestFinished(view.unmount)
     const darkCanvas = canvas()
     await userEvent.click(rowOf(page.getByRole('radio', { name: 'Light' })))
-    await expect.poll(() => theme.content).not.toBe(darkCanvas)
-    expect(theme.content).toBe(canvas())
-    expect(theme.content).toMatch(/^#[0-9a-f]{6}$/)
-    const lightCanvas = theme.content
+    await expect.poll(() => themeColor()).not.toBe(darkCanvas)
+    expect(themeColor()).toBe(canvas())
+    expect(themeColor()).toMatch(/^#[0-9a-f]{6}$/)
+    const lightCanvas = themeColor()
     await userEvent.click(rowOf(page.getByRole('radio', { name: 'Dark' })))
-    await expect.poll(() => theme.content).toBe(darkCanvas)
+    await expect.poll(() => themeColor()).toBe(darkCanvas)
     await userEvent.click(rowOf(page.getByRole('radio', { name: 'System' })))
     const deviceDark = matchMedia('(prefers-color-scheme: dark)').matches
-    await expect.poll(() => theme.content).toBe(deviceDark ? darkCanvas : lightCanvas)
+    await expect.poll(() => themeColor()).toBe(deviceDark ? darkCanvas : lightCanvas)
   })
 
   it('shows the saved settings for a ?state= in a production build, which ignores it', async () => {
