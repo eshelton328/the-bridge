@@ -170,8 +170,9 @@ export type InboxListPaneProps = {
   /** Snoozes a row, or marks it done or dismissed, from its actions sheet. */
   onPutAway?: InboxPutAway | undefined
   /**
-   * The list waits for its first read (the loading standard): the header, chips and tools draw as loaded, with no
-   * count, and skeleton groups take the place of the groups, so nothing above them moves when the rows come.
+   * The list waits for its first read (the loading standard): the header, chips and tools draw in place, with no
+   * count and disabled, so no input is lost, and skeleton groups take the place of the groups, so nothing above them
+   * moves when the rows come.
    */
   loading?: boolean | undefined
 }
@@ -269,6 +270,7 @@ export function InboxListPane({
           items={loading ? view.filters.map((chip) => ({ ...chip, count: undefined })) : view.filters}
           value={[ui.filter]}
           multiple={false}
+          disabled={loading}
           // M1 346:9014: the phone's chips pad their label 12 at the sides (`phone`); the desktop and tablet keep 8.
           size={layout === 'phone' ? 'phone' : 'compact'}
           onValueChange={(values) => {
@@ -278,6 +280,7 @@ export function InboxListPane({
         />
       </div>
       <ListTools
+        disabled={loading}
         sortMenu={data.sortMenu}
         sort={ui.sort}
         sortOpen={ui.sortOpen}

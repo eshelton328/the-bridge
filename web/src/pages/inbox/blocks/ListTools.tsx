@@ -69,13 +69,16 @@ export type ListToolsProps = {
   /** How many tasks the Filter menu's boxes show, on the phone's Show button. */
   filterShown: number
   layout?: Viewport | undefined
+  /** The list waits for its first read: the search, Sort and Filter draw disabled, so nothing the owner does is lost. */
+  disabled?: boolean | undefined
 }
 
 type SortButtonProps = Pick<ListToolsProps, 'sortMenu' | 'sort' | 'sortOpen' | 'onSortOpenChange' | 'onSortChange'> & {
   iconOnly: boolean
+  disabled: boolean
 }
 
-function SortButton({ sortMenu, sort, sortOpen, onSortOpenChange, onSortChange, iconOnly }: SortButtonProps) {
+function SortButton({ sortMenu, sort, sortOpen, onSortOpenChange, onSortChange, iconOnly, disabled }: SortButtonProps) {
   // The first choice is the default; another shows the button pressed (T11: picking Newest first again resets it).
   const active = sortMenu.options[0]?.value !== sort
   // The phone's sheet opens with the focus on the sheet itself: Figma draws Done with no focus ring (M13 346:11811).
@@ -93,7 +96,13 @@ function SortButton({ sortMenu, sort, sortOpen, onSortOpenChange, onSortChange, 
       <BottomSheet
         title="Sort"
         trigger={
-          <Button iconOnly aria-label="Sort" pressed={active || sortOpen ? true : undefined} indicator={active}>
+          <Button
+            iconOnly
+            aria-label="Sort"
+            pressed={active || sortOpen ? true : undefined}
+            indicator={active}
+            disabled={disabled}
+          >
             <SortDescIcon />
           </Button>
         }
@@ -128,7 +137,7 @@ function SortButton({ sortMenu, sort, sortOpen, onSortOpenChange, onSortChange, 
   return (
     <RadioMenu
       trigger={
-        <Button textSize="sm" pressed={active || sortOpen ? true : undefined}>
+        <Button textSize="sm" pressed={active || sortOpen ? true : undefined} disabled={disabled}>
           <SortDescIcon />
           {sortMenu.options.find((o) => o.value === sort)?.short}
           <ChevronDownIcon size="12" />
@@ -161,6 +170,7 @@ export function ListTools({
   onFilterClear,
   filterShown,
   layout = 'desktop',
+  disabled = false,
   ...sort
 }: ListToolsProps) {
   const phone = layout === 'phone'
@@ -170,12 +180,13 @@ export function ListTools({
       aria-label="Filter"
       pressed={filterOpen || filterCount > 0 ? true : undefined}
       indicator={filterCount > 0}
+      disabled={disabled}
     >
       <FilterIcon />
     </Button>
   ) : (
     // Figma sets Newest and Filter in Medium 13 (D16 403:1663, 403:1671).
-    <Button textSize="sm" pressed={filterOpen || filterCount > 0 ? true : undefined}>
+    <Button textSize="sm" pressed={filterOpen || filterCount > 0 ? true : undefined} disabled={disabled}>
       <FilterIcon />
       {filterCount > 0 ? `Filter · ${String(filterCount)}` : 'Filter'}
     </Button>
@@ -193,9 +204,10 @@ export function ListTools({
           clearIcon={<CloseCircleIcon />}
           clearSize="16"
           clearLabel="Clear the search"
+          disabled={disabled}
         />
       </div>
-      <SortButton {...sort} iconOnly={phone} />
+      <SortButton {...sort} iconOnly={phone} disabled={disabled} />
       {phone ? (
         <BottomSheet
           title="Filter"

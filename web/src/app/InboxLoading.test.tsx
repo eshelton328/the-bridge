@@ -84,6 +84,17 @@ describe('the Inbox while it loads', () => {
       expect(document.querySelector(device.nav)).not.toBeNull()
       // The list's own header draws as loaded, with no count, and no row is there yet.
       await expect.element(page.getByRole('heading', { name: 'Inbox' })).toBeInTheDocument()
+      // The search, the chips, Sort and Filter wait with the list, so nothing the owner does is lost.
+      await expect.element(page.getByRole('searchbox', { name: 'Search the inbox' })).toBeDisabled()
+      await expect
+        .element(page.getByRole('button', { name: 'Sort' }).or(page.getByRole('button', { name: /Newest/ })))
+        .toBeDisabled()
+      await expect.element(page.getByRole('button', { name: 'Filter', exact: true })).toBeDisabled()
+      const chips = page.getByRole('radio').all()
+      expect(chips.length).toBeGreaterThan(0)
+      for (const chip of chips) {
+        await expect.element(chip).toBeDisabled()
+      }
       // The skeleton rows draw the list row's title slot with no text.
       expect(shown().filter((title) => title.trim())).toEqual([])
       slow.release()
@@ -91,6 +102,7 @@ describe('the Inbox while it loads', () => {
         .poll(shown)
         .toEqual(['Sample question from a chat', 'Sample request in the brain', 'Sample chat turn to review'])
       await expect.element(skeleton()).not.toBeInTheDocument()
+      await expect.element(page.getByRole('searchbox', { name: 'Search the inbox' })).toBeEnabled()
       expect(getReports()).toEqual([])
     })
 
