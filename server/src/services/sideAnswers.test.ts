@@ -57,6 +57,26 @@ describe('side answers', () => {
     expect(sides.get(themes, next)?.state).toBe('failed')
   })
 
+  it('stops an answer that answers as stopped, frees the chat, and leaves an ended answer as it is', async () => {
+    const agents = createFakeAgents(machine)
+    agents.setSideAnswer(themes, [{ text: 'Part' }, 'hang'])
+    const sides = createSideAnswers(agents, { newId })
+    const side = sideOf(await sides.ask(themes, 'Why?'))
+    await until(() => sides.get(themes, side)?.text === 'Part')
+    const seen: SideAnswer[] = []
+    sides.watch(themes, side, (a) => seen.push(a))
+    expect(sides.stop(ChatId.parse('test-mac/other'), side)).toBe('notFound')
+    expect(sides.stop(themes, side)).toBe('stopped')
+    expect(sides.get(themes, side)).toMatchObject({ state: 'stopped', text: 'Part' })
+    expect(seen.map((a) => a.state)).toEqual(['stopped'])
+    expect(sides.stop(themes, side)).toBe('ended')
+    agents.setSideAnswer(themes, [{ end: 'done' }])
+    const next = sideOf(await sides.ask(themes, 'Again?'))
+    await until(() => sides.get(themes, next)?.state !== 'answering')
+    expect(sides.get(themes, next)?.state).toBe('done')
+    expect(sides.get(themes, side)?.state).toBe('stopped')
+  })
+
   it('runs at most maxRunning questions in all, keeps the last answers only, and passes refusals on', async () => {
     const agents = createFakeAgents(machine)
     // A second Claude chat: a fork of the fake's one.

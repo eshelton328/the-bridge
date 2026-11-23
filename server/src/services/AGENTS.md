@@ -93,7 +93,8 @@ from the outside world.
   code only (`inbox.test.ts`).
 - `sideAnswers.ts` keeps side answers in memory as they come from the
   port: one question of a chat at a time and three in all (`busy`),
-  each stopped after 120 s (`timedOut`), text cut at `maxEntryText`,
+  each stopped after 120 s (`timedOut`) or by the owner's stop
+  (`stopped`, which aborts the port's run), text cut at `maxEntryText`,
   and the last 20 answers kept, never a running one
   (`sideAnswers.test.ts`).
 - No polling (d-112): a service reads a port when a request or a

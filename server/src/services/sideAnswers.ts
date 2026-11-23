@@ -15,6 +15,8 @@ export type SideAnswers = {
   get(chat: ChatId, side: SideId): SideAnswer | undefined
   /** Calls `listener` at each change of the answer; returns the stop, or undefined for no such answer. */
   watch(chat: ChatId, side: SideId, listener: (answer: SideAnswer) => void): (() => void) | undefined
+  /** Stops an answer that is still answering as `stopped`; an answer that ended stays as it is. */
+  stop(chat: ChatId, side: SideId): 'stopped' | 'ended' | 'notFound'
 }
 
 export type SideOptions = {
@@ -28,7 +30,15 @@ export function createSideAnswers(
   agents: AgentPort,
   { timeoutMs = 120_000, maxRunning = 3, keep = 20, newId = () => randomBytes(8).toString('hex') }: SideOptions = {},
 ): SideAnswers {
-  type Entry = { answer: SideAnswer; readonly listeners: Set<(answer: SideAnswer) => void> }
+  type Entry = {
+    answer: SideAnswer
+    readonly listeners: Set<(answer: SideAnswer) => void>
+    readonly controller: AbortController
+  }
+  const change = (entry: Entry, next: Partial<SideAnswer>) => {
+    entry.answer = { ...entry.answer, ...next }
+    for (const listener of entry.listeners) listener(entry.answer)
+  }
   // Insertion order is age order.
   const answers = new Map<SideId, Entry>()
   // Chats whose question the port has not answered yet; they count as running.
@@ -43,13 +53,10 @@ export function createSideAnswers(
       if (entry.answer.state !== 'answering') answers.delete(side)
     }
   }
-  const follow = async (entry: Entry, chunks: AsyncIterable<SideChunk>, controller: AbortController) => {
-    const change = (next: Partial<SideAnswer>) => {
-      entry.answer = { ...entry.answer, ...next }
-      for (const listener of entry.listeners) listener(entry.answer)
-    }
+  const follow = async (entry: Entry, chunks: AsyncIterable<SideChunk>) => {
+    const { controller } = entry
     const timer = setTimeout(() => {
-      if (entry.answer.state === 'answering') change({ state: 'timedOut' })
+      if (entry.answer.state === 'answering') change(entry, { state: 'timedOut' })
       controller.abort()
     }, timeoutMs)
     let end: 'done' | 'failed' = 'failed'
@@ -63,7 +70,7 @@ export function createSideAnswers(
         if (entry.answer.cut || chunk.text === '') continue
         const text = entry.answer.text + chunk.text
         const cut = text.length > maxEntryText
-        change({ text: cut ? text.slice(0, maxEntryText) : text, cut })
+        change(entry, { text: cut ? text.slice(0, maxEntryText) : text, cut })
       }
     } catch {
       // The runner ends a fault as `failed` and does not throw; a throw anyway shows to the page as `failed`.
@@ -72,7 +79,7 @@ export function createSideAnswers(
       clearTimeout(timer)
       controller.abort()
     }
-    if (entry.answer.state === 'answering') change({ state: end })
+    if (entry.answer.state === 'answering') change(entry, { state: end })
   }
   return {
     async ask(chat, question) {
@@ -87,10 +94,11 @@ export function createSideAnswers(
       const entry: Entry = {
         answer: { side: SideId.parse(newId()), chat, state: 'answering', text: '', cut: false },
         listeners: new Set(),
+        controller,
       }
       answers.set(entry.answer.side, entry)
       prune()
-      void follow(entry, asked.value, controller)
+      void follow(entry, asked.value)
       return ok(entry.answer)
     },
     get(chat, side) {
@@ -102,6 +110,14 @@ export function createSideAnswers(
       if (entry?.answer.chat !== chat) return undefined
       entry.listeners.add(listener)
       return () => entry.listeners.delete(listener)
+    },
+    stop(chat, side) {
+      const entry = answers.get(side)
+      if (entry?.answer.chat !== chat) return 'notFound'
+      if (entry.answer.state !== 'answering') return 'ended'
+      change(entry, { state: 'stopped' })
+      entry.controller.abort()
+      return 'stopped'
     },
   }
 }
