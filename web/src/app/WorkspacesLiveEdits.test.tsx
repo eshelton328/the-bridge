@@ -17,8 +17,8 @@ import { routeTree } from './routeTree.gen.ts'
 // Reviews R41 and R42, with backend #423's routes: the live list's Edit renames a workspace (`POST
 // /api/workspaces/:workspace/rename`) and orders the workspaces (`POST /api/workspaces/order`, the whole list), and a
 // live chat's Rename gives its pane a label (`POST /api/chats/:chat/rename`). Each shows from the list read after
-// `workspaces.changed`, never before. Edit mode draws no control without a route: no × to close a workspace, no
-// chat handle, no Move to…. Each live test takes the owner's path: the app with no URL, then Workspaces, with the
+// `workspaces.changed`, never before. Edit mode draws no control without a route: no chat handle, no Move to….
+// × closes a workspace since backend #427 (WorkspacesLiveClose.test.tsx). Each live test takes the owner's path: the app with no URL, then Workspaces, with the
 // contract-checked fakes as the server; nothing reaches a real server.
 document.documentElement.classList.add('dark')
 document.documentElement.dataset.pandaTheme = 'viewscreen'
@@ -124,16 +124,16 @@ const line = (text: string) => page.getByText(text, { exact: true })
 
 describe("the live list's Edit (R41)", () => {
   for (const [name, size] of sizes) {
-    it(`shows Edit, and edit mode offers only a handle and Rename for each workspace on the ${name}`, async () => {
+    it(`shows Edit, and edit mode offers only a handle, Rename and × for each workspace on the ${name}`, async () => {
       withChats()
       await tapWorkspaces(size)
       await tapEdit()
       for (const w of ['orchard', 'meadow']) {
         await expect.element(page.getByRole('button', { name: `Move ${w}` })).toBeVisible()
         await expect.element(page.getByRole('button', { name: `Rename ${w}` })).toBeVisible()
-        expect(page.getByRole('button', { name: `Close ${w}` }).elements()).toHaveLength(0)
+        await expect.element(page.getByRole('button', { name: `Close ${w}` })).toBeVisible()
       }
-      // No route closes a workspace, orders or renames chats from here, or moves a chat to a workspace.
+      // No route orders or renames chats from here, or moves a chat to a workspace.
       expect(page.getByRole('button', { name: /^Move to/ }).elements()).toHaveLength(0)
       expect(page.getByRole('searchbox').elements()).toHaveLength(0)
       await userEvent.click(page.getByText('sketch the plan', { exact: true }))
@@ -185,12 +185,25 @@ describe("the live list's Edit (R41)", () => {
       const fakes = withChats()
       await tapWorkspaces(size)
       await tapEdit()
-      // Herdr made a workspace the page has not read: the server refuses an order that leaves it out.
+      // Herdr makes a workspace as the server takes the order, with no event yet: the server refuses the order, which
+      // leaves it out. Made in the answer, so no list read of the page can see it before the order goes.
       fakes.chats.set('test-box/c4', [])
-      fakes.list.putWorkspace(
-        { id: 'test-box/w-hedge', label: 'hedge', chats: [summary('test-box/c4', 'trim the hedge')] },
-        true,
-      )
+      fakes.list.answerEdits(() => {
+        fakes.list.answerEdits(undefined)
+        fakes.list.putWorkspace(
+          { id: 'test-box/w-hedge', label: 'hedge', chats: [summary('test-box/c4', 'trim the hedge')] },
+          true,
+        )
+        return errorAnswer(
+          {
+            kind: 'workspace-not-ready',
+            state: 'orderStale',
+            message: 'the order does not name each workspace of the list once',
+            requestId: 'r-409',
+          },
+          409,
+        )
+      })
       // The keyboard's way: the focused handle moves one place up.
       const handle = page.getByRole('button', { name: 'Move meadow' }).element()
       if (handle instanceof HTMLElement) handle.focus()

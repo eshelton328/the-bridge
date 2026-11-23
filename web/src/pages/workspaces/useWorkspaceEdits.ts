@@ -1,6 +1,6 @@
 // The live list's edits (reviews R41, R42): rename a workspace, rename a
-// chat (herdr's label of its pane) and put the workspaces in the owner's
-// order, through liveWorkspaceEdits.ts, loaded when first used so a build
+// chat (herdr's label of its pane), put the workspaces in the owner's
+// order and close a workspace (backend #427), through liveWorkspaceEdits.ts, loaded when first used so a build
 // has no live code. One edit at a time for the page. There is no
 // optimistic name: after a 204 the edit stays pending until the next list
 // read changes the list (the server's `workspaces.changed`), or for 2.5 s,
@@ -11,7 +11,12 @@
 // `maxLabel`, a control character) is not sent and says so; an empty name
 // is never sent. 409 orderStale and a 404 read the list again with a line;
 // any other miss shows one line ("Not renamed — herdr-unavailable"), which
-// the screen draws with the live notice in every layout.
+// the screen draws with the live notice in every layout. A closed workspace
+// leaves the page with the list read after the 204, never before; a close
+// whose count the server does not match reads the list again and calls
+// `again` once that read changed the list (or after 2.5 s), so the dialog
+// asks with the new list and its count, never the old one (Codex review
+// of #432).
 import { Label, maxLabel } from '@bridge/contract'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { report } from '../../errors/reporter.ts'
@@ -35,6 +40,7 @@ const lead: Record<WorkspaceEdit, string> = {
   renameWorkspace: 'Not renamed',
   renameChat: 'Not renamed',
   order: 'Not reordered',
+  close: 'Not closed',
 }
 
 const viaLive = (run: (live: Live) => Promise<EditAnswer>): Promise<EditAnswer> =>
@@ -61,6 +67,15 @@ export function useWorkspaceEdits(live: boolean, data: WorkspacesData): Workspac
   const dataRef = useRef(data)
   const pendingRef = useRef<Pending>(undefined)
   const aliveRef = useRef(true)
+  /** A close to ask about again: the list when the server refused it, and the wait for the read after it. */
+  const againRef = useRef<{ seen: string; run: () => void; timer: ReturnType<typeof setTimeout> }>(undefined)
+  const askAgain = useCallback(() => {
+    const entry = againRef.current
+    if (entry === undefined) return
+    clearTimeout(entry.timer)
+    againRef.current = undefined
+    entry.run()
+  }, [])
   const done = useCallback((entry: Pending) => {
     if (pendingRef.current !== entry) return
     clearTimeout(entry.timer)
@@ -72,6 +87,7 @@ export function useWorkspaceEdits(live: boolean, data: WorkspacesData): Workspac
     return () => {
       aliveRef.current = false
       clearTimeout(pendingRef.current?.timer)
+      clearTimeout(againRef.current?.timer)
     }
   }, [])
   // A list read that changed the list ends the wait of an edit the server took.
@@ -79,11 +95,18 @@ export function useWorkspaceEdits(live: boolean, data: WorkspacesData): Workspac
     dataRef.current = data
     const p = pendingRef.current
     if (p?.timer !== undefined && listJson(data) !== p.seen) done(p)
+    // A refused close asks again only with the list read after it.
+    if (againRef.current !== undefined && listJson(data) !== againRef.current.seen) askAgain()
   })
 
   /** Sends one edit; `false` when another one is pending, and nothing goes. */
   const start = useCallback(
-    (action: WorkspaceEdit, run: (live: Live, machine: string) => Promise<EditAnswer>, order?: readonly string[]) => {
+    (
+      action: WorkspaceEdit,
+      run: (live: Live, machine: string) => Promise<EditAnswer>,
+      order?: readonly string[],
+      again?: () => void,
+    ) => {
       const machine = dataRef.current.liveMachine
       if (machine === undefined) return false
       if (pendingRef.current !== undefined) {
@@ -107,12 +130,17 @@ export function useWorkspaceEdits(live: boolean, data: WorkspacesData): Workspac
           return
         }
         done(entry)
-        if (answer.kind === 'stale' || answer.kind === 'gone') readList()
+        if (answer.kind === 'stale' || answer.kind === 'gone' || answer.kind === 'again') readList()
         setLine(answer.line)
+        if (answer.kind === 'again' && again !== undefined) {
+          clearTimeout(againRef.current?.timer)
+          againRef.current = { seen: entry.seen, run: again, timer: setTimeout(askAgain, listEventWaitMs) }
+          if (listJson(dataRef.current) !== entry.seen) askAgain()
+        }
       })
       return true
     },
-    [done],
+    [done, askAgain],
   )
   /** The name to send, or a line: trimmed, never empty, as the contract's `Label` takes it. */
   const named = useCallback((action: WorkspaceEdit, name: string, was: string) => {
@@ -147,6 +175,9 @@ export function useWorkspaceEdits(live: boolean, data: WorkspacesData): Workspac
         const now = dataRef.current.workspaces.map((w) => w.id)
         if (workspaces.join('\n') === now.join('\n')) return
         start('order', (m, machine) => m.orderWorkspaces(workspaces.map((w) => `${machine}/${w}`)), workspaces)
+      },
+      close: (workspace, panes, again) => {
+        start('close', (m, machine) => m.closeWorkspace(`${machine}/${workspace}`, panes), undefined, again)
       },
     }),
     [pending, line, named, start],

@@ -72,6 +72,7 @@ import {
   whenVisible,
 } from '../../lib/pageResume.ts'
 import type {
+  CloseWorkspaceText,
   LiveTab,
   PaneAction,
   PhoneText,
@@ -259,6 +260,21 @@ const liveChatMenu: PaneAction[] = [liveNewChat, { value: 'rename', label: 'Rena
 const livePhoneChatMenu: PaneAction[] = [liveNewChat, { value: 'rename', label: 'Rename' }]
 
 /**
+ * The live dialog that × in edit mode opens (M13's words; backend #427): it asks about any workspace and lists the
+ * chats that end with it, from the list data.
+ */
+const liveCloseWorkspace: CloseWorkspaceText = {
+  cancel: 'Cancel',
+  close: 'Close',
+  workspaces: {},
+  listed: {
+    title: 'Close {workspace}?',
+    one: 'This chat ends with it. This can’t be undone.',
+    many: 'These {count} chats end with it. This can’t be undone.',
+  },
+}
+
+/**
  * The phone's labels with Edit and Done (M1, M2; reviews R41, R42): the live edit mode renames and orders the
  * workspaces (backend #423), and draws no control that has no route (PhoneWorkspaceList with `edits`).
  */
@@ -332,9 +348,10 @@ function liveOnly(
       ...(data.phone === undefined
         ? {}
         : {
-            // Review R41: Edit renames and orders the workspaces; nothing closes a workspace yet.
+            // Review R41: Edit renames, orders and closes the workspaces (backend #423, #427).
             phone: {
               ...withEdit(data.phone),
+              closeWorkspace: liveCloseWorkspace,
               chatMenu: livePhoneChatMenu,
               addMenu: { newChat: 'New chat' },
               workspaceMenu: [{ value: 'newChat', label: 'New chat in {workspace}' }],

@@ -182,7 +182,7 @@ export function WorkspacesPage() {
   const layoutWrites = useLayoutWrites(import.meta.env.DEV && live, data, (workspace, chat, tab) => {
     changeUi(followTab(liveData, uiRef.current, workspace, chat, tab))
   })
-  // The live list's edits (R41, R42): renames and the workspaces' order, shown from the next list read.
+  // The live list's edits (R41, R42): renames, the workspaces' order and a close, shown from the next list read.
   const workspaceEdits = useWorkspaceEdits(import.meta.env.DEV && live, data)
   // The file chips of a chat that left for a new ID on its pane go, as its draft stays behind: the server holds each
   // upload for the chat that started it, so the new chat's send could not name them.

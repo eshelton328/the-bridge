@@ -21,11 +21,15 @@
 // edit mode offers only what a route backs: each workspace's handle moves
 // it (useWorkspaceReorder, the whole order to `edits.order`) and Rename
 // opens its name as a field, which saves through `edits.renameWorkspace`;
-// there is no × and the chats have no handle or field. The name and the
-// order show from the next list read, and a pending order holds its place
-// on the page until then. Props only.
+// × on a workspace with chats asks with `text.closeWorkspace.listed`, which
+// lists them, and Close sends `edits.close` with their number (backend
+// #427). The chats have no handle or field. The name, the order and a
+// closed workspace's leaving show from the next list read, and a pending
+// order holds its place on the page until then; when the server counts
+// other chats the dialog asks again with the new list, unless the owner
+// opened another one meanwhile (Codex review of #432). Props only.
 import { Button, Container, MoreIcon, PageHeader } from '@eshelton328/component-library-1701'
-import type { MouseEvent, ReactNode, Ref } from 'react'
+import { type MouseEvent, type ReactNode, type Ref, useLayoutEffect, useRef } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { PhoneText, SidebarChat, SidebarLayers, Workspace, WorkspaceEdits, WorkspacesUi } from '../types.ts'
 import { CloseWorkspaceDialog } from './CloseWorkspaceDialog.tsx'
@@ -149,6 +153,12 @@ export function PhoneWorkspaceList({
   )
   const shown = edits === undefined ? workspaces : reorder.order.flatMap((id) => workspaces.filter((w) => w.id === id))
   const closed = ui.closedWorkspaces ?? []
+  const closing = workspaces.find((w) => w.id === ui.closing)
+  // The dialog open now, for a close the server refused while the owner asked about another workspace.
+  const closingRef = useRef(ui.closing)
+  useLayoutEffect(() => {
+    closingRef.current = ui.closing
+  })
   const closeText = text.closeWorkspace
   const setOpen = (id: string, open: boolean) =>
     onUiChange?.({ collapsed: open ? collapsed.filter((c) => c !== id) : [...collapsed, id] })
@@ -221,7 +231,11 @@ export function PhoneWorkspaceList({
               })
             }}
             onClose={
-              edits !== undefined || closeText?.workspaces[w.id] === undefined
+              (
+                edits === undefined
+                  ? closeText?.workspaces[w.id] === undefined
+                  : closeText?.listed === undefined || (w.chats ?? []).length === 0
+              )
                 ? undefined
                 : () => onUiChange?.({ closing: w.id })
             }
@@ -275,11 +289,22 @@ export function PhoneWorkspaceList({
       {closeText === undefined ? null : (
         <CloseWorkspaceDialog
           text={closeText}
-          workspace={workspaces.find((w) => w.id === ui.closing) ?? null}
+          workspace={closing ?? null}
+          chats={edits === undefined ? undefined : (closing?.chats ?? [])}
           onOpenChange={(open) => {
             if (!open) onUiChange?.({ closing: null })
           }}
-          onConfirm={(id) => onUiChange?.({ closing: null, closedWorkspaces: [...closed, id] })}
+          onConfirm={(id, panes) => {
+            if (edits === undefined) {
+              onUiChange?.({ closing: null, closedWorkspaces: [...closed, id] })
+              return
+            }
+            // Live, the workspace leaves with the next list read; when the server counts other chats, ask again.
+            onUiChange?.({ closing: null })
+            edits.close(id, panes, () => {
+              if (closingRef.current === null || closingRef.current === undefined) onUiChange?.({ closing: id })
+            })
+          }}
           layers={layers?.closeDialog}
         />
       )}

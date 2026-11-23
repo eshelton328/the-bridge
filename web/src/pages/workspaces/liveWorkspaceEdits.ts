@@ -5,7 +5,10 @@
 // server's list stream sends `workspaces.changed`: the page shows the new
 // name or order from the list read after it, never before (useWorkspaceEdits.ts).
 // A chat's name is herdr's label of its pane, which the list shows as the
-// chat's title; the agent's own name does not change.
+// chat's title; the agent's own name does not change. `POST
+// /api/workspaces/:workspace/close` (backend #427) takes `{ confirm, panes }`:
+// the workspace's ID and the number of chats the dialog listed. It never
+// asks for herdr's group close, and the page offers no force.
 //
 // What a miss means to the page:
 // - 409 `workspace-not-ready` `orderStale`: the order does not name the list
@@ -15,26 +18,38 @@
 //   with a line (`gone`).
 // - 400 `invalid-input`: the server's message as one line. The page sends
 //   only a name the contract's `Label` takes, so this is a name the server
-//   refuses for its own reason.
+//   refuses for its own reason. For a close it is a confirm the server does
+//   not match, so the page reads the list again too (`stale`).
+// - 409 `workspace-not-ready` for a close, one plain line by state:
+//   `working`, `needsYou`, `holdsServer` (the workspace runs the Bridge
+//   server) and `group` (herdr groups it); `panesChanged` reads the list
+//   again and asks again with the new list (`again`).
 // - Anything else is one quiet line by kind ("Not renamed —
 //   herdr-unavailable"). report() gets a WorkspaceEditMissError for a 5xx and
 //   for an answer the page does not expect, with the action, the kind and
 //   the HTTP status only: never a name, an ID or the server's message. The
 //   requests go through the typed RPC client with each ID URL-encoded once
 //   in the path; the bodies are the contract's.
-import { ErrorBody, RenameChatRequest, RenameWorkspaceRequest, WorkspaceOrderRequest } from '@bridge/contract'
+import {
+  CloseWorkspaceRequest,
+  ErrorBody,
+  RenameChatRequest,
+  RenameWorkspaceRequest,
+  WorkspaceOrderRequest,
+} from '@bridge/contract'
 import { report } from '../../errors/reporter.ts'
 import { api } from '../../lib/api.ts'
 import { liveReadTimeoutMs, readJson } from './liveWorkspaces.ts'
 
 /** An edit the page sends. */
-export type WorkspaceEdit = 'renameWorkspace' | 'renameChat' | 'order'
+export type WorkspaceEdit = 'renameWorkspace' | 'renameChat' | 'order' | 'close'
 
 /** What the page does after an edit answered. */
 export type EditAnswer =
   | { readonly kind: 'done' }
   | { readonly kind: 'stale'; readonly line: string }
   | { readonly kind: 'gone'; readonly line: string }
+  | { readonly kind: 'again'; readonly line: string }
   | { readonly kind: 'miss'; readonly line: string }
 
 /** An edit that missed, for report(): the action, the kind and the status, and nothing else. */
@@ -53,7 +68,16 @@ export const editLead: Record<WorkspaceEdit, string> = {
   renameWorkspace: 'Not renamed',
   renameChat: 'Not renamed',
   order: 'Not reordered',
+  close: 'Not closed',
 }
+
+/** The line of each state a close can meet (409 `workspace-not-ready`), as the owner reads it. */
+const closeLines = {
+  working: 'A chat in it is working — stop it first',
+  needsYou: 'A chat in it needs you',
+  holdsServer: 'This workspace runs the Bridge server, so it can’t close from here',
+  group: 'Close it in herdr',
+} as const
 
 const missLine = (action: WorkspaceEdit, text: string): EditAnswer => ({
   kind: 'miss',
@@ -77,8 +101,13 @@ async function missOf(action: WorkspaceEdit, res: Response): Promise<EditAnswer>
   const error = parsed.data.error
   switch (error.kind) {
     case 'workspace-not-ready':
-      if (error.state === 'orderStale')
+      if (action === 'order' && error.state === 'orderStale')
         return { kind: 'stale', line: `${editLead[action]} — the list changed; here it is again` }
+      if (action === 'close') {
+        if (error.state === 'panesChanged')
+          return { kind: 'again', line: `${editLead[action]} — the chats in it changed; here they are again` }
+        if (error.state !== 'orderStale') return { kind: 'miss', line: closeLines[error.state] }
+      }
       return reported(action, `${error.kind} ${error.state}`, res.status)
     case 'not-found':
       return {
@@ -86,7 +115,9 @@ async function missOf(action: WorkspaceEdit, res: Response): Promise<EditAnswer>
         line: `${editLead[action]} — that ${action === 'renameChat' ? 'chat' : 'workspace'} is gone`,
       }
     case 'invalid-input':
-      // The server's own words, as one line: the name passed the contract's check here.
+      // The server's own words, as one line: the name passed the contract's check here. A close's confirm the server
+      // does not match means the page's list is not the server's, so the page reads it again.
+      if (action === 'close') return { kind: 'stale', line: `${editLead[action]} — ${error.message}` }
       return missLine(action, error.message)
     case 'herdr-unavailable':
     case 'herdr-bad-reply':
@@ -146,4 +177,15 @@ export function renameChat(chat: string, name: string): Promise<EditAnswer> {
 export function orderWorkspaces(workspaces: readonly string[]): Promise<EditAnswer> {
   const json = WorkspaceOrderRequest.parse({ workspaces })
   return post('order', (signal) => api.api.workspaces.order.$post({ json }, { init: { signal } }))
+}
+
+/** Closes `workspace` (its server ID) and its `panes` chats, the number the dialog listed. */
+export function closeWorkspace(workspace: string, panes: number): Promise<EditAnswer> {
+  const json = CloseWorkspaceRequest.parse({ confirm: workspace, panes })
+  return post('close', (signal) =>
+    api.api.workspaces[':workspace'].close.$post(
+      { param: { workspace: encodeURIComponent(workspace) }, json },
+      { init: { signal } },
+    ),
+  )
 }

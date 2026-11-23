@@ -6,9 +6,10 @@
 // closes (M13, `onClose`). A chat in `moveTo` shows Move to… in place of
 // its status (T1 105:1594). The live edit mode (reviews R41, R42) offers
 // only what a route backs: `handle` in place of the grip moves the
-// workspace, `onRename` puts a Rename button in place of ×, and with
-// `fixedChats` the chats have no handle and no field, as nothing orders
-// or renames them from here. Props only.
+// workspace, `onRename` puts a Rename button before × (× only with
+// `onClose`, which the live page gives a workspace with chats to close),
+// and with `fixedChats` the chats have no handle and no field, as nothing
+// orders or renames them from here. Props only.
 import {
   Button,
   ChevronDownIcon,
@@ -32,6 +33,8 @@ import { SidebarChatRow } from './SidebarChatRow.tsx'
 // × ends at the header's end padding (105:2530, 357 to 372); the 24 px button reaches 4 into that padding, so its icon
 // is centred where Figma's is.
 const headerAction = css({ color: 'fg.muted', my: '-4', me: '-4' })
+// Live, Rename sits before ×, so only × reaches into the end padding.
+const headerActionBefore = css({ color: 'fg.muted', my: '-4' })
 // M2 105:2604: the handle 4 in (105:2605), the chevron 8 after it (105:2612) and the field to 6 from the end
 // (105:2614). The field is 28 high (control.sm) where Figma's is 25, so the header pads 6, not 8, above and below.
 const renameHeader = css({ ps: '4', pe: '6', py: '6' })
@@ -71,7 +74,7 @@ export type PhoneEditGroupProps = {
   layers?: SidebarLayers | undefined
   /** The live edit mode: the drag handle drawn in place of the grip (ReorderHandle). */
   handle?: ReactNode
-  /** The live edit mode: Rename in place of ×, which opens the workspace's name as a field. */
+  /** The live edit mode: Rename before ×, which opens the workspace's name as a field; × only with `onClose`. */
   onRename?: (() => void) | undefined
   /** The live edit mode: the chats draw with no handle and open no field. */
   fixedChats?: boolean | undefined
@@ -106,6 +109,11 @@ export function PhoneEditGroup(props: PhoneEditGroupProps) {
   const rowsId = useId()
   const name = workspace.label
   const toggle = () => onOpenChange?.(!open)
+  const close = (
+    <Button variant="text" size="xs" iconOnly className={headerAction} aria-label={`Close ${name}`} onClick={onClose}>
+      <CloseIcon size="12" />
+    </Button>
+  )
   return (
     <div ref={groupRef} className={dragging ? faded : undefined}>
       {renaming === undefined ? (
@@ -121,27 +129,21 @@ export function PhoneEditGroup(props: PhoneEditGroupProps) {
             leading={handle ?? <GripIcon size="12" />}
             actions={
               onRename === undefined ? (
-                <Button
-                  variant="text"
-                  size="xs"
-                  iconOnly
-                  className={headerAction}
-                  aria-label={`Close ${name}`}
-                  onClick={onClose}
-                >
-                  <CloseIcon size="12" />
-                </Button>
+                close
               ) : (
-                <Button
-                  variant="text"
-                  size="xs"
-                  iconOnly
-                  className={headerAction}
-                  aria-label={`Rename ${name}`}
-                  onClick={onRename}
-                >
-                  <EditIcon size="12" />
-                </Button>
+                <>
+                  <Button
+                    variant="text"
+                    size="xs"
+                    iconOnly
+                    className={onClose === undefined ? headerAction : headerActionBefore}
+                    aria-label={`Rename ${name}`}
+                    onClick={onRename}
+                  >
+                    <EditIcon size="12" />
+                  </Button>
+                  {onClose === undefined ? null : close}
+                </>
               )
             }
           />

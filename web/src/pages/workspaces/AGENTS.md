@@ -28,11 +28,11 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   chat, Subtask and Move to workspace stay hidden until their routes
   come. The fixture states keep every action, and their edit mode every
   control (`app/WorkspacesLiveUnbacked.test.tsx`).
-- The live list's edits (R41, R42, backend #423; `useWorkspaceEdits.ts`,
+- The live list's edits (R41, R42, backend #423 and #427; `useWorkspaceEdits.ts`,
   `liveWorkspaceEdits.ts`): the phone's and tablet's Edit opens edit
   mode with Done, which on live draws only what a route backs. Each
   workspace has a handle (`blocks/ReorderHandle.tsx`,
-  `blocks/useWorkspaceReorder.ts`) and Rename in place of ×. A drag on
+  `blocks/useWorkspaceReorder.ts`), Rename, and × when it has a chat. A drag on
   the handle, or an arrow key on the focused handle, posts `POST
   /api/workspaces/order` with the whole list in the new order; the page
   holds that order until the list read after `workspaces.changed`. While
@@ -42,9 +42,20 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   opens the name as a field, which posts `POST
   /api/workspaces/:workspace/rename`. A chat's Rename posts `POST
   /api/chats/:chat/rename`, herdr's label of its pane, which the list
-  shows as the chat's title. No × closes a workspace, and the chats have
-  no handle, no field and no Move to…: closing a workspace, ordering
-  chats and moving a chat have no route yet. A name is trimmed; an empty
+  shows as the chat's title. × opens the close dialog
+  (`blocks/CloseWorkspaceDialog.tsx` with `closeWorkspace.listed`), which
+  names the workspace, says how many chats end and lists each by its
+  title from the list data; Close posts `POST
+  /api/workspaces/:workspace/close` with `{ confirm, panes }`, the
+  workspace's ID and that count, and never herdr's group close. The
+  workspace leaves only with the list read after the 204. A 409
+  `workspace-not-ready` shows one plain line by state (`working`,
+  `needsYou`, `holdsServer`, `group`, with no force), and `panesChanged`
+  reads the list again and opens the dialog again with the new list; a
+  400 or a 404 shows one line and reads the list again
+  (`app/WorkspacesLiveClose.test.tsx`). The chats have no handle, no
+  field and no Move to…: ordering chats and moving a chat have no route
+  yet. A name is trimmed; an empty
   one or the same name is not sent, and one the contract's `Label`
   refuses (over 64 characters, a control character) shows a line and is
   not sent. A new name or order shows only from the list read, never

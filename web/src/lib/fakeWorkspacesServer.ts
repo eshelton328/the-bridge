@@ -95,10 +95,17 @@
 // `workspaces.changed` and answers 204. `answerEdits` answers each next edit
 // with a test's error, `edits` records each body, and `putWorkspace` lists
 // another workspace, with no event when `quiet`, as herdr makes one.
+// Backend #427: `POST /api/workspaces/:workspace/close` takes
+// `CloseWorkspaceRequest`; a `confirm` of another workspace is 400, an
+// unknown one 404, and a `panes` that is not its number of chats 409
+// workspace-not-ready panesChanged; else the workspace leaves the list,
+// which sends `workspaces.changed`, and the answer is 204. `answerEdits`
+// gives the other 409 states.
 import {
   ChatId,
   type ChatSummary,
   CloseChatRequest,
+  CloseWorkspaceRequest,
   type ErrorBody,
   FocusChatRequest,
   chatsOf,
@@ -217,7 +224,7 @@ export function fakeWorkspacesServer(
   const models: { chat: string; body: unknown }[] = []
   let modelAnswer: (() => Response) | undefined
   /** R41, R42: each edit's action, its target (none for an order) and its body, and an answer in place of the next ones'. */
-  const edits: { action: 'renameWorkspace' | 'renameChat' | 'order'; target?: string; body: unknown }[] = []
+  const edits: { action: 'renameWorkspace' | 'renameChat' | 'order' | 'close'; target?: string; body: unknown }[] = []
   let editAnswer: (() => Response) | undefined
 
   /** The ID of the tab made `at`th for `workspace`; it stays while the tab lives. */
@@ -686,6 +693,41 @@ export function fakeWorkspacesServer(
     return new Response(null, { status: 204 })
   }
 
+  /** A close of a workspace (backend #427): the contract's checks, the test's answer, the confirm, the count, then 204. */
+  const close = (target: string, init: RequestInit | undefined) => {
+    const body = bodyOf(init)
+    edits.push({ action: 'close', target, body })
+    const parsed = CloseWorkspaceRequest.safeParse(body)
+    if (new Headers(init?.headers).get('content-type') !== 'application/json' || !parsed.success) return badBody()
+    if (editAnswer !== undefined) return editAnswer()
+    if (parsed.data.confirm !== target)
+      return errorAnswer(
+        {
+          kind: 'invalid-input',
+          issues: ['confirm'],
+          message: 'the confirm does not name this workspace',
+          requestId: 'r-400',
+        },
+        400,
+      )
+    const found = response.workspaces.find((w) => w.id === target)
+    if (found === undefined)
+      return errorAnswer({ kind: 'not-found', path: `/api/${target}`, message: 'Not found', requestId: 'r-404' }, 404)
+    if (found.chats.length !== parsed.data.panes)
+      return errorAnswer(
+        {
+          kind: 'workspace-not-ready',
+          state: 'panesChanged',
+          message: 'the workspace has another number of chats',
+          requestId: 'r-409',
+        },
+        409,
+      )
+    response = WorkspacesResponse.parse({ ...response, workspaces: response.workspaces.filter((w) => w !== found) })
+    changed()
+    return new Response(null, { status: 204 })
+  }
+
   /** Changes the list with `change`, checked against the contract, and tells the event streams unless `quiet`. */
   const update = (change: (chat: ChatSummary) => ChatSummary, quiet = false) => {
     response = WorkspacesResponse.parse({
@@ -789,11 +831,19 @@ export function fakeWorkspacesServer(
     chats: () => response.workspaces.flatMap((w) => w.chats),
     /** The workspaces of the list now, in its order: their IDs and labels. */
     workspaces: () => response.workspaces.map((w) => ({ id: w.id, label: w.label })),
-    /** Each rename and order the page posted (R41, R42), in order. */
+    /** Each rename, order and close the page posted (R41, R42, backend #427), in order. */
     edits,
-    /** Answers each next rename and order with `answer` until it is set to undefined. */
+    /** Answers each next rename, order and close with `answer` until it is set to undefined. */
     answerEdits: (answer: (() => Response) | undefined) => {
       editAnswer = answer
+    },
+    /** Adds `chat` to the end of `workspace` (checked against the contract), and tells the streams unless `quiet`. */
+    putChat: (workspace: string, chat: unknown, quiet = false) => {
+      response = WorkspacesResponse.parse({
+        ...response,
+        workspaces: response.workspaces.map((w) => (w.id === workspace ? { ...w, chats: [...w.chats, chat] } : w)),
+      })
+      if (!quiet) changed()
     },
     /** Lists `workspace` last, as herdr makes one (checked against the contract), and tells the streams unless `quiet`. */
     putWorkspace: (workspace: unknown, quiet = false) => {
@@ -811,6 +861,8 @@ export function fakeWorkspacesServer(
       if (path === '/api/events') return events(init?.signal)
       if (path === '/api/chats' && init?.method === 'POST') return start(init)
       if (path === '/api/workspaces/order' && init?.method === 'POST') return order(init)
+      const closePath = /^\/api\/workspaces\/([^/]+)\/close$/.exec(path)
+      if (closePath !== null && init?.method === 'POST') return close(decodeURIComponent(closePath[1] ?? ''), init)
       const renamed = /^\/api\/(workspaces|chats)\/([^/]+)\/rename$/.exec(path)
       if (renamed !== null && init?.method === 'POST')
         return rename(
