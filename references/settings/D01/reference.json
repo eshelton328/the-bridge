@@ -1,0 +1,17 @@
+{
+  "frameId": "D01",
+  "code": "D1",
+  "name": "Settings · desktop · Dark",
+  "device": "desktop",
+  "w": 1512,
+  "h": 982,
+  "mode": "dark",
+  "tolerance": 4,
+  "source": "lab a52ab2d4 + d-119",
+  "original": {
+    "file": "settings-desktop-dark.png",
+    "w": 3024,
+    "h": 1964,
+    "sha256": "cee1ca3daa343e8a7dda359df405fe548a9f5a506945b3fdc3d1ccb114d56fb6"
+  }
+}

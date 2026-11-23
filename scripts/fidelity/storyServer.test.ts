@@ -4,7 +4,16 @@ import assert from 'node:assert/strict'
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { serveStatic, stateForFrame, storyForState } from './storyServer.ts'
+import { serveStatic, stateForFrame, storyForState, storyUrl } from './storyServer.ts'
+
+void test('a PNG frame in Light sets the Storybook mode global; a Figma frame keeps the plain URL', () => {
+  assert.equal(
+    storyUrl('http://127.0.0.1:1', 'pages-settings--light', 'light'),
+    'http://127.0.0.1:1/iframe.html?id=pages-settings--light&viewMode=story&globals=mode:light',
+  )
+  assert.match(storyUrl('http://127.0.0.1:1', 's', 'dark'), /&globals=mode:dark$/)
+  assert.equal(storyUrl('http://127.0.0.1:1', 's'), 'http://127.0.0.1:1/iframe.html?id=s&viewMode=story')
+})
 
 void test('finds the state file that lists a frame code', () => {
   const dir = mkdtempSync(join(tmpdir(), 'pages-'))

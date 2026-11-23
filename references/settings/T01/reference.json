@@ -1,0 +1,17 @@
+{
+  "frameId": "T01",
+  "code": "T1",
+  "name": "Settings · iPad portrait · Dark",
+  "device": "tablet",
+  "w": 820,
+  "h": 1180,
+  "mode": "dark",
+  "tolerance": 4,
+  "source": "lab a52ab2d4 + d-119",
+  "original": {
+    "file": "settings-ipad-portrait-dark.png",
+    "w": 1640,
+    "h": 2360,
+    "sha256": "655b326c2202c34a897a88e89baf1d067960d0c073ec0bee9dade874add44783"
+  }
+}

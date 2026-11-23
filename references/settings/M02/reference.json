@@ -1,0 +1,17 @@
+{
+  "frameId": "M02",
+  "code": "M2",
+  "name": "Settings · phone · Light",
+  "device": "phone",
+  "w": 390,
+  "h": 844,
+  "mode": "light",
+  "tolerance": 4,
+  "source": "lab a52ab2d4 + d-119",
+  "original": {
+    "file": "settings-phone-light.png",
+    "w": 780,
+    "h": 1688,
+    "sha256": "1b722dd98a016b295c231e2e239141386b67e0d00c846d82307bef6c1a323e50"
+  }
+}

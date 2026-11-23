@@ -1,0 +1,17 @@
+{
+  "frameId": "T04",
+  "code": "T4",
+  "name": "Settings · iPad landscape · Light",
+  "device": "tablet",
+  "w": 1180,
+  "h": 820,
+  "mode": "light",
+  "tolerance": 4,
+  "source": "lab a52ab2d4 + d-119",
+  "original": {
+    "file": "settings-ipad-landscape-light.png",
+    "w": 2360,
+    "h": 1640,
+    "sha256": "4047f1ec68c0f6ecb7bb39898c0e1d7e52843fd517f0212154ff48dab6b26290"
+  }
+}

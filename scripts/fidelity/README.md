@@ -68,6 +68,38 @@ brain:
    fix goes into `exceptions.json` with its reason, and on the
    deviations list for the owner.
 
+## PNG references
+
+A page with no Figma frame has PNG references
+([../../references/AGENTS.md](../../references/AGENTS.md)): `frame.png`
+and a hand-written `reference.json`, with no `frame.json`. `pnpm fidelity
+<page>` finds both kinds. For a PNG frame it:
+
+- renders the story at the reference's size, with the browser in the
+  reference's `mode` (`prefers-color-scheme`), and no status bar;
+- labels the frame `PNG reference: text, position and icons not checked`
+  in its report and in the summary;
+- lists text, position and icons under `notRun`, as a PNG has no layers.
+  `--checks` with any of them fails the frame with an error;
+- runs the rule check (`checks: ["rules"]`) and the reviewer's gate, and
+  the frame passes only when both pass. The gate needs `--review <file>`:
+  the `fidelity-reviewer` agent's JSON record of the frame's side-by-side,
+  from step 5. The run renders the frame again and takes the record only
+  when the new render is byte for byte the one the reviewer saw; any P1
+  or P2 finding, an `unreviewable` verdict, no record or a changed render
+  fails the frame (`pngReview.ts`). So a PNG frame takes two runs: one
+  without `--review` (it fails with `noReview`) for the side-by-side, and
+  one with the record;
+- writes `pixels` (pixels whose channels differ by more than 32 of 255,
+  and their ratio) and `<frameId>.diff.png` (red where they differ). The
+  ratio is not a gate: a lab screenshot and a built page differ in fonts
+  and the backdrop's stars, and the Figma mode has no pixel threshold to
+  reuse. The reviewer reads the side-by-side, labelled Reference, and may
+  read the diff.
+
+`fidelity:check-build` and the `fidelity-builder` agent still need a
+`frame.json`; they do not take a PNG frame.
+
 ## The fidelity-builder agent
 
 `fidelity-builder` runs steps 1 to 4 and 6 for one frame in a worktree,

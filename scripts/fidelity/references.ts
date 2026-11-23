@@ -1,10 +1,12 @@
-// Reads the saved Figma references (references/<page>/<frameId>/) and the
-// hand-written exceptions beside them, each checked with Zod.
+// Reads the saved references (references/<page>/<frameId>/) and the
+// hand-written exceptions beside them, each checked with Zod. A frame is a
+// Figma frame (frame.json and frame.png) or, for a page with no Figma frame,
+// a PNG reference (reference.json and frame.png, d-119).
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { z } from 'zod'
-import type { FrameRef } from './figmaMetadata.ts'
+import { normaliseFrameId, type FrameRef } from './figmaMetadata.ts'
 
 export const repoRoot = fileURLToPath(new URL('../../', import.meta.url))
 export const referencesDir = join(repoRoot, 'references')
@@ -39,6 +41,46 @@ const frameRef = z.object({
 }) satisfies z.ZodType<FrameRef>
 
 const reason = z.string().min(1)
+
+/**
+ * reference.json: a PNG reference for a page with no Figma frame (d-119),
+ * written by hand. The PNG has no layers, so only the checks in
+ * `pngChecks` can run against it.
+ */
+const pngRef = z
+  .strictObject({
+    frameId: z.string().regex(/^[A-Z]\d{2}[a-z]?$/, 'must be a frame id such as D01 or M02b'),
+    code: z.string(),
+    name: z.string().min(1),
+    device: z.enum(['desktop', 'tablet', 'phone']),
+    /** The frame's size in CSS px; frame.png is this size, at 1:1. */
+    w: z.int().positive(),
+    h: z.int().positive(),
+    /** The colour scheme the render's browser reports (prefers-color-scheme). */
+    mode: z.enum(['light', 'dark']),
+    /** The full-height rule's slack in px, as a Figma frame's tolerance. */
+    tolerance: z.number().nonnegative(),
+    /** Where the picture comes from, such as "lab a52ab2d4 + d-119". */
+    source: z.string().min(1),
+    /** The original picture that frame.png was scaled from. */
+    original: z.strictObject({
+      file: z.string().min(1),
+      w: z.int().positive(),
+      h: z.int().positive(),
+      sha256: z.string().regex(/^[0-9a-f]{64}$/, 'must be a sha256 in hex'),
+    }),
+  })
+  .superRefine((r, ctx) => {
+    if (normaliseFrameId(r.code) !== r.frameId)
+      ctx.addIssue({ code: 'custom', path: ['code'], message: `code ${r.code} is not frame ${r.frameId}` })
+    const letter = r.device === 'desktop' ? 'D' : r.device === 'tablet' ? 'T' : 'M'
+    if (!r.frameId.startsWith(letter))
+      ctx.addIssue({ code: 'custom', path: ['frameId'], message: `a ${r.device} frame id starts with ${letter}` })
+    if (r.original.w * r.h !== r.original.h * r.w)
+      ctx.addIssue({ code: 'custom', path: ['original'], message: "the original must have the frame's aspect ratio" })
+  })
+
+export type PngRef = z.infer<typeof pngRef>
 
 /** Hand-written exceptions for one frame; each needs a reason. */
 const exceptions = z.object({
@@ -135,6 +177,48 @@ export function parseFrameRef(data: unknown, file: string): FrameRef {
 export function readFrameRef(page: string, frameId: string): FrameRef {
   const file = join(frameDir(page, frameId), 'frame.json')
   return parseFrameRef(JSON.parse(readFileSync(file, 'utf8')), file)
+}
+
+/** The checks a PNG reference can run: it has no Figma layers for text, position or icons. */
+const pngChecks = ['rules'] as const satisfies readonly GateCheck[]
+
+/** Checks a parsed reference.json; `file` names it in the error. */
+export function parsePngRef(data: unknown, file: string): PngRef {
+  const parsed = pngRef.safeParse(data)
+  if (!parsed.success) throw new Error(`${file}: ${z.prettifyError(parsed.error)}`)
+  return parsed.data
+}
+
+export function readPngRef(page: string, frameId: string): PngRef {
+  const file = join(frameDir(page, frameId), 'reference.json')
+  return parsePngRef(JSON.parse(readFileSync(file, 'utf8')), file)
+}
+
+/**
+ * What a frame folder holds: a Figma frame (frame.json), a PNG reference
+ * (reference.json) or neither. Both at once is an error, so a PNG reference
+ * can never stand in for a Figma frame's checks.
+ */
+export function frameKind(dir: string): 'figma' | 'png' | undefined {
+  const figma = existsSync(join(dir, 'frame.json'))
+  const png = existsSync(join(dir, 'reference.json'))
+  if (figma && png) throw new Error(`${dir} has both frame.json and reference.json; keep one`)
+  return figma ? 'figma' : png ? 'png' : undefined
+}
+
+/**
+ * The checks that decide a PNG frame's result: those of `--checks`, or all
+ * of `pngChecks` without it. A check that needs Figma layers is an error,
+ * never a pass.
+ */
+export function checksForPng(picked: readonly GateCheck[] | undefined): GateCheck[] {
+  if (picked === undefined) return [...pngChecks]
+  const needFigma = picked.filter((c) => !pngChecks.some((p) => p === c))
+  if (needFigma.length > 0)
+    throw new Error(
+      `A PNG reference has no Figma layers, so it cannot run ${needFigma.join(', ')}; it runs ${pngChecks.join(', ')}`,
+    )
+  return [...picked]
 }
 
 /** Checks a parsed exceptions.json; `file` names it in the error. */
