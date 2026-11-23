@@ -562,12 +562,14 @@ export function createFakeAgents(
       if (moved.status === 'needsYou') return Promise.resolve(ok('needsYou'))
       if (moved.kind !== 'shell' && moved.status !== 'idle' && moved.status !== 'done')
         return Promise.resolve(ok('working'))
+      if (serverHeld.has(source.id)) return Promise.resolve(ok('holdsServer'))
       source.chats.splice(source.chats.indexOf(moved), 1)
       target.chats.push(moved)
       // As herdr does, a workspace whose last pane leaves closes.
-      if (source.chats.length === 0) data?.splice(data.indexOf(source), 1)
+      const sourceClosed = source.chats.length === 0
+      if (sourceClosed) data?.splice(data.indexOf(source), 1)
       tell({ type: 'workspacesChanged' })
-      return Promise.resolve(ok({ from: moved.pane, to: moved.pane }))
+      return Promise.resolve(ok({ from: moved.pane, to: moved.pane, sourceClosed }))
     },
     closeWorkspace(workspace, count) {
       if ('error' in answer) return Promise.resolve(err(answer.error))

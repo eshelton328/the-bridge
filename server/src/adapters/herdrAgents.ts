@@ -131,7 +131,11 @@ async function insideRoot(root: string | undefined, folder: string | undefined):
 /** herdr's reply to a move: whether the pane moved, and why not (`same_tab`, `zoomed_tab`). */
 /** A move to another workspace: herdr names the pane's terminal after the move (probe in a test herdr session, 2026-11-23). */
 const WorkspaceMoveReply = z.object({
-  move_result: z.object({ changed: z.boolean(), pane: z.object({ terminal_id: LocalIdPart }).optional() }),
+  move_result: z.object({
+    changed: z.boolean(),
+    pane: z.object({ terminal_id: LocalIdPart }).optional(),
+    closed_workspace_id: z.string().nullable().optional(),
+  }),
 })
 const MoveReply = z.object({
   move_result: z.object({ changed: z.boolean(), reason: z.string().nullable().optional() }),
@@ -673,6 +677,28 @@ export function createHerdrAgents({
    * The herdr pane of any chat, a shell too, with its tab and its status (a shell is `idle`); null for no such
    * chat. The pane ID stays here (d-110).
    */
+  /** A pane that the coordinator's chat holds: its chat's herdr name, its label or its title (Claude's session name). */
+  const guardedPane = (
+    pane: { label?: string | null | undefined; terminal_title_stripped?: string | null | undefined },
+    name?: string | null,
+  ) => [name, pane.label, pane.terminal_title_stripped].some((n) => typeof n === 'string' && guardedAgents.includes(n))
+  /**
+   * Whether a pane's shell or foreground process is the server or above it; a walk that fails proves nothing, so
+   * it counts as true.
+   */
+  const runsServer = async (panes: readonly string[]): Promise<Result<boolean, AgentPortError>> => {
+    const guarded = await serverPids()
+    if (guarded === undefined) return ok(true)
+    for (const pane of panes) {
+      const info = await call('pane.process_info', ProcessInfo, { pane_id: pane })
+      if (!info.ok) return info
+      const { shell_pid: shell, foreground_processes: foreground } = info.value.process_info
+      if ([shell, ...foreground.map((f) => f.pid)].some((pid) => typeof pid === 'number' && guarded.has(pid)))
+        return ok(true)
+    }
+    return ok(false)
+  }
+
   const paneOf = async (
     chat: ChatId,
   ): Promise<
@@ -1338,6 +1364,16 @@ export function createHerdrAgents({
       if (status === 'needsYou') return ok('needsYou')
       // As for a close: a state herdr cannot tell may work.
       if (status !== 'idle' && status !== 'done') return ok('working')
+      // A workspace that holds the coordinator's chat or the server keeps all its panes (the close guard's rule).
+      const [agents, panes] = await Promise.all([call('agent.list', AgentList), call('pane.list', PaneList)])
+      if (!agents.ok) return agents
+      if (!panes.ok) return panes
+      const names = new Map(agents.value.agents.filter(isChat).map((a) => [a.pane_id, a.name]))
+      const source = panes.value.panes.filter((p) => p.workspace_id === from)
+      if (source.some((p) => guardedPane(p, names.get(p.pane_id)))) return ok('holdsServer')
+      const runs = await runsServer(source.map((p) => p.pane_id))
+      if (!runs.ok) return runs
+      if (runs.value) return ok('holdsServer')
       // A new tab of the target, so no pane there changes its size; a workspace whose last pane leaves closes.
       const written = await paneWrite('pane.move', WorkspaceMoveReply, {
         pane_id: pane,
@@ -1350,7 +1386,9 @@ export function createHerdrAgents({
       const after = written.value.move_result.pane?.terminal_id ?? terminal
       if (before === undefined || after === undefined) return err(badReply('herdr pane.move: no terminal'))
       for (const tellList of listTellers) tellList()
-      return ok({ from: paneIdOf(before), to: paneIdOf(after) })
+      // herdr closes a workspace whose last pane leaves, and names it in the reply.
+      const sourceClosed = from !== undefined && written.value.move_result.closed_workspace_id === from
+      return ok({ from: paneIdOf(before), to: paneIdOf(after), sourceClosed })
     },
     async renameWorkspace(workspace, label) {
       const { machine: on, local } = splitId(workspace)
@@ -1390,11 +1428,7 @@ export function createHerdrAgents({
           return chat === undefined ? 'idle' : statusOf(chat.agent_status)
         })
         // A herdr name clears when its agent ends, so the pane's label and title (Claude's session name) count too.
-        const guardedName = inWorkspace.some((p) =>
-          [chats.get(p.pane_id)?.name, p.label, p.terminal_title_stripped].some(
-            (name) => typeof name === 'string' && guardedAgents.includes(name),
-          ),
-        )
+        const guardedName = inWorkspace.some((p) => guardedPane(p, chats.get(p.pane_id)?.name))
         return ok({ own, statuses, guardedName })
       }
       const first = await snapshot()
@@ -1402,16 +1436,10 @@ export function createHerdrAgents({
       if (first.value.own.length !== count) return ok('panesChanged')
       // The coordinator's chat never closes, wherever the server runs.
       if (first.value.guardedName) return ok('holdsServer')
-      // Nor a pane whose shell or foreground process is the server or above it; a walk that fails proves nothing.
-      const guarded = await serverPids()
-      if (guarded === undefined) return ok('holdsServer')
-      for (const pane of first.value.own) {
-        const info = await call('pane.process_info', ProcessInfo, { pane_id: pane })
-        if (!info.ok) return info
-        const { shell_pid: shell, foreground_processes: foreground } = info.value.process_info
-        if ([shell, ...foreground.map((f) => f.pid)].some((pid) => typeof pid === 'number' && guarded.has(pid)))
-          return ok('holdsServer')
-      }
+      // Nor a pane whose shell or foreground process is the server or above it.
+      const runs = await runsServer(first.value.own)
+      if (!runs.ok) return runs
+      if (runs.value) return ok('holdsServer')
       // Another client can add a pane or start a turn during those reads, so the lists are read again just before.
       const last = await snapshot()
       if (!last.ok) return last

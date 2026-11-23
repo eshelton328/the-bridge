@@ -444,8 +444,15 @@ export function chatsRoutes(
           })
         case 'needsYou':
           return errorJson(c, 'chat-not-ready', { state: 'needsYou', message: 'the chat waits for your answer' })
-        default:
-          return c.json(MoveToWorkspaceResponse.parse({ chat: id.data, pane: moved.value }), 200)
+        case 'holdsServer':
+          return errorJson(c, 'chat-not-ready', {
+            state: 'holdsServer',
+            message: 'the workspace holds the server or the coordinator chat',
+          })
+        default: {
+          const { from, to, sourceClosed } = moved.value
+          return c.json(MoveToWorkspaceResponse.parse({ chat: id.data, pane: { from, to }, sourceClosed }), 200)
+        }
       }
     })
     .post('/:chat/split', smallJson, jsonOnly, jsonBody(SplitChatRequest), async (c) => {

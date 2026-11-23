@@ -438,6 +438,16 @@ describe('POST /api/chats/:chat/focus, /zoom, /swap and /close (W2)', () => {
       expect((await post(themes, 'move', body)).status).toBe(400)
   })
 
+  it('moves no chat out of a workspace that holds the server: 409 holdsServer', async () => {
+    const { agents, post } = setup()
+    agents.holdServer(WorkspaceId.parse('test-mac/omni'))
+    expect(await stateOf(await post(shell, 'workspace', { workspace: brain }))).toBe('holdsServer')
+    agents.setStatus(ChatId.parse(drift), 'idle')
+    const res = await post(drift, 'workspace', { workspace: 'test-mac/omni' })
+    expect(res.status).toBe(200)
+    expect(MoveToWorkspaceResponse.parse(await res.json()).sourceClosed).toBe(false)
+  })
+
   it('moves a chat to another workspace with 200 and its chat ID; one that works or waits is 409', async () => {
     const { agents, post } = setup()
     const omni = 'test-mac/omni'
@@ -451,7 +461,7 @@ describe('POST /api/chats/:chat/focus, /zoom, /swap and /close (W2)', () => {
     const res = await post(shell, 'workspace', { workspace: brain })
     expect(res.status).toBe(200)
     const body = MoveToWorkspaceResponse.parse(await res.json())
-    expect(body).toEqual({ chat: shell, pane: { from: body.pane.from, to: body.pane.from } })
+    expect(body).toEqual({ chat: shell, pane: { from: body.pane.from, to: body.pane.from }, sourceClosed: true })
     const read = await agents.listWorkspaces()
     // The shell was the last pane of its workspace, which closes as herdr's does.
     expect(read.ok ? read.value.map((w) => [w.id, w.chats.map((c) => c.id)]) : []).toEqual([

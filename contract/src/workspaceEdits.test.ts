@@ -34,11 +34,12 @@ describe('the workspace edit contract', () => {
     expect(ChatOrderRequest.safeParse({ chats: [] }).success).toBe(false)
   })
 
-  it('moves a chat to a workspace and answers with its old and new pane', () => {
+  it('moves a chat to a workspace and answers with its old and new pane and whether its workspace closed', () => {
     expect(MoveToWorkspaceRequest.safeParse({ workspace: 'test-mac/w2' }).success).toBe(true)
     expect(MoveToWorkspaceRequest.safeParse({ workspace: 'test-mac/w2', tab: 'test-mac/w2:t1' }).success).toBe(false)
-    const moved = { chat: 'test-mac/a', pane: { from: 'test-mac/p1', to: 'test-mac/p9' } }
+    const moved = { chat: 'test-mac/a', pane: { from: 'test-mac/p1', to: 'test-mac/p9' }, sourceClosed: true }
     expect(MoveToWorkspaceResponse.safeParse(moved).success).toBe(true)
+    expect(MoveToWorkspaceResponse.safeParse({ chat: moved.chat, pane: moved.pane }).success).toBe(false)
   })
 
   it('forks with an optional herdr name, never a session or a flag', () => {

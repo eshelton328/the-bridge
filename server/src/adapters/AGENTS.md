@@ -202,7 +202,9 @@ client of a socket or a file sits beside them.
   `done` (a shell is idle). herdr gives the pane a new pane ID but keeps
   its terminal, so the chat ID and the API's pane ID stay (probe in a
   test herdr session, 2026-11-23); a workspace whose last pane leaves
-  closes. A pane of an agent the adapter does not drive (such as gemini)
+  closes, and herdr names it (`closed_workspace_id`, `sourceClosed`).
+  A pane of a workspace that the close guard calls `holdsServer` does
+  not move (the same name and process checks). A pane of an agent the adapter does not drive (such as gemini)
   lists as a shell, but no write finds it (`herdrAgents.test.ts`).
 - A workspace close (R41) reads the workspace, agent and pane lists and
   calls `workspace.close` with `close_group: false`, never herdr's

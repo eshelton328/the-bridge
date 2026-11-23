@@ -99,14 +99,16 @@ export type CloseOutcome = PaneWriteOutcome | 'working' | 'needsYou'
 export type MoveOutcome = PaneWriteOutcome | 'sameTab' | 'zoomedTab'
 /**
  * A move to another workspace: the chat's pane before and after (the same ID, as it comes from the pane's terminal,
- * which the move keeps), or why it did not move.
+ * which the move keeps) and whether its old workspace closed (it had no other pane), or why it did not move. A
+ * workspace that holds the server or the coordinator's chat lets no pane leave (`holdsServer`).
  */
 export type MoveToWorkspaceOutcome =
   | 'notFound'
   | 'working'
   | 'needsYou'
   | 'sameWorkspace'
-  | { readonly from: PaneId; readonly to: PaneId }
+  | 'holdsServer'
+  | { readonly from: PaneId; readonly to: PaneId; readonly sourceClosed: boolean }
 /**
  * A workspace close: `panesChanged` when the workspace has another number of panes than the owner saw, `holdsServer`
  * when a pane runs the server or a process above it, `group` when herdr groups it with worktree workspaces.

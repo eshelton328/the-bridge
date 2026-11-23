@@ -661,10 +661,15 @@ describe('herdr agents: input to a chat', () => {
       expect(sent('pane.move')).toHaveLength(before)
       socket.once('pane.move', {
         type: 'pane_move',
-        move_result: { changed: true, pane: { pane_id: 'w18:p3', terminal_id: 'term_2', workspace_id: 'w18' } },
+        move_result: {
+          changed: true,
+          closed_workspace_id: 'w17',
+          pane: { pane_id: 'w18:p3', terminal_id: 'term_2', workspace_id: 'w18' },
+        },
       })
       const moved = await port().moveToWorkspace(codex, w18)
       if (!moved.ok || typeof moved.value !== 'object') throw new Error('the pane did not move')
+      expect(moved.value.sourceClosed).toBe(true)
       expect(moved.value.from).toBe(moved.value.to)
       const listed = await port().listWorkspaces()
       const pane = listed.ok ? listed.value.flatMap((w) => w.chats).find((c) => c.id === codex)?.pane : undefined

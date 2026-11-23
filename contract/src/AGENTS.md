@@ -96,8 +96,9 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
   the agent's herdr name.
   A workspace close asks for the workspace's ID and the number of chats
   the page listed. An order names each workspace or chat once. A move to
-  another workspace answers with the pane's old and new ID, and the page
-  follows the chat ID. A fork takes only an optional name, direction
+  another workspace answers with the pane's old and new ID and
+  `sourceClosed` (the chat was its workspace's last pane, so herdr
+  closed that workspace), and the page follows the chat ID. A fork takes only an optional name, direction
   and `createId`, never a session or a flag. A workspace that cannot
   take a close or an order is 409 `workspace-not-ready`
   (`workspaceEdits.test.ts`).
