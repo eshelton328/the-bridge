@@ -242,7 +242,8 @@ describe('a live Inbox item', () => {
 
     it(`shows one line when the detail read fails, on ${device.name}`, async () => {
       const server = withServer(undefined, { details })
-      server.answerNext('detail', () => inboxError('internal', 500))
+      // Every detail read misses: each list load reads the open item again, and a later 200 would replace the line.
+      server.answerNext('detail', () => inboxError('internal', 500), Number.POSITIVE_INFINITY)
       await openInbox(device)
       await openRow('Sample request in the brain')
       await expect.element(liveLine('Not read — the server answered 500')).toBeVisible()
