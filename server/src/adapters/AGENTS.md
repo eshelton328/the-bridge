@@ -313,6 +313,10 @@ client of a socket or a file sits beside them.
   missing file is an empty library; a file that the schema does not take
   is the fault `EBADDATA`, never an empty library, so no save writes
   over it. A fault gives its errno code only (`diskArtifacts.test.ts`).
+- `projectWorkspaces` (R49) maps a project to the first listed workspace
+  whose first pane's real folder is under `<chat root>/projects/<project>/`;
+  no chat root maps none, and no path leaves the adapter
+  (`herdrAgents.test.ts`).
 - A Claude chat's `turnEnd` is its session file's change time; a Codex
   chat, a shell and a chat with no file get null (`agentPortContract.ts`).
 - `diskInbox.ts` (R20) lists the open and snoozed attention requests in

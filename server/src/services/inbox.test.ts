@@ -1,4 +1,4 @@
-import { ChatId, InboxId, MachineId } from '@bridge/contract'
+import { ChatId, InboxId, MachineId, WorkspaceId } from '@bridge/contract'
 import { err, ok } from '@bridge/shared'
 import { describe, expect, it } from 'vitest'
 import { createFakeAgents } from '../adapters/fakeAgents.ts'
@@ -92,6 +92,22 @@ describe('the inbox', () => {
       '0000000000000004': null,
       '0000000000000005': { chat: question, live: true },
     })
+  })
+
+  it("gives a brain item its project's live workspace, and a chat item or another project none (R49)", async () => {
+    const other = { ...request, id: InboxId.parse('0000000000000006'), project: 'other-project' }
+    const { agents, list } = setup({ requests: [request, other] })
+    const spaces = await agents.listWorkspaces()
+    const space = spaces.ok ? spaces.value[0]?.id : undefined
+    if (space === undefined) throw new Error('the fake lists no workspace')
+    agents.setProjectWorkspace('example-project', space)
+    agents.setProjectWorkspace('other-project', WorkspaceId.parse('test-mac/w-closed'))
+    const listed = await list()
+    expect(listed.items.map((i) => [i.source, i.project, i.workspace])).toEqual([
+      ['chat', null, null],
+      ['brain', 'example-project', space],
+      ['brain', 'other-project', null],
+    ])
   })
 
   it('lists a done chat as a review that is not on the badge, and drops it when the chat works again', async () => {

@@ -55,6 +55,8 @@ export const InboxItem = z
     chat: ChatId.nullable(),
     /** The chat that filed a brain item; null for a chat item, a record with no origin, or one from another machine. */
     origin: InboxOrigin.nullable(),
+    /** A brain item's project workspace: the live workspace the server maps to its project; else null, as for a chat item. */
+    workspace: WorkspaceId.nullable(),
     /** What the owner can do to it here; the page hides the rest. */
     actions: z.array(InboxAction),
   })
@@ -65,6 +67,10 @@ export const InboxItem = z
   .refine((i) => i.source === 'brain' || i.origin === null, {
     message: 'only a brain item has an origin chat',
     path: ['origin'],
+  })
+  .refine((i) => i.source === 'brain' || i.workspace === null, {
+    message: 'only a brain item has a project workspace',
+    path: ['workspace'],
   })
   .refine((i) => i.source === 'chat' || i.actions.length === 0, {
     message: 'a brain item is read-only here',

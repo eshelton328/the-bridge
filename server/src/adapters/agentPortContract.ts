@@ -91,6 +91,14 @@ export function describeAgentPort(name: string, setup: () => Promise<ContractSet
       await untilAsync('the prompt to arrive', async () => (await received()).includes('text:Run the tests.'))
     })
 
+    it('maps a project only to a workspace that the list has (R49)', async () => {
+      const { port } = await setup()
+      const [projects, read] = await Promise.all([port.projectWorkspaces(), port.listWorkspaces()])
+      if (!projects.ok || !read.ok) throw new Error('the reads failed')
+      const listed = new Set(read.value.map((w) => w.id))
+      for (const workspace of projects.value.values()) expect(listed.has(workspace)).toBe(true)
+    })
+
     it('sends nothing to a shell chat or to a chat that the machine does not have', async () => {
       const { port, expected } = await setup()
       const { shell } = await chatsToUse(port, expected)

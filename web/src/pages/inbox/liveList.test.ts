@@ -22,6 +22,7 @@ const response = InboxResponse.parse({
       createdAt: ago(4),
       chat: 'mac-mini/s1',
       origin: null,
+      workspace: null,
       actions: ['snooze', 'done', 'dismiss'],
     },
     {
@@ -36,6 +37,7 @@ const response = InboxResponse.parse({
       createdAt: ago(3 * 60),
       chat: null,
       origin: null,
+      workspace: null,
       actions: [],
     },
   ],
