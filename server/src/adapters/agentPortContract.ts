@@ -198,6 +198,15 @@ export function describeAgentPort(name: string, setup: () => Promise<ContractSet
       expect(await port.sendCommand(none, { command: 'compact' })).toEqual({ ok: true, value: 'notFound' })
     })
 
+    it('asks no side question of a shell or of a chat that the machine does not have', async () => {
+      const { port, expected } = await setup()
+      const { shell } = await chatsToUse(port, expected)
+      const signal = new AbortController().signal
+      expect(await port.askSide(shell, 'Why?', signal)).toEqual({ ok: true, value: 'noSession' })
+      const none = ChatId.parse(`${port.machine}/no-such-chat`)
+      expect(await port.askSide(none, 'Why?', signal)).toEqual({ ok: true, value: 'notFound' })
+    })
+
     it('sets no effort for a shell or a chat that the machine does not have', async () => {
       const { port, expected } = await setup()
       const { shell } = await chatsToUse(port, expected)

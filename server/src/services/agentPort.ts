@@ -126,6 +126,23 @@ type StartOutcome = StartChatResponse | 'notFound' | 'folderNotAllowed' | 'nameT
 /** What a fork did: as a start, or `noSession` for a shell, a Codex chat or a Claude chat with no session yet. */
 export type ForkOutcome = StartOutcome | 'noSession'
 
+/** One piece of a side answer: more text, or its end. */
+export type SideChunk = { readonly text: string } | { readonly end: 'done' | 'failed' }
+
+/**
+ * Answers one side question from a copy of a Claude chat's session, in the chat's folder, and stops when `signal`
+ * aborts. It never throws: a fault ends the answer as `failed`.
+ */
+export type SideRunner = (run: {
+  readonly session: string
+  readonly folder: string
+  readonly question: string
+  readonly signal: AbortSignal
+}) => AsyncIterable<SideChunk>
+
+/** A side question's answer as it comes, or `notFound` for no such chat, `noSession` for no saved Claude session. */
+export type SideOutcome = AsyncIterable<SideChunk> | 'notFound' | 'noSession'
+
 /** What a stop did: as a send, or `notWorking` when the chat has no work to stop, so nothing was sent. */
 export type CancelOutcome = Exclude<SendOutcome, 'needsYou' | 'inputNotEmpty' | 'inputUnreadable'> | 'notWorking'
 
@@ -279,6 +296,11 @@ export type AgentPort = {
     chat: ChatId,
     request: { readonly name?: string | undefined; readonly direction: SplitDirection },
   ): Promise<Result<ForkOutcome, AgentPortError>>
+  /**
+   * Asks a copy of a Claude chat's saved session `question` (a side question); the chat's own session and pane get
+   * nothing. The answer ends when `signal` aborts.
+   */
+  askSide(chat: ChatId, question: string, signal: AbortSignal): Promise<Result<SideOutcome, AgentPortError>>
   /**
    * Gives the split of `tab` at `path` (from the tree's root; empty for the root) the share `ratio` for its first
    * part; `notFound` for no such tab or split.

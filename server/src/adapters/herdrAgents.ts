@@ -48,6 +48,7 @@ import type {
   ChatCommand,
   PaneWriteOutcome,
   PromptOutcome,
+  SideRunner,
 } from '../services/agentPort.ts'
 import { type SocketFailure, type HerdrStream, herdrRequest, herdrSubscribe } from './herdrSocket.ts'
 import {
@@ -355,6 +356,8 @@ export type HerdrAgentsOptions = {
   readonly guardedAgents?: readonly string[]
   /** The time in ms, for the stop hold; a test can move it. */
   readonly now?: () => number
+  /** Answers a side question from a copy of a session; with none, a side question of a saved session is `unreachable`. */
+  readonly runSide?: SideRunner
 }
 
 /** How long a restart waits for the chat to end after its ctrl+c, and the time between two reads. */
@@ -409,6 +412,7 @@ export function createHerdrAgents({
   chatRoot,
   serverPids = () => Promise.resolve(new Set<number>()),
   guardedAgents = [],
+  runSide,
 }: HerdrAgentsOptions): AgentPort {
   const unknownSeen = new Set<string>()
   /** The chat's status for herdr's `status`; one it does not know is `unknown`, logged once. */
@@ -1132,6 +1136,29 @@ export function createHerdrAgents({
       : `/compact${command.instructions === undefined || command.instructions.trim() === '' ? '' : ` ${command.instructions.trim()}`}`
 
   /** Starts Claude in a new pane, as `startChat` does; a fork adds its resume flags in `extra`. */
+  /** A Claude chat's agent and saved session; `noSession` for a shell, a Codex chat or a session with no file yet. */
+  const savedSession = async (chat: ChatId) => {
+    const { machine: on } = splitId(chat)
+    if (on !== machine) return ok('notFound' as const)
+    const [agents, panes] = await Promise.all([call('agent.list', AgentList), call('pane.list', PaneList)])
+    if (!agents.ok) return agents
+    if (!panes.ok) return panes
+    const shared = sharedSessions(agents.value.agents)
+    const agent = agents.value.agents.filter(isChat).find((a) => chatIdOf(a, shared) === chat)
+    if (agent === undefined)
+      return ok(panes.value.panes.some((p) => shellIdOf(p) === chat) ? ('noSession' as const) : ('notFound' as const))
+    const session = agent.agent === 'claude' ? sessionOf(agent) : undefined
+    const file = session === undefined ? undefined : sessionPath(agent)
+    // A session with no saved turn has no file, and `--resume` of it starts nothing.
+    const saved =
+      file !== undefined &&
+      (await stat(file).then(
+        (s) => s.isFile() && s.size > 0,
+        () => false,
+      ))
+    if (session === undefined || !saved) return ok('noSession' as const)
+    return ok({ agent, session, agents: agents.value.agents })
+  }
   const startIn = async (
     { name, model, place }: Omit<StartChatRequest, 'createId'>,
     extra: readonly string[],
@@ -1594,29 +1621,21 @@ export function createHerdrAgents({
       }
       return ok(found)
     },
+    async askSide(chat, question, signal) {
+      const found = await savedSession(chat)
+      if (!found.ok || typeof found.value === 'string') return found
+      const folder = found.value.agent.cwd
+      if (folder == null) return ok('noSession')
+      if (runSide === undefined) return err({ reason: 'unreachable', message: 'this server runs no side questions' })
+      return ok(runSide({ session: found.value.session, folder, question, signal }))
+    },
     async forkChat(chat, { name, direction }) {
-      const { machine: on } = splitId(chat)
-      if (on !== machine) return ok('notFound')
-      const [agents, panes] = await Promise.all([call('agent.list', AgentList), call('pane.list', PaneList)])
-      if (!agents.ok) return agents
-      if (!panes.ok) return panes
-      const shared = sharedSessions(agents.value.agents)
-      const agent = agents.value.agents.filter(isChat).find((a) => chatIdOf(a, shared) === chat)
-      if (agent === undefined)
-        return ok(panes.value.panes.some((p) => shellIdOf(p) === chat) ? 'noSession' : 'notFound')
-      const session = agent.agent === 'claude' ? sessionOf(agent) : undefined
-      const file = session === undefined ? undefined : sessionPath(agent)
-      // A session with no saved turn has no file, and `--resume` of it starts nothing in the new pane.
-      const saved =
-        file !== undefined &&
-        (await stat(file).then(
-          (s) => s.isFile() && s.size > 0,
-          () => false,
-        ))
-      if (session === undefined || !saved) return ok('noSession')
+      const found = await savedSession(chat)
+      if (!found.ok || typeof found.value === 'string') return found
+      const { agent, session, agents } = found.value
       const base = /^[a-z][a-z0-9_-]*$/.test(agent.name ?? '') ? (agent.name ?? 'chat') : 'chat'
       const stem = `${base.slice(0, 25)}-fork`
-      const taken = new Set(agents.value.agents.map((a) => a.name))
+      const taken = new Set(agents.map((a) => a.name))
       const free = [stem, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (n === stem ? stem : `${stem}-${String(n)}`))
       return startIn(
         {
