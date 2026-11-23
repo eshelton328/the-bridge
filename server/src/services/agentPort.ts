@@ -141,7 +141,7 @@ export type SideRunner = (run: {
 }) => AsyncIterable<SideChunk>
 
 /** A side question's answer as it comes, or `notFound` for no such chat, `noSession` for no saved Claude session. */
-export type SideOutcome = AsyncIterable<SideChunk> | 'notFound' | 'noSession'
+type SideOutcome = AsyncIterable<SideChunk> | 'notFound' | 'noSession'
 
 /** What a stop did: as a send, or `notWorking` when the chat has no work to stop, so nothing was sent. */
 export type CancelOutcome = Exclude<SendOutcome, 'needsYou' | 'inputNotEmpty' | 'inputUnreadable'> | 'notWorking'
