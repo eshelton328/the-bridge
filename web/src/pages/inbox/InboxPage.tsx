@@ -27,6 +27,7 @@ import { InboxScreen } from './screens/InboxScreen.tsx'
 import { withNewBoxes } from './screens/listView.ts'
 import { usePushSwitch } from '../../state/pushStore.ts'
 import { useLiveItem } from './useLiveItem.ts'
+import { watchLiveInbox } from './liveInbox.ts'
 
 const reportCopy = (error: unknown) => {
   report(error, 'handler')
@@ -66,6 +67,8 @@ export function InboxPage() {
   const live = readsLive({ state: search.state, source: search.source }, inboxSources)
   // The live list loads again on each `inbox.changed`, through the app's one stream (lib/inboxFeed.ts).
   useInboxChanges(live, () => void router.invalidate(), state.data.railBadge)
+  // The live list's grace (R43b) keeps the list the page shows and loads again when it passes.
+  useEffect(() => (live ? watchLiveInbox(() => void router.invalidate()) : undefined), [live, router])
   const ui = {
     ...state.ui,
     ...changed,

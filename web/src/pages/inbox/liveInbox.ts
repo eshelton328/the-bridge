@@ -20,10 +20,21 @@
 // the background (lib/pageResume.ts): no line and no report, and the list is
 // read again once the page shows; one such miss for each trip. A reply the
 // contract refuses throws, for RouteError.
+//
+// Review R43b (as the Workspaces list, #428): a list read with no answer from
+// the server (none, a timeout, or a 5xx with no error body: the Vite proxy for
+// a server that is down, as in a restart) after the page showed a list keeps
+// that list for `reconnectGraceMs`, with no line and no report. The page keeps
+// it here (`lastShown`) while it watches the list, not in the router's cache,
+// which drops a page no one shows after a while. When the grace passes the
+// page loads again, and a miss then shows its line, with one report for the
+// outage. A read that answers ends the grace. A 4xx, an error body, or a
+// first read with nothing shown yet shows the line at once.
 import { InboxDetailResponse, InboxResponse } from '@bridge/contract'
 import { err, ok, type Result } from '@bridge/shared'
 import { report } from '../../errors/reporter.ts'
 import { api } from '../../lib/api.ts'
+import { reconnectGraceMs } from '../../lib/eventFrames.ts'
 import {
   type Answer,
   type InboxMiss,
@@ -54,6 +65,59 @@ export type LiveInboxDeps = {
 
 type InboxState = ScreenState<InboxData, InboxUi>
 
+/** How many shown Inbox pages watch the live list, and how one loads it again (the router's invalidate). */
+let watching = 0
+let reload: (() => void) | undefined
+/** The list the page last showed while it watched; a read with no answer keeps it within the grace. */
+let lastShown: InboxResponse | undefined
+/** The grace of a list read with no answer (R43b), until a read answers; `over` once it passed. */
+let listGrace: { readonly timer: ReturnType<typeof setTimeout>; over: boolean; reported: boolean } | undefined
+
+const endListGrace = () => {
+  clearTimeout(listGrace?.timer)
+  listGrace = undefined
+}
+
+/** A miss with no answer from the server: none, a timeout, or a 5xx with no error body. */
+const noAnswer = (miss: InboxMiss) => miss.status === undefined || (miss.kind === 'status' && miss.status >= 500)
+
+/**
+ * The live Inbox page watches its list while it shows: `load` loads it again when a grace passes. The result ends the
+ * watch; when no page watches, the last list and any grace are dropped, so a miss on the next visit shows at once.
+ */
+export function watchLiveInbox(load: () => void): () => void {
+  watching += 1
+  reload = load
+  let done = false
+  return () => {
+    if (done) return
+    done = true
+    watching -= 1
+    if (reload === load) reload = undefined
+    if (watching === 0) {
+      lastShown = undefined
+      endListGrace()
+    }
+  }
+}
+
+/** Whether a list read's `miss` keeps the last list: one with no answer, within the grace its first miss starts. */
+function quietListMiss(miss: InboxMiss): boolean {
+  if (lastShown === undefined || !noAnswer(miss)) return false
+  if (listGrace === undefined) {
+    const started = {
+      timer: setTimeout(() => {
+        started.over = true
+        reload?.()
+      }, reconnectGraceMs),
+      over: false,
+      reported: false,
+    }
+    listGrace = started
+  }
+  return !listGrace.over
+}
+
 /** `state` with the server's items in place of the sample ones, or with none and the miss's line. */
 export async function withLiveInbox(
   state: InboxState,
@@ -61,10 +125,17 @@ export async function withLiveInbox(
 ): Promise<InboxState> {
   const answer = await readInboxList('list', signal)
   if (!answer.ok) {
-    reportMiss('list', answer.error)
+    const kept = lastShown
+    if (kept !== undefined && quietListMiss(answer.error)) return { ...state, ...liveList(state, kept, { now: now() }) }
+    // Past the grace, one report for the outage; any other miss is reported each time, as before.
+    const outage = noAnswer(answer.error) ? listGrace : undefined
+    if (outage?.reported !== true) reportMiss('list', answer.error)
+    if (outage !== undefined) outage.reported = true
     return { ...state, ...liveList(state, emptyInbox, { now: now(), line: missLine('Inbox not read', answer.error) }) }
   }
+  endListGrace()
   const response = answer.value
+  if (watching > 0) lastShown = response
   return { ...state, ...liveList(state, response, { now: now() }) }
 }
 
