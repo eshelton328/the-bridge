@@ -140,6 +140,9 @@ Thin Hono sub-apps, one file for each area, named after the area
   workspace is 404; a folder outside the chat root is 409
   `folderNotAllowed`, a name in use 409 `nameTaken`, and a `createId`
   whose start runs or failed 409 `duplicateCreate` (`chats.test.ts`).
+  `POST /api/chats/:chat/fork` forks a Claude chat beside it with these
+  answers, as "<name>-fork" by default; a Codex chat or a shell is 409
+  `noSession`, and a body with a session or a flag 400 (`chats.test.ts`).
 - `/api/push` (d-118): `GET /key` gives the VAPID public key;
   `POST /subscriptions` saves a subscription (400 for an endpoint off
   the known push services; the endpoint is kept as `new URL()` writes

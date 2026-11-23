@@ -49,7 +49,8 @@ from the outside world.
   the same ID again gets that answer, or `duplicateCreate` while the
   first start runs or after it failed in herdr (it may have made a
   pane). A refusal (`notFound`, `folderNotAllowed`, `nameTaken`)
-  made nothing, so it frees the ID (`newChats.test.ts`).
+  made nothing, so it frees the ID. A fork (in a row by default) takes
+  the same rules (`newChats.test.ts`).
 - `restarts.ts` holds one lock for each chat with a model restart in
   progress (slice W10, in memory): a confirm of another chat is
   `notConfirmed` with no call to the port, and a second restart of the

@@ -56,6 +56,7 @@ import {
   SendResultResponse,
   StartChatRequest,
   StartChatResponse,
+  ForkChatRequest,
   RestartModelRequest,
   RestartModelResponse,
 } from '@bridge/contract'
@@ -83,7 +84,7 @@ import type {
 import { clearInput, readSkills, readTranscript, sendCommand, setEffort, stopChat } from '../services/chats.ts'
 import type { UploadStore } from '../services/uploadStore.ts'
 import { createSendResults, resultOf, type SendResults } from '../services/sendResults.ts'
-import { createNewChats, type NewChats } from '../services/newChats.ts'
+import { createNewChats, type NewChats, type StartAnswer } from '../services/newChats.ts'
 import { createRestarts, type Restarts } from '../services/restarts.ts'
 import { type FilePromptOutcome, sendPromptWithFiles, startUpload } from '../services/uploads.ts'
 import { jsonBody, jsonOnly, smallJson } from './jsonBody.ts'
@@ -231,6 +232,29 @@ export function chatsRoutes(
   }
 
   /** The answer to a model restart's refusal; the chat and its state, or `failed`, come as JSON. */
+  /** The answer to a start or a fork: 201 with the new chat, 200 with the first answer to its create ID, or why not. */
+  const startAnswer = (c: Context<AppEnv>, answer: StartAnswer) => {
+    switch (answer) {
+      case 'notFound':
+        return errorJson(c, 'not-found', { path: c.req.path, message: 'no chat or workspace has this ID' })
+      case 'folderNotAllowed':
+        return errorJson(c, 'chat-not-ready', {
+          state: 'folderNotAllowed',
+          message: 'the folder is not under the chat root',
+        })
+      case 'nameTaken':
+        return errorJson(c, 'chat-not-ready', { state: 'nameTaken', message: 'another chat has this name' })
+      case 'noSession':
+        return errorJson(c, 'chat-not-ready', { state: 'noSession', message: 'the chat has no Claude session to fork' })
+      case 'duplicateCreate':
+        return errorJson(c, 'chat-not-ready', {
+          state: 'duplicateCreate',
+          message: 'a start with this create ID is in progress or failed; read the chat list',
+        })
+    }
+    const body = StartChatResponse.parse(answer.started)
+    return answer.again ? c.json(body, 200) : c.json(body, 201)
+  }
   const refusedRestart = (
     c: Context<AppEnv>,
     outcome: Exclude<RestartOutcome | 'notConfirmed' | 'restarting' | 'busy', object>,
@@ -308,25 +332,13 @@ export function chatsRoutes(
     })
     .post('/', smallJson, jsonOnly, jsonBody(StartChatRequest), async (c) => {
       const started = await newChats.start(c.req.valid('json'))
-      if (!started.ok) return failed(c, started.error)
-      switch (started.value) {
-        case 'notFound':
-          return errorJson(c, 'not-found', { path: c.req.path, message: 'no chat or workspace has this ID' })
-        case 'folderNotAllowed':
-          return errorJson(c, 'chat-not-ready', {
-            state: 'folderNotAllowed',
-            message: 'the folder is not under the chat root',
-          })
-        case 'nameTaken':
-          return errorJson(c, 'chat-not-ready', { state: 'nameTaken', message: 'another chat has this name' })
-        case 'duplicateCreate':
-          return errorJson(c, 'chat-not-ready', {
-            state: 'duplicateCreate',
-            message: 'a start with this create ID is in progress or failed; read the chat list',
-          })
-      }
-      const body = StartChatResponse.parse(started.value.started)
-      return started.value.again ? c.json(body, 200) : c.json(body, 201)
+      return started.ok ? startAnswer(c, started.value) : failed(c, started.error)
+    })
+    .post('/:chat/fork', smallJson, jsonOnly, jsonBody(ForkChatRequest), async (c) => {
+      const id = chatOf(c)
+      if (!id.success) return invalid(c)
+      const forked = await newChats.fork(id.data, c.req.valid('json'))
+      return forked.ok ? startAnswer(c, forked.value) : failed(c, forked.error)
     })
     .post(
       '/:chat/prompt',

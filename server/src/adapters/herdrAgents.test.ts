@@ -2549,6 +2549,29 @@ describe('herdr agents: a new chat (slice W3)', () => {
     expect(missing).toEqual([ok('notFound'), ok('notFound')])
     await socket.close()
   })
+
+  it('forks a Claude chat beside it from a copy of its session, named "<name>-fork", and no other chat', async () => {
+    const { socket, adapter, sent } = await setup()
+    const forked = await adapter.forkChat(ChatId.parse('test-mac/session-a'), { direction: 'column' })
+    const named = await adapter.forkChat(ChatId.parse('test-mac/session-a'), { name: 'side-copy', direction: 'row' })
+    const refused = await Promise.all([
+      adapter.forkChat(codex, { direction: 'row' }),
+      adapter.forkChat(ChatId.parse('test-mac/term_3'), { direction: 'row' }),
+      adapter.forkChat(ChatId.parse('test-mac/gone'), { direction: 'row' }),
+      adapter.forkChat(ChatId.parse('other-mac/session-a'), { direction: 'row' }),
+    ])
+    await socket.close()
+    expect(forked).toMatchObject({ ok: true, value: { chat: 'test-mac/session-new', state: 'ready' } })
+    expect(named.ok).toBe(true)
+    expect(sent('pane.split')[0]).toEqual({ target_pane_id: 'w17:p1', direction: 'down', focus: false, cwd: repo })
+    expect(
+      sent('agent.start').map((s) => (typeof s === 'object' && s !== null && 'args' in s ? s.args : null)),
+    ).toEqual([
+      ['-n', 'bridge-coord-fork', '--resume', 'session-a', '--fork-session'],
+      ['-n', 'side-copy', '--resume', 'session-a', '--fork-session'],
+    ])
+    expect(refused).toEqual([ok('noSession'), ok('noSession'), ok('notFound'), ok('notFound')])
+  })
 })
 
 describe('herdr agents: a model restart', () => {

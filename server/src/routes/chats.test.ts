@@ -736,3 +736,47 @@ describe('POST /api/chats/:chat/model (slice W10)', () => {
     ])
   })
 })
+
+describe('POST /api/chats/:chat/fork', () => {
+  const fork = (app: ReturnType<typeof createApp>, chat: string, body: unknown) =>
+    app.request(`/api/chats/${encodeURIComponent(chat)}/fork`, {
+      method: 'POST',
+      headers: { ...local, 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+
+  it('forks a Claude chat beside it with 201 as "<name>-fork", and the same create ID again with 200', async () => {
+    const agents = createFakeAgents(machine)
+    const app = createApp({ agents, owner, log: memoryLogger().log })
+    const res = await fork(app, themes, { createId: 'fork-0001' })
+    expect(res.status).toBe(201)
+    const first = StartChatResponse.parse(await res.json())
+    const again = await fork(app, themes, { createId: 'fork-0001' })
+    expect([again.status, StartChatResponse.parse(await again.json())]).toEqual([200, first])
+    expect(agents.forks()).toEqual([themes])
+    const listed = await agents.listWorkspaces()
+    const chats = listed.ok ? listed.value.flatMap((w) => w.chats) : []
+    expect(chats.find((c) => c.id === first.chat)?.title).toBe(
+      `${chats.find((c) => c.id === themes)?.title ?? ''}-fork`,
+    )
+  })
+
+  it('answers 409 noSession for a Codex chat or a shell, 404 for an unknown chat, and 400 for a session or a flag', async () => {
+    const agents = createFakeAgents(machine)
+    const app = createApp({ agents, owner, log: memoryLogger().log })
+    for (const chat of ['test-mac/drift-check', 'test-mac/brain-git']) {
+      const res = await fork(app, chat, {})
+      const body: unknown = await res.json()
+      expect(res.status).toBe(409)
+      expect(body).toMatchObject({ error: { kind: 'chat-not-ready', state: 'noSession' } })
+    }
+    expect((await fork(app, 'test-mac/no-such-chat', {})).status).toBe(404)
+    for (const body of [
+      { session: 'marker-5150' },
+      { flags: ['--dangerously-skip-permissions'] },
+      { name: 'Bad Name' },
+    ])
+      expect((await fork(app, themes, body)).status).toBe(400)
+    expect(agents.forks()).toEqual([])
+  })
+})

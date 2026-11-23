@@ -28,6 +28,24 @@ function heldPort() {
 }
 
 describe('new chats', () => {
+  it('forks with the create ID rules of a start, beside the chat in a row when no direction is given', async () => {
+    const forks: unknown[] = []
+    const port: AgentPort = {
+      ...createFakeAgents(machine),
+      forkChat: (chat, fork) => (forks.push([chat, fork]), Promise.resolve(ok(answer))),
+    }
+    const chats = createNewChats(port)
+    const themes = ChatId.parse('test-mac/bridge-themes')
+    const createId = SendId.parse('fork-0001')
+    expect(await chats.fork(themes, { createId })).toEqual(ok({ started: answer, again: false }))
+    expect(await chats.fork(themes, { createId })).toEqual(ok({ started: answer, again: true }))
+    await chats.fork(themes, { name: 'side-copy', direction: 'column' })
+    expect(forks).toEqual([
+      [themes, { name: undefined, direction: 'row' }],
+      [themes, { name: 'side-copy', direction: 'column' }],
+    ])
+  })
+
   it('answers duplicateCreate while a start with the create ID runs, and its first answer after it', async () => {
     const { port, answers } = heldPort()
     const chats = createNewChats(port)

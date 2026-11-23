@@ -123,6 +123,8 @@ export type SplitOutcome = { readonly chat: ChatId } | 'notFound'
  * such chat or workspace, `folderNotAllowed` for a folder outside the chat root, `nameTaken` for a name in use.
  */
 type StartOutcome = StartChatResponse | 'notFound' | 'folderNotAllowed' | 'nameTaken'
+/** What a fork did: as a start, or `noSession` for a shell, a Codex chat or a Claude chat with no session yet. */
+export type ForkOutcome = StartOutcome | 'noSession'
 
 /** What a stop did: as a send, or `notWorking` when the chat has no work to stop, so nothing was sent. */
 export type CancelOutcome = Exclude<SendOutcome, 'needsYou' | 'inputNotEmpty' | 'inputUnreadable'> | 'notWorking'
@@ -262,6 +264,15 @@ export type AgentPort = {
    * its first pane), with no focus change and no flag that skips a permission. It answers no prompt of the new chat.
    */
   startChat(request: Omit<StartChatRequest, 'createId'>): Promise<Result<StartOutcome, AgentPortError>>
+  /**
+   * Starts a Claude chat from a copy of one Claude chat's session (`claude --resume <session> --fork-session`), in a
+   * new pane beside it in `direction`, as `startChat` starts one beside a chat. Its name is `name`, else
+   * "<the chat's name>-fork". The chat's own session goes on.
+   */
+  forkChat(
+    chat: ChatId,
+    request: { readonly name?: string | undefined; readonly direction: SplitDirection },
+  ): Promise<Result<ForkOutcome, AgentPortError>>
   /**
    * Gives the split of `tab` at `path` (from the tree's root; empty for the root) the share `ratio` for its first
    * part; `notFound` for no such tab or split.

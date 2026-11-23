@@ -4,6 +4,7 @@
 import {
   type SplitDirection,
   type SplitSide,
+  type StartChatRequest,
   type ChatSummary,
   ChatId,
   type ChatStatus,
@@ -118,6 +119,8 @@ export function fakeWorkspaces(machine: MachineId): WorkspaceSummary[] {
 }
 
 export type FakeAgents = AgentPort & {
+  /** The chats that a caller forked, in order. */
+  readonly forks: () => ChatId[]
   /** How many times a caller read the workspaces. */
   readonly reads: () => number
   /** How many transcript watches are open now. */
@@ -328,6 +331,32 @@ export function createFakeAgents(
     tell({ type: 'layoutChanged', workspace: workspace.id })
     return made
   }
+  const start = ({ name, model, place }: Omit<StartChatRequest, 'createId'>): ReturnType<AgentPort['startChat']> => {
+    if ('error' in answer) return Promise.resolve(err(answer.error))
+    const chatName = name ?? `chat-${String(splits + 1)}`
+    if ((data ?? []).some((w) => w.chats.some((c) => c.title === chatName))) return Promise.resolve(ok('nameTaken'))
+    const make = (id: ChatId, pane: PaneId): ChatSummary => ({
+      id,
+      kind: 'claude',
+      title: chatName,
+      model: `claude-${model ?? 'opus'}`,
+      modelId: model ?? 'opus',
+      effort: null,
+      contextUsed: null,
+      status: 'idle',
+      parent: null,
+      pane,
+    })
+    // The fake has one tab in each workspace, so a start in a new tab splits that tab beside its first chat.
+    const beside =
+      place.in === 'split' ? place.beside : (data ?? []).find((w) => w.id === place.workspace)?.chats[0]?.id
+    const started =
+      beside === undefined ? undefined : addPane(beside, place.in === 'split' ? place.direction : 'row', make)
+    return Promise.resolve(
+      ok(started === undefined ? 'notFound' : { pane: started.pane, chat: started.id, state: 'ready' }),
+    )
+  }
+  const forks: ChatId[] = []
   let clears = 0
   return {
     machine,
@@ -628,31 +657,20 @@ export function createFakeAgents(
       }))
       return Promise.resolve(ok(shell === undefined ? 'notFound' : { chat: shell.id }))
     },
-    startChat({ name, model, place }) {
+    startChat: (request) => start(request),
+    forkChat(chat, { name, direction }) {
       if ('error' in answer) return Promise.resolve(err(answer.error))
-      const chatName = name ?? `chat-${String(splits + 1)}`
-      if ((data ?? []).some((w) => w.chats.some((c) => c.title === chatName))) return Promise.resolve(ok('nameTaken'))
-      const make = (id: ChatId, pane: PaneId): ChatSummary => ({
-        id,
+      const found = chatOf(chat)
+      if (found === undefined) return Promise.resolve(ok('notFound'))
+      if (found.kind !== 'claude') return Promise.resolve(ok('noSession'))
+      forks.push(chat)
+      return start({
         kind: 'claude',
-        title: chatName,
-        model: `claude-${model ?? 'opus'}`,
-        modelId: model ?? 'opus',
-        effort: null,
-        contextUsed: null,
-        status: 'idle',
-        parent: null,
-        pane,
+        name: name ?? `${found.title.slice(0, 27)}-fork`,
+        place: { in: 'split', beside: chat, direction },
       })
-      // The fake has one tab in each workspace, so a start in a new tab splits that tab beside its first chat.
-      const beside =
-        place.in === 'split' ? place.beside : (data ?? []).find((w) => w.id === place.workspace)?.chats[0]?.id
-      const started =
-        beside === undefined ? undefined : addPane(beside, place.in === 'split' ? place.direction : 'row', make)
-      return Promise.resolve(
-        ok(started === undefined ? 'notFound' : { pane: started.pane, chat: started.id, state: 'ready' }),
-      )
     },
+    forks: () => [...forks],
     setSplitRatio(tab, path, ratio) {
       if ('error' in answer) return Promise.resolve(err(answer.error))
       const workspace = (data ?? []).find((w) => `${w.id}:t1` === tab)
