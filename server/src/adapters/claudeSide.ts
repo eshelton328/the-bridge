@@ -6,6 +6,7 @@ import { spawn } from 'node:child_process'
 import { createInterface } from 'node:readline'
 import { z } from 'zod'
 import type { Logger } from '../logger.ts'
+import { codeModeKey, readCodeMode } from './claudeSettings.ts'
 import type { SideChunk, SideRunner } from '../services/agentPort.ts'
 
 /** The most stderr a failed run logs: its last part. */
@@ -60,13 +61,39 @@ function lineOf(raw: string): z.infer<typeof Line> | undefined {
 }
 
 /**
- * The environment of a side run: the server's own, less each `HERDR_` variable. In a herdr pane those name the
- * server's pane, and Claude Code's herdr hook would report the side session as that pane's session.
+ * The only variables of the server's environment that a side run gets: what `claude` needs to find its tools, its
+ * login and the network. Each other one stays out, such as a `HERDR_` variable (in a herdr pane, Claude Code's herdr
+ * hook would report the side session as the server pane's) or a token the server holds.
  */
+const keptEnv = [
+  'PATH',
+  'HOME',
+  'USER',
+  'LOGNAME',
+  'SHELL',
+  'TMPDIR',
+  'LANG',
+  'LC_ALL',
+  'LC_CTYPE',
+  'TZ',
+  'CLAUDE_CONFIG_DIR',
+  codeModeKey,
+  'HTTPS_PROXY',
+  'HTTP_PROXY',
+  'NO_PROXY',
+  'https_proxy',
+  'http_proxy',
+  'no_proxy',
+  'NODE_EXTRA_CA_CERTS',
+  'SSL_CERT_FILE',
+] as const
+
 function sideEnv(env: Readonly<Record<string, string | undefined>>): Record<string, string> {
   const kept: Record<string, string> = {}
-  for (const [key, value] of Object.entries(env))
-    if (!key.startsWith('HERDR_') && value !== undefined) kept[key] = value
+  for (const key of keptEnv) {
+    const value = env[key]
+    if (value !== undefined) kept[key] = value
+  }
   return kept
 }
 
@@ -79,6 +106,7 @@ export function claudeSideRunner({
   model,
   env,
   log,
+  settingsFile,
   command = ['claude'],
   timeoutMs = 120_000,
   killAfterMs = 5_000,
@@ -86,6 +114,11 @@ export function claudeSideRunner({
   readonly model: string
   readonly env: Readonly<Record<string, string | undefined>>
   readonly log: Logger
+  /**
+   * The owner's Claude Code settings file. `--restricted` loads no settings file, so a run copies its Code Mode value
+   * (`env`) into the process's environment: a session started in Code Mode resumes only in Code Mode.
+   */
+  readonly settingsFile?: string
   readonly command?: readonly [string, ...string[]]
   /** A run that has not ended by then gets SIGTERM and ends `failed`, also when the caller sets no limit. */
   readonly timeoutMs?: number
@@ -95,10 +128,16 @@ export function claudeSideRunner({
   const childEnv = sideEnv(env)
   const [bin, ...pre] = command
   return async function* run({ session, folder, question, signal }): AsyncGenerator<SideChunk> {
-    if (signal.aborted) return
+    // A function, as TypeScript keeps a narrowed `signal.aborted` across the await below.
+    const aborted = () => signal.aborted
+    if (aborted()) return
+    // Read at each run, as the owner can turn Code Mode on or off between questions.
+    const codeMode = settingsFile === undefined ? undefined : await readCodeMode(settingsFile)
+    // A stop during that read sends nothing: an abort before the listener below is there would not end the process.
+    if (aborted()) return
     const child = spawn(bin, [...pre, ...sideArgs(session, model)], {
       cwd: folder,
-      env: childEnv,
+      env: codeMode === undefined ? childEnv : { ...childEnv, [codeModeKey]: codeMode },
       stdio: ['pipe', 'pipe', 'pipe'],
     })
     // The last part of stderr, logged only when the run fails; it never holds the question, which goes on stdin.

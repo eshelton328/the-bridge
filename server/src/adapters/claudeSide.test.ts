@@ -15,7 +15,7 @@ let question = ''
 process.stdin.on('data', (d) => { question += d })
 process.stdin.on('end', () => {
   const herdr = Object.keys(process.env).filter((k) => k.startsWith('HERDR_'))
-  writeFileSync(seen, JSON.stringify({ args: process.argv.slice(3), question, herdr, marker: process.env.SIDE_MARKER }))
+  writeFileSync(seen, JSON.stringify({ args: process.argv.slice(3), question, herdr, path: process.env.PATH, marker: process.env.SIDE_MARKER, codeMode: process.env.CLAUDE_CODE_EXPERIMENTAL_CODE_MODE }))
   const out = (line) => process.stdout.write(JSON.stringify(line) + '\\n')
   const say = (text, parent = null) =>
     out({ type: 'assistant', parent_tool_use_id: parent, message: { content: [{ type: 'text', text }] } })
@@ -80,12 +80,14 @@ describe('claude side runner', () => {
       { end: 'done' },
     ])
     const seen: unknown = JSON.parse(await readFile(join(dir, 'seen.json'), 'utf8'))
+    expect(seen).not.toHaveProperty('marker')
     expect(seen).toMatchObject({
       args: sideArgs('session-5150', 'sonnet'),
       question: 'What does marker-5150 do?',
-      // No herdr pane identity: Claude Code's herdr hook would give the side session to the server's pane.
+      // Only the named variables: no herdr pane identity (Claude Code's herdr hook would give the side session to the
+      // server's pane), and no other variable of the server's.
       herdr: [],
-      marker: 'marker-5150',
+      path: '/usr/bin',
     })
     expect(sideArgs('s', 'm')).toEqual(
       expect.arrayContaining(['--fork-session', '--no-session-persistence', '--strict-mcp-config']),
@@ -130,5 +132,47 @@ describe('claude side runner', () => {
     expect(logged.lines()).toEqual([expect.objectContaining({ msg: 'side run failed', timedOut: true })])
     expect(await ask('stubborn', undefined, { timeoutMs: 200, killAfterMs: 200 })).toEqual([{ end: 'failed' }])
     expect(logged.lines()).toEqual([expect.objectContaining({ signal: 'SIGKILL', timedOut: true })])
+  })
+
+  it("copies Code Mode from the owner's settings file, as --restricted loads none, and no other env key", async () => {
+    await writeFile(
+      join(dir, 'settings.json'),
+      JSON.stringify({ env: { CLAUDE_CODE_EXPERIMENTAL_CODE_MODE: '1', SIDE_MARKER: 'from-settings' } }),
+    )
+    const run = claudeSideRunner({
+      model: 'sonnet',
+      env: { PATH: '/usr/bin' },
+      log: memoryLogger().log,
+      settingsFile: join(dir, 'settings.json'),
+      command: [process.execPath, join(dir, 'fake.cjs'), join(dir, 'seen.json')],
+    })
+    for await (const chunk of run({ session: 's', folder: dir, question: 'q', signal: new AbortController().signal }))
+      expect(chunk).toBeDefined()
+    const seen: unknown = JSON.parse(await readFile(join(dir, 'seen.json'), 'utf8'))
+    expect(seen).toMatchObject({ codeMode: '1' })
+    expect(seen).not.toHaveProperty('marker')
+  })
+
+  it('sets no Code Mode when the settings file is missing or names none', async () => {
+    expect((await ask('q')).at(-1)).toEqual({ end: 'done' })
+    const seen: unknown = JSON.parse(await readFile(join(dir, 'seen.json'), 'utf8'))
+    expect(seen).not.toHaveProperty('codeMode')
+  })
+
+  it('starts no process when the signal aborts while it reads the settings file', async () => {
+    await writeFile(join(dir, 'settings.json'), JSON.stringify({ env: { CLAUDE_CODE_EXPERIMENTAL_CODE_MODE: '1' } }))
+    const run = claudeSideRunner({
+      model: 'sonnet',
+      env: { PATH: '/usr/bin' },
+      log: memoryLogger().log,
+      settingsFile: join(dir, 'settings.json'),
+      command: [process.execPath, join(dir, 'fake.cjs'), join(dir, 'seen.json')],
+    })
+    const stop = new AbortController()
+    const answer = run({ session: 's', folder: dir, question: 'q', signal: stop.signal })[Symbol.asyncIterator]()
+    const first = answer.next()
+    stop.abort()
+    expect(await first).toEqual({ done: true, value: undefined })
+    await expect(readFile(join(dir, 'seen.json'), 'utf8')).rejects.toThrow()
   })
 })
