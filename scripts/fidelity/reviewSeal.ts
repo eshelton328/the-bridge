@@ -74,10 +74,15 @@ const buildInputs: ReadonlySet<string> = new Set([
   'pnpm-lock.yaml',
 ])
 
-/** The workspace packages web imports by name, as their entry file. */
+/**
+ * The workspace packages and subpaths web imports by name, as their entry
+ * file. A `@bridge/` specifier that is not here makes the walk throw, so
+ * a new subpath can never drop an input from the hash.
+ */
 const packageEntries: Record<string, string> = {
   '@bridge/shared': 'shared/src/index.ts',
   '@bridge/contract': 'contract/src/index.ts',
+  '@bridge/server/client': 'server/src/client.ts',
 }
 
 /** Every module specifier in a source file: static and dynamic imports, side-effect imports and re-exports. */
@@ -95,6 +100,8 @@ export function importSpecifiers(source: string): string[] {
 export function resolveImport(from: string, spec: string, known: ReadonlySet<string>): string | undefined {
   const entry = packageEntries[spec]
   if (entry !== undefined) return known.has(entry) ? entry : undefined
+  if (spec.startsWith('@bridge/'))
+    throw new Error(`${from} imports ${spec}, which the review seal does not know: add it to packageEntries`)
   if (!spec.startsWith('.')) return undefined
   const base = posix.normalize(posix.join(posix.dirname(from), spec))
   const stem = base.replace(/\.js$/, '')
