@@ -253,9 +253,11 @@ client of a socket or a file sits beside them.
   config (`--strict-mcp-config`), with `--restricted` (no user, project
   or local settings file, so none of the owner's hooks, allow rules or
   plugins, and the file tools stay in the working folder), in the chat's folder with an argument
-  list, never a shell, with the server's environment less each `HERDR_`
-  variable (in a herdr pane, Claude Code's herdr hook would report the
-  side session as the server pane's), and with the owner's settings
+  list, never a shell, with only the named variables of the server's
+  environment that `claude` needs (`PATH`, `HOME`, `USER`, the locale,
+  `TMPDIR`, the proxy and CA variables, `CLAUDE_CONFIG_DIR`), so no
+  `HERDR_` variable (in a herdr pane, Claude Code's herdr hook would
+  report the side session as the server pane's) and no token, and with the owner's settings
   file's `env.CLAUDE_CODE_EXPERIMENTAL_CODE_MODE` when it sets one, read
   at each run and no other `env` key: `--restricted` loads no settings
   file, and a session started in Code Mode resumes only in it. The question goes on stdin. The answer is the

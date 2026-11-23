@@ -15,7 +15,7 @@ let question = ''
 process.stdin.on('data', (d) => { question += d })
 process.stdin.on('end', () => {
   const herdr = Object.keys(process.env).filter((k) => k.startsWith('HERDR_'))
-  writeFileSync(seen, JSON.stringify({ args: process.argv.slice(3), question, herdr, marker: process.env.SIDE_MARKER, codeMode: process.env.CLAUDE_CODE_EXPERIMENTAL_CODE_MODE }))
+  writeFileSync(seen, JSON.stringify({ args: process.argv.slice(3), question, herdr, path: process.env.PATH, marker: process.env.SIDE_MARKER, codeMode: process.env.CLAUDE_CODE_EXPERIMENTAL_CODE_MODE }))
   const out = (line) => process.stdout.write(JSON.stringify(line) + '\\n')
   const say = (text, parent = null) =>
     out({ type: 'assistant', parent_tool_use_id: parent, message: { content: [{ type: 'text', text }] } })
@@ -80,12 +80,14 @@ describe('claude side runner', () => {
       { end: 'done' },
     ])
     const seen: unknown = JSON.parse(await readFile(join(dir, 'seen.json'), 'utf8'))
+    expect(seen).not.toHaveProperty('marker')
     expect(seen).toMatchObject({
       args: sideArgs('session-5150', 'sonnet'),
       question: 'What does marker-5150 do?',
-      // No herdr pane identity: Claude Code's herdr hook would give the side session to the server's pane.
+      // Only the named variables: no herdr pane identity (Claude Code's herdr hook would give the side session to the
+      // server's pane), and no other variable of the server's.
       herdr: [],
-      marker: 'marker-5150',
+      path: '/usr/bin',
     })
     expect(sideArgs('s', 'm')).toEqual(
       expect.arrayContaining(['--fork-session', '--no-session-persistence', '--strict-mcp-config']),

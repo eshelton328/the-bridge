@@ -61,13 +61,39 @@ function lineOf(raw: string): z.infer<typeof Line> | undefined {
 }
 
 /**
- * The environment of a side run: the server's own, less each `HERDR_` variable. In a herdr pane those name the
- * server's pane, and Claude Code's herdr hook would report the side session as that pane's session.
+ * The only variables of the server's environment that a side run gets: what `claude` needs to find its tools, its
+ * login and the network. Each other one stays out, such as a `HERDR_` variable (in a herdr pane, Claude Code's herdr
+ * hook would report the side session as the server pane's) or a token the server holds.
  */
+const keptEnv = [
+  'PATH',
+  'HOME',
+  'USER',
+  'LOGNAME',
+  'SHELL',
+  'TMPDIR',
+  'LANG',
+  'LC_ALL',
+  'LC_CTYPE',
+  'TZ',
+  'CLAUDE_CONFIG_DIR',
+  codeModeKey,
+  'HTTPS_PROXY',
+  'HTTP_PROXY',
+  'NO_PROXY',
+  'https_proxy',
+  'http_proxy',
+  'no_proxy',
+  'NODE_EXTRA_CA_CERTS',
+  'SSL_CERT_FILE',
+] as const
+
 function sideEnv(env: Readonly<Record<string, string | undefined>>): Record<string, string> {
   const kept: Record<string, string> = {}
-  for (const [key, value] of Object.entries(env))
-    if (!key.startsWith('HERDR_') && value !== undefined) kept[key] = value
+  for (const key of keptEnv) {
+    const value = env[key]
+    if (value !== undefined) kept[key] = value
+  }
   return kept
 }
 
