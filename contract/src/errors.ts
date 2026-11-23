@@ -35,7 +35,8 @@ export const ErrorKind = z.discriminatedUnion('kind', [
    * (`skipsPermissions`), the chat runs in another folder than its pane (`folderChanged`), the chat already has
    * that model (`sameModel`), or a restart of the chat is in progress (`restarting`, for any input to it), or a
    * move goes to the chat's own workspace (`sameWorkspace`) or leaves a workspace that holds the server or the
-   * coordinator's chat (`holdsServer`), or a fork has no session to copy (`noSession`).
+   * coordinator's chat (`holdsServer`), or a fork or a side question has no session to copy (`noSession`), or a side question waits for one of the chat's
+   * own, or for one of the three that the server runs at a time (`sideBusy`).
    */
   z.object({
     kind: z.literal('chat-not-ready'),
@@ -66,6 +67,7 @@ export const ErrorKind = z.discriminatedUnion('kind', [
       'sameWorkspace',
       'noSession',
       'holdsServer',
+      'sideBusy',
     ]),
     ...common,
   }),

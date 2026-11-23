@@ -19,7 +19,14 @@ import {
 } from '@bridge/contract'
 import { err, ok } from '@bridge/shared'
 import { builtinCommands } from './claudeSkills.ts'
-import type { ChatCommand, AgentEvent, AgentPort, AgentPortError, TranscriptRead } from '../services/agentPort.ts'
+import type {
+  ChatCommand,
+  AgentEvent,
+  AgentPort,
+  AgentPortError,
+  SideChunk,
+  TranscriptRead,
+} from '../services/agentPort.ts'
 
 /** What a chat of the fake got from the owner: a prompt's text, or a stop. */
 type FakeInput = { readonly chat: ChatId } & (
@@ -123,6 +130,13 @@ export type FakeAgents = AgentPort & {
   readonly setProjectWorkspace: (project: string, workspace: WorkspaceId) => void
   /** The chats that a caller forked, in order. */
   readonly forks: () => ChatId[]
+  /** Each side question that a chat got, in order. */
+  readonly sideQuestions: () => { readonly chat: ChatId; readonly question: string }[]
+  /**
+   * The pieces of a chat's next side answers, in order (else one piece "A side answer." and `done`); `hang` waits
+   * until the question is stopped.
+   */
+  readonly setSideAnswer: (chat: ChatId, pieces: readonly (SideChunk | 'hang')[]) => void
   /** How many times a caller read the workspaces. */
   readonly reads: () => number
   /** How many transcript watches are open now. */
@@ -359,6 +373,8 @@ export function createFakeAgents(
     )
   }
   const forks: ChatId[] = []
+  const sideQuestions: { readonly chat: ChatId; readonly question: string }[] = []
+  const sidePieces = new Map<ChatId, readonly (SideChunk | 'hang')[]>()
   const projects = new Map<string, WorkspaceId>()
   let clears = 0
   return {
@@ -685,6 +701,39 @@ export function createFakeAgents(
       })
     },
     forks: () => [...forks],
+    sideQuestions: () => [...sideQuestions],
+    setSideAnswer: (chat, pieces) => {
+      sidePieces.set(chat, pieces)
+    },
+    askSide(chat, question, signal) {
+      if ('error' in answer) return Promise.resolve(err(answer.error))
+      const found = chatOf(chat)
+      if (found === undefined) return Promise.resolve(ok('notFound'))
+      if (found.kind !== 'claude') return Promise.resolve(ok('noSession'))
+      sideQuestions.push({ chat, question })
+      const pieces = sidePieces.get(chat) ?? [{ text: 'A side answer.' }, { end: 'done' }]
+      async function* run(): AsyncIterable<SideChunk> {
+        for (const piece of pieces) {
+          if (piece !== 'hang') {
+            yield piece
+            continue
+          }
+          await new Promise<void>((resolve) => {
+            if (signal.aborted) resolve()
+            else
+              signal.addEventListener(
+                'abort',
+                () => {
+                  resolve()
+                },
+                { once: true },
+              )
+          })
+          return
+        }
+      }
+      return Promise.resolve(ok(run()))
+    },
     setSplitRatio(tab, path, ratio) {
       if ('error' in answer) return Promise.resolve(err(answer.error))
       const workspace = (data ?? []).find((w) => `${w.id}:t1` === tab)

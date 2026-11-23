@@ -128,6 +128,15 @@ export {
   RenameWorkspaceRequest,
   WorkspaceOrderRequest,
 } from './workspaceEdits.ts'
+export {
+  maxSideQuestion,
+  SideAnswer,
+  SideChangedEvent,
+  SideId,
+  SideQuestionRequest,
+  SideStarted,
+  SideState,
+} from './sideAnswers.ts'
 export { ChatSkill, ChatSkillsResponse, maxSkillDescription, maxSkills, SkillSource } from './skills.ts'
 export {
   ChatStatusEvent,

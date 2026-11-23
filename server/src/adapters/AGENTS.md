@@ -243,7 +243,11 @@ client of a socket or a file sits beside them.
   only `--resume <session> --fork-session`; a Codex chat, a shell and a
   session with no saved file (no turn yet, so `--resume` starts nothing)
   are `noSession`, with no pane made. The default name is the first
-  free of `<name>-fork`, `-fork-2` to `-fork-9`. The contract suite has no start or fork (a real Claude).
+  free of `<name>-fork`, `-fork-2` to `-fork-9`. A side question finds the
+  session as a fork does (`noSession` likewise, also for a chat with no
+  folder) and gives the session, the folder and the question to the
+  `runSide` option; with none it is `unreachable`. The fake answers
+  from `setSideAnswer`, and `hang` waits for the stop. The contract suite has no start or fork (a real Claude).
 - An effort change (slice W10) goes to an idle Claude chat with an
   empty box only, as Claude Code's effort keys (`shift+up` and
   `shift+down` in one `agent.send_keys`), never as `/effort` or

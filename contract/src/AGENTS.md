@@ -110,5 +110,13 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
   and `createId`, never a session or a flag. A workspace that cannot
   take a close or an order is 409 `workspace-not-ready`
   (`workspaceEdits.test.ts`).
+- A side question (`sideAnswers.ts`) is a strict object with the
+  question only (trimmed, 1 to `maxSideQuestion` (4000) characters),
+  never a session, a model or a flag. Its `SideId` is 16 hex
+  characters; a `SideAnswer` holds the whole text so far, cut at
+  `maxEntryText`, and a state (`answering`, `done`, `failed`,
+  `timedOut`); `side.changed` carries it in the event envelope. A
+  chat that cannot take one is 409 `chat-not-ready` `noSession` or
+  `sideBusy` (`sideAnswers.test.ts`).
 - A `ClientErrorReport` holds only its listed fields (a strict object),
   so a report carries no page text or app state (`clientErrors.test.ts`).
