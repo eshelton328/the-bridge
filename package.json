@@ -38,6 +38,7 @@
     "build:canvas": "pnpm --filter @bridge/web build:canvas",
     "check:ci": "node scripts/checkCi.ts",
     "check:reviews": "node scripts/fidelity/checkReviews.ts",
+    "check:text-sizes": "node scripts/checkTextSizes.ts",
     "shard:times": "node scripts/shardTimes.ts",
     "keyboard:served": "node scripts/keyboardCheck.ts",
     "keyboard:slide": "node scripts/keyboardSlide.ts",
