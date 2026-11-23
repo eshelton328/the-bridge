@@ -1,47 +1,46 @@
-// The tablet and phone tab bar of every page: Home and the pages, with the
-// needs-you count on Inbox (d-045, d-047: More comes last). The tablet adds
-// Artifacts before More; the phone keeps five tabs and opens Artifacts and
-// Toolkit from More, and the tablet opens Toolkit from More (d-105). It takes the
+// The tablet and phone tab bar of every page: the first shown pages in the
+// owner's order (d-038, d-119; `pages`, from navLayout's `tabs`: five on
+// the tablet, four on the phone), with the needs-you count on Inbox (d-045,
+// d-047: More comes last). The default order gives the tablet Home to
+// Artifacts and opens Toolkit from More; the phone shows Home to Projects
+// and opens Artifacts and Toolkit from More (d-105). It takes the
 // place of the desktop rail (AppRail). On the tablet the tabs are one centred
 // group, as Figma draws them (`size="tablet"`); each tab carries its Figma
 // layer name (`tab · Home`) for the fidelity check. Props only; the page
 // entry does the navigation.
-import {
-  ArtifactsIcon,
-  HomeIcon,
-  InboxIcon,
-  MoreIcon,
-  ProjectsIcon,
-  TabBar,
-  WorkspacesIcon,
-} from '@eshelton328/component-library-1701'
-
-type AppTabPage = 'home' | 'inbox' | 'workspaces' | 'projects' | 'artifacts' | 'more'
+import { MoreIcon, TabBar } from '@eshelton328/component-library-1701'
+import type { NavPage } from '../lib/deviceSettings.ts'
+import { navPageItems } from './navPages.ts'
 
 export type AppTabBarProps = {
-  selected: AppTabPage
-  /** The tablet shows an Artifacts tab; the phone does not. */
+  /** The page on screen; a page the tab bar does not show selects More. */
+  selected: NavPage | 'more'
+  /** The tabs before More, in order: navLayout's `tabs` for the device. */
+  pages: readonly NavPage[]
   device: 'tablet' | 'phone'
   /** The number of Inbox items that need the owner. */
   inboxBadge: number
   onSelect?: ((page: string) => void) | undefined
 }
 
-export function AppTabBar({ selected, device, inboxBadge, onSelect }: AppTabBarProps) {
+export function AppTabBar({ selected, pages, device, inboxBadge, onSelect }: AppTabBarProps) {
   return (
     <div data-figma="tab bar">
       <TabBar
         size={device}
-        selected={selected}
+        selected={selected !== 'more' && pages.includes(selected) ? selected : 'more'}
         onSelect={onSelect}
         items={[
-          { value: 'home', label: 'Home', figma: 'tab · Home', icon: <HomeIcon /> },
-          { value: 'inbox', label: 'Inbox', figma: 'tab · Inbox', icon: <InboxIcon />, badge: inboxBadge },
-          { value: 'workspaces', label: 'Workspaces', figma: 'tab · Workspaces', icon: <WorkspacesIcon /> },
-          { value: 'projects', label: 'Projects', figma: 'tab · Projects', icon: <ProjectsIcon /> },
-          ...(device === 'tablet'
-            ? [{ value: 'artifacts', label: 'Artifacts', figma: 'tab · Artifacts', icon: <ArtifactsIcon /> }]
-            : []),
+          ...pages.map((page) => {
+            const { label, Icon } = navPageItems[page]
+            return {
+              value: page,
+              label,
+              figma: `tab · ${label}`,
+              icon: <Icon />,
+              ...(page === 'inbox' ? { badge: inboxBadge } : {}),
+            }
+          }),
           { value: 'more', label: 'More', figma: 'tab · More', icon: <MoreIcon /> },
         ]}
       />

@@ -68,6 +68,7 @@ import {
   type WorkspacesStateKey,
 } from './workspacesStore.ts'
 import { usePushSwitch } from '../../state/pushStore.ts'
+import { useVisibleNavPages } from '../../state/settingsStore.ts'
 
 const route = getRouteApi('/workspaces')
 
@@ -98,6 +99,7 @@ const copyReply = (text: string) =>
 export function WorkspacesPage() {
   const state = route.useLoaderData()
   const push = usePushSwitch()
+  const navPages = useVisibleNavPages()
   const search = route.useSearch()
   const navigate = route.useNavigate()
   const edits = useWorkspacesUi(search.state)
@@ -304,6 +306,7 @@ export function WorkspacesPage() {
     <>
       <WorkspacesScreen
         push={push}
+        navPages={navPages}
         data={screenData}
         ui={shownUi}
         viewport="desktop"
