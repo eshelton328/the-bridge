@@ -7,6 +7,7 @@
 // below and passes them to its screen as props.
 import {
   type ChatDefaults,
+  type ChatWidth,
   defaultSettings,
   type DeviceSettings,
   type Mode,
@@ -27,6 +28,7 @@ type SettingsState = DeviceSettings & {
   actions: {
     setMode: (mode: Mode) => void
     setTextSize: (textSize: TextSize) => void
+    setChatWidth: (chatWidth: ChatWidth) => void
     setChatDefaults: (chat: Partial<ChatDefaults>) => void
     /** Moves `page` one place up (-1) or down (1) in the nav order. */
     moveNavPage: (page: BarPage, by: -1 | 1) => void
@@ -49,6 +51,9 @@ const useSettingsStore = createAppStore<SettingsState>('settings', (set, get) =>
     setTextSize: (textSize) => {
       set({ textSize }, undefined, 'settings/setTextSize')
     },
+    setChatWidth: (chatWidth) => {
+      set({ chatWidth }, undefined, 'settings/setChatWidth')
+    },
     setChatDefaults: (chat) => {
       set((s) => ({ chat: { ...s.chat, ...chat } }), undefined, 'settings/setChatDefaults')
     },
@@ -69,7 +74,7 @@ const useSettingsStore = createAppStore<SettingsState>('settings', (set, get) =>
 
 /** The settings without the actions: what the key holds. */
 function saved(s: DeviceSettings): DeviceSettings {
-  return { mode: s.mode, textSize: s.textSize, nav: s.nav, chat: s.chat }
+  return { mode: s.mode, textSize: s.textSize, chatWidth: s.chatWidth, nav: s.nav, chat: s.chat }
 }
 
 export type SettingsStorageOptions = {
@@ -97,7 +102,13 @@ export function startSettingsStorage({ storage, report, onChange }: SettingsStor
   useSettingsStore.setState(parseStoredSettings(text))
   onChange?.(saved(useSettingsStore.getState()))
   return useSettingsStore.subscribe((s, before) => {
-    if (s.mode === before.mode && s.textSize === before.textSize && s.nav === before.nav && s.chat === before.chat)
+    if (
+      s.mode === before.mode &&
+      s.textSize === before.textSize &&
+      s.chatWidth === before.chatWidth &&
+      s.nav === before.nav &&
+      s.chat === before.chat
+    )
       return
     try {
       storage().setItem(settingsKey, JSON.stringify(saved(s)))
@@ -112,6 +123,8 @@ export function startSettingsStorage({ storage, report, onChange }: SettingsStor
 export const useSettingsMode = (): Mode => useSettingsStore((s) => s.mode)
 /** The text size. @public */
 export const useSettingsTextSize = (): TextSize => useSettingsStore((s) => s.textSize)
+/** How wide the Workspaces chats draw on the tablet and the desktop. @public */
+export const useSettingsChatWidth = (): ChatWidth => useSettingsStore((s) => s.chatWidth)
 /** The nav order with each page's visibility (d-038). @public */
 export const useSettingsNav = (): readonly NavEntry[] => useSettingsStore((s) => s.nav)
 /** The new chat defaults; saved on this device, which chats do not use yet. @public */

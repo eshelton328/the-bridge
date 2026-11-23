@@ -23,6 +23,7 @@
 // Props only; `ui` says which pane is focused and which menu,
 // skill list or side chat is open.
 import { SplitPanes } from '@eshelton328/component-library-1701'
+import type { ChatWidth } from '../../../lib/deviceSettings.ts'
 import type { ResizePart, WorkbenchPane, WorkspacesData, WorkspacesUi } from '../types.ts'
 import type { CopyReply } from './ChatEntryView.tsx'
 import type { SkillLists } from './skillLists.ts'
@@ -78,6 +79,8 @@ export type WorkbenchPanesProps = {
   pendingOf?: ((chat: string) => ChatPending | undefined) | undefined
   /** Reads each live chat's transcript while its pane shows (ChatPane); fixtures have none. */
   transcripts?: TranscriptWatch | undefined
+  /** How wide the chat draws on the tablet and the desktop (Settings → Appearance); full when not set. */
+  chatWidth?: ChatWidth | undefined
   /** Reads each live Claude chat's "/" list each time it opens (review R34); fixtures have none. */
   skillLists?: SkillLists | undefined
   /** A reply's Copy: the page writes the clipboard, and the button shows the result (audit P-4). */
@@ -106,6 +109,7 @@ export function WorkbenchPanes({
   filesOf,
   pendingOf,
   transcripts,
+  chatWidth,
   skillLists,
   onCopy,
   layout,
@@ -283,6 +287,7 @@ export function WorkbenchPanes({
             notLive={pane.notLive}
             liveChat={pane.liveChat}
             transcripts={transcripts}
+            chatWidth={chatWidth}
             onCopy={onCopy}
             earlier={pane.earlier}
             empty={pane.empty}

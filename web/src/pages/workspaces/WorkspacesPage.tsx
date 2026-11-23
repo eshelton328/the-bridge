@@ -72,7 +72,7 @@ import {
   type WorkspacesStateKey,
 } from './workspacesStore.ts'
 import { navRoute } from '../../lib/navRoutes.ts'
-import { useVisibleNavPages } from '../../state/settingsStore.ts'
+import { useSettingsChatWidth, useVisibleNavPages } from '../../state/settingsStore.ts'
 
 const route = getRouteApi('/workspaces')
 
@@ -103,6 +103,7 @@ const copyReply = (text: string) =>
 export function WorkspacesPage() {
   const state = route.useLoaderData()
   const navPages = useVisibleNavPages()
+  const chatWidth = useSettingsChatWidth()
   const search = route.useSearch()
   const navigate = route.useNavigate()
   const edits = useWorkspacesUi(search.state)
@@ -368,6 +369,7 @@ export function WorkspacesPage() {
         onUiChange={changeUi}
         onRetry={() => void router.invalidate()}
         transcripts={transcripts}
+        chatWidth={chatWidth}
         skillLists={skillLists}
         onCopy={copyReply}
         onSend={onSend}

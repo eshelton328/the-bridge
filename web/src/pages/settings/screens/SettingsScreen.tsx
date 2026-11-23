@@ -18,6 +18,7 @@ import { reportShellDiagnostic } from '../../../errors/shellDiagnostic.ts'
 import {
   type BarPage,
   type ChatDefaults,
+  type ChatWidth,
   type Mode,
   type NavPage,
   navLayout,
@@ -53,6 +54,7 @@ export type SettingsScreenProps = {
   /** The live Notifications switch; without it the switch draws `data.push` and does nothing. */
   push?: PushSwitch | undefined
   onModeChange?: ((mode: Mode) => void) | undefined
+  onChatWidthChange?: ((chatWidth: ChatWidth) => void) | undefined
   /** Shows or hides a nav page; returns false when the nav rules refuse it (the last page besides Home). */
   onNavVisibleChange?: ((page: NavPage, visible: boolean) => boolean) | undefined
   onNavMove?: ((page: BarPage, by: -1 | 1) => void) | undefined
@@ -67,6 +69,7 @@ export function SettingsScreen({
   onUiChange,
   push,
   onModeChange,
+  onChatWidthChange,
   onNavVisibleChange,
   onNavMove,
   onChatDefaultsChange,
@@ -116,7 +119,12 @@ export function SettingsScreen({
                 <DetailFrame layout={layout}>
                   <div className={column}>
                     <PageHeader title="Settings" size={layout === 'phone' ? 'phone' : 'page'} />
-                    <AppearanceSection settings={data.settings} layout={layout} onModeChange={onModeChange} />
+                    <AppearanceSection
+                      settings={data.settings}
+                      layout={layout}
+                      onModeChange={onModeChange}
+                      onChatWidthChange={onChatWidthChange}
+                    />
                     <NavigationSection
                       nav={data.settings.nav}
                       notice={ui.navNotice}

@@ -58,6 +58,7 @@ import {
   PlusIcon,
   ScrollFrame,
 } from '@eshelton328/component-library-1701'
+import type { ChatWidth } from '../../../lib/deviceSettings.ts'
 import {
   type ChangeEvent,
   type KeyboardEvent,
@@ -233,14 +234,33 @@ const earlierLine = css({ display: 'block', textStyle: 'small', color: 'fg.muted
 // the iPhone's form bar (M10: 147:79 ends at 456, the keyboard 147:97 starts at 464) and 16 over the iPad's keyboard
 // (T4: 105:2261 ends at 842, the keyboard 105:2293 starts at 858), screen review R36. The space under the composer
 // grows with the dock up to that, so with the keyboard closed it is 0 and the safe area stays under the composer.
+// Settings → Appearance → Chat width (bridge-coord, 2026-11-23): Wide and Narrow put the transcript and the composer in
+// one centred column, the library's `shell.threadWide` (1040) or `shell.thread` (768), so they line up; Full, the
+// default, is today's width. A class sets `--chat-column`, and the side padding grows to centre that column, so the
+// whole pane still scrolls and its scroll bar stays at the edge. Unset, the variable is the full width, so the padding
+// is the size's own. The phone, the sheet and the side chats keep their width.
+const columnVar = {
+  full: undefined,
+  wide: css({ '--chat-column': 'token(sizes.shell.threadWide)' }),
+  narrow: css({ '--chat-column': 'token(sizes.shell.thread)' }),
+} satisfies Record<ChatWidth, string | undefined>
+// A pane of the split and the chat alone (D1, D2) pad nothing at the body's sides; the column adds its own padding.
+const columnPad = css({ px: '[max(0px, calc((100% - var(--chat-column, 100%)) / 2))]' })
+// The sizes that follow the chat width: the desktop's panes and chat, and the tablet's chat.
+const columnSizes = new Set<string>(['pane', 'full', 'tablet'])
+
 const framed = {
   phone: {
     body: css({ px: '16', pt: '12' }),
     footer: css({ px: '16', pb: '[min(token(spacing.8), var(--scroll-frame-dock, 0px))]' }),
   },
   tablet: {
-    body: css({ px: '24', pt: '16' }),
-    footer: css({ px: '24', pb: '[min(token(spacing.16), var(--scroll-frame-dock, 0px))]' }),
+    // T2's 24 at the sides, or more to centre the chat width's column.
+    body: css({ px: '[max(token(spacing.24), calc((100% - var(--chat-column, 100%)) / 2))]', pt: '16' }),
+    footer: css({
+      px: '[max(token(spacing.24), calc((100% - var(--chat-column, 100%)) / 2))]',
+      pb: '[min(token(spacing.16), var(--scroll-frame-dock, 0px))]',
+    }),
   },
 }
 
@@ -261,6 +281,8 @@ type ChatPaneBase = {
   /** A live chat's server chat ID: while the pane shows, `transcripts` reads its transcript (slice 3b). */
   liveChat?: string | undefined
   transcripts?: TranscriptWatch | undefined
+  /** How wide the chat draws on the tablet and the desktop (Settings → Appearance); full when not set. */
+  chatWidth?: ChatWidth | undefined
   /** A reply's Copy, sample or live: the page writes the clipboard, and the button shows the result (audit P-4). */
   onCopy?: CopyReply | undefined
   /** The line over the entries, such as "Earlier entries not live yet"; none when not set. */
@@ -345,6 +367,7 @@ export function ChatPane(props: ChatPaneProps) {
     notLive,
     liveChat,
     transcripts,
+    chatWidth,
     onCopy,
     earlier,
     empty,
@@ -724,15 +747,18 @@ export function ChatPane(props: ChatPaneProps) {
     ) : (
       <NotLive text={notLive} />
     )
+  // The chat width's column: the variable on the transcript and the composer, and the padding where the size has none.
+  const column = columnSizes.has(size) ? columnVar[chatWidth ?? 'full'] : undefined
+  const pad = column === undefined ? undefined : columnPad
   if (props.label !== undefined) {
     const parts = framed[props.size]
     return (
       <ScrollFrame
         footerShrink={footerShrinks[size]}
-        bodyClassName={cx(gaps[size].body, parts.body)}
+        bodyClassName={cx(gaps[size].body, parts.body, column)}
         header={props.header}
         footer={
-          <div ref={footerRef} className={cx(footer, gaps[size].footer, parts.footer)}>
+          <div ref={footerRef} className={cx(footer, gaps[size].footer, parts.footer, column)}>
             {above}
             {composerBox}
             {picker}
@@ -749,10 +775,10 @@ export function ChatPane(props: ChatPaneProps) {
     <div className={cx(body, sizes[size])}>
       <ScrollFrame
         footerShrink={footerShrinks[size]}
-        bodyClassName={gaps[size].body}
+        bodyClassName={cx(gaps[size].body, column, pad)}
         footer={
           // The part of a pane a stacked split keeps in view (paneFloors.ts).
-          <div ref={footerRef} className={cx(footer, gaps[size].footer)} data-pane-floor>
+          <div ref={footerRef} className={cx(footer, gaps[size].footer, column, pad)} data-pane-floor>
             {above}
             {composerBox}
             {picker}

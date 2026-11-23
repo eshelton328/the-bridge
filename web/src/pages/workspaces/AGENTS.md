@@ -554,6 +554,13 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   `MarkdownView`, as the Inbox detail draws its text
   (`blocks/EntryText.tsx`): HTML in the text stays text, a link keeps
   only a safe URL, and an image shows its alt text.
+- The chat width (Settings → Appearance, `settingsStore` `chatWidth`):
+  `WorkspacesPage` passes it down to each `ChatPane`. Wide and Narrow
+  centre the transcript and the composer in one column of the library's
+  `shell.threadWide` or `shell.thread` in a desktop pane, the desktop's
+  chat and the tablet's chat; Full, the default, is today's width, so the
+  Figma frames do not change. The phone, the sheet and the side chats
+  keep their width (`app/ChatWidthRoute.test.tsx`).
 - A stacked pane is never lower than its header and composer
   (`blocks/paneFloors.ts`, measured, as no library token gives that
   height); the room comes from the largest pane.

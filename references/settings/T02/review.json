@@ -1,8 +1,8 @@
 {
   "frameId": "T02",
-  "inputs": "ecc0e85df27a05c0d51077d6cd5e591519ce0d4f905ad8feb70b9336486df2ad",
-  "library": "1.0.0-beta.106",
-  "recordSha256": "ac0a2329296b65650335ad4f8011ef62d287de8d540a1b1495d19b44a5ff24a3",
+  "inputs": "fede753e79ae65f92f1e79c655190291b1412eda7428c8e133b254817314edb0",
+  "library": "1.0.0-beta.108",
+  "recordSha256": "0dc682552341bc58164b1495da89d265f30c7c5bfbd6cd31d430b0a5a3456741",
   "record": {
     "verdict": "match",
     "viewport": "iPad portrait 820 x 1180, Light",
@@ -12,7 +12,7 @@
       "render": "reports/fidelity/settings/T02.sideBySide.png",
       "reference_side": "left"
     },
-    "summary": "Apart from the accepted deviations, the render matches the reference, and each deviation looks as described.",
+    "summary": "Apart from the accepted deviations, the render matches the reference. Those deviations are the disabled Text size control with \"Coming soon\", the new Chat width row, the \"Under More on this device\" rule after Artifacts, the new Settings row and the sections pushed below the bottom edge.",
     "findings": [],
     "accepted_deviations": [
       {
@@ -20,40 +20,47 @@
         "as_given": "Text size: the control is disabled (muted labels) and its line under it says \"Coming soon\" in place of \"Scales the whole app: Small 87.5 %, Default 100 %, Large 112.5 %.\" (step D adds text size later). On a narrow screen the one-line note makes every section below it sit about one text line higher.",
         "status": "as-described",
         "finding": null,
-        "note": "Small, Default and Large are muted and the note says \"Coming soon\". At this width the reference note also fits on one line, so nothing below it moves."
+        "note": "Small, Default and Large are muted, and the note under them reads \"Coming soon\". On this tablet width both notes take one line, so the note itself does not move anything."
       },
       {
         "id": "A2",
         "as_given": "A new \"NOTIFICATIONS\" section with one \"Notifications\" switch (off) sits between the Navigation section and the New chat defaults section. So New chat defaults sits lower, or below the bottom edge.",
-        "status": "as-described",
+        "status": "not-seen",
         "finding": null,
-        "note": "The NOTIFICATIONS card, with its switch off, sits under the Navigation card. New chat defaults is below the bottom edge."
+        "note": "The Notifications section and New chat defaults are both below the bottom edge. Only the top edge of the next card shows under the Navigation card, just above the tab bar."
       },
       {
         "id": "A3",
         "as_given": "The Notifications switch moved to that section: the desktop rail no longer has the \"Notifications / Blocked in Settings\" switch at its bottom, and the More drawer no longer has the \"Notifications / Blocked in Settings\" row at its end. So the drawer is shorter and its top edge sits lower.",
         "status": "not-seen",
         "finding": null,
-        "note": "Neither picture shows the rail or the More drawer at this viewport."
+        "note": "This frame shows no desktop rail and no open More drawer."
       },
       {
         "id": "A4",
         "as_given": "The Navigation list has a new last row, \"Settings\", with the line \"Always shown: in the bar or under More.\" under it and up and down buttons but no switch (the owner's decision: Settings is an entry of the bar order that cannot be hidden). So Toolkit's down button is now enabled, the Navigation card is taller, and every section below it sits lower or below the bottom edge.",
         "status": "as-described",
         "finding": null,
-        "note": "The Settings row has its line of text, up and down buttons and no switch. Toolkit's down button is enabled, and it is muted in the reference."
+        "note": "The Settings row has the line under it and the up and down buttons but no switch. Toolkit's down button is enabled, and the card is taller."
       },
       {
         "id": "A5",
         "as_given": "On the phone and the tablet only: a thin rule line with the text \"Under More on this device\" under it sits after the last page that the tab bar shows (Projects on the phone, Artifacts on the tablet), so the rows after it sit lower by about 40 px.",
         "status": "as-described",
         "finding": null,
-        "note": "The rule and the text \"Under More on this device\" are after Artifacts. The Toolkit row moved from y of about 867 to about 907, which is 40 px lower."
+        "note": "The rule and its text come after Artifacts. The gap from Artifacts to Toolkit is about 100 px, against 60 px in the reference."
+      },
+      {
+        "id": "A6",
+        "as_given": "Appearance has a new last row, \"Chat width\", under Text size: a three-way control \"Full\", \"Wide\", \"Narrow\" with Full selected, and a line under it. On the desktop and the tablet the control is enabled and the line says \"The messages and the message box of a Workspaces chat, centred.\"; on the phone the control is disabled (muted labels) and the line says \"Phone: always full\". So the Appearance card is taller, and every section below it sits lower (about one row) or below the bottom edge.",
+        "status": "as-described",
+        "finding": null,
+        "note": "Chat width is enabled with Full selected, and its line says \"The messages and the message box of a Workspaces chat, centred.\". The Navigation card starts about 100 px lower."
       }
     ],
     "limits": [
-      "The More drawer and the desktop rail are not in either picture, so I could not check accepted deviation A3.",
-      "The New chat defaults section is below the bottom edge of the render, so I could not compare its contents."
+      "The NOTIFICATIONS section, New chat defaults and any content below the Navigation card are below the bottom edge of the render, so they could not be compared.",
+      "The images are shown at roughly 1x without zoom, so I could not confirm whether the Home row's up arrow is the same enabled or disabled shade in both images, or check differences under about 2 px."
     ]
   }
 }

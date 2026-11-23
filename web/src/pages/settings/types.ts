@@ -8,6 +8,7 @@ import {
   chatEfforts,
   chatModels,
   chatPermissions,
+  chatWidths,
   modes,
   navPages,
   textSizes,
@@ -18,6 +19,7 @@ const NavEntry = z.object({ page: z.enum(barPages), visible: z.boolean() })
 export const SettingsValues = z.object({
   mode: z.enum(modes),
   textSize: z.enum(textSizes),
+  chatWidth: z.enum(chatWidths),
   nav: z.array(NavEntry),
   chat: z.object({ model: z.enum(chatModels), effort: z.enum(chatEfforts), permission: z.enum(chatPermissions) }),
 })

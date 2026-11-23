@@ -87,7 +87,7 @@ import { modelText } from '../blocks/modelText.ts'
 import { type NewChatStarter, startOf } from '../blocks/newChatStart.ts'
 import type { PhoneText, WorkspaceEdits, WorkspacesData, WorkspacesUi } from '../types.ts'
 import type { ComposerAnswer } from '../blocks/useComposerActions.ts'
-import { defaultVisiblePages, type BarPage, navLayout } from '../../../lib/deviceSettings.ts'
+import { type ChatWidth, defaultVisiblePages, type BarPage, navLayout } from '../../../lib/deviceSettings.ts'
 
 export type WorkspacesPhoneProps = {
   /** Draws the Settings gear in the rail and the Settings row in the More drawer (d-119): the page entry passes it; a Figma state does not. */
@@ -117,6 +117,8 @@ export type WorkspacesPhoneProps = {
   effortOf?: ((chat: string) => EffortControl | undefined) | undefined
   /** Reads each live chat's transcript while its pane shows (ChatPane); fixtures have none. */
   transcripts?: TranscriptWatch | undefined
+  /** How wide the chat draws on the tablet and the desktop (Settings → Appearance); full when not set. */
+  chatWidth?: ChatWidth | undefined
   /** Reads each live Claude chat's "/" list each time it opens (review R34); fixtures have none. */
   skillLists?: SkillLists | undefined
   /** A reply's Copy, sample or live: the page writes the clipboard, and the button shows the result (audit P-4). */
@@ -147,6 +149,7 @@ export function WorkspacesPhone({
   pendingOf,
   effortOf,
   transcripts,
+  chatWidth,
   skillLists,
   onCopy,
   notice,
@@ -435,6 +438,7 @@ export function WorkspacesPhone({
                 pending={pendingOf?.(chat.id)}
                 effort={effortOf?.(chat.id)}
                 transcripts={transcripts}
+                chatWidth={chatWidth}
                 onCopy={onCopy}
                 rename={
                   ui.renaming === true ? (

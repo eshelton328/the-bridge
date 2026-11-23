@@ -23,6 +23,9 @@ folder is for and the rules of every page.
 - The page reads no server. With no `?state=` the entry shows the store's
   settings (`state/settingsStore.ts`) and the live switch
   (`state/pushStore.ts`); each change goes to the store, which saves it.
+- Appearance's Chat width (Full, Wide, Narrow) sets the Workspaces chats'
+  column on the tablet and the desktop (`ChatPane`); the phone shows it
+  off with "Phone: always full" (`app/ChatWidthRoute.test.tsx`).
 - Text size is disabled with "Coming soon" until step D uses the library's
   text size sets (`LIBRARY_GAPS.md`).
 - `app/SettingsRoute.test.tsx` and `app/PushSwitchRoute.test.tsx` test the
