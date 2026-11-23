@@ -577,8 +577,8 @@ export function chatEntryOf(entry: TranscriptEntry, kind: AgentKind): ChatEntry 
     case 'error':
       return { type: 'event', label: transcriptText.error, text: entry.text }
     case 'note':
-      // R46: a harness input shows as an event line; bridge-workbench draws its muted look.
-      return { type: 'event', label: transcriptText.note[entry.kind], text: entry.text }
+      // R46: a harness input is a muted note line with its kind's icon, never the owner's bubble.
+      return { type: 'note', kind: entry.kind, label: transcriptText.note[entry.kind], text: entry.text }
   }
 }
 

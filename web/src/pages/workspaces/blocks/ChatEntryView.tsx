@@ -2,7 +2,7 @@
 // call with its kind as a `ToolRow`, R32), an
 // agent's reply with Copy (`ReplyCopyButton`), progress lines or a command waiting for approval
 // (D1 105:210 to 105:291), or a line that records an event, such as where a
-// fork starts (D16 417:718). A live message or reply whose text the server cut
+// fork starts (D16 417:718), or a harness note (`NoteLine`, R46). A live message or reply whose text the server cut
 // shows a quiet line under it (`cut`, slice 3b). A message's and a reply's text
 // is Markdown (`EntryText`). The files sent with a message show as chips above
 // it, as the composer showed them, and a message of files alone shows only the
@@ -15,6 +15,7 @@ import { css } from '../../../../styled-system/css/index.js'
 import type { CopyTextResult } from '../../../lib/copyText.ts'
 import type { ChatEntry } from '../types.ts'
 import { EntryText } from './EntryText.tsx'
+import { NoteLine } from './NoteLine.tsx'
 import { ReplyCopyButton } from './ReplyCopyButton.tsx'
 import { SentFileChip } from './SentFileChip.tsx'
 import { ToolRow } from './ToolRow.tsx'
@@ -91,6 +92,9 @@ export const ChatEntryView = memo(function ChatEntryView({ entry, figma, onAct, 
           <ToolLine name={entry.text} state="done" stateLabel={entry.label} />
         </div>
       )
+    case 'note':
+      // A harness note (R46): a muted line with its kind's icon, never the owner's bubble.
+      return <NoteLine kind={entry.kind} label={entry.label} text={entry.text} figma={figma} />
     case 'assistant':
       return (
         <div data-figma={figma}>
