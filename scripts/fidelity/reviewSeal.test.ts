@@ -33,6 +33,8 @@ function scratch(t: { after: (fn: () => void) => void }) {
     rmSync(root, { recursive: true, force: true })
   })
   cpSync(join(referencesDir, 'settings', 'D01'), join(root, 'references', 'settings', 'D01'), { recursive: true })
+  // The reference only: each test seals its own record, so the committed review.json of D01 is not part of it.
+  rmSync(join(root, 'references', 'settings', 'D01', 'review.json'), { force: true })
   const write = (path: string, text: string) => {
     mkdirSync(join(root, path, '..'), { recursive: true })
     writeFileSync(join(root, path), text)
