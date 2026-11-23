@@ -24,7 +24,7 @@ import { AppRail } from '../../../blocks/AppRail.tsx'
 import { AppTabBar } from '../../../blocks/AppTabBar.tsx'
 import { MoreDrawer } from '../../../blocks/MoreDrawer.tsx'
 import { ViewportFrame } from '../../../blocks/ViewportFrame.tsx'
-import { defaultVisiblePages, type NavPage, navLayout } from '../../../lib/deviceSettings.ts'
+import { defaultVisiblePages, type BarPage, navLayout } from '../../../lib/deviceSettings.ts'
 import type { Viewport } from '../../../lib/screenState.ts'
 import type { AddLinkInput, ArtifactsData, ArtifactsNotice, ArtifactsUi, CopiedLink } from '../types.ts'
 import type { ProposalAct } from '../blocks/ArtifactProposal.tsx'
@@ -49,7 +49,7 @@ export type ArtifactsScreenProps = {
   viewport: Viewport
   onNavigate?: ((page: string) => void) | undefined
   /** The shown nav pages in the owner's order (d-038, d-119); the default order without it, as the Figma states draw. */
-  navPages?: readonly NavPage[] | undefined
+  navPages?: readonly BarPage[] | undefined
   /** Reports what the owner changes: the chip, the search, the view and the open groups. */
   onUiChange?: ((change: Partial<ArtifactsUi>) => void) | undefined
   /** Copy link on an open artifact was pressed (D2, T2, M2), with the address its link opens. */
@@ -194,6 +194,7 @@ export function ArtifactsScreen({
                     // A page the tab bar does not show selects More: the phone opens Artifacts from More (d-105).
                     selected="artifacts"
                     pages={nav.tabs}
+                    more={nav.more.length > 0}
                     device={layout === 'tablet' ? 'tablet' : 'phone'}
                     inboxBadge={data.railBadge}
                     onSelect={(next) => {

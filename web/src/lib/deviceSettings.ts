@@ -12,9 +12,17 @@ import { z } from 'zod'
 /** The localStorage key of the settings; index.html's mode script reads only this key. */
 export const settingsKey = 'bridge/settings'
 
-/** The pages the rail, the tab bar and the More drawer can show, in the default order. Settings is not one. */
+/** The pages the rail, the tab bar and the More drawer can show, in the default order. */
 export const navPages = ['home', 'inbox', 'workspaces', 'projects', 'artifacts', 'toolkit'] as const
 export type NavPage = (typeof navPages)[number]
+
+/**
+ * The entries of the owner's bar order: the nav pages, then Settings (d-119). Settings can move into the tab bar
+ * but has no off switch: when it is not in the bar it is in More (and the rail's gear on the desktop), so it is
+ * never lost. Last by default, so the default bar is today's.
+ */
+export const barPages = [...navPages, 'settings'] as const
+export type BarPage = (typeof barPages)[number]
 
 export const modes = ['light', 'dark', 'system'] as const
 export type Mode = (typeof modes)[number]
@@ -26,7 +34,7 @@ export const chatModels = ['fable', 'opus', 'sonnet', 'haiku'] as const
 export const chatEfforts = ['low', 'medium', 'high', 'xhigh', 'max'] as const
 export const chatPermissions = ['default', 'auto', 'plan'] as const
 
-const navEntry = z.strictObject({ page: z.enum(navPages), visible: z.boolean() })
+const navEntry = z.strictObject({ page: z.enum(barPages), visible: z.boolean() })
 export type NavEntry = z.infer<typeof navEntry>
 
 const chatDefaults = z.strictObject({
@@ -43,11 +51,11 @@ export type DeviceSettings = {
   readonly chat: ChatDefaults
 }
 
-/** Today's look: Dark, default text, every page shown in the default order. */
+/** Today's look: Dark, default text, every page shown in the default order, Settings last. */
 export const defaultSettings: DeviceSettings = {
   mode: 'dark',
   textSize: 'default',
-  nav: navPages.map((page) => ({ page, visible: true })),
+  nav: barPages.map((page) => ({ page, visible: true })),
   chat: { model: 'opus', effort: 'high', permission: 'default' },
 }
 
@@ -55,20 +63,25 @@ export const defaultSettings: DeviceSettings = {
 export type NavProblem = 'unknownPage' | 'repeatedPage' | 'noVisiblePage' | 'currentPage'
 
 /**
- * The nav rules: each nav page at most once, and at least one shown page
- * besides Home, so the desktop rail (which has no Home) and every tab bar
- * keep a page item. Settings is not a nav page, so it is never hidden: it
- * is always reachable from More. A page the stored list lacks, such as a
- * page added after the save, is added at the end, shown.
+ * The nav rules: each entry at most once, and at least one shown page
+ * besides Home and Settings, so the desktop rail (which has no Home and
+ * draws Settings as its gear) and every tab bar keep a page item. Settings
+ * is always shown: a stored hidden Settings is shown again. An entry the
+ * stored list lacks, such as Settings in a save from before it was an
+ * entry, is added at the end, shown.
  */
 export function checkNav(nav: readonly NavEntry[]): Result<readonly NavEntry[], NavProblem> {
-  const seen = new Set<NavPage>()
+  const seen = new Set<BarPage>()
   for (const entry of nav) {
     if (seen.has(entry.page)) return err('repeatedPage')
     seen.add(entry.page)
   }
-  const full = [...nav, ...navPages.filter((page) => !seen.has(page)).map((page) => ({ page, visible: true }))]
-  if (!full.some((entry) => entry.visible && entry.page !== 'home')) return err('noVisiblePage')
+  const full = [
+    ...nav.map((entry) => (entry.page === 'settings' ? { page: entry.page, visible: true } : entry)),
+    ...barPages.filter((page) => !seen.has(page)).map((page) => ({ page, visible: true })),
+  ]
+  if (!full.some((entry) => entry.visible && entry.page !== 'home' && entry.page !== 'settings'))
+    return err('noVisiblePage')
   return ok(full)
 }
 
@@ -112,7 +125,7 @@ export function parseStoredSettings(text: string | null): DeviceSettings {
 }
 
 /** `nav` with `page` moved one place up (-1) or down (1); unchanged at either end. */
-export function moveNavPage(nav: readonly NavEntry[], page: NavPage, by: -1 | 1): readonly NavEntry[] {
+export function moveNavPage(nav: readonly NavEntry[], page: BarPage, by: -1 | 1): readonly NavEntry[] {
   const from = nav.findIndex((entry) => entry.page === page)
   const to = from + by
   const moved = nav[from]
@@ -135,32 +148,39 @@ export function setNavPageVisible(
   return checkNav(nav.map((entry) => (entry.page === page ? { page, visible } : entry)))
 }
 
-/** The shown pages in order. */
-export function visibleNavPages(nav: readonly NavEntry[]): readonly NavPage[] {
+/** The shown entries in order, Settings included. */
+export function visibleNavPages(nav: readonly NavEntry[]): readonly BarPage[] {
   return nav.filter((entry) => entry.visible).map((entry) => entry.page)
 }
 
-/** How many pages the tab bar shows before More (the brief of d-119). */
-const tabCount = { tablet: 5, phone: 4 } as const
+/** How many tabs the tab bar holds, More included when it shows (d-119: 5 on the phone, 6 on the iPad). */
+const barSlots = { tablet: 6, phone: 5 } as const
 
 export type NavLayout = {
-  /** The desktop rail's pages: the logo is Home, so it has no Home item. */
+  /** The desktop rail's pages: the logo is Home and the gear is Settings, so it has neither as an item. */
   readonly rail: readonly NavPage[]
-  /** The tab bar's pages before More on a tablet or phone. */
-  readonly tabs: readonly NavPage[]
-  /** The shown pages that do not fit in the tab bar; the More drawer lists them. */
-  readonly more: readonly NavPage[]
+  /** The tab bar's tabs on a tablet or phone, before More when More shows. */
+  readonly tabs: readonly BarPage[]
+  /** The shown entries that do not fit in the tab bar; the More drawer lists them. Empty: the bar has no More. */
+  readonly more: readonly BarPage[]
 }
 
-/** Which bar shows which of the shown pages `visible` on a device. */
-export function navLayout(visible: readonly NavPage[], device: 'desktop' | 'tablet' | 'phone'): NavLayout {
-  const count = device === 'desktop' ? tabCount.tablet : tabCount[device]
-  return {
-    rail: visible.filter((page) => page !== 'home'),
-    tabs: visible.slice(0, count),
-    more: visible.slice(count),
-  }
+/** The rail's pages: the shown nav pages but Home and Settings. */
+function railPages(visible: readonly BarPage[]): NavPage[] {
+  const pages: NavPage[] = []
+  for (const page of visible) if (page !== 'home' && page !== 'settings') pages.push(page)
+  return pages
 }
 
-/** The shown pages of the default settings: what every story and Figma frame draws. */
-export const defaultVisiblePages: readonly NavPage[] = visibleNavPages(defaultSettings.nav)
+/**
+ * Which bar shows which of the shown entries `visible` on a device. When they all fit in the tab bar's slots, the bar
+ * shows them all and no More; else the last slot is More and the rest go to the More drawer (d-119).
+ */
+export function navLayout(visible: readonly BarPage[], device: 'desktop' | 'tablet' | 'phone'): NavLayout {
+  const slots = device === 'desktop' ? barSlots.tablet : barSlots[device]
+  const fit = visible.length <= slots ? visible.length : slots - 1
+  return { rail: railPages(visible), tabs: visible.slice(0, fit), more: visible.slice(fit) }
+}
+
+/** The shown entries of the default settings: what every story and Figma frame draws. */
+export const defaultVisiblePages: readonly BarPage[] = visibleNavPages(defaultSettings.nav)

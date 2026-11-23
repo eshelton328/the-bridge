@@ -50,7 +50,12 @@ describe('settingsStore', () => {
   it('moves a nav page and refuses to hide the page on screen or the last shown page', () => {
     const { actions } = settingsStore.getState()
     actions.moveNavPage('toolkit', -1)
-    expect(settingsStore.getState().nav.at(-1)?.page).toBe('artifacts')
+    expect(
+      settingsStore
+        .getState()
+        .nav.slice(-3)
+        .map((e) => e.page),
+    ).toEqual(['toolkit', 'artifacts', 'settings'])
     expect(actions.setNavPageVisible('inbox', false, 'inbox')).toBe('currentPage')
     expect(settingsStore.getState().nav.find((e) => e.page === 'inbox')?.visible).toBe(true)
     for (const page of ['inbox', 'workspaces', 'projects', 'artifacts'] as const)
@@ -61,7 +66,7 @@ describe('settingsStore', () => {
         .getState()
         .nav.filter((e) => e.visible)
         .map((e) => e.page),
-    ).toEqual(['home', 'toolkit'])
+    ).toEqual(['home', 'toolkit', 'settings'])
   })
 
   it('goes back to the defaults on reset', () => {

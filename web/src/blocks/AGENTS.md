@@ -14,6 +14,9 @@ second page needs it.
   `settingsStore` and its screen picks each bar's pages with `navLayout`
   (`lib/deviceSettings.ts`). Without the settings the screens pass the
   default order, as the Figma frames draw it (`app/NavOrderRoute.test.tsx`).
+  The order holds Settings too (`BarPage`): the tab bar draws it as a tab
+  when it fits, and ends with More only when `navLayout`'s `more` is
+  not empty (`AppTabBar`'s `more`).
 - `AppRail` draws the Settings gear and `MoreDrawer` the Settings row only
   with `settings` (d-119). Each page entry passes `settingsEntry` to its
   screen, which passes it on; a Figma page's states pass none, as Figma

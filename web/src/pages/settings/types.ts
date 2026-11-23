@@ -3,9 +3,17 @@
 // Notifications switch's state (d-118) and the Inbox badge of the rail and
 // the tab bar.
 import { z } from 'zod'
-import { chatEfforts, chatModels, chatPermissions, modes, navPages, textSizes } from '../../lib/deviceSettings.ts'
+import {
+  barPages,
+  chatEfforts,
+  chatModels,
+  chatPermissions,
+  modes,
+  navPages,
+  textSizes,
+} from '../../lib/deviceSettings.ts'
 
-const NavEntry = z.object({ page: z.enum(navPages), visible: z.boolean() })
+const NavEntry = z.object({ page: z.enum(barPages), visible: z.boolean() })
 
 export const SettingsValues = z.object({
   mode: z.enum(modes),

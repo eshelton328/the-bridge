@@ -32,7 +32,6 @@ describe('parseStoredSettings', () => {
 
   it('keeps the default nav for a stored nav that breaks the rules', () => {
     const navs: unknown[] = [
-      [{ page: 'settings', visible: false }],
       [
         { page: 'inbox', visible: true },
         { page: 'inbox', visible: false },
@@ -52,7 +51,15 @@ describe('parseStoredSettings', () => {
         { page: 'inbox', visible: false },
       ],
     }).nav
-    expect(nav.map((e) => e.page)).toEqual(['toolkit', 'inbox', 'home', 'workspaces', 'projects', 'artifacts'])
+    expect(nav.map((e) => e.page)).toEqual([
+      'toolkit',
+      'inbox',
+      'home',
+      'workspaces',
+      'projects',
+      'artifacts',
+      'settings',
+    ])
     expect(nav.filter((e) => !e.visible).map((e) => e.page)).toEqual(['inbox'])
   })
 })
@@ -72,12 +79,13 @@ describe('the nav rules', () => {
     expect(checkNav(shown('toolkit')).ok).toBe(true)
   })
 
-  it('has no Settings page to hide: Settings stays reachable from More', () => {
-    const pages: readonly string[] = defaultSettings.nav.map((e) => e.page)
-    expect(pages).not.toContain('settings')
-    expect(parseSettings({ nav: [...defaultSettings.nav, { page: 'settings', visible: false }] }).nav).toEqual(
-      defaultSettings.nav,
-    )
+  it('has Settings last by default, always shown, and never counts it as the page besides Home', () => {
+    expect(defaultSettings.nav.at(-1)).toEqual({ page: 'settings', visible: true })
+    const stored = parseSettings({
+      nav: [{ page: 'settings', visible: false }, ...defaultSettings.nav.filter((e) => e.page !== 'settings')],
+    }).nav
+    expect(stored[0]).toEqual({ page: 'settings', visible: true })
+    expect(checkNav(shown('home', 'settings'))).toEqual({ ok: false, error: 'noVisiblePage' })
   })
 
   it('moves a page one place and leaves the ends as they are', () => {
@@ -89,9 +97,11 @@ describe('the nav rules', () => {
       'projects',
       'toolkit',
       'artifacts',
+      'settings',
     ])
+    expect(pages(moveNavPage(defaultSettings.nav, 'settings', -1)).slice(-2)).toEqual(['settings', 'toolkit'])
     expect(moveNavPage(defaultSettings.nav, 'home', -1)).toBe(defaultSettings.nav)
-    expect(moveNavPage(defaultSettings.nav, 'toolkit', 1)).toBe(defaultSettings.nav)
+    expect(moveNavPage(defaultSettings.nav, 'settings', 1)).toBe(defaultSettings.nav)
   })
 })
 
@@ -106,20 +116,36 @@ describe('navLayout', () => {
     ])
     expect(navLayout(defaultVisiblePages, 'tablet')).toMatchObject({
       tabs: ['home', 'inbox', 'workspaces', 'projects', 'artifacts'],
-      more: ['toolkit'],
+      more: ['toolkit', 'settings'],
     })
     expect(navLayout(defaultVisiblePages, 'phone')).toMatchObject({
       tabs: ['home', 'inbox', 'workspaces', 'projects'],
-      more: ['artifacts', 'toolkit'],
+      more: ['artifacts', 'toolkit', 'settings'],
+    })
+  })
+
+  it('draws every shown entry and no More when they all fit', () => {
+    expect(navLayout(['home', 'inbox', 'workspaces', 'projects', 'settings'], 'phone')).toEqual({
+      rail: ['inbox', 'workspaces', 'projects'],
+      tabs: ['home', 'inbox', 'workspaces', 'projects', 'settings'],
+      more: [],
+    })
+    expect(navLayout(['home', 'inbox', 'workspaces', 'projects', 'settings', 'artifacts'], 'tablet')).toMatchObject({
+      tabs: ['home', 'inbox', 'workspaces', 'projects', 'settings', 'artifacts'],
+      more: [],
+    })
+    expect(navLayout(['home', 'inbox', 'workspaces', 'projects', 'settings', 'artifacts'], 'phone')).toMatchObject({
+      tabs: ['home', 'inbox', 'workspaces', 'projects'],
+      more: ['settings', 'artifacts'],
     })
   })
 
   it('follows the owner order and leaves hidden pages out', () => {
-    const layout = navLayout(['toolkit', 'home', 'inbox', 'artifacts', 'projects'], 'phone')
+    const layout = navLayout(['toolkit', 'home', 'inbox', 'artifacts', 'projects', 'settings'], 'phone')
     expect(layout).toEqual({
       rail: ['toolkit', 'inbox', 'artifacts', 'projects'],
       tabs: ['toolkit', 'home', 'inbox', 'artifacts'],
-      more: ['projects'],
+      more: ['projects', 'settings'],
     })
   })
 })

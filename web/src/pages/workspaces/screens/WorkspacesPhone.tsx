@@ -87,7 +87,7 @@ import { modelText } from '../blocks/modelText.ts'
 import { type NewChatStarter, startOf } from '../blocks/newChatStart.ts'
 import type { PhoneText, WorkspaceEdits, WorkspacesData, WorkspacesUi } from '../types.ts'
 import type { ComposerAnswer } from '../blocks/useComposerActions.ts'
-import { defaultVisiblePages, type NavPage, navLayout } from '../../../lib/deviceSettings.ts'
+import { defaultVisiblePages, type BarPage, navLayout } from '../../../lib/deviceSettings.ts'
 
 export type WorkspacesPhoneProps = {
   /** Draws the Settings gear in the rail and the Settings row in the More drawer (d-119): the page entry passes it; a Figma state does not. */
@@ -101,7 +101,7 @@ export type WorkspacesPhoneProps = {
   ui: WorkspacesUi
   onNavigate?: ((page: string) => void) | undefined
   /** The shown nav pages in the owner's order (d-038, d-119); the default order without it, as the Figma states draw. */
-  navPages?: readonly NavPage[] | undefined
+  navPages?: readonly BarPage[] | undefined
   onUiChange: (change: Partial<WorkspacesUi>) => void
   /** The composer drafts by chat (draftBook.ts): a chat's composer starts from its draft and sets it as the owner types. */
   drafts: DraftBook
@@ -646,6 +646,7 @@ export function WorkspacesPhone({
           <AppTabBar
             selected="workspaces"
             pages={navLayout(navPages, device).tabs}
+            more={navLayout(navPages, device).more.length > 0}
             device={device}
             inboxBadge={data.railBadge}
             onSelect={(next) => {

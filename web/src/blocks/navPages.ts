@@ -12,7 +12,7 @@ import {
   WorkspacesIcon,
 } from '@eshelton328/component-library-1701'
 import type { ComponentType } from 'react'
-import type { NavPage } from '../lib/deviceSettings.ts'
+import type { BarPage, NavPage } from '../lib/deviceSettings.ts'
 
 export type NavPageItem = {
   readonly label: string
@@ -24,9 +24,9 @@ export type NavPageItem = {
 }
 
 /**
- * Settings (d-119): the rail's gear item before More and the More drawer's
- * row after the shown pages. It is not a nav page: the owner cannot hide or
- * move it, so it is always reachable.
+ * Settings (d-119): the rail's gear item before More, and an entry of the
+ * owner's bar order that the tab bar or the More drawer draws. The owner
+ * cannot hide it, so it is always reachable.
  */
 export const settingsItem: NavPageItem = {
   label: 'Settings',
@@ -52,3 +52,6 @@ export const navPageItems: Readonly<Record<NavPage, NavPageItem>> = {
     drawerIconLayer: 'icon/toolkit',
   },
 }
+
+/** What the tab bar and the More drawer draw for each entry of the bar order. */
+export const barPageItems: Readonly<Record<BarPage, NavPageItem>> = { ...navPageItems, settings: settingsItem }
