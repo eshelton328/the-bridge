@@ -158,4 +158,21 @@ describe('claude side runner', () => {
     const seen: unknown = JSON.parse(await readFile(join(dir, 'seen.json'), 'utf8'))
     expect(seen).not.toHaveProperty('codeMode')
   })
+
+  it('starts no process when the signal aborts while it reads the settings file', async () => {
+    await writeFile(join(dir, 'settings.json'), JSON.stringify({ env: { CLAUDE_CODE_EXPERIMENTAL_CODE_MODE: '1' } }))
+    const run = claudeSideRunner({
+      model: 'sonnet',
+      env: { PATH: '/usr/bin' },
+      log: memoryLogger().log,
+      settingsFile: join(dir, 'settings.json'),
+      command: [process.execPath, join(dir, 'fake.cjs'), join(dir, 'seen.json')],
+    })
+    const stop = new AbortController()
+    const answer = run({ session: 's', folder: dir, question: 'q', signal: stop.signal })[Symbol.asyncIterator]()
+    const first = answer.next()
+    stop.abort()
+    expect(await first).toEqual({ done: true, value: undefined })
+    await expect(readFile(join(dir, 'seen.json'), 'utf8')).rejects.toThrow()
+  })
 })

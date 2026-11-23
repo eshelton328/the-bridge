@@ -128,9 +128,13 @@ export function claudeSideRunner({
   const childEnv = sideEnv(env)
   const [bin, ...pre] = command
   return async function* run({ session, folder, question, signal }): AsyncGenerator<SideChunk> {
-    if (signal.aborted) return
+    // A function, as TypeScript keeps a narrowed `signal.aborted` across the await below.
+    const aborted = () => signal.aborted
+    if (aborted()) return
     // Read at each run, as the owner can turn Code Mode on or off between questions.
     const codeMode = settingsFile === undefined ? undefined : await readCodeMode(settingsFile)
+    // A stop during that read sends nothing: an abort before the listener below is there would not end the process.
+    if (aborted()) return
     const child = spawn(bin, [...pre, ...sideArgs(session, model)], {
       cwd: folder,
       env: codeMode === undefined ? childEnv : { ...childEnv, [codeModeKey]: codeMode },
