@@ -75,6 +75,7 @@ export function LibraryPhone({
             count={loading ? undefined : query === '' ? data.count : `${String(shown)} of ${String(data.count)}`}
             found={data.found}
             addLink={data.addLink}
+            disabled={loading}
             layout="phone"
             onAddLink={
               addLinkForm === undefined

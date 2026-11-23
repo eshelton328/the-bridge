@@ -23,9 +23,19 @@ export type LibraryHeaderProps = {
   /** The desktop puts the status in the header's row, a tablet under the header; a phone leaves it to the library. */
   layout?: Viewport | undefined
   onAddLink?: (() => void) | undefined
+  /** While the page loads: Add a link (the phone's plus) is drawn and off (R58). */
+  disabled?: boolean | undefined
 }
 
-export function LibraryHeader({ title, count, found, addLink, layout = 'desktop', onAddLink }: LibraryHeaderProps) {
+export function LibraryHeader({
+  title,
+  count,
+  found,
+  addLink,
+  layout = 'desktop',
+  onAddLink,
+  disabled = false,
+}: LibraryHeaderProps) {
   const desktop = layout === 'desktop'
   const phone = layout === 'phone'
   const header = (
@@ -42,13 +52,13 @@ export function LibraryHeader({ title, count, found, addLink, layout = 'desktop'
         {desktop ? <FoundStatus text={found} /> : null}
         {phone ? (
           <span data-figma="button · plus">
-            <Button size="lg" iconOnly aria-label={addLink} onClick={onAddLink}>
+            <Button size="lg" iconOnly aria-label={addLink} onClick={onAddLink} disabled={disabled}>
               <PlusIcon />
             </Button>
           </span>
         ) : (
           <span data-figma="button · Add a link">
-            <Button size={desktop ? 'md' : 'lg'} onClick={onAddLink}>
+            <Button size={desktop ? 'md' : 'lg'} onClick={onAddLink} disabled={disabled}>
               <PlusIcon />
               {addLink}
             </Button>

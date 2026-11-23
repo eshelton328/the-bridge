@@ -68,6 +68,7 @@ export function ArtifactsLibrary({
         count={loading ? undefined : ui.query.trim() === '' ? data.count : `${String(shown)} of ${String(data.count)}`}
         found={data.found}
         addLink={data.addLink}
+        disabled={loading}
         layout={layout}
         onAddLink={
           data.addLinkForm === undefined
