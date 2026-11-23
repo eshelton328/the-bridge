@@ -141,6 +141,14 @@ export async function savePushPreview(preview: boolean): Promise<boolean> {
 }
 
 /**
+ * At the app's start: saves this browser's subscription again with the preview choice, when push is on here. A page
+ * from before the choice saved it with no `preview` key, so the server sends it sw.js version 2's payload until then.
+ */
+export async function savePushPreviewAtStart(preview: boolean): Promise<void> {
+  if ((await readPushState()) === 'on') await savePushPreview(preview)
+}
+
+/**
  * Turns push off: ends this browser's subscription, then removes it from the server. A miss reading the subscription
  * ends nothing, so the switch stays on with `failed`, and the owner can try again.
  */

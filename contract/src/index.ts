@@ -112,6 +112,8 @@ export {
   maxPushSubscriptions,
   PushEvent,
   PushKeyResponse,
+  LegacyPushPayload,
+  PushMessage,
   PushPayload,
   PushSeenRequest,
   PushSubscriptionRequest,

@@ -1,4 +1,4 @@
-import { ChatId, MachineId, type PushPayload, type PushSubscriptionRequest } from '@bridge/contract'
+import { ChatId, MachineId, type PushMessage, type PushSubscriptionRequest } from '@bridge/contract'
 import { err, ok } from '@bridge/shared'
 import { describe, expect, it } from 'vitest'
 import { createFakeAgents } from '../adapters/fakeAgents.ts'
@@ -13,6 +13,7 @@ const sub = (n: number): StoredSubscription => ({
   endpoint: `https://web.push.apple.com/example-${String(n)}`,
   keys: { p256dh: 'p', auth: 'a' },
   savedAt: n,
+  preview: true,
 })
 
 function setup(
@@ -22,7 +23,7 @@ function setup(
   const logged = memoryLogger()
   let list = [...stored]
   let time = 1_000_000
-  const sent: { endpoint: string; payload: PushPayload }[] = []
+  const sent: { endpoint: string; payload: PushMessage }[] = []
   const store: PushStore = {
     keys: () => Promise.resolve(ok(keys)),
     subscriptions: () => Promise.resolve(ok(list)),
@@ -99,7 +100,7 @@ describe('the push notifier', () => {
     await t.notifier.refresh()
     t.agents.setStatus(chat, 'needsYou')
     await t.settle()
-    expect(t.sent.map((s) => [s.endpoint, s.payload.body])).toEqual([
+    expect(t.sent.map((s) => [s.endpoint, 'body' in s.payload ? s.payload.body : 'old'])).toEqual([
       [sub(1).endpoint, null],
       [sub(2).endpoint, 'Wants to run: pnpm'],
     ])
@@ -107,10 +108,21 @@ describe('the push notifier', () => {
     await only.notifier.refresh()
     only.agents.setStatus(chat, 'needsYou')
     await only.settle()
-    expect(only.sent.map((s) => s.payload.body)).toEqual([null])
+    expect(only.sent.map((s) => ('body' in s.payload ? s.payload.body : 'old'))).toEqual([null])
     expect(only.reads()).toBe(0)
     t.notifier.close()
     only.notifier.close()
+  })
+
+  it('sends the old payload of sw.js version 2 to a subscription saved with no preview key, with no transcript read', async () => {
+    const old: StoredSubscription = { endpoint: sub(1).endpoint, keys: sub(1).keys, savedAt: 1 }
+    const t = setup([old])
+    await t.notifier.refresh()
+    t.agents.setStatus(chat, 'needsYou')
+    await t.settle()
+    expect(t.sent.map((s) => s.payload)).toEqual([{ chat, name: 'bridge themes', event: 'needsYou' }])
+    expect(t.reads()).toBe(0)
+    t.notifier.close()
   })
 
   it('writes no preview line or workspace name into a log line, also when a send fails', async () => {

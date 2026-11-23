@@ -8,7 +8,14 @@
 // one line of what the chat did or waits on (pushPreview.ts). The chat's
 // transcript is read only when a stored subscription wants that line, and
 // the line never goes into a log.
-import { type ChatId, type ChatStatus, maxPushName, type PushEvent, PushPayload } from '@bridge/contract'
+import {
+  type ChatId,
+  type ChatStatus,
+  LegacyPushPayload,
+  maxPushName,
+  type PushEvent,
+  PushPayload,
+} from '@bridge/contract'
 import type { Logger } from '../logger.ts'
 import type { AgentPort, AgentSubscription } from './agentPort.ts'
 import type { PushSeen, PushSender, PushStore } from './push.ts'
@@ -71,15 +78,19 @@ export function createPushNotifier({ agents, store, sender, seen, log, retryMs =
       event,
       body: null,
     })
+    // A subscription with no `preview` key was saved by a page from before the choice, whose sw.js (version 2) takes
+    // only the old payload; the page saves it again at its next start, with the key.
+    const legacy = LegacyPushPayload.parse({ chat, name: plain.name, event })
     let body: string | null = null
-    if (subscriptions.value.some((s) => s.preview !== false)) {
+    if (subscriptions.value.some((s) => s.preview === true)) {
       const read = await agents.readTranscript(chat)
       body = read.ok && read.value !== null ? previewOf(event, read.value.entries) : null
     }
     const rich = body === null ? plain : PushPayload.parse({ ...plain, body })
     const gone = await Promise.all(
       subscriptions.value.map(async (subscription) => {
-        const sent = await sender.send(subscription, subscription.preview === false ? plain : rich, keys.value)
+        const payload = subscription.preview === undefined ? legacy : subscription.preview ? rich : plain
+        const sent = await sender.send(subscription, payload, keys.value)
         if (!sent.ok) log.warn('push failed', { event, code: sent.error.code })
         if (!sent.ok || sent.value !== 'gone') return false
         await store.remove(subscription.endpoint)

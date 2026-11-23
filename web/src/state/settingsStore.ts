@@ -143,6 +143,8 @@ export const useSettingsNav = (): readonly NavEntry[] => useSettingsStore((s) =>
 export const useSettingsChatDefaults = (): ChatDefaults => useSettingsStore((s) => s.chat)
 /** Whether a push to this browser shows a preview line. @public */
 export const useSettingsPushPreview = (): boolean => useSettingsStore((s) => s.pushPreview)
+/** The preview choice now, for the app's start (app/push/startPush.ts), which runs outside React. */
+export const readPushPreview = (): boolean => useSettingsStore.getState().pushPreview
 /** The settings actions; a stable reference. @public */
 export const useSettingsActions = (): SettingsState['actions'] => useSettingsStore((s) => s.actions)
 

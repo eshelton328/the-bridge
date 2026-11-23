@@ -61,3 +61,15 @@ export const PushPayload = z.strictObject({
     .nullable(),
 })
 export type PushPayload = z.infer<typeof PushPayload>
+
+/**
+ * The push of sw.js version 2: the chat, its name and the event only. The server sends it to a subscription saved
+ * with no `preview` key, as a page from before the preview choice saved it; the app saves its subscription again at
+ * its start, with the key, so the phone then gets the new payload.
+ */
+export const LegacyPushPayload = z.strictObject({ chat: ChatId, name: z.string().max(maxPushName), event: PushEvent })
+export type LegacyPushPayload = z.infer<typeof LegacyPushPayload>
+
+/** What the server sends: the new payload, or the old one to an old subscription. */
+export const PushMessage = z.union([PushPayload, LegacyPushPayload])
+export type PushMessage = z.infer<typeof PushMessage>

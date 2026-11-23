@@ -1,4 +1,4 @@
-import { ChatId, maxPushBody, maxPushName, PushPayload } from '@bridge/contract'
+import { ChatId, maxPushBody, maxPushName, PushMessage } from '@bridge/contract'
 import { describe, expect, it, vi } from 'vitest'
 
 // The service worker (public/sw.js, d-118), loaded as a module with a fake `self`: what each event does with the
@@ -110,6 +110,14 @@ describe('the service worker', () => {
     ])
   })
 
+  it('shows the old payload of sw.js version 2 with the chat name and the event line', async () => {
+    const worker = await load()
+    await dispatch(worker, 'push', pushOf(JSON.stringify({ chat: good.chat, name: 'writer', event: 'needsYou' })))
+    expect(worker.self.registration.showNotification.mock.calls).toEqual([
+      ['writer', { body: 'Needs you', tag: good.chat, data: { chat: good.chat } }],
+    ])
+  })
+
   it('shows the preview line as the body when the push has one', async () => {
     const worker = await load()
     await dispatch(worker, 'push', pushOf(JSON.stringify({ ...good, event: 'needsYou', body: 'Wants to run: pnpm' })))
@@ -143,10 +151,6 @@ describe('the service worker', () => {
     ['an unknown event', JSON.stringify({ ...good, event: 'started' })],
     ['an extra key', JSON.stringify({ ...good, url: 'https://evil.example/' })],
     ['a missing key', JSON.stringify({ chat: good.chat, name: good.name })],
-    [
-      'a push of the old shape, with no workspace or body',
-      JSON.stringify({ chat: good.chat, name: 'x', event: 'done' }),
-    ],
     ['an empty preview line', JSON.stringify({ ...good, body: '' })],
     ["a preview line over the contract's longest", JSON.stringify({ ...good, body: 'x'.repeat(maxPushBody + 1) })],
     ['a preview line that is not a string', JSON.stringify({ ...good, body: 7 })],
@@ -190,7 +194,7 @@ describe('the service worker', () => {
     }
   })
 
-  it("shows a payload when, and only when, the contract's PushPayload takes it", async () => {
+  it("shows a payload when, and only when, the contract's PushMessage takes it", async () => {
     const samples: unknown[] = [
       good,
       { ...good, event: 'needsYou' },
@@ -201,6 +205,8 @@ describe('the service worker', () => {
       { ...good, chat: 'mac-mini/../x' },
       { ...good, extra: 1 },
       { chat: good.chat, name: good.name },
+      { chat: good.chat, name: good.name, event: 'done' },
+      { chat: good.chat, name: good.name, event: 'done', body: null },
       { ...good, name: 7 },
       { ...good, body: 'Merged.' },
       { ...good, body: '😀'.repeat(maxPushBody) },
@@ -215,7 +221,7 @@ describe('the service worker', () => {
       const worker = await load()
       await dispatch(worker, 'push', pushOf(JSON.stringify(payload)))
       const shown = worker.self.registration.showNotification.mock.calls.length === 1
-      expect([payload, shown]).toEqual([payload, PushPayload.safeParse(payload).success])
+      expect([payload, shown]).toEqual([payload, PushMessage.safeParse(payload).success])
     }
   })
 

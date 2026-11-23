@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest'
 import {
   maxPushBody,
   maxPushName,
+  LegacyPushPayload,
   PushKeyResponse,
+  PushMessage,
   PushPayload,
   PushSeenRequest,
   PushSubscriptionRequest,
@@ -52,6 +54,14 @@ describe('the push contract', () => {
     expect(PushPayload.safeParse({ ...payload, body: '' }).success).toBe(false)
     expect(PushPayload.safeParse({ chat: 'test-mac/c1', name: 'writer', event: 'done' }).success).toBe(false)
     expect(PushSeenRequest.safeParse({ at: 1 }).success).toBe(false)
+  })
+
+  it('keeps the old payload of sw.js version 2 for an old subscription, and no other shape', () => {
+    const old = { chat: 'test-mac/c1', name: 'writer', event: 'done' }
+    expect(LegacyPushPayload.safeParse(old).success).toBe(true)
+    expect(PushMessage.safeParse(old).success).toBe(true)
+    expect(PushMessage.safeParse(payload).success).toBe(true)
+    expect(PushMessage.safeParse({ ...old, body: null }).success).toBe(false)
   })
 
   it('counts the preview line in code points, so an emoji is one of its 140', () => {

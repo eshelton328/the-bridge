@@ -6,6 +6,9 @@ calls `startPush()` only in the real app: never in a test (Vitest's
 context, in a build that reads the live server.
 
 - `startPush.ts` registers `/sw.js` (`web/public/sw.js`) with scope `/`,
+  saves the push subscription again with the "Show message preview"
+  choice when push is on (so one from before the choice leaves sw.js
+  version 2's payload, `lib/pushSwitch.test.ts`),
   listens for its open-chat messages and starts the "seen" beat. A
   registration that fails goes to `report()` as its error's name only.
 - `seenBeat.ts` sends `POST /api/push/seen` when the page shows and every

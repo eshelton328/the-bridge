@@ -6,10 +6,11 @@
 // fetch handler and no cache, so every request goes to the network as before.
 //
 // A push holds JSON text {chat, name, workspace, event, body} (the
-// contract's PushPayload): the title is "<chat> · <workspace>", the body the
+// contract's PushPayload), or the old {chat, name, event} that the server
+// sends to a subscription from before the preview choice: the title is "<chat> · <workspace>", the body the
 // server's one-line preview, or the event's line when it sends none (the
 // owner turned "Show message preview" off, or the chat has no text). A push
-// that is not that shape shows nothing. A new push of a chat closes the one
+// that is not one of those shapes shows nothing. A new push of a chat closes the one
 // it shows before (the same tag), so each chat has one. A tap
 // builds the chat's URL only from this worker's origin, the Workspaces route
 // and the chat ID, checked again and URL-encoded; never a URL or path from
@@ -32,7 +33,7 @@ const isChatId = (value) => typeof value === 'string' && chatIdShape.test(value)
 
 const codePoints = (text) => Array.from(text).length
 
-/** The push's {chat, name, workspace, event, body}, or null when it is not exactly that shape. */
+/** The push's {chat, name, workspace, event, body}, or null when it is not exactly that shape or the old one. */
 function payloadOf(data) {
   if (data === null || data === undefined) return null
   let parsed
@@ -43,8 +44,12 @@ function payloadOf(data) {
   }
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) return null
   const keys = Object.keys(parsed).sort().join(',')
-  if (keys !== 'body,chat,event,name,workspace') return null
-  const { chat, name, workspace, event, body } = parsed
+  // The old payload (sw.js version 2's) has no workspace and no line.
+  const old = keys === 'chat,event,name'
+  if (!old && keys !== 'body,chat,event,name,workspace') return null
+  const { chat, name, event } = parsed
+  const workspace = old ? '' : parsed.workspace
+  const body = old ? null : parsed.body
   if (!isChatId(chat)) return null
   if (typeof name !== 'string' || codePoints(name) > maxName) return null
   if (typeof workspace !== 'string' || codePoints(workspace) > maxName) return null
