@@ -129,6 +129,22 @@ async function insideRoot(root: string | undefined, folder: string | undefined):
   }
 }
 /** herdr's reply to a move: whether the pane moved, and why not (`same_tab`, `zoomed_tab`). */
+/** Moves a map's value from one key to another. */
+function moveKey<V>(map: Map<string, V>, from: string, to: string): void {
+  const kept = map.get(from)
+  if (kept === undefined) return
+  map.delete(from)
+  map.set(to, kept)
+}
+
+/** A move to another workspace: herdr names the pane's terminal after the move (probe in a test herdr session, 2026-11-23). */
+const WorkspaceMoveReply = z.object({
+  move_result: z.object({
+    changed: z.boolean(),
+    pane: z.object({ pane_id: z.string(), terminal_id: LocalIdPart }).optional(),
+    closed_workspace_id: z.string().nullable().optional(),
+  }),
+})
 const MoveReply = z.object({
   move_result: z.object({ changed: z.boolean(), reason: z.string().nullable().optional() }),
 })
@@ -458,6 +474,8 @@ export function createHerdrAgents({
   const effortKey = (pane: string, path: string) => JSON.stringify([pane, path])
   /** The model of each pane and session file that `restartModel` started, kept as an effort is: the restart writes no turn. */
   const setModels = new Map<string, { readonly model: ModelAlias; readonly mtimeMs: number }>()
+  /** The transcript watches, each told the chat and its new herdr pane after a move. */
+  const moveTellers = new Set<(chat: ChatId, pane: string) => void>()
   /** The model kept for a pane's session file, while the file has not changed since. */
   const keptModel = async (pane: string, path: string): Promise<ModelAlias | undefined> => {
     const set = setModels.get(effortKey(pane, path))
@@ -669,12 +687,35 @@ export function createHerdrAgents({
    * The herdr pane of any chat, a shell too, with its tab and its status (a shell is `idle`); null for no such
    * chat. The pane ID stays here (d-110).
    */
+  /** A pane that the coordinator's chat holds: its chat's herdr name, its label or its title (Claude's session name). */
+  const guardedPane = (
+    pane: { label?: string | null | undefined; terminal_title_stripped?: string | null | undefined },
+    name?: string | null,
+  ) => [name, pane.label, pane.terminal_title_stripped].some((n) => typeof n === 'string' && guardedAgents.includes(n))
+  /**
+   * Whether a pane's shell or foreground process is the server or above it; a walk that fails proves nothing, so
+   * it counts as true.
+   */
+  const runsServer = async (panes: readonly string[]): Promise<Result<boolean, AgentPortError>> => {
+    const guarded = await serverPids()
+    if (guarded === undefined) return ok(true)
+    for (const pane of panes) {
+      const info = await call('pane.process_info', ProcessInfo, { pane_id: pane })
+      if (!info.ok) return info
+      const { shell_pid: shell, foreground_processes: foreground } = info.value.process_info
+      if ([shell, ...foreground.map((f) => f.pid)].some((pid) => typeof pid === 'number' && guarded.has(pid)))
+        return ok(true)
+    }
+    return ok(false)
+  }
+
   const paneOf = async (
     chat: ChatId,
   ): Promise<
     Result<
       {
         pane: string
+        terminal: string | undefined
         tab: string | undefined
         workspace: string | undefined
         cwd: string | undefined
@@ -698,6 +739,7 @@ export function createHerdrAgents({
     const listed = panes.value.panes.find((p) => p.pane_id === pane)
     return ok({
       pane,
+      terminal: listed?.terminal_id,
       tab: listed?.tab_id,
       workspace: listed?.workspace_id,
       cwd: listed?.cwd ?? undefined,
@@ -780,6 +822,17 @@ export function createHerdrAgents({
    * itself. A stop clears the box only when it holds that prompt.
    */
   const lastSent = new Map<string, string>()
+  /** Moves what the adapter keeps for a herdr pane to the pane's new ID, as a move to another workspace gives one. */
+  const repane = (from: string, to: string) => {
+    moveKey(stoppedAt, from, to)
+    moveKey(lastSent, from, to)
+    // An effort or model key starts with its pane: the JSON of [pane, path].
+    const head = (pane: string) => JSON.stringify([pane]).slice(0, -1)
+    const renamed = (key: string) => head(to) + key.slice(head(from).length)
+    for (const key of [...setEfforts.keys()])
+      if (key.startsWith(`${head(from)},`)) moveKey(setEfforts, key, renamed(key))
+    for (const key of [...setModels.keys()]) if (key.startsWith(`${head(from)},`)) moveKey(setModels, key, renamed(key))
+  }
 
   /** The screen of a pane with its colours; it never leaves the adapter. */
   const screenOf = async (pane: string): Promise<Result<string, AgentPortError>> => {
@@ -1319,6 +1372,59 @@ export function createHerdrAgents({
       if (reason === 'same_tab') return ok('sameTab')
       return ok(reason === 'zoomed_tab' ? 'zoomedTab' : 'done')
     },
+    async moveToWorkspace(chat, workspace) {
+      const { machine: on, local } = splitId(workspace)
+      if (on !== machine) return ok('notFound')
+      // herdr also takes a workspace's number ("1") as its ID, so only a listed ID is a target.
+      const [listed, found] = await Promise.all([call('workspace.list', WorkspaceList), paneOf(chat)])
+      if (!listed.ok) return listed
+      if (!found.ok) return found
+      if (found.value === null || !listed.value.workspaces.some((w) => w.workspace_id === local)) return ok('notFound')
+      const { pane, terminal, workspace: from, status } = found.value
+      if (from === local) return ok('sameWorkspace')
+      if (status === 'needsYou') return ok('needsYou')
+      // As for a close: a state herdr cannot tell may work.
+      if (status !== 'idle' && status !== 'done') return ok('working')
+      // A workspace that holds the coordinator's chat or the server keeps all its panes (the close guard's rule).
+      const [agents, panes] = await Promise.all([call('agent.list', AgentList), call('pane.list', PaneList)])
+      if (!agents.ok) return agents
+      if (!panes.ok) return panes
+      const names = new Map(agents.value.agents.filter(isChat).map((a) => [a.pane_id, a.name]))
+      const source = panes.value.panes.filter((p) => p.workspace_id === from)
+      if (source.some((p) => guardedPane(p, names.get(p.pane_id)))) return ok('holdsServer')
+      const runs = await runsServer(source.map((p) => p.pane_id))
+      if (!runs.ok) return runs
+      if (runs.value) return ok('holdsServer')
+      // Another client can start a turn or move the pane during those reads, so the chat is read again just before.
+      const last = await paneOf(chat)
+      if (!last.ok) return last
+      if (last.value === null) return ok('notFound')
+      if (last.value.status === 'needsYou') return ok('needsYou')
+      // A pane that moved meanwhile counts as busy: the page reads the list again and can try again.
+      const changed = last.value.pane !== pane || last.value.workspace !== from
+      if (changed || (last.value.status !== 'idle' && last.value.status !== 'done')) return ok('working')
+      // A new tab of the target, so no pane there changes its size; a workspace whose last pane leaves closes.
+      const written = await paneWrite('pane.move', WorkspaceMoveReply, {
+        pane_id: pane,
+        destination: { type: 'new_tab', workspace_id: local },
+        focus: false,
+      })
+      if (!written.ok) return written
+      if (written.value === 'notFound') return ok('notFound')
+      const before = terminal ?? written.value.move_result.pane?.terminal_id
+      const after = written.value.move_result.pane?.terminal_id ?? terminal
+      if (before === undefined || after === undefined) return err(badReply('herdr pane.move: no terminal'))
+      // herdr gives the pane a new ID: what the adapter keeps by pane, and each status watch of the chat, follow it.
+      const next = written.value.move_result.pane?.pane_id
+      if (next !== undefined && next !== pane) {
+        repane(pane, next)
+        for (const tellMoved of moveTellers) tellMoved(chat, next)
+      }
+      for (const tellList of listTellers) tellList()
+      // herdr closes a workspace whose last pane leaves, and names it in the reply.
+      const sourceClosed = from !== undefined && written.value.move_result.closed_workspace_id === from
+      return ok({ from: paneIdOf(before), to: paneIdOf(after), sourceClosed })
+    },
     async renameWorkspace(workspace, label) {
       const { machine: on, local } = splitId(workspace)
       if (on !== machine) return ok('notFound')
@@ -1357,11 +1463,7 @@ export function createHerdrAgents({
           return chat === undefined ? 'idle' : statusOf(chat.agent_status)
         })
         // A herdr name clears when its agent ends, so the pane's label and title (Claude's session name) count too.
-        const guardedName = inWorkspace.some((p) =>
-          [chats.get(p.pane_id)?.name, p.label, p.terminal_title_stripped].some(
-            (name) => typeof name === 'string' && guardedAgents.includes(name),
-          ),
-        )
+        const guardedName = inWorkspace.some((p) => guardedPane(p, chats.get(p.pane_id)?.name))
         return ok({ own, statuses, guardedName })
       }
       const first = await snapshot()
@@ -1369,16 +1471,10 @@ export function createHerdrAgents({
       if (first.value.own.length !== count) return ok('panesChanged')
       // The coordinator's chat never closes, wherever the server runs.
       if (first.value.guardedName) return ok('holdsServer')
-      // Nor a pane whose shell or foreground process is the server or above it; a walk that fails proves nothing.
-      const guarded = await serverPids()
-      if (guarded === undefined) return ok('holdsServer')
-      for (const pane of first.value.own) {
-        const info = await call('pane.process_info', ProcessInfo, { pane_id: pane })
-        if (!info.ok) return info
-        const { shell_pid: shell, foreground_processes: foreground } = info.value.process_info
-        if ([shell, ...foreground.map((f) => f.pid)].some((pid) => typeof pid === 'number' && guarded.has(pid)))
-          return ok('holdsServer')
-      }
+      // Nor a pane whose shell or foreground process is the server or above it.
+      const runs = await runsServer(first.value.own)
+      if (!runs.ok) return runs
+      if (runs.value) return ok('holdsServer')
       // Another client can add a pane or start a turn during those reads, so the lists are read again just before.
       const last = await snapshot()
       if (!last.ok) return last
@@ -1515,6 +1611,7 @@ export function createHerdrAgents({
       let stream: HerdrStream | undefined
       const close = () => {
         over = true
+        moveTellers.delete(onMoved)
         watcher?.close()
         watcher = undefined
         stream?.close()
@@ -1574,6 +1671,42 @@ export function createHerdrAgents({
         // What the watch waits for can come between the check and the watch.
         if (existsSync(awaited)) attach(true)
       }
+      /** A tool stops running when its chat stops working, which can come with no write to the session file. */
+      const statusWatch = (pane: string) =>
+        new Promise<void>((started) => {
+          const mine = herdrSubscribe(socket, [{ type: 'pane.agent_status_changed', pane_id: pane }], {
+            onStart: started,
+            onEvent: (line) => {
+              if (!StatusChanged.safeParse(line).success) return
+              attach(true)
+              tell()
+            },
+            onEnd: (failure) => {
+              started()
+              // A stream that a move replaced ends with nothing to say.
+              if (stream !== mine) return
+              // The pane closed: its chat leaves the list, and the transcript stream ends there as gone.
+              if (paneGone(failure)) stream = undefined
+              else end(portErrorOf(failure))
+            },
+          })
+          stream = mine
+        })
+      /** The pane that the last move gave the chat, and whether the status stream was started yet. */
+      let movedTo: string | undefined
+      let watching = false
+      // A move gives the chat's pane a new herdr ID, and its status stream then follows the new one. A move while the
+      // watch starts leaves it to the start; a stream that ended first (the old ID is gone) starts again.
+      const onMoved = (moved: ChatId, pane: string) => {
+        if (over || moved !== chat) return
+        movedTo = pane
+        if (!watching) return
+        const old = stream
+        stream = undefined
+        old?.close()
+        void statusWatch(pane)
+      }
+      moveTellers.add(onMoved)
       const ready = locate(chat).then(async (located) => {
         if (over) return
         if (!located.ok) {
@@ -1586,23 +1719,8 @@ export function createHerdrAgents({
         session = path
         attach(false)
         if (pane === undefined) return
-        // A tool stops running when its chat stops working, which can come with no write to the session file.
-        await new Promise<void>((started) => {
-          stream = herdrSubscribe(socket, [{ type: 'pane.agent_status_changed', pane_id: pane }], {
-            onStart: started,
-            onEvent: (line) => {
-              if (!StatusChanged.safeParse(line).success) return
-              attach(true)
-              tell()
-            },
-            onEnd: (failure) => {
-              started()
-              // The pane closed: its chat leaves the list, and the transcript stream ends there as gone.
-              if (paneGone(failure)) stream = undefined
-              else end(portErrorOf(failure))
-            },
-          })
-        })
+        watching = true
+        await statusWatch(movedTo ?? pane)
       })
       return { ready, close }
     },

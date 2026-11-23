@@ -67,14 +67,19 @@ export type ChatOrderRequest = z.infer<typeof ChatOrderRequest>
 /**
  * The body of `POST /api/chats/:chat/workspace`: move the chat's pane to a new tab of another workspace. A chat that
  * works or waits for the owner is 409 `chat-not-ready`, so no turn breaks, and its own workspace `sameWorkspace`.
+ * A chat of a workspace that holds the server or the coordinator's chat is `holdsServer`.
  */
 export const MoveToWorkspaceRequest = z.strictObject({ workspace: WorkspaceId })
 export type MoveToWorkspaceRequest = z.infer<typeof MoveToWorkspaceRequest>
 
-/** The answer to a move (200): herdr gives the pane a new ID; the chat ID stays, and the page follows it. */
+/**
+ * The answer to a move (200): herdr gives the pane a new ID; the chat ID stays, and the page follows it.
+ * `sourceClosed` is true when the chat was the last pane of its workspace, which herdr then closes.
+ */
 export const MoveToWorkspaceResponse = z.strictObject({
   chat: ChatId,
   pane: z.strictObject({ from: PaneId, to: PaneId }),
+  sourceClosed: z.boolean(),
 })
 export type MoveToWorkspaceResponse = z.infer<typeof MoveToWorkspaceResponse>
 

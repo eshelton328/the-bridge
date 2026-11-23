@@ -34,7 +34,8 @@ export const ErrorKind = z.discriminatedUnion('kind', [
    * the chat's command line has a token the server does not know (`launchArgsUnknown`) or skips a permission
    * (`skipsPermissions`), the chat runs in another folder than its pane (`folderChanged`), the chat already has
    * that model (`sameModel`), or a restart of the chat is in progress (`restarting`, for any input to it), or a
-   * move goes to the chat's own workspace (`sameWorkspace`), or a fork has no session to copy (`noSession`).
+   * move goes to the chat's own workspace (`sameWorkspace`) or leaves a workspace that holds the server or the
+   * coordinator's chat (`holdsServer`), or a fork has no session to copy (`noSession`).
    */
   z.object({
     kind: z.literal('chat-not-ready'),
@@ -64,6 +65,7 @@ export const ErrorKind = z.discriminatedUnion('kind', [
       'restarting',
       'sameWorkspace',
       'noSession',
+      'holdsServer',
     ]),
     ...common,
   }),

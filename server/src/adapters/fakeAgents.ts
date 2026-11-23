@@ -552,6 +552,25 @@ export function createFakeAgents(
       tell({ type: 'workspacesChanged' })
       return Promise.resolve(ok('done'))
     },
+    moveToWorkspace(chat, workspace) {
+      if ('error' in answer) return Promise.resolve(err(answer.error))
+      const source = workspaceOf(chat)
+      const target = (data ?? []).find((w) => w.id === workspace)
+      const moved = source?.chats.find((c) => c.id === chat)
+      if (source === undefined || target === undefined || moved === undefined) return Promise.resolve(ok('notFound'))
+      if (source === target) return Promise.resolve(ok('sameWorkspace'))
+      if (moved.status === 'needsYou') return Promise.resolve(ok('needsYou'))
+      if (moved.kind !== 'shell' && moved.status !== 'idle' && moved.status !== 'done')
+        return Promise.resolve(ok('working'))
+      if (serverHeld.has(source.id)) return Promise.resolve(ok('holdsServer'))
+      source.chats.splice(source.chats.indexOf(moved), 1)
+      target.chats.push(moved)
+      // As herdr does, a workspace whose last pane leaves closes.
+      const sourceClosed = source.chats.length === 0
+      if (sourceClosed) data?.splice(data.indexOf(source), 1)
+      tell({ type: 'workspacesChanged' })
+      return Promise.resolve(ok({ from: moved.pane, to: moved.pane, sourceClosed }))
+    },
     closeWorkspace(workspace, count) {
       if ('error' in answer) return Promise.resolve(err(answer.error))
       const found = (data ?? []).find((w) => w.id === workspace)

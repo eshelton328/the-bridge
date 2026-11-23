@@ -94,7 +94,16 @@ Thin Hono sub-apps, one file for each area, named after the area
   workspace, beside the `beside` chat there: 204, 409 `sameTab` for
   its own tab, 409 `zoomedTab` for a zoomed tab, and 404 for a tab of
   another workspace or a `beside` chat of another tab. The page reads the layout again on
-  the `layout.changed` event.
+  the `layout.changed` event. `POST /api/chats/:chat/workspace` (`{
+  workspace }`) puts the chat's pane in a new tab of another workspace:
+  200 with the chat ID and the pane before and after (the same ID, from
+  the pane's terminal) and `sourceClosed`, true when the chat was the
+  last pane of its workspace, which then closes. 404 is for an unknown
+  chat or workspace, 409 `sameWorkspace` for its own workspace, 409
+  `working` or `needsYou` for a chat that works, has a state herdr
+  cannot tell, or waits for the owner, and 409 `holdsServer` for a
+  chat of a workspace that a close refuses as `holdsServer`
+  (`chats.test.ts`).
 - `POST /api/workspaces/:workspace/rename` and `POST
   /api/chats/:chat/rename` (`{ name }`, R41, R42) rename a workspace or
   a chat: 204, 404 for an unknown one, 400 for a name the contract does

@@ -303,6 +303,7 @@ const resumedTwice = {
   'agent.send_keys': results['agent.send_keys'],
   'agent.wait': results['agent.wait'],
   'pane.focus': results['pane.focus'],
+  'pane.move': results['pane.move'],
   'pane.read': paneRead('w17:p2', claudeScreen('')),
   'pane.list': {
     type: 'pane_list',
@@ -473,6 +474,45 @@ describe('herdr agents: input to a chat', () => {
       }
     })
 
+    it('keeps the set effort of a chat that moved to another workspace, under its new pane (#435 review)', async () => {
+      const marked = (level: string) => claudeScreen('').replace(/─{8,}/, (line) => `${line} ◐ ${level} · /effort ─`)
+      const agents = port()
+      const effortIn = async () => {
+        const listed = await agents.listWorkspaces()
+        return listed.ok ? listed.value.flatMap((w) => w.chats).find((c) => c.id === chat)?.effort : undefined
+      }
+      withStatus('idle')
+      socket.set('pane.read', paneRead('w17:p1', marked('high')))
+      socket.onRequest((method) => {
+        if (method === 'agent.send_keys') socket.set('pane.read', paneRead('w17:p1', marked('xhigh')))
+      })
+      try {
+        expect(await agents.setEffort(chat, 'xhigh')).toEqual({ ok: true, value: 'set' })
+        socket.once('pane.move', {
+          type: 'pane_move',
+          move_result: { changed: true, pane: { pane_id: 'w18:p3', terminal_id: 'term_1', workspace_id: 'w18' } },
+        })
+        const moved = await agents.moveToWorkspace(chat, WorkspaceId.parse(`${machine}/w18`))
+        expect(moved.ok && typeof moved.value === 'object').toBe(true)
+        // herdr lists the pane under its new ID from now on.
+        const at = <T extends { pane_id: string }>(p: T): T =>
+          p.pane_id === 'w17:p1' ? { ...p, pane_id: 'w18:p3', workspace_id: 'w18' } : p
+        socket.set('agent.list', {
+          ...results['agent.list'],
+          agents: results['agent.list'].agents.map((a) =>
+            at({ ...a, agent_status: a.pane_id === 'w17:p1' ? 'idle' : a.agent_status }),
+          ),
+        })
+        socket.set('pane.list', { ...results['pane.list'], panes: results['pane.list'].panes.map(at) })
+        expect(await effortIn()).toBe('xhigh')
+      } finally {
+        socket.onRequest(undefined)
+        socket.set('pane.read', undefined)
+        socket.set('agent.list', undefined)
+        socket.set('pane.list', undefined)
+      }
+    })
+
     it('lists the set effort only for its own pane when two panes resume one session', async () => {
       const marked = (level: string) => claudeScreen('').replace(/─{8,}/, (line) => `${line} ◐ ${level} · /effort ─`)
       const agents = port()
@@ -635,6 +675,78 @@ describe('herdr agents: input to a chat', () => {
       socket.set('pane.move', results['pane.move'])
     })
 
+    it('moves a pane to a new tab of another listed workspace, and none that works, waits or is there', async () => {
+      const w17 = WorkspaceId.parse(`${machine}/w17`)
+      const w18 = WorkspaceId.parse(`${machine}/w18`)
+      const before = sent('pane.move').length
+      expect(await port().moveToWorkspace(codex, w17)).toEqual({ ok: true, value: 'sameWorkspace' })
+      expect(await port().moveToWorkspace(chat, w18)).toEqual({ ok: true, value: 'needsYou' })
+      socket.once('agent.list', {
+        ...results['agent.list'],
+        agents: results['agent.list'].agents.map((a) =>
+          a.pane_id === 'w17:p2' ? { ...a, agent_status: 'working' } : a,
+        ),
+      })
+      expect(await port().moveToWorkspace(codex, w18)).toEqual({ ok: true, value: 'working' })
+      // herdr takes a workspace's number as its ID too; only a listed ID is a target.
+      expect(await port().moveToWorkspace(codex, WorkspaceId.parse(`${machine}/2`))).toEqual({
+        ok: true,
+        value: 'notFound',
+      })
+      expect(await port().moveToWorkspace(codex, WorkspaceId.parse('another-mac/w18'))).toEqual({
+        ok: true,
+        value: 'notFound',
+      })
+      expect(sent('pane.move')).toHaveLength(before)
+      socket.once('pane.move', {
+        type: 'pane_move',
+        move_result: {
+          changed: true,
+          closed_workspace_id: 'w17',
+          pane: { pane_id: 'w18:p3', terminal_id: 'term_2', workspace_id: 'w18' },
+        },
+      })
+      const moved = await port().moveToWorkspace(codex, w18)
+      if (!moved.ok || typeof moved.value !== 'object') throw new Error('the pane did not move')
+      expect(moved.value.sourceClosed).toBe(true)
+      expect(moved.value.from).toBe(moved.value.to)
+      const listed = await port().listWorkspaces()
+      const pane = listed.ok ? listed.value.flatMap((w) => w.chats).find((c) => c.id === codex)?.pane : undefined
+      expect(moved.value.from).toBe(pane)
+      expect(sent('pane.move').at(-1)).toEqual({
+        pane_id: 'w17:p2',
+        destination: { type: 'new_tab', workspace_id: 'w18' },
+        focus: false,
+      })
+    })
+
+    it('moves no pane whose chat starts a turn during the checks (#435 review)', async () => {
+      let lists = 0
+      socket.onRequest((method) => {
+        if (method !== 'agent.list') return
+        lists += 1
+        // The chat starts to work after the first reads, before the last one.
+        if (lists === 2)
+          socket.set('agent.list', {
+            ...results['agent.list'],
+            agents: results['agent.list'].agents.map((a) =>
+              a.pane_id === 'w17:p2' ? { ...a, agent_status: 'working' } : a,
+            ),
+          })
+      })
+      const before = sent('pane.move').length
+      try {
+        expect(await port().moveToWorkspace(codex, WorkspaceId.parse(`${machine}/w18`))).toEqual({
+          ok: true,
+          value: 'working',
+        })
+        expect(sent('pane.move')).toHaveLength(before)
+      } finally {
+        socket.onRequest(undefined)
+        socket.set('agent.list', undefined)
+      }
+    })
+
     it("renames a workspace and a chat's pane, and lists the pane's label as the chat's title", async () => {
       expect(await port().renameWorkspace(WorkspaceId.parse(`${machine}/w17`), 'theme explorations')).toEqual({
         ok: true,
@@ -720,6 +832,19 @@ describe('herdr agents: input to a chat', () => {
         { ...panes[0], label: 'bridge-coord' },
       ]) {
         socket.set('agent.list', { type: 'agent_list', agents: unnamed })
+        socket.set('pane.list', { type: 'pane_list', panes: [pane, ...panes.slice(1)] })
+        const closed = await coord.closeWorkspace(w17, 2)
+        socket.set('agent.list', undefined)
+        socket.set('pane.list', undefined)
+        expect(closed).toEqual({ ok: true, value: 'holdsServer' })
+      }
+      // The app renames the coordinator's label: its terminal title, or its herdr name, still guards it.
+      const agentsNow = results['agent.list'].agents
+      for (const [agents, pane] of [
+        [unnamed, { ...panes[0], label: 'release notes', terminal_title_stripped: 'bridge-coord' }],
+        [agentsNow, { ...panes[0], label: 'release notes', terminal_title_stripped: 'release notes' }],
+      ] as const) {
+        socket.set('agent.list', { type: 'agent_list', agents })
         socket.set('pane.list', { type: 'pane_list', panes: [pane, ...panes.slice(1)] })
         const closed = await coord.closeWorkspace(w17, 2)
         socket.set('agent.list', undefined)
@@ -1887,6 +2012,68 @@ describe('herdr adapter transcripts', () => {
     watch.close()
     await fake.close()
     expect(changes).toBeGreaterThan(0)
+  })
+
+  it("moves a transcript watch's status stream to the chat's new pane after a move (#435 review)", async () => {
+    const fake = await startFakeHerdrSocket(
+      withAgent({
+        agent_status: 'idle',
+        agent_session: { agent: 'claude', kind: 'id', source: 'herdr:claude', value: 'session-t' },
+      }),
+    )
+    const adapter = createHerdrAgents({ socket: fake.path, machine, log, claudeProjects: projects, home })
+    const ends: string[] = []
+    const watch = adapter.watchTranscript(
+      ChatId.parse('test-mac/session-t'),
+      () => undefined,
+      (error) => ends.push(error.reason),
+    )
+    await watch.ready
+    const panesWatched = () => JSON.stringify(fake.streams())
+    expect(panesWatched()).toContain('w17:p1')
+    fake.once('pane.move', {
+      type: 'pane_move',
+      move_result: { changed: true, pane: { pane_id: 'w18:p3', terminal_id: 'term_1', workspace_id: 'w18' } },
+    })
+    const moved = await adapter.moveToWorkspace(ChatId.parse('test-mac/session-t'), WorkspaceId.parse(`${machine}/w18`))
+    expect(moved.ok && typeof moved.value === 'object').toBe(true)
+    for (const end = Date.now() + 5000; !panesWatched().includes('w18:p3') && Date.now() < end; )
+      await new Promise((r) => setTimeout(r, 20))
+    const after = panesWatched()
+    watch.close()
+    await fake.close()
+    expect(after).toContain('w18:p3')
+    expect(after).not.toContain('w17:p1')
+    expect(ends).toEqual([])
+  })
+
+  it('follows a move that comes while a transcript watch starts (#435 fix review)', async () => {
+    const fake = await startFakeHerdrSocket(
+      withAgent({
+        agent_status: 'idle',
+        agent_session: { agent: 'claude', kind: 'id', source: 'herdr:claude', value: 'session-t' },
+      }),
+    )
+    const adapter = createHerdrAgents({ socket: fake.path, machine, log, claudeProjects: projects, home })
+    // The watch's first read is slow, so the move ends first and the read still gives the old pane.
+    fake.delayOnce('agent.list', 300)
+    const watch = adapter.watchTranscript(
+      ChatId.parse('test-mac/session-t'),
+      () => undefined,
+      () => undefined,
+    )
+    fake.once('pane.move', {
+      type: 'pane_move',
+      move_result: { changed: true, pane: { pane_id: 'w18:p3', terminal_id: 'term_1', workspace_id: 'w18' } },
+    })
+    const moved = await adapter.moveToWorkspace(ChatId.parse('test-mac/session-t'), WorkspaceId.parse(`${machine}/w18`))
+    expect(moved.ok && typeof moved.value === 'object').toBe(true)
+    await watch.ready
+    const watched = JSON.stringify(fake.streams())
+    watch.close()
+    await fake.close()
+    expect(watched).toContain('w18:p3')
+    expect(watched).not.toContain('w17:p1')
   })
 
   it("keeps a transcript watch open, with no end, when the chat's pane closed before its status stream", async () => {
