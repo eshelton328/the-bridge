@@ -210,6 +210,10 @@ imports it dynamically with the trace, so a build has none of it.
   last 400 dumps in `samples`. It POSTs to `/__keyboard-trace` after
   each 3 s dump, at once when the page is hidden, and when the chat
   closes, so it lands beside the keyboard traces as `<startedAt>.json`.
+  One POST is out at a time; while it is out, each session keeps only
+  its newest snapshot and sends it when the POST ends. A chat open for
+  12 hours starts a new session, as the endpoint refuses a `startedAt`
+  more than a day old.
 
 ## Proxy focus
 
