@@ -178,9 +178,9 @@ Thin Hono sub-apps, one file for each area, named after the area
   answer so far, and `/events` streams `side.changed` with the whole
   answer, from its state when the stream opens, and ends after its
   last state; an unknown side is 404. `POST /:chat/side/:side/stop`
-  (`{}`) stops an answer that answers as `stopped`: 204, also for an
-  answer that ended (the page's Stop and the end can cross), 404 for an
-  unknown side. The question and the answer never
+  (`{}`, at most 4 KiB) stops an answer that answers as `stopped`:
+  204, also for an answer that ended (the page's Stop and the end can
+  cross), 404 for an unknown side. The question and the answer never
   go into a log line or an `ErrorBody` (`chats.test.ts`).
 - The JSON checks of each POST route are in `jsonBody.ts`.
 - A route takes its services or ports as function arguments; it never

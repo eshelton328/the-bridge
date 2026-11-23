@@ -24,6 +24,7 @@ import { describe, expect, it } from 'vitest'
 import { createFakeAgents } from '../adapters/fakeAgents.ts'
 import { createApp } from '../app.ts'
 import { memoryLogger } from '../logger.ts'
+import { maxSmallJsonBytes } from './jsonBody.ts'
 import type { AgentPortError, RestartOutcome } from '../services/agentPort.ts'
 
 const machine = MachineId.parse('test-mac')
@@ -845,6 +846,14 @@ describe('POST /api/chats/:chat/side and its answer', () => {
     const stream = await app.request(`${sidePath(themes, side)}/events`, { headers: local })
     if (stream.body === null) throw new Error('no body')
     const read = frames(stream.body, 3)
+    // A body over 4 KiB is refused before it is read in full, and stops nothing.
+    const big = await app.request(`${sidePath(themes, side)}/stop`, {
+      method: 'POST',
+      headers: { ...local, 'content-type': 'application/json' },
+      body: `{}${' '.repeat(maxSmallJsonBytes)}`,
+    })
+    expect(big.status).toBe(400)
+    expect(await big.text()).toContain('"kind":"invalid-input"')
     expect((await stop(sidePath(themes, side))).status).toBe(204)
     const last = SideChangedEvent.parse(JSON.parse((await read)[2]?.data ?? ''))
     expect(last.data.state).toBe('stopped')

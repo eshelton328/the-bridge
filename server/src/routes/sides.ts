@@ -20,7 +20,7 @@ import { type AppEnv, agentErrorJson, errorJson } from '../errors.ts'
 import type { Logger } from '../logger.ts'
 import type { AgentPortError } from '../services/agentPort.ts'
 import type { SideAnswers } from '../services/sideAnswers.ts'
-import { jsonBody, jsonLimit, jsonOnly } from './jsonBody.ts'
+import { jsonBody, jsonLimit, jsonOnly, smallJson } from './jsonBody.ts'
 import { ssePingMs } from './sse.ts'
 
 const retryMs = 5_000
@@ -68,7 +68,7 @@ export function sidesRoutes(sides: SideAnswers, log: Logger) {
       const answer = sides.get(ids.chat, ids.side)
       return answer === undefined ? gone(c, 'no side answer has this ID') : c.json(SideAnswer.parse(answer), 200)
     })
-    .post('/:chat/side/:side/stop', jsonOnly, jsonBody(StopChatRequest), (c) => {
+    .post('/:chat/side/:side/stop', smallJson, jsonOnly, jsonBody(StopChatRequest), (c) => {
       const ids = idsOf(c)
       if (ids === undefined) return invalid(c)
       // A stop of an answer that ended is 204 too: the page's Stop and the answer's end can cross.
