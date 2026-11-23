@@ -86,7 +86,7 @@ import { modelText } from '../blocks/modelText.ts'
 import { type NewChatStarter, startOf } from '../blocks/newChatStart.ts'
 import type { PhoneText, WorkspaceEdits, WorkspacesData, WorkspacesUi } from '../types.ts'
 import type { ComposerAnswer } from '../blocks/useComposerActions.ts'
-import { defaultVisiblePages, type NavPage, navLayout } from '../../../lib/deviceSettings.ts'
+import { defaultVisiblePages, type NavPage, navLayout, tabletMorePage } from '../../../lib/deviceSettings.ts'
 import type { PushSwitch } from '../../../lib/pushSwitch.ts'
 
 export type WorkspacesPhoneProps = {
@@ -634,9 +634,9 @@ export function WorkspacesPhone({
             device={device}
             inboxBadge={data.railBadge}
             onSelect={(next) => {
-              // The tablet has no More drawer: More goes to its page, as on the Inbox's tablet.
+              // The tablet has no More drawer: More opens the first page past its tabs, as on the Inbox's tablet.
               if (next === 'more' && device === 'phone') setMoreOpen(true)
-              else onNavigate?.(next)
+              else onNavigate?.(next === 'more' ? tabletMorePage(navLayout(navPages, device).more) : next)
             }}
           />
         }

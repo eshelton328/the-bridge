@@ -24,7 +24,7 @@ import { AppRail } from '../../../blocks/AppRail.tsx'
 import { AppTabBar } from '../../../blocks/AppTabBar.tsx'
 import { MoreDrawer } from '../../../blocks/MoreDrawer.tsx'
 import { ViewportFrame } from '../../../blocks/ViewportFrame.tsx'
-import { defaultVisiblePages, type NavPage, navLayout } from '../../../lib/deviceSettings.ts'
+import { defaultVisiblePages, type NavPage, navLayout, tabletMorePage } from '../../../lib/deviceSettings.ts'
 import type { Viewport } from '../../../lib/screenState.ts'
 import type { AddLinkInput, ArtifactsData, ArtifactsNotice, ArtifactsUi, CopiedLink } from '../types.ts'
 import type { ProposalAct } from '../blocks/ArtifactProposal.tsx'
@@ -200,7 +200,7 @@ export function ArtifactsScreen({
                     onSelect={(next) => {
                       // M8: on the phone More opens the More drawer; the tablet's tabs navigate.
                       if (next === 'more' && layout === 'phone') onUiChange?.({ moreOpen: true })
-                      else onNavigate?.(next)
+                      else onNavigate?.(next === 'more' ? tabletMorePage(nav.more) : next)
                     }}
                   />
                 )

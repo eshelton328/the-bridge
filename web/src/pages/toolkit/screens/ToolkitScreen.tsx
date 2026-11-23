@@ -34,7 +34,7 @@ import { AppRail } from '../../../blocks/AppRail.tsx'
 import { AppTabBar } from '../../../blocks/AppTabBar.tsx'
 import { MoreDrawer } from '../../../blocks/MoreDrawer.tsx'
 import { ViewportFrame } from '../../../blocks/ViewportFrame.tsx'
-import { defaultVisiblePages, type NavPage, navLayout } from '../../../lib/deviceSettings.ts'
+import { defaultVisiblePages, type NavPage, navLayout, tabletMorePage } from '../../../lib/deviceSettings.ts'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { ToolkitGroup } from '../blocks/ToolkitGroup.tsx'
 import { ToolkitHeader } from '../blocks/ToolkitHeader.tsx'
@@ -476,9 +476,10 @@ function ToolkitLayout({
               device={layout === 'tablet' ? 'tablet' : 'phone'}
               inboxBadge={data.railBadge}
               onSelect={(next) => {
-                // On the phone More opens the drawer; the tablet's More stays the page's way to Toolkit (d-105).
+                // On the phone More opens the drawer; the tablet's More opens the first page past its tabs,
+                // Toolkit in the default order (d-105).
                 if (next === 'more' && layout === 'phone') onUiChange({ moreOpen: true })
-                else onNavigate?.(next)
+                else onNavigate?.(next === 'more' ? tabletMorePage(nav.more) : next)
               }}
             />
           )

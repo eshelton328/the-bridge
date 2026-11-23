@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  tabletMorePage,
   checkNav,
   defaultSettings,
   defaultVisiblePages,
@@ -121,5 +122,13 @@ describe('navLayout', () => {
       tabs: ['toolkit', 'home', 'inbox', 'artifacts'],
       more: ['projects'],
     })
+  })
+})
+
+describe('tabletMorePage', () => {
+  it('opens the first shown page past the tablet tabs, or More when none is left', () => {
+    expect(tabletMorePage(['toolkit'])).toBe('toolkit')
+    expect(tabletMorePage(['artifacts', 'toolkit'])).toBe('artifacts')
+    expect(tabletMorePage([])).toBe('more')
   })
 })

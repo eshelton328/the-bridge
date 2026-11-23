@@ -17,8 +17,10 @@ stubLiveServer()
 document.documentElement.classList.add('dark')
 document.documentElement.dataset.pandaTheme = 'viewscreen'
 
+let router = createRouter({ routeTree, history: createMemoryHistory() })
+
 function renderAt(path: string) {
-  const router = createRouter({ routeTree, history: createMemoryHistory({ initialEntries: [path] }) })
+  router = createRouter({ routeTree, history: createMemoryHistory({ initialEntries: [path] }) })
   return testRender(<RouterProvider router={router} />)
 }
 
@@ -87,4 +89,31 @@ describe('the nav order of the device settings', () => {
     ])
     await view.unmount()
   })
+
+  // The tablet has no More drawer, so its More opens the one shown page past its five tabs: Artifacts once Toolkit
+  // moves before it, on every page whose tab bar shows More.
+  for (const path of ['/inbox?source=fixtures', '/workspaces?source=fixtures', '/toolkit?source=fixtures']) {
+    it(`opens the page past the tablet tabs from More on ${path}`, async () => {
+      settingsStore.getState().actions.moveNavPage('toolkit', -1)
+      await page.viewport(820, 1180)
+      const view = await renderAt(path)
+      onTestFinished(view.unmount)
+      await expect.poll(() => document.querySelector('[data-figma="tab bar"]')).not.toBeNull()
+      expect(layers('[data-figma="tab bar"]').filter((l) => l?.startsWith('tab · '))).toEqual([
+        'tab · Home',
+        'tab · Inbox',
+        'tab · Workspaces',
+        'tab · Projects',
+        'tab · Toolkit',
+        'tab · More',
+      ])
+      await page
+        .getByRole('tab', { name: 'More' })
+        .or(page.getByRole('button', { name: 'More' }))
+        .first()
+        .click()
+      await expect.poll(() => router.state.location.pathname).toBe('/artifacts')
+      await view.unmount()
+    })
+  }
 })

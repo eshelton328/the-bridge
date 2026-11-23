@@ -162,5 +162,14 @@ export function navLayout(visible: readonly NavPage[], device: 'desktop' | 'tabl
   }
 }
 
+/**
+ * The page the tablet's More opens: the first shown page past the tab bar,
+ * as the tablet has no More drawer. With none, More stays More, which the
+ * page entries open as Toolkit.
+ */
+export function tabletMorePage(more: readonly NavPage[]): NavPage | 'more' {
+  return more[0] ?? 'more'
+}
+
 /** The shown pages of the default settings: what every story and Figma frame draws. */
 export const defaultVisiblePages: readonly NavPage[] = visibleNavPages(defaultSettings.nav)

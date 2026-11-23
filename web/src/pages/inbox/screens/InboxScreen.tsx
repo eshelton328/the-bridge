@@ -15,7 +15,7 @@ import { AppRail } from '../../../blocks/AppRail.tsx'
 import { AppTabBar } from '../../../blocks/AppTabBar.tsx'
 import { MoreDrawer } from '../../../blocks/MoreDrawer.tsx'
 import { ViewportFrame } from '../../../blocks/ViewportFrame.tsx'
-import { defaultVisiblePages, type NavPage, navLayout } from '../../../lib/deviceSettings.ts'
+import { defaultVisiblePages, type NavPage, navLayout, tabletMorePage } from '../../../lib/deviceSettings.ts'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { kindValue } from '../types.ts'
 import { DiscussionPanel } from '../blocks/DiscussionPanel.tsx'
@@ -429,7 +429,7 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
               inboxBadge={data.railBadge}
               onSelect={(next) => {
                 if (next === 'more' && layout === 'phone') setMoreOpen(true)
-                else onNavigate?.(next)
+                else onNavigate?.(next === 'more' ? tabletMorePage(nav.more) : next)
               }}
             />
           )
