@@ -76,8 +76,9 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   `alertdialog` ("Move <chat> to <workspace>?", "Moving it closes
   <workspace>.", `blocks/MoveWorkspaceDialog.tsx`, `ui.moveAsk`), as the
   move closes that workspace; Cancel sends nothing. A 200 keeps the chat
-  ID: the list read after it opens the chat in its new workspace as a
-  tap on its row would (`useWorkspaceEdits` `onMoved`); herdr puts it in
+  ID: the first list read that shows it in its new workspace, however
+  late, opens it there as a tap on its row would and selects that
+  workspace (`useWorkspaceEdits` `onMoved`, `openMoved`); herdr puts it in
   a new tab there, which the workbench shows once a layout read lists it
   (`followTab`, as after Move to tab), and a workspace
   it left empty (`sourceClosed`) leaves with that read. 409
