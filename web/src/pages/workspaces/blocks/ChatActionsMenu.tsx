@@ -46,6 +46,7 @@ export function ChatActionsMenu({ figma, trigger, ...props }: ChatActionsMenuPro
           <Button
             size="xs"
             keepIconSize
+            touch
             pressed={props.open}
             aria-label={`${props.title} actions`}
             data-figma={figma?.trigger ?? '400:2'}

@@ -111,6 +111,8 @@ export function EffortPicker({ model, effort, working, after }: EffortPickerProp
           // The list's family is checked; with no model control, the effort is, as before W10's model half.
           value={models === undefined ? `effort:${effort.level ?? 'unknown'}` : `model:${models.current ?? 'unknown'}`}
           onValueChange={pick}
+          // d-121: the chip sits in the chat header, which a finger taps on a phone or tablet.
+          touch
           open={open}
           onOpenChange={(next) => {
             // The menu stays open while an effort pick waits for its answer.

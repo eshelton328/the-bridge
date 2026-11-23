@@ -125,7 +125,7 @@ export function PhoneChat(props: PhoneChatProps) {
     notice,
   } = props
   const more = (
-    <Button variant="text" size="xs" iconOnly className={moreButton} aria-label={`${pane.head.title} actions`}>
+    <Button variant="text" size="xs" iconOnly touch className={moreButton} aria-label={`${pane.head.title} actions`}>
       <span className={icon} data-figma={layers?.chatActions}>
         <MoreIcon size="20" />
       </span>
@@ -147,6 +147,7 @@ export function PhoneChat(props: PhoneChatProps) {
           size="xs"
           iconOnly
           keepIconSize
+          touch
           className={backButton}
           aria-label={backLabel}
           onClick={onBack}

@@ -76,4 +76,33 @@ describe('the chat header rows (d-121, option E)', () => {
         expect(row2.top).toBeGreaterThanOrEqual(row1.bottom)
       } else expect(back).toBeNull()
     })
+
+  // The header's controls are 24 and 26 px high; each takes the library's 44 px touch target (`touch`, beta.111), so a
+  // tap 9 px outside it reaches it.
+  for (const d of devices)
+    it(`gives the back button, the model chip and the actions button a 44 px target: ${d.name}`, async () => {
+      await page.viewport(d.size[0], d.size[1])
+      view = await renderAt('/workspaces?source=fixtures')
+      if (d.tap) {
+        await expect.element(page.getByRole('button', { name: 'Home' })).toBeVisible()
+        await page.getByText(chat, { exact: true }).first().click()
+      }
+      await expect
+        .poll(() => [...document.querySelectorAll('header h2')].some((h) => h.textContent === chat))
+        .toBe(true)
+      const head = header()
+      const controls: [string, Element | null, 'above' | 'below'][] = [
+        ['the model chip', head.querySelector('button[aria-label^="Model"]'), 'above'],
+        ['the actions button', head.querySelector(`button[aria-label="${chat} actions"]`), 'below'],
+      ]
+      if (d.tap)
+        controls.push(['the back button', head.querySelector('button[aria-label="Back to Workspaces"]'), 'below'])
+      for (const [name, el, side] of controls) {
+        if (!(el instanceof HTMLElement)) throw new Error(`no ${name}`)
+        const r = el.getBoundingClientRect()
+        const y = side === 'above' ? r.top - 9 : r.bottom + 9
+        expect(document.elementFromPoint(r.left + r.width / 2, y)?.closest('button'), name).toBe(el)
+        expect(Number.parseFloat(getComputedStyle(el, '::before').height), name).toBeGreaterThanOrEqual(44)
+      }
+    })
 })

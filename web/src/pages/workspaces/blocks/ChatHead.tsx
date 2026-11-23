@@ -130,7 +130,13 @@ export function ChatHead(props: ChatHeadProps) {
           </div>
           <StatusPill label={chat.status.label} tone={chat.status.tone} dot />
           {menu === undefined ? (
-            <Button size="xs" keepIconSize aria-label={`${chat.title} actions`} data-figma={figma?.actions ?? '400:2'}>
+            <Button
+              size="xs"
+              keepIconSize
+              touch
+              aria-label={`${chat.title} actions`}
+              data-figma={figma?.actions ?? '400:2'}
+            >
               <MoreIcon size="12" />
             </Button>
           ) : (
@@ -147,6 +153,7 @@ export function ChatHead(props: ChatHeadProps) {
                   effort={chat.effort}
                   options={chat.readOnlyModel === true ? undefined : [{ value: chat.model, label: chat.model }]}
                   value={chat.model}
+                  touch
                 />
                 {rest}
               </Inline>
