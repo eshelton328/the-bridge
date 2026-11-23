@@ -543,6 +543,19 @@ function liveData() {
   }
 }
 
+describe('a harness note (R46)', () => {
+  it("draws as an event line labelled by its kind, never as the owner's message", () => {
+    expect(
+      chatEntryOf({ type: 'note', id: 'n1', kind: 'task', text: 'Background task finished: tests pass' }, 'claude'),
+    ).toEqual({ type: 'event', label: transcriptText.note.task, text: 'Background task finished: tests pass' })
+    expect(chatEntryOf({ type: 'note', id: 'n2', kind: 'peer', text: 'Message from bridge-coord' }, 'claude')).toEqual({
+      type: 'event',
+      label: transcriptText.note.peer,
+      text: 'Message from bridge-coord',
+    })
+  })
+})
+
 const chatPane = (data: ReturnType<typeof withTranscripts>) => {
   const found = data.panes.find((p) => p.type === 'chat' && p.liveChat === chat)
   return found?.type === 'chat' ? found : undefined

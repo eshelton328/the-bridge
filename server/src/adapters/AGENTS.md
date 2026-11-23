@@ -56,7 +56,19 @@ client of a socket or a file sits beside them.
   a `queued_command` attachment line, with no user line; it is the
   owner's prompt, at its place, only with `origin.kind` "human",
   `commandMode` "prompt" and `humanTurn`, and no `isMeta` (a peer's
-  message and a task report come the same way). A slash command's own line shows as
+  message and a task report come the same way). Only text the owner
+  typed or pasted is a prompt (R46): a user line with `origin.kind`
+  "human", or an older line with no origin and no `isMeta`. A harness
+  input is a `note` entry, by the line's marks and never by words in
+  its text: `origin.kind` "task-notification" is "Background task
+  finished: <summary>" for the status `completed` ("failed" for
+  `failed`, "update" for any other or none; the summary of its
+  whole-message wrapper, one line of at most 160 characters, never cut
+  inside a surrogate pair), `origin.kind` "peer" is "Message from <origin.name>", and an
+  `isMeta` line with no origin that starts "Stop hook feedback:" is
+  "Stop hook: reply rewritten". A queued line of a task or a peer gives
+  the same note. Any other meta line or origin (an idle notice, a skill
+  body) shows nothing. A slash command's own line shows as
   the owner typed it (`/compact keep the plan`), its
   `<local-command-stderr>` line is an `error` entry with the text only
   (no tags, no colour codes, at most 500 characters), and its

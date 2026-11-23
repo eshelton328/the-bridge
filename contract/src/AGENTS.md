@@ -34,8 +34,10 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
   result; the server adds its `ToolKind`, a readable title and a
   one-line label from the call's own description (R32). A user entry of a prompt sent with files has `files`: the
   file names, never a path. An error entry is a slash command's error
-  output, text only, at most `maxErrorText` (500) characters
-  (`transcripts.test.ts`).
+  output, text only, at most `maxErrorText` (500) characters. A note
+  entry (R46) is a harness input that the chat got, never the owner's
+  prompt: a `NoteKind` (`task`, `peer`, `hook`) and a short text of at
+  most `maxNoteText` (200) characters (`transcripts.test.ts`).
 - A chat's "/" list (`ChatSkillsResponse`) names each skill as typed
   after "/", never a path, with a one-line description and its source
   (`skills.test.ts`).

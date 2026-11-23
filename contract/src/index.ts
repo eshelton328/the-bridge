@@ -150,6 +150,9 @@ export {
   TranscriptResponse,
   UserEntry,
   maxEntryFileName,
+  maxNoteText,
+  NoteEntry,
+  NoteKind,
 } from './transcripts.ts'
 export {
   ChatEffort,

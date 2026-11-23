@@ -14,6 +14,7 @@ import {
   maxEntryText,
   maxErrorText,
   maxTranscriptEntries,
+  type NoteKind,
   type TranscriptEntry,
 } from '@bridge/contract'
 import { z } from 'zod'
@@ -34,11 +35,15 @@ const Block = z.discriminatedUnion('type', [
   z.object({ type: z.literal('tool_result'), tool_use_id: z.string() }),
 ])
 
+/** Who wrote a line's input (R46): "human" for the owner, "task-notification" or "peer" for the harness. */
+const Origin = z.object({ kind: z.string(), name: z.string().optional() })
+
 const Line = z.object({
   type: z.enum(['user', 'assistant']),
   uuid: Id,
   isSidechain: z.boolean().optional(),
   isMeta: z.boolean().optional(),
+  origin: Origin.optional(),
   isCompactSummary: z.boolean().optional(),
   message: z.object({ content: z.union([z.string(), z.array(z.unknown())]) }),
 })
@@ -59,9 +64,59 @@ const QueuedLine = z.object({
     commandMode: z.string().optional(),
     humanTurn: z.boolean().optional(),
     isMeta: z.boolean().optional(),
-    origin: z.object({ kind: z.string() }).optional(),
+    origin: Origin.optional(),
   }),
 })
+
+/** One line of at most `max` characters, with no control characters; "" for none. */
+const oneLine = (text: string, max: number) => {
+  let clean = ''
+  for (const ch of text) {
+    const code = ch.charCodeAt(0)
+    clean += code < 0x20 || (code >= 0x7f && code <= 0x9f) ? ' ' : ch
+  }
+  const flat = clean.replace(/\s+/g, ' ').trim()
+  if (flat.length <= max) return flat
+  // A cut never splits a character's surrogate pair.
+  const high = flat.charCodeAt(max - 2)
+  const end = high >= 0xd800 && high <= 0xdbff ? max - 2 : max - 1
+  return `${flat.slice(0, end).trimEnd()}…`
+}
+
+/**
+ * The note of a harness input (R46), by the line's own marks, never by words in the text: a task notification
+ * (`origin.kind` "task-notification") with the summary of its whole-message wrapper, a peer's message
+ * (`origin.kind` "peer") with the sender's name, and a Stop hook's feedback (an `isMeta` line with no origin
+ * that starts with the hook's own words). Undefined for any other line.
+ */
+function noteOf(
+  origin: z.infer<typeof Origin> | undefined,
+  isMeta: boolean | undefined,
+  raw: string,
+): { kind: NoteKind; text: string } | undefined {
+  if (origin?.kind === 'task-notification') {
+    const wrapped = raw.trimStart().startsWith('<task-notification>')
+    const field = (name: string) =>
+      wrapped ? oneLine(new RegExp(`<${name}>([\\s\\S]*?)</${name}>`).exec(raw)?.[1] ?? '', 160) : ''
+    // Only a completed task "finished"; a task that failed, waits or goes on says so, and one with no status is an update.
+    const status = field('status')
+    const lead =
+      status === 'completed'
+        ? 'Background task finished'
+        : status === 'failed'
+          ? 'Background task failed'
+          : 'Background task update'
+    const summary = field('summary')
+    return { kind: 'task', text: summary === '' ? lead : `${lead}: ${summary}` }
+  }
+  if (origin?.kind === 'peer') {
+    const name = oneLine(origin.name ?? '', 64)
+    return { kind: 'peer', text: `Message from ${name === '' ? 'another chat' : name}` }
+  }
+  if (origin === undefined && isMeta === true && raw.startsWith('Stop hook feedback:'))
+    return { kind: 'hook', text: 'Stop hook: reply rewritten' }
+  return undefined
+}
 
 /** The text, cut at the limit; a cut never splits a character's surrogate pair. */
 const textOf = (text: string) => {
@@ -155,7 +210,7 @@ function entriesOf(value: unknown, options: TranscriptOptions, results: Set<stri
       attachment.commandMode === 'prompt' &&
       attachment.humanTurn === true &&
       attachment.isMeta !== true
-    if (isSidechain === true || !owners) return []
+    if (isSidechain === true) return []
     const { prompt } = attachment
     const raw =
       typeof prompt === 'string'
@@ -164,20 +219,28 @@ function entriesOf(value: unknown, options: TranscriptOptions, results: Set<stri
             .map((b) => Block.safeParse(b))
             .flatMap((b) => (b.success && b.data.type === 'text' ? [b.data.text] : []))
             .join('\n\n')
-    return promptEntries(uuid, raw, options)
+    if (owners) return promptEntries(uuid, raw, options)
+    const note = noteOf(attachment.origin, attachment.isMeta, raw)
+    return note === undefined ? [] : [{ type: 'note', id: uuid, ...note }]
   }
   const line = Line.safeParse(value)
   const { data } = line
   // A compact summary is Claude Code's own text for the model, not a prompt.
-  if (!line.success || data?.isSidechain === true || data?.isMeta === true || data?.isCompactSummary === true) return []
-  const { type, uuid, message } = line.data
+  if (!line.success || data?.isSidechain === true || data?.isCompactSummary === true) return []
+  const { type, uuid, message, origin, isMeta } = line.data
+  // A meta line is never the owner's or the agent's text; only a harness note of it shows.
+  if (isMeta === true && type === 'assistant') return []
   const blocks = (typeof message.content === 'string' ? [{ type: 'text', text: message.content }] : message.content)
     .map((b) => Block.safeParse(b))
     .flatMap((b) => (b.success ? [b.data] : []))
   if (type === 'user') {
     for (const b of blocks) if (b.type === 'tool_result') results.add(b.tool_use_id)
     const raw = blocks.flatMap((b) => (b.type === 'text' ? [b.text] : [])).join('\n\n')
-    return promptEntries(uuid, raw, options)
+    const note = noteOf(origin, isMeta, raw)
+    if (note !== undefined) return [{ type: 'note', id: uuid, ...note }]
+    // Only text the owner typed or pasted is a prompt: origin "human", or an older line with no origin and no meta mark.
+    const owners = origin === undefined ? isMeta !== true : origin.kind === 'human'
+    return owners ? promptEntries(uuid, raw, options) : []
   }
   return blocks.flatMap((b, i): TranscriptEntry[] => {
     if (b.type === 'text')

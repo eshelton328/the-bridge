@@ -78,7 +78,31 @@ export const ErrorEntry = z.object({
   cut: z.boolean(),
 })
 
-export const TranscriptEntry = z.discriminatedUnion('type', [UserEntry, AssistantEntry, ToolEntry, ErrorEntry])
+/** The most characters of a note entry's text. */
+export const maxNoteText = 200
+
+/** What a note tells (R46): a background task ended, another chat sent a message, or a Stop hook had the reply written again. */
+export const NoteKind = z.enum(['task', 'peer', 'hook'])
+export type NoteKind = z.infer<typeof NoteKind>
+
+/**
+ * A harness input that the chat got, never a prompt of the owner's (R46): a short line such as "Background task
+ * finished: <summary>" or "Message from <chat name>". The page draws it as a muted line, not as the owner's bubble.
+ */
+export const NoteEntry = z.object({
+  type: z.literal('note'),
+  id: EntryId,
+  kind: NoteKind,
+  text: z.string().min(1).max(maxNoteText),
+})
+
+export const TranscriptEntry = z.discriminatedUnion('type', [
+  UserEntry,
+  AssistantEntry,
+  ToolEntry,
+  ErrorEntry,
+  NoteEntry,
+])
 export type TranscriptEntry = z.infer<typeof TranscriptEntry>
 
 /** A list of entries with no ID twice. */
