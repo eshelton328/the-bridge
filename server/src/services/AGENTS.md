@@ -83,6 +83,11 @@ from the outside world.
   now; one of another machine is null. Its `workspace` is the port's
   workspace for its project (`projectWorkspaces`), else null. One change at a time; a fault is its
   code only (`inbox.test.ts`).
+- `sideAnswers.ts` keeps side answers in memory as they come from the
+  port: one question of a chat at a time and three in all (`busy`),
+  each stopped after 120 s (`timedOut`), text cut at `maxEntryText`,
+  and the last 20 answers kept, never a running one
+  (`sideAnswers.test.ts`).
 - No polling (d-112): a service reads a port when a request or a
   subscription asks. `liveEvents.ts` shares one port subscription among
   all clients of `/api/events`, so with no client open (and no push
