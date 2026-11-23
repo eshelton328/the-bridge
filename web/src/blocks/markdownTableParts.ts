@@ -5,14 +5,7 @@
 // does, and a column is never narrower than its longest word. The table's
 // text size matches the MarkdownView around it: `sm` in the Inbox record,
 // `md` in a chat's transcript.
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeaderCell,
-  TableRow,
-} from '@eshelton328/component-library-1701'
+import { Table, TableBody, TableCell, TableHead, TableHeaderCell, TableRow } from '@eshelton328/component-library-1701'
 import { createElement } from 'react'
 import type { Components } from 'react-markdown'
 
