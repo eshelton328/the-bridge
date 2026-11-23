@@ -7,6 +7,7 @@
 import type { TranscriptEntry } from '@bridge/contract'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { clearReports, getReports, repeatWindowMs } from '../../errors/reporter.ts'
+import { resetAllStores } from '../../state/resetStores.ts'
 import { type FakeTranscriptServer, fakeTranscriptServer } from '../../lib/fakeTranscriptServer.ts'
 import { workbench } from './states/workbench.ts'
 import {
@@ -65,6 +66,8 @@ afterEach(() => {
   vi.useRealTimers()
   vi.unstubAllGlobals()
   clearReports()
+  // The views kept for chats opened again go, so each test starts with none.
+  resetAllStores()
 })
 
 describe('mergeEntries', () => {
@@ -427,7 +430,9 @@ describe('watchTranscript', () => {
     const stop = watch(server)
     await expect.poll(ids).toEqual(['u1'])
     stop()
-    expect(view()).toBeUndefined()
+    // The read view stays, with no line, so the chat opened again shows it at once (bridge-coord, 2026-11-23).
+    expect(ids()).toEqual(['u1'])
+    expect(view()?.problem).toBeUndefined()
     watch(server)
     await expect.poll(() => server.reads.length).toBe(2)
     await expect.poll(ids).toEqual(['u1'])

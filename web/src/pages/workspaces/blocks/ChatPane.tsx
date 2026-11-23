@@ -73,7 +73,7 @@ import {
 import { css, cx } from '../../../../styled-system/css/index.js'
 import { KEYBOARD_PROXY_EVENT } from '../../../lib/keyboardProxyEvent.ts'
 import { dropSkillWord, pickSkill, skillQuery } from '../../../lib/skillQuery.ts'
-import type { ChatEntry, ComposerState } from '../types.ts'
+import type { AgentKind, ChatEntry, ComposerState } from '../types.ts'
 import type { CopyReply } from './ChatEntryView.tsx'
 import { ComposerLine } from './ComposerLine.tsx'
 import { type DraftBook, restoredDraft, useDraft } from './draftBook.ts'
@@ -83,6 +83,7 @@ import { PendingEntry } from './PendingEntry.tsx'
 import { frameRegion } from './frameRegion.ts'
 import { SkillPicker } from './SkillPicker.tsx'
 import { TranscriptEntries } from './TranscriptEntries.tsx'
+import { TranscriptSkeleton } from './TranscriptSkeleton.tsx'
 import { TranscriptProblem } from './TranscriptProblem.tsx'
 import { type ComposerAnswer, useComposerActions } from './useComposerActions.ts'
 import { useKeyboardFirst } from './useKeyboardFirst.ts'
@@ -225,6 +226,10 @@ const footerShrinks = {
   inset: false,
 } satisfies Record<keyof typeof sizes, boolean>
 const footer = css({ display: 'flex', flexDirection: 'column' })
+// A live chat's transcript sits at the bottom of its pane, over the composer, as its skeleton does while it loads, so a
+// short transcript's newest entry lands where the skeleton ended (bridge-coord, 2026-11-23); a long one fills the pane
+// and opens at its end as before. A fixture chat keeps Figma's top start.
+const fromEnd = css({ '& > :first-child': { mt: 'auto' } })
 // The line over a live transcript whose older entries the server did not send: quiet, as the composer's hint.
 const earlierLine = css({ display: 'block', textStyle: 'small', color: 'fg.muted' })
 // With `header` the frame is the root: the body's padding of `sizes` moves onto the transcript and the composer, so the
@@ -291,6 +296,11 @@ type ChatPaneBase = {
   empty?: string | undefined
   /** The line under the entries, with Retry, when the transcript's read or updates failed; none when not set. */
   problem?: string | undefined
+  /**
+   * A live chat whose transcript has not loaded yet: the skeleton's label, such as "Loading this chat", and the chat's
+   * kind; the skeleton sits at the bottom of the transcript in place of the entries. None when not set.
+   */
+  loading?: { readonly label: string; readonly kind: AgentKind } | undefined
   composer: ComposerState
   /** The skills that "/" lists; a chat without them lists none. */
   skills?: ChatSkills | undefined
@@ -372,6 +382,7 @@ export function ChatPane(props: ChatPaneProps) {
     earlier,
     empty,
     problem,
+    loading,
     composer,
     skills,
     onSkillsOpenChange,
@@ -718,15 +729,21 @@ export function ChatPane(props: ChatPaneProps) {
   const entryViews =
     notLive === undefined ? (
       <>
-        {earlier === undefined ? null : <span className={earlierLine}>{earlier}</span>}
-        {empty === undefined || pendingViews.length > 0 ? null : <span className={earlierLine}>{empty}</span>}
-        <TranscriptEntries
-          chatId={chatId}
-          entries={entries}
-          figma={figma.entries}
-          onCopy={onCopy}
-          working={composer.running}
-        />
+        {loading === undefined ? (
+          <>
+            {earlier === undefined ? null : <span className={earlierLine}>{earlier}</span>}
+            {empty === undefined || pendingViews.length > 0 ? null : <span className={earlierLine}>{empty}</span>}
+            <TranscriptEntries
+              chatId={chatId}
+              entries={entries}
+              figma={figma.entries}
+              onCopy={onCopy}
+              working={composer.running}
+            />
+          </>
+        ) : (
+          <TranscriptSkeleton label={loading.label} kind={loading.kind} gap={gaps[size].body} />
+        )}
         {pendingViews.map((view) => (
           <PendingEntry key={view.key} text={view.text} files={view.files} sending={view.sending} />
         ))}
@@ -755,7 +772,7 @@ export function ChatPane(props: ChatPaneProps) {
     return (
       <ScrollFrame
         footerShrink={footerShrinks[size]}
-        bodyClassName={cx(gaps[size].body, parts.body, column)}
+        bodyClassName={cx(gaps[size].body, parts.body, column, liveChat === undefined ? undefined : fromEnd)}
         header={props.header}
         footer={
           <div ref={footerRef} className={cx(footer, gaps[size].footer, parts.footer, column)}>
@@ -775,7 +792,7 @@ export function ChatPane(props: ChatPaneProps) {
     <div className={cx(body, sizes[size])}>
       <ScrollFrame
         footerShrink={footerShrinks[size]}
-        bodyClassName={cx(gaps[size].body, column, pad)}
+        bodyClassName={cx(gaps[size].body, column, pad, liveChat === undefined ? undefined : fromEnd)}
         footer={
           // The part of a pane a stacked split keeps in view (paneFloors.ts).
           <div ref={footerRef} className={cx(footer, gaps[size].footer, column, pad)} data-pane-floor>

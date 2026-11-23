@@ -62,6 +62,7 @@ import {
 } from '@bridge/contract'
 import type { Result } from '@bridge/shared'
 import { report } from '../../errors/reporter.ts'
+import { registerReset } from '../../state/resetStores.ts'
 import { api } from '../../lib/api.ts'
 import { type Frame, frames, reconnectGraceMs } from '../../lib/eventFrames.ts'
 import { type LiveMiss, liveReadTimeoutMs, readChecked, readJson } from './liveWorkspaces.ts'
@@ -90,7 +91,17 @@ export const transcriptText = {
   note: { task: 'Task', peer: 'Message', hook: 'Hook' },
   /** Under the entries while the stream is down and the page connects again. */
   dropped: 'Transcript updates lost — connecting again',
+  /** The skeleton's label while the first read has not answered (bridge-coord, 2026-11-23). */
+  loading: 'Loading this chat',
+  /** In place of the skeleton when no read answered in `loadLimitMs`, with Retry: never an endless skeleton. */
+  stalled: 'Could not load this chat',
 } as const
+
+/** How long the skeleton may show before "Could not load this chat" with Retry takes its place, in ms. */
+export const loadLimitMs = 10_000
+
+/** How many chats that no pane shows keep their last view, so a chat opened again shows it at once. */
+export const keptViews = 5
 
 /** What a read or a stream missed, for the pane's line and report(): never text from the server. */
 type TranscriptMiss = {
@@ -293,6 +304,23 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
   const update = (change: (view: TranscriptView) => TranscriptView) => {
     if (!closed()) setView(chat, change(views.get(chat) ?? emptyView))
   }
+  // The pane shows the kept view of a chat opened again at once, with no skeleton, and the read updates it in place;
+  // a chat with none shows the skeleton until the first read answers.
+  setView(chat, views.get(chat) ?? emptyView)
+  /** The limit of the skeleton: with no read answered in `loadLimitMs`, the stalled line with Retry takes its place. */
+  let stall: ReturnType<typeof setTimeout> | undefined
+  const armStall = () => {
+    clearTimeout(stall)
+    if (views.get(chat)?.loaded === true) return
+    stall = setTimeout(() => {
+      const view = views.get(chat)
+      // A line of a miss already shows in place of the skeleton; the connection goes on, and a read that answers
+      // later shows the transcript and takes the line away.
+      if (view === undefined || view.loaded || view.problem !== undefined) return
+      update((shown) => ({ ...shown, problem: transcriptText.stalled }))
+    }, loadLimitMs)
+  }
+  armStall()
   const fail = (line: string, miss: TranscriptMiss) => {
     if (closed()) return
     update((view) => ({ ...view, problem: line }))
@@ -510,21 +538,49 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
     watchers: 0,
     retry: () => {
       update((view) => ({ ...view, problem: undefined }))
+      armStall()
       wake?.()
     },
     stop: () => {
       endGrace()
+      clearTimeout(stall)
       abort.abort()
     },
   }
 }
 
+/** The chats in the order they were last opened, the newest last: the views of the oldest that no pane shows go. */
+let opened: string[] = []
+
+/** Drops the views of the chats that no pane shows, but the `keptViews` opened last. */
+function forgetOldViews(): void {
+  const idle = opened.filter((c) => !sessions.has(c) && views.has(c))
+  const drop = new Set(idle.slice(0, Math.max(0, idle.length - keptViews)))
+  opened = opened.filter((c) => !drop.has(c) && (sessions.has(c) || views.has(c)))
+  if (drop.size === 0) return
+  const next = new Map(views)
+  for (const c of drop) next.delete(c)
+  views = next
+  for (const listener of listeners) listener()
+}
+
+// A test or a story starts with no kept view (state/resetStores.ts); a chat that a pane shows keeps its own.
+registerReset(() => {
+  const next = new Map([...views].filter(([c]) => sessions.has(c)))
+  opened = opened.filter((c) => sessions.has(c))
+  if (next.size === views.size) return
+  views = next
+  for (const listener of listeners) listener()
+})
+
 /**
  * Reads `chat`'s transcript into its view (`transcriptViews`) until the result is called: one session for each chat,
- * however many panes watch it. The last stop closes the stream and drops the view, so the chat opened again reads
- * the transcript again.
+ * however many panes watch it. The last stop closes the stream and keeps the read view, with no line, for the
+ * `keptViews` chats opened last (bridge-coord, 2026-11-23), so the chat opened again shows it at once and reads the
+ * transcript again; a view that no read filled goes.
  */
 export function watchTranscript(chat: string, deps: TranscriptDeps = {}): () => void {
+  opened = [...opened.filter((c) => c !== chat), chat]
   let session = sessions.get(chat)
   if (session === undefined) {
     session = startSession(ChatId.parse(chat), deps)
@@ -540,7 +596,9 @@ export function watchTranscript(chat: string, deps: TranscriptDeps = {}): () => 
     if (watched.watchers > 0) return
     watched.stop()
     if (sessions.get(chat) === watched) sessions.delete(chat)
-    setView(chat, undefined)
+    const kept = views.get(chat)
+    setView(chat, kept?.loaded === true ? { ...kept, problem: undefined } : undefined)
+    forgetOldViews()
     // The chat no longer shows: a miss when it opens again is reported again.
     outages.delete(chat)
   }
@@ -602,6 +660,8 @@ export function withTranscripts(data: WorkspacesData, shown: ReadonlyMap<string,
           ? { empty: transcriptText.empty }
           : {}),
         ...(view.problem === undefined ? {} : { problem: view.problem }),
+        // No read answered yet and no line: the skeleton, at most `loadLimitMs`.
+        ...(!view.loaded && view.problem === undefined ? { loading: transcriptText.loading } : {}),
       }
     }),
   }
