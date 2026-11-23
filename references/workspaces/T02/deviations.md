@@ -119,3 +119,15 @@ neither (see Text).
   LIBRARY_GAPS.md: Tool row icon and label, Tool group row). Figma draws no
   icon, title, label or group. This frame's fixture calls have no kind, so
   they draw as before and its render does not change.
+
+## Second row under the kind mark (d-121)
+
+The owner chose the chat header's option E (decision d-121, 2026-11-23): the
+header keeps its two rows, and the second row (the model chip, the context
+meter and its label) starts at the left edge of the kind mark. Figma draws
+that row from the back button's left edge (x 16). With the back button, the
+header now gives the back button its own column, and both rows sit in the
+next one, so the chip starts at the kind mark's x (44). The header's
+height and the first row do not change, so the frame's header box (105:1810)
+still passes the position check. It is a frame exception that the owner's
+decision sets (`blocks/ChatHead.tsx`, `app/WorkspacesChatHeadRows.test.tsx`).

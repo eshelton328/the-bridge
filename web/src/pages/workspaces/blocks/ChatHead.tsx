@@ -2,7 +2,7 @@
 // its workspace (and where the chat came from, D16), the status and the chat actions; under them the model (with its
 // effort, W5), the context used and its label. While the owner renames the chat, a field takes the
 // title's place (D21). On the phone (M3 105:2748) a back button comes
-// first and the rows sit 8 apart under a 4 px top; the folders chip can take
+// first, in its own column, so the second row starts at the kind mark's left edge (d-121, option E), and the rows sit 8 apart under a 4 px top; the folders chip can take
 // the context label's place (M8) or follow it (T5). While the phone's keyboard is up the
 // header shrinks to one line: `meta`, the model, the context used and the
 // folders, takes the workspace's place under the title, with no second row
@@ -42,6 +42,18 @@ const twoRows = css({ pb: '8' })
 // over `monoSm` is 40 high against Figma's 34 (LIBRARY_GAPS.md: Chat header text), so the row pads 2 under it: the
 // title starts where Figma's does, and the header with its rule is 47 high.
 const oneRow = css({ pt: '4', pb: '2' })
+// d-121 (option E): with a back button, the back button has its own column and both rows sit in the next one, so the
+// second row starts at the kind mark's left edge, as it does with no back button.
+// With no back button the rows stack as before, 4 apart.
+const rows = css({ display: 'flex', flexDirection: 'column', gap: '4' })
+const withBack = css({
+  display: 'grid',
+  gridTemplateColumns: 'auto 1fr',
+  columnGap: '8',
+  rowGap: '4',
+  alignItems: 'center',
+})
+const afterBack = css({ gridColumn: '2', minW: '[0]' })
 const titles = css({ display: 'flex', flexDirection: 'column', flex: '1', minW: '[0]' })
 // Figma's title is Geist SemiBold 16 (D19 417:1669), which no text style draws (LIBRARY_GAPS.md: Chat header text);
 // the workspace is Geist Mono 11 (417:1670) and "context" Geist Regular 11 (417:1689).
@@ -106,46 +118,50 @@ export function ChatHead(props: ChatHeadProps) {
       data-figma={figma?.head ?? '105:785'}
       className={cx(head, meta === undefined ? cx(sizes[size], twoRows) : oneRow)}
     >
-      <Inline gap="8" align="center">
+      <div className={back === undefined ? rows : withBack}>
         {back}
-        <KindMark kind={chat.kind} size="20" />
-        <div className={titles}>
-          {rename ?? <h2 className={title}>{chat.title}</h2>}
-          <span className={where}>
-            {meta ?? (chat.origin === undefined ? workspace : `${workspace} · ${chat.origin}`)}
-          </span>
-        </div>
-        <StatusPill label={chat.status.label} tone={chat.status.tone} dot />
-        {menu === undefined ? (
-          <Button size="xs" keepIconSize aria-label={`${chat.title} actions`} data-figma={figma?.actions ?? '400:2'}>
-            <MoreIcon size="12" />
-          </Button>
-        ) : (
-          menu
-        )}
-      </Inline>
-      {meta === undefined ? (
-        effortPicker === undefined ? (
-          <Inline gap="8" align="center">
-            {/* A live chat's model is read-only (d-101): with no picker its chip is text and opens no menu. */}
-            <ModelChip
-              model={chat.model}
-              effort={chat.effort}
-              options={chat.readOnlyModel === true ? undefined : [{ value: chat.model, label: chat.model }]}
-              value={chat.model}
-            />
-            {rest}
-          </Inline>
-        ) : (
-          // A live Claude chat's chip opens its model and effort menu (W10); a model pick asks on a row under it.
-          <EffortPicker
-            model={chat.model}
-            effort={effortPicker}
-            working={chat.status.tone === 'working' || chat.status.tone === 'running'}
-            after={rest}
-          />
-        )
-      ) : null}
+        <Inline gap="8" align="center">
+          <KindMark kind={chat.kind} size="20" />
+          <div className={titles}>
+            {rename ?? <h2 className={title}>{chat.title}</h2>}
+            <span className={where}>
+              {meta ?? (chat.origin === undefined ? workspace : `${workspace} · ${chat.origin}`)}
+            </span>
+          </div>
+          <StatusPill label={chat.status.label} tone={chat.status.tone} dot />
+          {menu === undefined ? (
+            <Button size="xs" keepIconSize aria-label={`${chat.title} actions`} data-figma={figma?.actions ?? '400:2'}>
+              <MoreIcon size="12" />
+            </Button>
+          ) : (
+            menu
+          )}
+        </Inline>
+        {meta === undefined ? (
+          <div className={back === undefined ? undefined : afterBack}>
+            {effortPicker === undefined ? (
+              <Inline gap="8" align="center">
+                {/* A live chat's model is read-only (d-101): with no picker its chip is text and opens no menu. */}
+                <ModelChip
+                  model={chat.model}
+                  effort={chat.effort}
+                  options={chat.readOnlyModel === true ? undefined : [{ value: chat.model, label: chat.model }]}
+                  value={chat.model}
+                />
+                {rest}
+              </Inline>
+            ) : (
+              // A live Claude chat's chip opens its model and effort menu (W10); a model pick asks on a row under it.
+              <EffortPicker
+                model={chat.model}
+                effort={effortPicker}
+                working={chat.status.tone === 'working' || chat.status.tone === 'running'}
+                after={rest}
+              />
+            )}
+          </div>
+        ) : null}
+      </div>
     </header>
   )
 }
