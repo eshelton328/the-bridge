@@ -28,7 +28,8 @@ export function SettingsPage() {
   const state = route.useLoaderData()
   const search = route.useSearch()
   const navigate = route.useNavigate()
-  const own = search.state === undefined
+  // A production build ignores `?state=`, as readState does (lib/dataSource.ts), so it always shows the saved settings.
+  const own = !import.meta.env.DEV || search.state === undefined
   const mode = useSettingsMode()
   const textSize = useSettingsTextSize()
   const nav = useSettingsNav()

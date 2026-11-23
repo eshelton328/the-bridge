@@ -89,6 +89,20 @@ describe('a change on the Settings page', () => {
     expect(JSON.parse(data.get(settingsKey) ?? '{}')).toMatchObject({ mode: 'light' })
   })
 
+  it('shows the saved settings for a ?state= in a production build, which ignores it', async () => {
+    vi.stubEnv('DEV', false)
+    onTestFinished(() => {
+      vi.unstubAllEnvs()
+    })
+    settingsStore.getState().actions.setMode('light')
+    const view = await renderAt('/settings?state=settingsDesktop')
+    onTestFinished(view.unmount)
+    await expect.element(page.getByRole('radio', { name: 'Light' })).toBeChecked()
+    await userEvent.click(rowOf(page.getByRole('radio', { name: 'System' })))
+    await expect.element(page.getByRole('radio', { name: 'System' })).toBeChecked()
+    expect(settingsStore.getState().mode).toBe('system')
+  })
+
   it('hides a page from the rail, and keeps the Settings gear', async () => {
     const view = await renderAt('/settings')
     onTestFinished(view.unmount)
