@@ -55,7 +55,8 @@ function reportMiss(step: InboxStep, miss: InboxMiss): void {
   if (miss.status !== undefined) report(new InboxMissError(step, miss), 'live')
 }
 
-const emptyInbox = InboxResponse.parse({ items: [], counts: { needsYou: 0, total: 0 } })
+/** The live Inbox with no items: a miss shows it with its line, and the pending screen loads on it. */
+export const emptyInbox = InboxResponse.parse({ items: [], counts: { needsYou: 0, total: 0 } })
 
 export type LiveInboxDeps = {
   /** The router's signal for this load: it aborts when the owner leaves the page or the load starts again. */

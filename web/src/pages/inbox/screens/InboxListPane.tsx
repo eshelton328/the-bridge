@@ -30,6 +30,7 @@ import { css, cx } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { kindValue } from '../types.ts'
 import { AppliedFilters } from '../blocks/AppliedFilters.tsx'
+import { InboxListSkeleton } from '../blocks/InboxListSkeleton.tsx'
 import { InboxRow } from '../blocks/InboxRow.tsx'
 import { ListTools } from '../blocks/ListTools.tsx'
 import { RowActionsSheet } from '../blocks/RowActionsSheet.tsx'
@@ -168,6 +169,11 @@ export type InboxListPaneProps = {
   onToastAction?: (() => void) | undefined
   /** Snoozes a row, or marks it done or dismissed, from its actions sheet. */
   onPutAway?: InboxPutAway | undefined
+  /**
+   * The list waits for its first read (the loading standard): the header, chips and tools draw as loaded, with no
+   * count, and skeleton groups take the place of the groups, so nothing above them moves when the rows come.
+   */
+  loading?: boolean | undefined
 }
 
 const plural = (n: number, word: string) => `${String(n)} ${word}${n === 1 ? '' : 's'}`
@@ -183,6 +189,7 @@ export function InboxListPane({
   onOpenRow: openRow,
   scrollTop,
   onScrollSave,
+  loading = false,
   query,
   onQueryChange,
   onUiChange,
@@ -251,15 +258,15 @@ export function InboxListPane({
         <PageHeader
           size={desktop ? 'pane' : 'phone'}
           title="Inbox"
-          count={view.count}
-          countLabel={plural(view.count, 'task')}
+          count={loading ? undefined : view.count}
+          countLabel={loading ? undefined : plural(view.count, 'task')}
           level={desktop ? 2 : 1}
         />
       </div>
       <div data-figma="filter · chips" ref={chipsRef}>
         <FilterChips
           label="Filter the inbox"
-          items={view.filters}
+          items={loading ? view.filters.map((chip) => ({ ...chip, count: undefined })) : view.filters}
           value={[ui.filter]}
           multiple={false}
           // M1 346:9014: the phone's chips pad their label 12 at the sides (`phone`); the desktop and tablet keep 8.
@@ -340,7 +347,8 @@ export function InboxListPane({
           {`${plural(view.results, 'result')} for “${q}” in titles, IDs, prompts and notes`}
         </span>
       )}
-      {view.groups.map((group) => {
+      {loading ? <InboxListSkeleton phone={layout === 'phone'} /> : null}
+      {(loading ? [] : view.groups).map((group) => {
         const open = ui.groupsOpen[group.id]
         return (
           <Stack key={group.id} gap="2">
