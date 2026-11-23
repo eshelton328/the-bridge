@@ -8,7 +8,7 @@ import { createHash, randomUUID } from 'node:crypto'
 import { type FSWatcher, watch } from 'node:fs'
 import { chmod, lstat, mkdir, readdir, readFile, realpath, rename, rm, writeFile } from 'node:fs/promises'
 import { join, sep } from 'node:path'
-import { InboxId, InboxKind, maxInboxBody } from '@bridge/contract'
+import { InboxId, InboxKind, MachineId, maxInboxBody, SessionId } from '@bridge/contract'
 import { err, ok, type Result } from '@bridge/shared'
 import { z } from 'zod'
 import type { BrainRequest, BrainRequests, InboxMarks, InboxMarkStore } from '../services/inbox.ts'
@@ -100,6 +100,20 @@ const time = (v: string | string[] | null | undefined) => {
   return Number.isNaN(parsed) ? null : new Date(parsed).toISOString()
 }
 
+/**
+ * The chat that filed a record: `origin_session` (a Claude session's UUID) and, when the filing chat knew it,
+ * `origin_machine` (a machine ID, as `BRIDGE_MACHINE_ID`); a session alone is a chat of this server's machine.
+ * Null with no valid session or with a bad machine, so an old record has none.
+ */
+function originOf(front: Front): BrainRequest['origin'] {
+  const session = SessionId.safeParse(text(front.origin_session))
+  if (!session.success) return null
+  const named = text(front.origin_machine)
+  if (named === null) return { machine: null, session: session.data }
+  const machine = MachineId.safeParse(named)
+  return machine.success ? { machine: machine.data, session: session.data } : null
+}
+
 /** The request in a record's front matter; null for a record that is not an open or snoozed attention request. */
 function requestOf(front: Front, id: InboxId, project: string): BrainRequest | null {
   const status = text(front.status)
@@ -117,6 +131,7 @@ function requestOf(front: Front, id: InboxId, project: string): BrainRequest | n
     tags,
     created,
     snoozedUntil: status === 'snoozed' ? time(front.snoozed_until) : null,
+    origin: originOf(front),
   }
 }
 

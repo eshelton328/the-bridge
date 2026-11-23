@@ -8,14 +8,16 @@
 // timer (d-112), and no prompt or transcript text is read.
 import { createHash } from 'node:crypto'
 import {
-  type ChatId,
+  ChatId,
   type ChatSummary,
   type InboxAction,
   type InboxDetail,
   InboxId,
   type InboxItem,
   type InboxKind,
+  type InboxOrigin,
   type InboxResponse,
+  type MachineId,
   maxInboxTitle,
   type WorkspaceId,
 } from '@bridge/contract'
@@ -32,6 +34,11 @@ export type BrainRequest = {
   readonly created: string
   /** When a snoozed request returns; null for an open one. */
   readonly snoozedUntil: string | null
+  /**
+   * The chat that filed it, from the record's origin keys; null when it has no valid session or a bad machine. A
+   * null machine (a session alone) is a chat of this server's machine.
+   */
+  readonly origin: { readonly machine: MachineId | null; readonly session: string } | null
 }
 
 type Fault = { readonly reason: 'failed'; readonly code: string }
@@ -141,9 +148,17 @@ export function createInbox({ agents, brain, turns = chatTurns(agents), marks, n
           snoozedUntil: snoozed,
           createdAt: shownAt,
           chat: chat.id,
+          origin: null,
           actions: ended === null ? [] : [...chatActions],
         })
       }
+    const live = new Set(listed.value.flatMap((w) => w.chats.map((c) => c.id)))
+    // An origin chat of another machine is null: this server cannot tell whether it is live.
+    const originOf = (o: BrainRequest['origin']): InboxOrigin | null => {
+      if (o === null || (o.machine !== null && o.machine !== agents.machine)) return null
+      const chat = ChatId.safeParse(`${agents.machine}/${o.session}`)
+      return chat.success ? { chat: chat.data, live: live.has(chat.data) } : null
+    }
     for (const request of requests.value) {
       const snoozed =
         request.snoozedUntil !== null && Date.parse(request.snoozedUntil) > at.getTime() ? request.snoozedUntil : null
@@ -158,6 +173,7 @@ export function createInbox({ agents, brain, turns = chatTurns(agents), marks, n
         snoozedUntil: snoozed,
         createdAt: request.created,
         chat: null,
+        origin: originOf(request.origin),
         actions: [],
       })
     }

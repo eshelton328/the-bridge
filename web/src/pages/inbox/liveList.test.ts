@@ -21,6 +21,7 @@ const response = InboxResponse.parse({
       snoozedUntil: null,
       createdAt: ago(4),
       chat: 'mac-mini/s1',
+      origin: null,
       actions: ['snooze', 'done', 'dismiss'],
     },
     {
@@ -34,6 +35,7 @@ const response = InboxResponse.parse({
       snoozedUntil: new Date(2026, 0, 16, 9, 0).toISOString(),
       createdAt: ago(3 * 60),
       chat: null,
+      origin: null,
       actions: [],
     },
   ],

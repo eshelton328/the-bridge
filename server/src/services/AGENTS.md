@@ -76,7 +76,10 @@ from the outside world.
   dropped. A chat item with no known turn end takes no action, as a mark
   could hide its next turn; the time the server first saw the status is
   its time. A snooze takes an item off the badge until its time. A brain
-  item takes no action (`readOnly`). One change at a time; a fault is its
+  item takes no action (`readOnly`). A brain item's origin chat (R49) is
+  `<machine>/<session>` of the record's origin keys (this machine when
+  the record names none), `live` when the workspace list has that chat
+  now; one of another machine is null. One change at a time; a fault is its
   code only (`inbox.test.ts`).
 - No polling (d-112): a service reads a port when a request or a
   subscription asks. `liveEvents.ts` shares one port subscription among

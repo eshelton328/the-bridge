@@ -316,7 +316,10 @@ client of a socket or a file sits beside them.
 - `diskInbox.ts` (R20) lists the open and snoozed attention requests in
   `<brain>/projects/<project>/inbox/*.md` from their front matter: plain
   files of at most 256 KiB whose real path stays in that folder, never a
-  symlink; a record it cannot decode is skipped. The body goes only to a
+  symlink; a record it cannot decode is skipped. `origin_session` (a
+  UUID) gives the request's origin chat (R49), with `origin_machine`
+  when the record has it (the machine ID rule); a session alone is a
+  chat of this server's machine, and a bad value or no session gives none. The body goes only to a
   detail. The marks are `inbox.json`, 0600, as `diskArtifacts.ts` keeps
   its file. `watchBrainInbox` watches `projects`, each project folder
   and each real inbox folder with `fs.watch`, and tells once after
