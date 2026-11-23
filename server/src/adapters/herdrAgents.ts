@@ -60,6 +60,7 @@ import {
   promptKey,
   switchModelDialogOf,
 } from './claudeInput.ts'
+import { readCodeMode, sideRecord } from './claudeSide.ts'
 import { readClaudeTranscript } from './claudeTranscript.ts'
 import { readClaudeSkills } from './claudeSkills.ts'
 import { readCompactWindows } from './claudeSettings.ts'
@@ -1156,8 +1157,8 @@ export function createHerdrAgents({
         (s) => s.isFile() && s.size > 0,
         () => false,
       ))
-    if (session === undefined || !saved) return ok('noSession' as const)
-    return ok({ agent, session, agents: agents.value.agents })
+    if (session === undefined || file === undefined || !saved) return ok('noSession' as const)
+    return ok({ agent, session, file, agents: agents.value.agents })
   }
   const startIn = async (
     { name, model, place }: Omit<StartChatRequest, 'createId'>,
@@ -1627,7 +1628,14 @@ export function createHerdrAgents({
       const folder = found.value.agent.cwd
       if (folder == null) return ok('noSession')
       if (runSide === undefined) return err({ reason: 'unreachable', message: 'this server runs no side questions' })
-      return ok(runSide({ session: found.value.session, folder, question, signal }))
+      const { session, file } = found.value
+      const record = {
+        codeMode: await readCodeMode(file),
+        // Read only for a run that cannot resume; the record has no tool results (claudeTranscript.ts).
+        text: async () =>
+          sideRecord((await readClaudeTranscript(file, { working: false, cwd: folder, home, uploads })).entries),
+      }
+      return ok(runSide({ session, folder, question, record, signal }))
     },
     async forkChat(chat, { name, direction }) {
       const found = await savedSession(chat)
