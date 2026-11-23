@@ -108,9 +108,9 @@ const time = (v: string | string[] | null | undefined) => {
 function originOf(front: Front): BrainRequest['origin'] {
   const session = SessionId.safeParse(text(front.origin_session))
   if (!session.success) return null
-  const named = text(front.origin_machine)
-  if (named === null) return { machine: null, session: session.data }
-  const machine = MachineId.safeParse(named)
+  // Only a missing key means this machine: a key with a list, null or a bad ID gives no origin.
+  if (!('origin_machine' in front)) return { machine: null, session: session.data }
+  const machine = MachineId.safeParse(text(front.origin_machine))
   return machine.success ? { machine: machine.data, session: session.data } : null
 }
 

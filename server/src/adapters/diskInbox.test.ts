@@ -70,6 +70,10 @@ describe('the brain requests', () => {
         'snoozed_until: null\norigin_machine: test-mac',
       ),
       'projects/example-project/inbox/e.md': open,
+      'projects/example-project/inbox/g.md': open.replace(
+        'snoozed_until: null',
+        `snoozed_until: null\norigin_machine: []\norigin_session: '${session}'`,
+      ),
       'projects/example-project/inbox/f.md': open.replace(
         'snoozed_until: null',
         `snoozed_until: null\norigin_session: '${session}'`,
@@ -77,7 +81,15 @@ describe('the brain requests', () => {
     })
     const listed = await brain.list()
     expect(listed.ok && listed.value.map((r) => r.origin)).toEqual(
-      expect.arrayContaining([{ machine: 'test-mac', session }, { machine: null, session }, null, null, null, null]),
+      expect.arrayContaining([
+        { machine: 'test-mac', session },
+        { machine: null, session },
+        null,
+        null,
+        null,
+        null,
+        null,
+      ]),
     )
     expect(listed.ok && listed.value.filter((r) => r.origin !== null)).toHaveLength(2)
   })
