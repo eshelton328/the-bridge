@@ -80,7 +80,8 @@ from the outside world.
   item takes no action (`readOnly`). A brain item's origin chat (R49) is
   `<machine>/<session>` of the record's origin keys (this machine when
   the record names none), `live` when the workspace list has that chat
-  now; one of another machine is null. One change at a time; a fault is its
+  now; one of another machine is null. Its `workspace` is the port's
+  workspace for its project (`projectWorkspaces`), else null. One change at a time; a fault is its
   code only (`inbox.test.ts`).
 - No polling (d-112): a service reads a port when a request or a
   subscription asks. `liveEvents.ts` shares one port subscription among

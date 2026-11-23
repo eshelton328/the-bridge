@@ -119,6 +119,8 @@ export function fakeWorkspaces(machine: MachineId): WorkspaceSummary[] {
 }
 
 export type FakeAgents = AgentPort & {
+  /** Maps a project to a workspace, as a workspace whose first pane is in that project's folder. */
+  readonly setProjectWorkspace: (project: string, workspace: WorkspaceId) => void
   /** The chats that a caller forked, in order. */
   readonly forks: () => ChatId[]
   /** How many times a caller read the workspaces. */
@@ -357,6 +359,7 @@ export function createFakeAgents(
     )
   }
   const forks: ChatId[] = []
+  const projects = new Map<string, WorkspaceId>()
   let clears = 0
   return {
     machine,
@@ -658,6 +661,14 @@ export function createFakeAgents(
       return Promise.resolve(ok(shell === undefined ? 'notFound' : { chat: shell.id }))
     },
     startChat: (request) => start(request),
+    projectWorkspaces() {
+      if ('error' in answer) return Promise.resolve(err(answer.error))
+      const listed = new Set((data ?? []).map((w) => w.id))
+      return Promise.resolve(ok(new Map([...projects].filter(([, w]) => listed.has(w)))))
+    },
+    setProjectWorkspace: (project, workspace) => {
+      projects.set(project, workspace)
+    },
     forkChat(chat, { name, direction }) {
       if ('error' in answer) return Promise.resolve(err(answer.error))
       const found = chatOf(chat)

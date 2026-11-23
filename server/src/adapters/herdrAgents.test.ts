@@ -2727,3 +2727,37 @@ describe('herdr agents: a model restart', () => {
     expect(sent('agent.start')).toHaveLength(1)
   })
 })
+
+describe('herdr agents: project workspaces (R49)', () => {
+  const root = mkdtempSync(join(tmpdir(), 'chat-root-'))
+  mkdirSync(join(root, 'projects', 'alpha', 'repo'), { recursive: true })
+  const outside = mkdtempSync(join(tmpdir(), 'outside-'))
+  const read = async (folders: Readonly<Record<string, string>>, chatRoot: string | null = root) => {
+    const socket = await startFakeHerdrSocket({
+      ...results,
+      'pane.list': {
+        ...results['pane.list'],
+        panes: results['pane.list'].panes.map((p) => ({ ...p, cwd: folders[p.pane_id] })),
+      },
+    })
+    const adapter = createHerdrAgents({
+      socket: socket.path,
+      machine,
+      log: memoryLogger().log,
+      claudeProjects: projects,
+      home,
+      ...(chatRoot === null ? {} : { chatRoot }),
+    })
+    const found = await adapter.projectWorkspaces()
+    await socket.close()
+    return found.ok ? Object.fromEntries(found.value) : found
+  }
+
+  it('maps a project to the first workspace whose first pane is in its folder, and gives no path', async () => {
+    const alpha = join(root, 'projects', 'alpha', 'repo')
+    expect(await read({ 'w17:p1': alpha, 'w18:p1': outside })).toEqual({ alpha: 'test-mac/w17' })
+    expect(await read({ 'w17:p1': outside, 'w17:p2': alpha, 'w18:p1': alpha })).toEqual({ alpha: 'test-mac/w18' })
+    expect(await read({ 'w17:p1': join(root, 'projects') })).toEqual({})
+    expect(await read({ 'w17:p1': alpha }, null)).toEqual({})
+  })
+})

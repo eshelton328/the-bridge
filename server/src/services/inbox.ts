@@ -108,8 +108,14 @@ export function createInbox({ agents, brain, turns = chatTurns(agents), marks, n
   }
   /** The items now, with the marks that still name one; a mark of an ended turn is dropped. */
   const build = async (): Promise<Result<Built, InboxError>> => {
-    const [listed, requests, stored] = await Promise.all([agents.listWorkspaces(), brain.list(), marks.load()])
+    const [listed, requests, stored, projects] = await Promise.all([
+      agents.listWorkspaces(),
+      brain.list(),
+      marks.load(),
+      agents.projectWorkspaces(),
+    ])
     if (!listed.ok) return listed
+    if (!projects.ok) return projects
     if (!requests.ok) return requests
     if (!stored.ok) return stored
     const at = now()
@@ -149,6 +155,7 @@ export function createInbox({ agents, brain, turns = chatTurns(agents), marks, n
           createdAt: shownAt,
           chat: chat.id,
           origin: null,
+          workspace: null,
           actions: ended === null ? [] : [...chatActions],
         })
       }
@@ -174,6 +181,7 @@ export function createInbox({ agents, brain, turns = chatTurns(agents), marks, n
         createdAt: request.created,
         chat: null,
         origin: originOf(request.origin),
+        workspace: request.project === null ? null : (projects.value.get(request.project) ?? null),
         actions: [],
       })
     }

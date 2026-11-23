@@ -83,8 +83,9 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
   in an item. A brain item's `origin` is the chat that filed it
   (`{ chat, live }`), from the record's origin keys; a chat item, a
   record with none and one of another machine have null, and a chat
-  that is not live is `live: false`, never an error (R49,
-  `inbox.test.ts`). `inbox.changed` on `/api/events`
+  that is not live is `live: false`, never an error. Its `workspace`
+  is the live workspace of its project, else null; a chat item has null
+  (R49, `inbox.test.ts`). `inbox.changed` on `/api/events`
   says to read the list again.
 - The Toolkit page (R21, `toolkit.ts`): an item of the brain's shared
   toolkit or of one project's toolkit, read-only. Its `scope` is

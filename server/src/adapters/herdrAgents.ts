@@ -1576,6 +1576,23 @@ export function createHerdrAgents({
       return ok({ chat: ChatId.parse(`${machine}/${written.value.pane.terminal_id}`) })
     },
     startChat: (request) => startIn(request, []),
+    async projectWorkspaces() {
+      const [spaces, panes] = await Promise.all([call('workspace.list', WorkspaceList), call('pane.list', PaneList)])
+      if (!spaces.ok) return spaces
+      if (!panes.ok) return panes
+      const found = new Map<string, WorkspaceId>()
+      const top = chatRoot === undefined ? null : await realpath(join(chatRoot, 'projects')).catch(() => null)
+      if (top === null) return ok(found)
+      for (const space of spaces.value.workspaces) {
+        const cwd = panes.value.panes.find((p) => p.workspace_id === space.workspace_id)?.cwd
+        const real = cwd === undefined || cwd === null ? null : await realpath(cwd).catch(() => null)
+        // The first folder name below projects/ is the project, as in <chat root>/projects/<project>/<repo>.
+        const project = real?.startsWith(top + sep) ? real.slice(top.length + 1).split(sep)[0] : undefined
+        if (project !== undefined && project !== '' && !found.has(project))
+          found.set(project, WorkspaceId.parse(`${machine}/${space.workspace_id}`))
+      }
+      return ok(found)
+    },
     async forkChat(chat, { name, direction }) {
       const { machine: on } = splitId(chat)
       if (on !== machine) return ok('notFound')

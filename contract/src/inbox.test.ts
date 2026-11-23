@@ -14,6 +14,7 @@ const chatItem = {
   createdAt: '2026-11-21T10:00:00.000Z',
   chat: 'test-mac/0b7f2c1e-4d3a-4f6b-9a8c-1e2d3c4b5a69',
   origin: null,
+  workspace: null,
   actions: ['snooze', 'done', 'dismiss'],
 }
 const brainItem = {
@@ -25,6 +26,7 @@ const brainItem = {
   tags: ['global/review', 'project/example-project/web'],
   chat: null,
   origin: null,
+  workspace: null,
   actions: [],
 }
 
@@ -47,6 +49,12 @@ describe('the inbox contract', () => {
     expect(InboxItem.safeParse({ ...brainItem, origin: { ...origin, live: true } }).success).toBe(true)
     expect(InboxItem.safeParse({ ...chatItem, origin }).success).toBe(false)
     expect(InboxItem.safeParse({ ...brainItem, origin: { chat: 'no-machine', live: true } }).success).toBe(false)
+  })
+
+  it('gives only a brain item a project workspace', () => {
+    expect(InboxItem.safeParse({ ...brainItem, workspace: 'test-mac/w17' }).success).toBe(true)
+    expect(InboxItem.safeParse({ ...chatItem, workspace: 'test-mac/w17' }).success).toBe(false)
+    expect(InboxItem.safeParse({ ...brainItem, workspace: 'w17' }).success).toBe(false)
   })
 
   it('allows no action on a brain item', () => {
