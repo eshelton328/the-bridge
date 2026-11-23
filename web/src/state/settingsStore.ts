@@ -1,6 +1,6 @@
 // The owner's settings on this device (d-119; the shape and the rules are in
 // lib/deviceSettings.ts). They stay in this browser's localStorage under one
-// key and never go to the server. The store starts at the defaults; the app
+// key; only `pushPreview` goes to the server, with the push subscription. The store starts at the defaults; the app
 // calls startSettingsStorage() once (main.ts), which loads the saved
 // settings and saves each change after, so a test or a story never reads or
 // writes the owner's storage. A page entry reads the values with the hooks
@@ -30,6 +30,7 @@ type SettingsState = DeviceSettings & {
     setTextSize: (textSize: TextSize) => void
     setChatWidth: (chatWidth: ChatWidth) => void
     setChatDefaults: (chat: Partial<ChatDefaults>) => void
+    setPushPreview: (pushPreview: boolean) => void
     /** Moves `page` one place up (-1) or down (1) in the nav order. */
     moveNavPage: (page: BarPage, by: -1 | 1) => void
     /**
@@ -57,6 +58,9 @@ const useSettingsStore = createAppStore<SettingsState>('settings', (set, get) =>
     setChatDefaults: (chat) => {
       set((s) => ({ chat: { ...s.chat, ...chat } }), undefined, 'settings/setChatDefaults')
     },
+    setPushPreview: (pushPreview) => {
+      set({ pushPreview }, undefined, 'settings/setPushPreview')
+    },
     moveNavPage: (page, by) => {
       set((s) => ({ nav: moveNavPage(s.nav, page, by) }), undefined, 'settings/moveNavPage')
     },
@@ -74,7 +78,14 @@ const useSettingsStore = createAppStore<SettingsState>('settings', (set, get) =>
 
 /** The settings without the actions: what the key holds. */
 function saved(s: DeviceSettings): DeviceSettings {
-  return { mode: s.mode, textSize: s.textSize, chatWidth: s.chatWidth, nav: s.nav, chat: s.chat }
+  return {
+    mode: s.mode,
+    textSize: s.textSize,
+    chatWidth: s.chatWidth,
+    nav: s.nav,
+    chat: s.chat,
+    pushPreview: s.pushPreview,
+  }
 }
 
 export type SettingsStorageOptions = {
@@ -107,7 +118,8 @@ export function startSettingsStorage({ storage, report, onChange }: SettingsStor
       s.textSize === before.textSize &&
       s.chatWidth === before.chatWidth &&
       s.nav === before.nav &&
-      s.chat === before.chat
+      s.chat === before.chat &&
+      s.pushPreview === before.pushPreview
     )
       return
     try {
@@ -129,6 +141,8 @@ export const useSettingsChatWidth = (): ChatWidth => useSettingsStore((s) => s.c
 export const useSettingsNav = (): readonly NavEntry[] => useSettingsStore((s) => s.nav)
 /** The new chat defaults; saved on this device, which chats do not use yet. @public */
 export const useSettingsChatDefaults = (): ChatDefaults => useSettingsStore((s) => s.chat)
+/** Whether a push to this browser shows a preview line. @public */
+export const useSettingsPushPreview = (): boolean => useSettingsStore((s) => s.pushPreview)
 /** The settings actions; a stable reference. @public */
 export const useSettingsActions = (): SettingsState['actions'] => useSettingsStore((s) => s.actions)
 

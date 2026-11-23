@@ -7,8 +7,9 @@ every store uses. A page's own view store sits in its page folder (d-088).
   and registers the store with `resetStores.ts`, so tests and stories
   start clean (`resetAllStores()`).
 - `settingsStore.ts`: the owner's settings on this device (d-119), kept
-  in localStorage under one key (`bridge/settings`, `lib/deviceSettings.ts`)
-  and never sent to the server. It starts at the defaults; only `main.ts`
+  in localStorage under one key (`bridge/settings`, `lib/deviceSettings.ts`);
+  only `pushPreview` goes to the server, with the push subscription
+  (`lib/pushSwitch.ts`). It starts at the defaults; only `main.ts`
   calls `startSettingsStorage()`, so a test or a story never reads or
   writes the owner's storage. A failed read or write goes to `report()`.
 

@@ -13,7 +13,8 @@ import { routeTree } from './routeTree.gen.ts'
 // opens the tab bar's More, then Settings in the drawer; on the desktop he taps the rail's Settings gear. The switch is
 // in the Settings page's Notifications section, its one place. On subscribes and saves, off ends the subscription and
 // deletes it, a denied permission says so and stays off, Safari outside the home-screen app says to add it there, and
-// a save that misses shows a line and stays off. A fake browser and server (lib/fakePush.ts) stand in for the
+// a save that misses shows a line and stays off. "Show message preview" below it is on by default, goes with the
+// subscription at turn on, and a tap while push is on saves the subscription again with the new choice. A fake browser and server (lib/fakePush.ts) stand in for the
 // permission prompt, the push service and the-bridge server.
 document.documentElement.classList.add('dark')
 document.documentElement.dataset.pandaTheme = 'viewscreen'
@@ -104,6 +105,32 @@ describe.each(layouts)('the Notifications switch in $name', (layout) => {
     await expect.element(toggle).not.toBeChecked()
     await expect.element(toggle).toBeDisabled()
     expect(push.requestPermission).not.toHaveBeenCalled()
+  })
+
+  it('sends "Show message preview" on with the subscription by default', async () => {
+    const { push, row } = await show(layout, { permission: 'default' })
+    const preview = page.getByRole('switch', { name: 'Show message preview' })
+    await expect.element(preview).toBeChecked()
+    await userEvent.click(row)
+    await expect.poll(() => push.requests.length).toBe(2)
+    expect(push.requests[1]?.body).toMatchObject({ endpoint: fakeEndpoint, preview: true })
+  })
+
+  it('saves the subscription again with the preview off when the owner taps "Show message preview"', async () => {
+    const { push, toggle } = await show(layout, { permission: 'granted', subscribed: true })
+    await expect.element(toggle).toBeChecked()
+    const preview = page.getByRole('switch', { name: 'Show message preview' })
+    const previewRow = preview.element().closest('label')
+    if (previewRow === null) throw new Error('the preview switch has no label row')
+    await userEvent.click(previewRow)
+    await expect.element(preview).not.toBeChecked()
+    await expect.poll(() => push.requests.length).toBe(1)
+    expect(push.requests[0]).toMatchObject({
+      method: 'POST',
+      path: '/api/push/subscriptions',
+      body: { endpoint: fakeEndpoint, preview: false },
+    })
+    await expect.element(toggle).toBeChecked()
   })
 
   it('shows a line and stays off when the save misses', async () => {

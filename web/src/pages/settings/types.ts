@@ -22,6 +22,7 @@ export const SettingsValues = z.object({
   chatWidth: z.enum(chatWidths),
   nav: z.array(NavEntry),
   chat: z.object({ model: z.enum(chatModels), effort: z.enum(chatEfforts), permission: z.enum(chatPermissions) }),
+  pushPreview: z.boolean(),
 })
 export type SettingsValues = z.infer<typeof SettingsValues>
 

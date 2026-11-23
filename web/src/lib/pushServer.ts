@@ -24,9 +24,16 @@ export async function readPushKey(): Promise<string | PushServerMiss> {
   }
 }
 
-/** Saves this browser's subscription (`PushSubscription.toJSON()`); undefined on a 204. */
-export async function savePushSubscription(subscription: unknown): Promise<PushServerMiss | undefined> {
-  const body = PushSubscriptionRequest.safeParse(subscription)
+/**
+ * Saves this browser's subscription (`PushSubscription.toJSON()`) with the owner's "Show message preview" choice; a
+ * save of the same endpoint replaces the one before. Undefined on a 204.
+ */
+export async function savePushSubscription(
+  subscription: unknown,
+  preview: boolean,
+): Promise<PushServerMiss | undefined> {
+  const json: unknown = typeof subscription === 'object' && subscription !== null ? { ...subscription, preview } : null
+  const body = PushSubscriptionRequest.safeParse(json)
   if (!body.success) return { miss: 'invalid-subscription' }
   try {
     const answer = await api.api.push.subscriptions.$post({ json: body.data })
