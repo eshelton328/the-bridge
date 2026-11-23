@@ -1584,12 +1584,13 @@ export function createHerdrAgents({
       const top = chatRoot === undefined ? null : await realpath(join(chatRoot, 'projects')).catch(() => null)
       if (top === null) return ok(found)
       for (const space of spaces.value.workspaces) {
-        const cwd = panes.value.panes.find((p) => p.workspace_id === space.workspace_id)?.cwd
-        const real = cwd === undefined || cwd === null ? null : await realpath(cwd).catch(() => null)
-        // The first folder name below projects/ is the project, as in <chat root>/projects/<project>/<repo>.
-        const project = real?.startsWith(top + sep) ? real.slice(top.length + 1).split(sep)[0] : undefined
-        if (project !== undefined && project !== '' && !found.has(project))
-          found.set(project, WorkspaceId.parse(`${machine}/${space.workspace_id}`))
+        for (const pane of panes.value.panes.filter((p) => p.workspace_id === space.workspace_id)) {
+          const real = pane.cwd === undefined || pane.cwd === null ? null : await realpath(pane.cwd).catch(() => null)
+          // The first folder name below projects/ is the project, as in <chat root>/projects/<project>/<repo>.
+          const project = real?.startsWith(top + sep) ? real.slice(top.length + 1).split(sep)[0] : undefined
+          if (project !== undefined && project !== '' && !found.has(project))
+            found.set(project, WorkspaceId.parse(`${machine}/${space.workspace_id}`))
+        }
       }
       return ok(found)
     },
