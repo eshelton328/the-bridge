@@ -15,7 +15,7 @@ import { readBuild, readDisplayMode, type TraceRoute } from './keyboardTrace.ts'
 import { type RouteSource, traceRoute } from './keyboardChatTrace.ts'
 
 /** The chat header's title: the h2 of a header with a Figma layer in the AppShell detail (ChatHead). */
-const CHAT_TITLE = '.app-shell__detail header[data-figma] h2'
+export const CHAT_TITLE = '.app-shell__detail header[data-figma] h2'
 
 /** The computed styles a dump reads for each element, by their CSS names. */
 export const DUMP_STYLES = [

@@ -176,7 +176,10 @@ imports it dynamically with the trace, so a build has none of it.
 
 - It runs only on `/workspaces` while a chat is open: while its header's
   title, the h2 of ChatHead (`.app-shell__detail header[data-figma] h2`),
-  is on the page. Off that route it holds only the router subscription.
+  is on the page. That is the phone's and the tablet's open chat; the
+  desktop panes are not the AppShell detail, so they take no dump
+  (`WorkspacesHeaderTrace.test.tsx`). Off that route it holds only the
+  router subscription.
 - It takes one dump at the open, every 3 s, and after a `scroll`,
   `resize`, `focusin`, `focusout`, `orientationchange`, `pageshow` or
   `visibilitychange` of the window, or a resize or scroll of
