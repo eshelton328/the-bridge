@@ -17,6 +17,7 @@ import { ArtifactsScreen } from './screens/ArtifactsScreen.tsx'
 import { useArtifactWrites } from './useArtifactWrites.ts'
 import type { ArtifactsUi, CopiedLink } from './types.ts'
 import { usePushSwitch } from '../../state/pushStore.ts'
+import { useVisibleNavPages } from '../../state/settingsStore.ts'
 
 const route = getRouteApi('/artifacts')
 
@@ -32,6 +33,7 @@ const reportCopy = (error: unknown) => {
 export function ArtifactsPage() {
   const state = route.useLoaderData()
   const push = usePushSwitch()
+  const navPages = useVisibleNavPages()
   const search = route.useSearch()
   const navigate = route.useNavigate()
   const router = useRouter()
@@ -68,6 +70,7 @@ export function ArtifactsPage() {
   return (
     <ArtifactsScreen
       push={push}
+      navPages={navPages}
       data={{ ...state.data, railBadge }}
       ui={ui}
       viewport="desktop"

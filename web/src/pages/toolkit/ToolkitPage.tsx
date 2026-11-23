@@ -11,6 +11,7 @@ import { useInboxBadge } from '../../lib/inboxFeed.ts'
 import { ToolkitScreen } from './screens/ToolkitScreen.tsx'
 import type { ToolkitUi } from './types.ts'
 import { usePushSwitch } from '../../state/pushStore.ts'
+import { useVisibleNavPages } from '../../state/settingsStore.ts'
 
 const route = getRouteApi('/toolkit')
 
@@ -30,12 +31,14 @@ export function ToolkitPage() {
     import.meta.env.DEV && search.state === undefined && search.source === undefined,
   )
   const push = usePushSwitch()
+  const navPages = useVisibleNavPages()
   const navigate = route.useNavigate()
   const [changed, setChanged] = useState<Changed>({ of: state.ui, ui: {} })
   const own = changed.of === state.ui ? changed.ui : {}
   return (
     <ToolkitScreen
       push={push}
+      navPages={navPages}
       data={{ ...state.data, railBadge }}
       ui={{ ...state.ui, ...own }}
       viewport="desktop"

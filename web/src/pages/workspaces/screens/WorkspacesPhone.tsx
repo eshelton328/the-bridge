@@ -86,6 +86,7 @@ import { modelText } from '../blocks/modelText.ts'
 import { type NewChatStarter, startOf } from '../blocks/newChatStart.ts'
 import type { PhoneText, WorkspaceEdits, WorkspacesData, WorkspacesUi } from '../types.ts'
 import type { ComposerAnswer } from '../blocks/useComposerActions.ts'
+import { defaultVisiblePages, type NavPage, navLayout, tabletMorePage } from '../../../lib/deviceSettings.ts'
 import type { PushSwitch } from '../../../lib/pushSwitch.ts'
 
 export type WorkspacesPhoneProps = {
@@ -99,6 +100,8 @@ export type WorkspacesPhoneProps = {
   onNavigate?: ((page: string) => void) | undefined
   /** The Notifications switch (d-118) at the rail's end and in the phone's More drawer; none in the Figma states. */
   push?: PushSwitch | undefined
+  /** The shown nav pages in the owner's order (d-038, d-119); the default order without it, as the Figma states draw. */
+  navPages?: readonly NavPage[] | undefined
   onUiChange: (change: Partial<WorkspacesUi>) => void
   /** The composer drafts by chat (draftBook.ts): a chat's composer starts from its draft and sets it as the owner types. */
   drafts: DraftBook
@@ -135,6 +138,7 @@ export function WorkspacesPhone({
   ui,
   onNavigate,
   push,
+  navPages = defaultVisiblePages,
   onUiChange,
   drafts,
   onSend,
@@ -626,12 +630,13 @@ export function WorkspacesPhone({
         tabBar={
           <AppTabBar
             selected="workspaces"
+            pages={navLayout(navPages, device).tabs}
             device={device}
             inboxBadge={data.railBadge}
             onSelect={(next) => {
-              // The tablet has no More drawer: More goes to its page, as on the Inbox's tablet.
+              // The tablet has no More drawer: More opens the first page past its tabs, as on the Inbox's tablet.
               if (next === 'more' && device === 'phone') setMoreOpen(true)
-              else onNavigate?.(next)
+              else onNavigate?.(next === 'more' ? tabletMorePage(navLayout(navPages, device).more) : next)
             }}
           />
         }
@@ -703,7 +708,14 @@ export function WorkspacesPhone({
         />
       )}
       {device === 'phone' ? (
-        <MoreDrawer open={moreOpen} onOpenChange={setMoreOpen} onNavigate={onNavigate} push={push} />
+        <MoreDrawer
+          open={moreOpen}
+          onOpenChange={setMoreOpen}
+          pages={navLayout(navPages, 'phone').more}
+          selected="workspaces"
+          onNavigate={onNavigate}
+          push={push}
+        />
       ) : null}
     </Backdrop>
   )

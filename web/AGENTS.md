@@ -15,6 +15,11 @@ Storybook and the canvas bundle. Styles come from the component library
   `viewport-fit=cover`, so AppShell pads by the safe-area insets
   (bridge-shell, brain 681246a). Keep both; `src/app/viewport.test.ts`
   checks it.
+- `index.html`'s `color-mode` script applies the saved colour mode
+  before the first paint (d-119): it reads only the `bridge/settings`
+  key, and a missing or bad value or blocked storage keeps Dark with no
+  throw. `app/colorMode.ts` keeps the mode applied after; the page has no
+  Content-Security-Policy. `src/app/colorMode.test.ts` runs the script.
 
 ## The library dependency
 

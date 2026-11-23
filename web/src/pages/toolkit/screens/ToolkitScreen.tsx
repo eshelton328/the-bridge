@@ -34,6 +34,7 @@ import { AppRail } from '../../../blocks/AppRail.tsx'
 import { AppTabBar } from '../../../blocks/AppTabBar.tsx'
 import { MoreDrawer } from '../../../blocks/MoreDrawer.tsx'
 import { ViewportFrame } from '../../../blocks/ViewportFrame.tsx'
+import { defaultVisiblePages, type NavPage, navLayout, tabletMorePage } from '../../../lib/deviceSettings.ts'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { ToolkitGroup } from '../blocks/ToolkitGroup.tsx'
 import { ToolkitHeader } from '../blocks/ToolkitHeader.tsx'
@@ -89,6 +90,8 @@ export type ToolkitScreenProps = {
   onNavigate?: ((page: string) => void) | undefined
   /** The Notifications switch (d-118) at the rail's end and in the phone's More drawer; none in the Figma states. */
   push?: PushSwitch | undefined
+  /** The shown nav pages in the owner's order (d-038, d-119); the default order without it, as the Figma states draw. */
+  navPages?: readonly NavPage[] | undefined
   /** Reports what the owner changes: the view, the kind chip, the search or a group opened or closed. */
   onUiChange?: ((change: Partial<ToolkitUi>) => void) | undefined
   /** Copies an open item's path, from its path badge. */
@@ -112,6 +115,7 @@ function ToolkitLayout({
   layout,
   onNavigate,
   push,
+  navPages = defaultVisiblePages,
   onUiChange: report,
   onCopyPath,
   onCopyText,
@@ -123,6 +127,7 @@ function ToolkitLayout({
     report(withDiscussReset(ui, change))
   }
   const desktop = layout === 'desktop'
+  const nav = navLayout(navPages, layout)
   const view = listView(data, ui)
   const open = openItem(data, ui)
   // The item's discussion (D5): beside the item on the desktop, in its place on a tablet or phone (T5, M7).
@@ -451,7 +456,13 @@ function ToolkitLayout({
         view="detail"
         rail={
           desktop ? (
-            <AppRail selected="toolkit" inboxBadge={data.railBadge} onSelect={onNavigate} push={push} />
+            <AppRail
+              selected="toolkit"
+              pages={nav.rail}
+              inboxBadge={data.railBadge}
+              onSelect={onNavigate}
+              push={push}
+            />
           ) : undefined
         }
         tabBarOverlay
@@ -459,13 +470,16 @@ function ToolkitLayout({
         tabBar={
           desktop || thread !== undefined ? undefined : (
             <AppTabBar
-              selected="more"
+              // A page the tab bar does not show selects More, as Toolkit in the default order (d-105).
+              selected="toolkit"
+              pages={nav.tabs}
               device={layout === 'tablet' ? 'tablet' : 'phone'}
               inboxBadge={data.railBadge}
               onSelect={(next) => {
-                // On the phone More opens the drawer; the tablet's More stays the page's way to Toolkit (d-105).
+                // On the phone More opens the drawer; the tablet's More opens the first page past its tabs,
+                // Toolkit in the default order (d-105).
                 if (next === 'more' && layout === 'phone') onUiChange({ moreOpen: true })
-                else onNavigate?.(next)
+                else onNavigate?.(next === 'more' ? tabletMorePage(nav.more) : next)
               }}
             />
           )
@@ -527,6 +541,7 @@ function ToolkitLayout({
         onOpenChange={(open) => {
           onUiChange({ moreOpen: open })
         }}
+        pages={navLayout(navPages, 'phone').more}
         selected="toolkit"
         counts={{ artifacts: data.artifactsCount, toolkit: data.count }}
         onNavigate={onNavigate}

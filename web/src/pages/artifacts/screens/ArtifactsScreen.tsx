@@ -24,6 +24,7 @@ import { AppRail } from '../../../blocks/AppRail.tsx'
 import { AppTabBar } from '../../../blocks/AppTabBar.tsx'
 import { MoreDrawer } from '../../../blocks/MoreDrawer.tsx'
 import { ViewportFrame } from '../../../blocks/ViewportFrame.tsx'
+import { defaultVisiblePages, type NavPage, navLayout, tabletMorePage } from '../../../lib/deviceSettings.ts'
 import type { Viewport } from '../../../lib/screenState.ts'
 import type { AddLinkInput, ArtifactsData, ArtifactsNotice, ArtifactsUi, CopiedLink } from '../types.ts'
 import type { ProposalAct } from '../blocks/ArtifactProposal.tsx'
@@ -48,6 +49,8 @@ export type ArtifactsScreenProps = {
   onNavigate?: ((page: string) => void) | undefined
   /** The Notifications switch (d-118) at the rail's end and in the phone's More drawer; none in the Figma states. */
   push?: PushSwitch | undefined
+  /** The shown nav pages in the owner's order (d-038, d-119); the default order without it, as the Figma states draw. */
+  navPages?: readonly NavPage[] | undefined
   /** Reports what the owner changes: the chip, the search, the view and the open groups. */
   onUiChange?: ((change: Partial<ArtifactsUi>) => void) | undefined
   /** Copy link on an open artifact was pressed (D2, T2, M2), with the address its link opens. */
@@ -70,6 +73,7 @@ export function ArtifactsScreen({
   viewport,
   onNavigate,
   push,
+  navPages = defaultVisiblePages,
   onUiChange,
   onCopyLink,
   copiedLink,
@@ -165,6 +169,7 @@ export function ArtifactsScreen({
         const closeDiscussion = () => {
           onUiChange?.({ discussOpen: false })
         }
+        const nav = navLayout(navPages, layout)
         return (
           <Backdrop size={layout}>
             <AppShell
@@ -172,7 +177,13 @@ export function ArtifactsScreen({
               size={layout}
               rail={
                 layout === 'desktop' ? (
-                  <AppRail selected="artifacts" inboxBadge={data.railBadge} onSelect={onNavigate} push={push} />
+                  <AppRail
+                    selected="artifacts"
+                    pages={nav.rail}
+                    inboxBadge={data.railBadge}
+                    onSelect={onNavigate}
+                    push={push}
+                  />
                 ) : undefined
               }
               // The library and the artifact's page on a tablet or phone (T2, M2) run under the tab bar, as Figma draws them; their
@@ -181,14 +192,15 @@ export function ArtifactsScreen({
               tabBar={
                 layout === 'desktop' || discussing ? undefined : (
                   <AppTabBar
-                    // The phone opens Artifacts from More (d-105).
-                    selected={layout === 'tablet' ? 'artifacts' : 'more'}
+                    // A page the tab bar does not show selects More: the phone opens Artifacts from More (d-105).
+                    selected="artifacts"
+                    pages={nav.tabs}
                     device={layout === 'tablet' ? 'tablet' : 'phone'}
                     inboxBadge={data.railBadge}
                     onSelect={(next) => {
                       // M8: on the phone More opens the More drawer; the tablet's tabs navigate.
                       if (next === 'more' && layout === 'phone') onUiChange?.({ moreOpen: true })
-                      else onNavigate?.(next)
+                      else onNavigate?.(next === 'more' ? tabletMorePage(nav.more) : next)
                     }}
                   />
                 )
@@ -321,6 +333,7 @@ export function ArtifactsScreen({
               onOpenChange={(moreOpen) => {
                 onUiChange?.({ moreOpen })
               }}
+              pages={navLayout(navPages, 'phone').more}
               selected="artifacts"
               counts={{ artifacts: data.count }}
               onNavigate={onNavigate}

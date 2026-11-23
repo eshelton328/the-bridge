@@ -1,11 +1,14 @@
-// The app's entry: it marks the page as the app, blocks page zoom, starts
+// The app's entry: it marks the page as the app, loads the device settings (d-119), blocks page zoom, starts
 // the dev keyboard trace and the composer's proxy focus, adds the client error sender when the app reads
 // the live server and mounts the app on #root (mountApp.ts).
 import '@fontsource-variable/geist'
 import '@fontsource-variable/geist-mono'
 import '../index.css'
 import { installClientErrorSender } from '../errors/clientErrorSender.ts'
+import { report } from '../errors/reporter.ts'
+import { startSettingsStorage } from '../state/settingsStore.ts'
 import { markApp } from './appMarker.ts'
+import { followColorMode } from './colorMode.ts'
 import { installKeyboardProxy, proxyFocusApplies } from './keyboardProxy.ts'
 import { startKeyboardTraceIfOn } from './keyboardTraceSwitch.ts'
 import { mountApp } from './mountApp.ts'
@@ -16,6 +19,18 @@ const container = document.getElementById('root')
 if (container === null) throw new Error('index.html has no #root element')
 
 markApp()
+// The owner's settings on this device (d-119): loaded from localStorage, saved on each change, and the colour mode
+// kept applied after index.html's inline script applied it before the first paint (colorMode.ts).
+const colorMode = followColorMode()
+startSettingsStorage({
+  storage: () => window.localStorage,
+  report: (error) => {
+    report(error, 'handler')
+  },
+  onChange: (settings) => {
+    colorMode.apply(settings.mode)
+  },
+})
 blockPageZoom()
 // The keyboard trace, dev only: with `?keyboard-trace` the whole page, or,
 // when the dev server's switch is on, one session per keyboard open in a

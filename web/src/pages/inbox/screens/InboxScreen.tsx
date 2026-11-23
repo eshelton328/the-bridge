@@ -15,6 +15,7 @@ import { AppRail } from '../../../blocks/AppRail.tsx'
 import { AppTabBar } from '../../../blocks/AppTabBar.tsx'
 import { MoreDrawer } from '../../../blocks/MoreDrawer.tsx'
 import { ViewportFrame } from '../../../blocks/ViewportFrame.tsx'
+import { defaultVisiblePages, type NavPage, navLayout, tabletMorePage } from '../../../lib/deviceSettings.ts'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { kindValue } from '../types.ts'
 import { DiscussionPanel } from '../blocks/DiscussionPanel.tsx'
@@ -61,6 +62,8 @@ export type InboxScreenProps = {
   onNavigate?: ((page: string) => void) | undefined
   /** The Notifications switch (d-118) at the rail's end and in the phone's More drawer; none in the Figma states. */
   push?: PushSwitch | undefined
+  /** The shown nav pages in the owner's order (d-038, d-119); the default order without it, as the Figma states draw. */
+  navPages?: readonly NavPage[] | undefined
   /** What the owner typed in the open item, from the page store; without it the screen keeps its own. */
   drafts?: InboxDrafts | undefined
   onFilterChange?: ((filter: string) => void) | undefined
@@ -106,6 +109,7 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
     ui,
     onNavigate,
     push,
+    navPages = defaultVisiblePages,
     onSelectItem,
     onBack,
     onPromptOpenChange,
@@ -121,6 +125,7 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
   const data = startView(discussionView(props.data, ui), ui)
   const { discussion } = data
   const desktop = layout === 'desktop'
+  const nav = navLayout(navPages, layout)
   // On the phone the tab bar's More opens the More drawer over it (Toolkit M4); picking a page navigates.
   const [moreOpen, setMoreOpen] = useState(false)
   // Where the tablet or phone list was scrolled when the owner opened a row, so Back shows the list at the same place.
@@ -411,7 +416,7 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
         view={open === null && rowOpened === undefined ? 'list' : 'detail'}
         rail={
           desktop ? (
-            <AppRail selected="inbox" inboxBadge={data.railBadge} onSelect={onNavigate} push={push} />
+            <AppRail selected="inbox" pages={nav.rail} inboxBadge={data.railBadge} onSelect={onNavigate} push={push} />
           ) : undefined
         }
         tabBarOverlay
@@ -419,11 +424,12 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
           desktop || inChat || keyboard ? undefined : (
             <AppTabBar
               selected="inbox"
+              pages={nav.tabs}
               device={layout === 'tablet' ? 'tablet' : 'phone'}
               inboxBadge={data.railBadge}
               onSelect={(next) => {
                 if (next === 'more' && layout === 'phone') setMoreOpen(true)
-                else onNavigate?.(next)
+                else onNavigate?.(next === 'more' ? tabletMorePage(nav.more) : next)
               }}
             />
           )
@@ -432,7 +438,14 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
         detail={detail}
       />
       {layout === 'phone' ? (
-        <MoreDrawer open={moreOpen} onOpenChange={setMoreOpen} onNavigate={onNavigate} push={push} />
+        <MoreDrawer
+          open={moreOpen}
+          onOpenChange={setMoreOpen}
+          pages={nav.more}
+          selected="inbox"
+          onNavigate={onNavigate}
+          push={push}
+        />
       ) : null}
       {remove === undefined ? null : (
         <RemoveDialog

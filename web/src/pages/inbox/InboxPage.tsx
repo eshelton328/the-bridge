@@ -26,6 +26,7 @@ import { inboxSources } from './loadInboxState.ts'
 import { InboxScreen } from './screens/InboxScreen.tsx'
 import { withNewBoxes } from './screens/listView.ts'
 import { usePushSwitch } from '../../state/pushStore.ts'
+import { useVisibleNavPages } from '../../state/settingsStore.ts'
 import { useLiveItem } from './useLiveItem.ts'
 import { watchLiveInbox } from './liveInbox.ts'
 
@@ -38,6 +39,7 @@ const route = getRouteApi('/inbox')
 export function InboxPage() {
   const state = route.useLoaderData()
   const push = usePushSwitch()
+  const navPages = useVisibleNavPages()
   const search = route.useSearch()
   const navigate = route.useNavigate()
   const groupsOpen = useInboxGroupsOpen()
@@ -101,6 +103,7 @@ export function InboxPage() {
   return (
     <InboxScreen
       push={push}
+      navPages={navPages}
       data={data}
       liveOpen={liveItem.open}
       onLiveAct={
