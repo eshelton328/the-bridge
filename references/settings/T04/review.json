@@ -1,8 +1,8 @@
 {
   "frameId": "T04",
-  "inputs": "cc9dd5efc5281e62d88c93b876a460e627c0e29ece5cd806d9d80df89c792f0d",
+  "inputs": "28eeb3635db10eabe1109c0b720d6ec56047ec2fd2d46d4f5cc549b8da46a979",
   "library": "1.0.0-beta.111",
-  "recordSha256": "622c7b4804753ec7123b7a9969c3c3e7f8421721d4676f7c8caddc877d95489a",
+  "recordSha256": "b406b1f237fc2b8caacdc623544749467ab1bfdc6d34db3073cabf41fe834d89",
   "record": {
     "verdict": "match",
     "viewport": "1180x820 iPad landscape, Light (tablet layout)",
@@ -12,7 +12,7 @@
       "render": "reports/fidelity/settings/T04.sideBySide.png",
       "reference_side": "left"
     },
-    "summary": "The render matches the reference except for the accepted deviations: the muted Text size control with \"Coming soon\", the new Chat width row, and the Navigation card sitting lower as a result.",
+    "summary": "Apart from the accepted deviations, the render matches the reference: the disabled Text size control with \"Coming soon\", the new Chat width row and the Navigation card about 100 px lower are all accepted, and the header, Appearance rows, Navigation intro, Home and Inbox rows and the tab bar are the same.",
     "findings": [],
     "accepted_deviations": [
       {
@@ -20,47 +20,48 @@
         "as_given": "Text size: the control is disabled (muted labels) and its line under it says \"Coming soon\" in place of \"Scales the whole app: Small 87.5 %, Default 100 %, Large 112.5 %.\" (step D adds text size later). On a narrow screen the one-line note makes every section below it sit about one text line higher.",
         "status": "as-described",
         "finding": null,
-        "note": "Small, Default and Large are muted and the line says \"Coming soon\". On the tablet the reference note also fits on one line, so nothing moves up."
+        "note": "Small, Default and Large are muted, and the line under the control says \"Coming soon\". At this width both notes fit on one line, so nothing below moves because of it."
       },
       {
         "id": "A2",
         "as_given": "A new \"NOTIFICATIONS\" section with one \"Notifications\" switch (off) sits between the Navigation section and the New chat defaults section. So New chat defaults sits lower, or below the bottom edge.",
         "status": "not-seen",
         "finding": null,
-        "note": "The section would be below the bottom edge of this frame. The description allows this."
+        "note": "In both pictures the frame ends inside the Navigation card, so this section is below the bottom edge."
       },
       {
         "id": "A3",
         "as_given": "The Notifications switch moved to that section: the desktop rail no longer has the \"Notifications / Blocked in Settings\" switch at its bottom, and the More drawer no longer has the \"Notifications / Blocked in Settings\" row at its end. So the drawer is shorter and its top edge sits lower.",
         "status": "not-seen",
         "finding": null,
-        "note": "This frame shows no desktop rail and no open More drawer."
+        "note": "The tablet layout has no rail and the More drawer is closed in both pictures. The tab bar is the same in both."
       },
       {
         "id": "A4",
         "as_given": "The Navigation list has a new last row, \"Settings\", with the line \"Always shown: in the bar or under More.\" under it and up and down buttons but no switch (the owner's decision: Settings is an entry of the bar order that cannot be hidden). So Toolkit's down button is now enabled, the Navigation card is taller, and every section below it sits lower or below the bottom edge.",
         "status": "not-seen",
         "finding": null,
-        "note": "Only the Home and Inbox rows show in the render. The Settings row and Toolkit would be below the bottom edge."
+        "note": "The end of the Navigation list is below the bottom edge in both pictures."
       },
       {
         "id": "A5",
         "as_given": "On the phone and the tablet only: a thin rule line with the text \"Under More on this device\" under it sits after the last page that the tab bar shows (Projects on the phone, Artifacts on the tablet), so the rows after it sit lower by about 40 px.",
         "status": "not-seen",
         "finding": null,
-        "note": "The Artifacts row and the rule after it would be below the bottom edge in the render."
+        "note": "Only the Home and Inbox rows are visible in the render, so the Artifacts row and anything after it is below the bottom edge."
       },
       {
         "id": "A6",
         "as_given": "Appearance has a new last row, \"Chat width\", under Text size: a three-way control \"Full\", \"Wide\", \"Narrow\" with Full selected, and a line under it. On the desktop and the tablet the control is enabled and the line says \"The messages and the message box of a Workspaces chat, centred.\"; on the phone the control is disabled (muted labels) and the line says \"Phone: always full\". So the Appearance card is taller, and every section below it sits lower (about one row) or below the bottom edge.",
         "status": "as-described",
         "finding": null,
-        "note": "Chat width is enabled with Full selected and shows the tablet line. The Navigation card starts about 100 px lower, at y=560 in place of y=460."
+        "note": "Chat width shows Full, Wide and Narrow, with Full selected, and the line under it says \"The messages and the message box of a Workspaces chat, centred.\" The Navigation card starts about 100 px lower, so only Home and Inbox are visible above the tab bar."
       }
     ],
     "limits": [
-      "The side-by-side image was shown at about 2384 px wide, so each half was at about 1x. Differences under about 2 px may not have been checked.",
-      "The frame shows only the top of the page. The Notifications section, the Navigation rows after Inbox and the rule line after Artifacts are below the bottom edge, so I could not check them."
+      "The bottom of the Navigation card and everything below it are beyond the bottom edge in both pictures, so the new Navigation rows, the tablet's \"Under More on this device\" rule and the Notifications section could not be checked.",
+      "The More drawer is closed in both pictures, so the drawer contents could not be checked.",
+      "I checked the side-by-side image as displayed and did not examine differences under about 2 px closely. No region crops were provided."
     ]
   }
 }
