@@ -15,7 +15,7 @@ let question = ''
 process.stdin.on('data', (d) => { question += d })
 process.stdin.on('end', () => {
   const herdr = Object.keys(process.env).filter((k) => k.startsWith('HERDR_'))
-  writeFileSync(seen, JSON.stringify({ args: process.argv.slice(3), question, herdr, marker: process.env.SIDE_MARKER }))
+  writeFileSync(seen, JSON.stringify({ args: process.argv.slice(3), question, herdr, marker: process.env.SIDE_MARKER, codeMode: process.env.CLAUDE_CODE_EXPERIMENTAL_CODE_MODE }))
   const out = (line) => process.stdout.write(JSON.stringify(line) + '\\n')
   const say = (text, parent = null) =>
     out({ type: 'assistant', parent_tool_use_id: parent, message: { content: [{ type: 'text', text }] } })
@@ -130,5 +130,30 @@ describe('claude side runner', () => {
     expect(logged.lines()).toEqual([expect.objectContaining({ msg: 'side run failed', timedOut: true })])
     expect(await ask('stubborn', undefined, { timeoutMs: 200, killAfterMs: 200 })).toEqual([{ end: 'failed' }])
     expect(logged.lines()).toEqual([expect.objectContaining({ signal: 'SIGKILL', timedOut: true })])
+  })
+
+  it("copies Code Mode from the owner's settings file, as --restricted loads none, and no other env key", async () => {
+    await writeFile(
+      join(dir, 'settings.json'),
+      JSON.stringify({ env: { CLAUDE_CODE_EXPERIMENTAL_CODE_MODE: '1', SIDE_MARKER: 'from-settings' } }),
+    )
+    const run = claudeSideRunner({
+      model: 'sonnet',
+      env: { PATH: '/usr/bin' },
+      log: memoryLogger().log,
+      settingsFile: join(dir, 'settings.json'),
+      command: [process.execPath, join(dir, 'fake.cjs'), join(dir, 'seen.json')],
+    })
+    for await (const chunk of run({ session: 's', folder: dir, question: 'q', signal: new AbortController().signal }))
+      expect(chunk).toBeDefined()
+    const seen: unknown = JSON.parse(await readFile(join(dir, 'seen.json'), 'utf8'))
+    expect(seen).toMatchObject({ codeMode: '1' })
+    expect(seen).not.toHaveProperty('marker')
+  })
+
+  it('sets no Code Mode when the settings file is missing or names none', async () => {
+    expect((await ask('q')).at(-1)).toEqual({ end: 'done' })
+    const seen: unknown = JSON.parse(await readFile(join(dir, 'seen.json'), 'utf8'))
+    expect(seen).not.toHaveProperty('codeMode')
   })
 })

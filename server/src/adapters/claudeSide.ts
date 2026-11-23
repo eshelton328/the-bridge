@@ -6,6 +6,7 @@ import { spawn } from 'node:child_process'
 import { createInterface } from 'node:readline'
 import { z } from 'zod'
 import type { Logger } from '../logger.ts'
+import { codeModeKey, readCodeMode } from './claudeSettings.ts'
 import type { SideChunk, SideRunner } from '../services/agentPort.ts'
 
 /** The most stderr a failed run logs: its last part. */
@@ -79,6 +80,7 @@ export function claudeSideRunner({
   model,
   env,
   log,
+  settingsFile,
   command = ['claude'],
   timeoutMs = 120_000,
   killAfterMs = 5_000,
@@ -86,6 +88,11 @@ export function claudeSideRunner({
   readonly model: string
   readonly env: Readonly<Record<string, string | undefined>>
   readonly log: Logger
+  /**
+   * The owner's Claude Code settings file. `--restricted` loads no settings file, so a run copies its Code Mode value
+   * (`env`) into the process's environment: a session started in Code Mode resumes only in Code Mode.
+   */
+  readonly settingsFile?: string
   readonly command?: readonly [string, ...string[]]
   /** A run that has not ended by then gets SIGTERM and ends `failed`, also when the caller sets no limit. */
   readonly timeoutMs?: number
@@ -96,9 +103,11 @@ export function claudeSideRunner({
   const [bin, ...pre] = command
   return async function* run({ session, folder, question, signal }): AsyncGenerator<SideChunk> {
     if (signal.aborted) return
+    // Read at each run, as the owner can turn Code Mode on or off between questions.
+    const codeMode = settingsFile === undefined ? undefined : await readCodeMode(settingsFile)
     const child = spawn(bin, [...pre, ...sideArgs(session, model)], {
       cwd: folder,
-      env: childEnv,
+      env: codeMode === undefined ? childEnv : { ...childEnv, [codeModeKey]: codeMode },
       stdio: ['pipe', 'pipe', 'pipe'],
     })
     // The last part of stderr, logged only when the run fails; it never holds the question, which goes on stdin.

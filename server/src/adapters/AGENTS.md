@@ -255,7 +255,10 @@ client of a socket or a file sits beside them.
   plugins, and the file tools stay in the working folder), in the chat's folder with an argument
   list, never a shell, with the server's environment less each `HERDR_`
   variable (in a herdr pane, Claude Code's herdr hook would report the
-  side session as the server pane's). The question goes on stdin. The answer is the
+  side session as the server pane's), and with the owner's settings
+  file's `env.CLAUDE_CODE_EXPERIMENTAL_CODE_MODE` when it sets one, read
+  at each run and no other `env` key: `--restricted` loads no settings
+  file, and a session started in Code Mode resumes only in it. The question goes on stdin. The answer is the
   text of each top-level assistant message; an error result, an exit
   with no result, a command that does not start or a run past its 120 s
   limit is `failed` and logs `side run failed` with the exit, the
