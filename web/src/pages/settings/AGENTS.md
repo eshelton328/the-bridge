@@ -29,8 +29,10 @@ folder is for and the rules of every page.
 - Appearance's Chat width (Full, Wide, Narrow) sets the Workspaces chats'
   column on the tablet and the desktop (`ChatPane`); the phone shows it
   off with "Phone: always full" (`app/ChatWidthRoute.test.tsx`).
-- Text size is disabled with "Coming soon" until step D uses the library's
-  text size sets (`LIBRARY_GAPS.md`).
+- Appearance's Text size (Small, Default, Large; Default for everyone,
+  d-122) sets the library's class on `<html>` at once: Small is the
+  designs' size and needs no class (`app/textSize.ts`,
+  `app/TextSizeRoute.test.tsx`). The fidelity frames stay at Small.
 - `app/SettingsRoute.test.tsx` and `app/PushSwitchRoute.test.tsx` test the
   page on the owner's path at 390, 744 and 1512 px.
 

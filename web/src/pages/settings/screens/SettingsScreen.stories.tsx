@@ -24,7 +24,8 @@ async function expectSections(canvas: Canvas) {
   // Each section's title; Notifications is also the switch's label, so the title is the first match.
   for (const section of ['Appearance', 'Navigation', 'Notifications', 'New chat defaults'])
     await expect(canvas.getAllByText(section, { exact: true })[0]).toBeVisible()
-  await expect(canvas.getByText('Coming soon')).toBeVisible()
+  await expect(canvas.getByText('Scales the text of the whole app. Small is the size of the designs.')).toBeVisible()
+  await expect(canvas.getByRole('radio', { name: 'Large' })).toBeEnabled()
   await expect(canvas.getByRole('switch', { name: 'Notifications' })).not.toBeChecked()
 }
 

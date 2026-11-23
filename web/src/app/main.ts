@@ -14,13 +14,15 @@ import { startKeyboardTraceIfOn } from './keyboardTraceSwitch.ts'
 import { mountApp } from './mountApp.ts'
 import { blockPageZoom } from './pageZoom.ts'
 import { router } from './router.ts'
+import { applyTextSize } from './textSize.ts'
 
 const container = document.getElementById('root')
 if (container === null) throw new Error('index.html has no #root element')
 
 markApp()
 // The owner's settings on this device (d-119): loaded from localStorage, saved on each change, and the colour mode
-// kept applied after index.html's inline script applied it before the first paint (colorMode.ts).
+// and the text size kept applied after index.html's inline scripts applied them before the first paint (colorMode.ts,
+// textSize.ts).
 const colorMode = followColorMode()
 startSettingsStorage({
   storage: () => window.localStorage,
@@ -29,6 +31,7 @@ startSettingsStorage({
   },
   onChange: (settings) => {
     colorMode.apply(settings.mode)
+    applyTextSize(settings.textSize)
   },
 })
 blockPageZoom()

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" class="dark" data-panda-theme="viewscreen">
+<html lang="en" class="dark text-default" data-panda-theme="viewscreen">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, interactive-widget=resizes-content, viewport-fit=cover" />
@@ -36,6 +36,16 @@
         document.documentElement.classList.toggle('dark', dark)
         var theme = document.querySelector('meta[name="theme-color"]')
         theme.setAttribute('content', theme.getAttribute(dark ? 'data-dark' : 'data-light'))
+      } catch (e) {}
+    </script>
+    <script id="text-size">
+      // The saved text size before the first paint (d-122; app/textSize.ts keeps it after). Small, the size of the
+      // designs, needs no class; Large is text-large. A missing or bad value, or blocked storage, keeps Default, the
+      // text-default class above.
+      try {
+        var size = JSON.parse(localStorage.getItem('bridge/settings')).textSize
+        if (size === 'small' || size === 'large') document.documentElement.classList.remove('text-default')
+        if (size === 'large') document.documentElement.classList.add('text-large')
       } catch (e) {}
     </script>
     <style id="launch-style">

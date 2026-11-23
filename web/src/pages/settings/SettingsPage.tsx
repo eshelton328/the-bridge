@@ -60,6 +60,7 @@ export function SettingsPage() {
         setChanged((c) => ({ of: search.state, ui: { ...(c.of === search.state ? c.ui : {}), ...change } }))
       }}
       onModeChange={actions.setMode}
+      onTextSizeChange={actions.setTextSize}
       onChatWidthChange={actions.setChatWidth}
       // Settings has no switch, so no page on screen can be hidden here; only the last-page rule can refuse.
       onNavVisibleChange={(page, visible) => actions.setNavPageVisible(page, visible, undefined) === undefined}
