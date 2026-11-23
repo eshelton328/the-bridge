@@ -39,6 +39,9 @@ export type ListView = {
  * Inbox's finished chat turns, liveList.ts) has its own chip.
  */
 const counted: readonly InboxGroupId[] = ['needsYou', 'toReview', 'nextSteps', 'running']
+/** The live Inbox's header and All are the server's `counts.total`, which holds the snoozed items too (R48). */
+const countedOf = (data: InboxData): readonly InboxGroupId[] =>
+  data.live === undefined ? counted : [...counted, 'snoozed']
 const chipGroups: Partial<Record<string, InboxGroupId>> = {
   needs: 'needsYou',
   review: 'toReview',
@@ -200,8 +203,9 @@ export function listView(data: InboxData, ui: InboxUi, query: string): ListView 
   const applied = appliedSections(data.filterMenu, ui.filters)
   const keep = (row: InboxRowView) => passes(row, applied)
   const all = () => true
-  const removed = less(data.groups, groups, all, counted)
-  const hidden = less(groups, groups, keep, counted)
+  const countedIds = countedOf(data)
+  const removed = less(data.groups, groups, all, countedIds)
+  const hidden = less(groups, groups, keep, countedIds)
   const drafted = appliedSections(data.filterMenu, ui.filterChecks)
   const searching = query.trim() !== ''
   const shown = chipView(data, groups, ui).flatMap((group) => {
@@ -231,7 +235,7 @@ export function listView(data: InboxData, ui: InboxUi, query: string): ListView 
     applied,
     hidden,
     preview: {
-      shown: data.count - removed - less(groups, groups, (row) => passes(row, drafted), counted),
+      shown: data.count - removed - less(groups, groups, (row) => passes(row, drafted), countedIds),
       of: data.count - removed,
     },
     results: shown.reduce((n, group) => n + group.rows.length, 0),

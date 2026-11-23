@@ -124,6 +124,16 @@ describe('liveList', () => {
     expect(shownFor('all').map(([id]) => id)).toEqual(['needsYou', 'toReview', 'snoozed'])
   })
 
+  it('takes a snoozed item that a filter hides out of the header and All, as counts.total has it', () => {
+    const live = liveList(inboxHome, withReview, { now })
+    // Only the chat place stays checked: the two brain items (one snoozed) are hidden.
+    const filters = live.ui.filters.filter((v) => v !== 'project:sample-project')
+    const view = listView(live.data, { ...live.ui, filters, filterChecks: filters }, '')
+    expect(view.count).toBe(2)
+    expect(view.filters.find((f) => f.value === 'all')?.count).toBe(2)
+    expect(view.hidden).toBe(2)
+  })
+
   it('keeps the line of a list that missed', () => {
     const empty = InboxResponse.parse({ items: [], counts: { needsYou: 0, total: 0 } })
     expect(liveList(inboxHome, empty, { now, line: 'Inbox not read' }).data.live?.line).toBe('Inbox not read')
