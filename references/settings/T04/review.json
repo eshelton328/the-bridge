@@ -1,0 +1,45 @@
+{
+  "frameId": "T04",
+  "inputs": "7a6307af8c959e5832988208c5146f6ad3cc639e0b97ea4b06585e6b784b136e",
+  "library": "1.0.0-beta.106",
+  "recordSha256": "a48fb3e63c6fd4c8075f86195ba2de3bba33f0305a4f20d728e516d3e51584de",
+  "record": {
+    "verdict": "match",
+    "viewport": "iPad landscape 1180 x 820, Light (tablet layout)",
+    "inputs": {
+      "layout": "side-by-side",
+      "reference": "reports/fidelity/settings/T04.sideBySide.png",
+      "render": "reports/fidelity/settings/T04.sideBySide.png",
+      "reference_side": "left"
+    },
+    "summary": "The render matches the reference apart from the accepted disabled Text size control and its \"Coming soon\" note.",
+    "findings": [],
+    "accepted_deviations": [
+      {
+        "id": "A1",
+        "as_given": "Text size: the control is disabled (muted labels) and its line under it says \"Coming soon\" in place of \"Scales the whole app: Small 87.5 %, Default 100 %, Large 112.5 %.\" (step D adds text size later). On a narrow screen the one-line note makes every section below it sit about one text line higher.",
+        "status": "as-described",
+        "finding": null,
+        "note": "The Small, Default and Large labels are muted and the note reads \"Coming soon\". At this width both notes fit on one line, so the Navigation section does not move."
+      },
+      {
+        "id": "A2",
+        "as_given": "A new \"NOTIFICATIONS\" section with one \"Notifications\" switch (off) sits between the Navigation section and the New chat defaults section. So New chat defaults sits lower, or below the bottom edge.",
+        "status": "not-seen",
+        "finding": null,
+        "note": "In both pictures the screen ends inside the Navigation section at the Projects row, so the new section is below the visible area."
+      },
+      {
+        "id": "A3",
+        "as_given": "The Notifications switch moved to that section: the desktop rail no longer has the \"Notifications / Blocked in Settings\" switch at its bottom, and the More drawer no longer has the \"Notifications / Blocked in Settings\" row at its end. So the drawer is shorter and its top edge sits lower.",
+        "status": "not-seen",
+        "finding": null,
+        "note": "This tablet layout has a bottom tab bar, with no desktop rail, and the More drawer is closed in both pictures."
+      }
+    ],
+    "limits": [
+      "Each half of the side-by-side image is 1180 px wide and may be shown to me scaled down, so I could not check differences under about 2 px. The diff image shows a faint outline on all text and controls, which looks like antialiasing. Its only strong difference is in the Text size control and note.",
+      "Content below the Projects row in the Navigation section is outside both pictures, so I could not check it."
+    ]
+  }
+}

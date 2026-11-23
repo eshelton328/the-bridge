@@ -1,0 +1,45 @@
+{
+  "frameId": "M01",
+  "inputs": "351e0faa0876ff60c14cc6200465428fa20c3f799045be179ab807bd13cfdb70",
+  "library": "1.0.0-beta.106",
+  "recordSha256": "1a178e3ff7dc1bd0f5906ee2fa53c3355bb2a75902c1f884fdcf8771a4ac5051",
+  "record": {
+    "verdict": "match",
+    "viewport": "phone 390 x 844, Dark",
+    "inputs": {
+      "layout": "side-by-side",
+      "reference": "reports/fidelity/settings/M01.sideBySide.png",
+      "render": "reports/fidelity/settings/M01.sideBySide.png",
+      "reference_side": "left"
+    },
+    "summary": "Apart from the accepted text-size change, the render matches the reference: the visible content is the same and the sections below Text size sit about one text line (about 16 px) higher, as the first accepted deviation says.",
+    "findings": [],
+    "accepted_deviations": [
+      {
+        "id": "A1",
+        "as_given": "Text size: the control is disabled (muted labels) and its line under it says \"Coming soon\" in place of \"Scales the whole app: Small 87.5 %, Default 100 %, Large 112.5 %.\" (step D adds text size later). On a narrow screen the one-line note makes every section below it sit about one text line higher.",
+        "status": "as-described",
+        "finding": null,
+        "note": "The Small, Default and Large labels are muted and the note says \"Coming soon\". The Appearance card ends about 16 px higher, and the Navigation card and its rows move up by the same amount. Nothing else changes."
+      },
+      {
+        "id": "A2",
+        "as_given": "A new \"NOTIFICATIONS\" section with one \"Notifications\" switch (off) sits between the Navigation section and the New chat defaults section. So New chat defaults sits lower, or below the bottom edge.",
+        "status": "not-seen",
+        "finding": null,
+        "note": "The frame ends inside the Navigation section at the Projects row, so the new section and New chat defaults are below the visible area in both pictures."
+      },
+      {
+        "id": "A3",
+        "as_given": "The Notifications switch moved to that section: the desktop rail no longer has the \"Notifications / Blocked in Settings\" switch at its bottom, and the More drawer no longer has the \"Notifications / Blocked in Settings\" row at its end. So the drawer is shorter and its top edge sits lower.",
+        "status": "not-seen",
+        "finding": null,
+        "note": "This phone frame shows no desktop rail, and the More drawer is closed. The tab bar matches the reference."
+      }
+    ],
+    "limits": [
+      "The frame ends at the Projects row of the Navigation section, so the Notifications section, the New chat defaults section and the rest of the page could not be checked.",
+      "The pixel diff image was not opened. The comparison is from the side-by-side image at its native scale (about 390 px for each half), so differences under about 2 px may have been missed."
+    ]
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "frameId": "T01",
+  "inputs": "4c00584cff5071a6de60dd57e10229a8aa16eb790e4ed82d2cb705076f16cc82",
+  "library": "1.0.0-beta.106",
+  "recordSha256": "077b8c6010ecb169aff0bd2ab3a1fce89d46e7a86c8d381ba2632b2c128c3b6a",
+  "record": {
+    "verdict": "match",
+    "viewport": "iPad portrait 820 x 1180, Dark",
+    "inputs": {
+      "layout": "side-by-side",
+      "reference": "reports/fidelity/settings/T01.sideBySide.png",
+      "render": "reports/fidelity/settings/T01.sideBySide.png",
+      "reference_side": "left"
+    },
+    "summary": "The render matches the reference. The only differences are the accepted ones: the disabled Text size control with its \"Coming soon\" note, and the new Notifications section, which pushes New chat defaults down under the tab bar.",
+    "findings": [],
+    "accepted_deviations": [
+      {
+        "id": "A1",
+        "as_given": "Text size: the control is disabled (muted labels) and its line under it says \"Coming soon\" in place of \"Scales the whole app: Small 87.5 %, Default 100 %, Large 112.5 %.\" (step D adds text size later). On a narrow screen the one-line note makes every section below it sit about one text line higher.",
+        "status": "as-described",
+        "finding": null,
+        "note": "Small, Default and Large are muted and the note says \"Coming soon\". At this width the reference note also fits on one line, so the sections below do not move. The Navigation section starts at the same y (about 460) in both pictures."
+      },
+      {
+        "id": "A2",
+        "as_given": "A new \"NOTIFICATIONS\" section with one \"Notifications\" switch (off) sits between the Navigation section and the New chat defaults section. So New chat defaults sits lower, or below the bottom edge.",
+        "status": "as-described",
+        "finding": null,
+        "note": "The Notifications card is at about y 927-1019. The switch is off. New chat defaults starts at about y 1045, and the tab bar hides it below the Model, Effort and Permission mode selects. The \"Saved on this device\" line is under the tab bar, which this deviation covers."
+      },
+      {
+        "id": "A3",
+        "as_given": "The Notifications switch moved to that section: the desktop rail no longer has the \"Notifications / Blocked in Settings\" switch at its bottom, and the More drawer no longer has the \"Notifications / Blocked in Settings\" row at its end. So the drawer is shorter and its top edge sits lower.",
+        "status": "not-seen",
+        "finding": null,
+        "note": "This frame has no desktop rail, and the More drawer is closed, so this frame cannot show the change."
+      }
+    ],
+    "limits": [
+      "The red pixel diff marks nearly every glyph and edge. It looks like a subpixel text offset or antialiasing, and neither picture shows a visible shift.",
+      "The part of New chat defaults below the tab bar cannot be compared because the tab bar covers it in the render."
+    ]
+  }
+}
