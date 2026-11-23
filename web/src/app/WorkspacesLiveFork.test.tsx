@@ -78,10 +78,10 @@ const list = {
 type Fakes = { chats: FakeTranscriptServer; list: FakeWorkspacesServer }
 
 /** The stubbed server: the fakes' routes, and a rejection for anything else. */
-function withChats(): Fakes {
+function withChats(listed: typeof list = list): Fakes {
   const chats = fakeTranscriptServer()
-  for (const c of list.workspaces.flatMap((w) => w.chats)) chats.set(c.id, [])
-  const workspaces = fakeWorkspacesServer(chats, list)
+  for (const c of listed.workspaces.flatMap((w) => w.chats)) chats.set(c.id, [])
+  const workspaces = fakeWorkspacesServer(chats, listed)
   vi.stubGlobal(
     'fetch',
     vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
@@ -202,6 +202,32 @@ describe('Fork on a live Claude chat (backend #443)', () => {
     })
   }
 
+  it('opens a second fork of a chat as "<name>-fork-2", with no line (backend #446)', async () => {
+    // The chat's first fork is open already.
+    const fakes = withChats({
+      ...list,
+      workspaces: list.workspaces.map((w) =>
+        w.id === orchard ? { ...w, chats: [...w.chats, summary('test-box/c9', 'sketch the plan-fork')] } : w,
+      ),
+    })
+    await openChat('tablet', 'sketch the plan')
+    await tapFork('tablet', 'sketch the plan')
+    await expectOpen('tablet', 'sketch the plan-fork-2')
+    expect(fakes.list.forks).toHaveLength(1)
+    expect(page.getByText(/^Not forked/).elements()).toHaveLength(0)
+  })
+
+  it('says a fresh fork has no session to copy (409 noSession, backend #446)', async () => {
+    const fakes = withChats()
+    await openChat('tablet', 'sketch the plan')
+    await tapFork('tablet', 'sketch the plan')
+    await expectOpen('tablet', 'sketch the plan-fork')
+    // The fork has no saved turn yet: the server refuses to fork it before it makes a pane.
+    await tapFork('tablet', 'sketch the plan-fork')
+    await expect.element(line('Not forked — the chat has no saved turn yet; send it a message first')).toBeVisible()
+    expect(fakes.list.forks).toHaveLength(2)
+  })
+
   it('opens a forked chat that needs the owner, and says so under its composer', async () => {
     const fakes = withChats()
     fakes.list.startAs('needsYou')
@@ -262,7 +288,7 @@ describe('Fork on a live Claude chat (backend #443)', () => {
     })
 
   for (const [state, text] of [
-    ['noSession', 'Not forked — only a Claude chat can fork'],
+    ['noSession', 'Not forked — the chat has no saved turn yet; send it a message first'],
     ['nameTaken', 'Not forked — another chat has the fork’s name'],
     ['folderNotAllowed', 'Not forked — the chat’s folder is not allowed for new chats'],
   ] as const)

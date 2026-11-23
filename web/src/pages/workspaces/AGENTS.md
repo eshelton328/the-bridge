@@ -93,7 +93,8 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   tablet's menu and the desktop's chat and pane menus, after New chat,
   posts `POST /api/chats/:chat/fork` with the contract's `ForkChatRequest`
   holding a new create ID only, at once with no form: the server names the
-  copy "<name>-fork" and splits it beside the chat to the right. Figma's
+  copy the first free of "<name>-fork" and "-fork-2" to "-fork-9"
+  (backend #446) and splits it beside the chat to the right. Figma's
   Fork form (D15, T8, M18) stays the fixtures' own, as no route forks up
   to a picked message. A Codex chat and a shell have no Fork on the live
   page (`blocks/chatCommands.ts` `withCommands`), as the server answers
@@ -102,16 +103,17 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   with `useNewChat.ts`) once the list shows it on that pane ready or
   needing the owner, and one that needs the owner gets "This chat needs
   you on the Mac" under its composer; a `starting` answer waits for
-  `workspaces.changed`. The wait is bounded (the #443 real run: a fork of
-  a chat with no saved turn answered 201, and Claude ended in the new
-  pane): a list read after the answer that shows the pane as a shell
+  `workspaces.changed`. The wait is bounded, as Claude can still end at
+  its start in the new pane (the #443 real run; since #446 a session with
+  no saved turn is refused before any pane): a list read after the answer that shows the pane as a shell
   reads the list again after 2.5 s, and a later read that still does
   ends the wait with "Fork did not start — Claude ended in its new pane;
   look at it on the Mac"; no chat by 75 s ends it with "Fork did not
   start". The chat it came from goes on. A fork is one of
   the list's edits, so one at a time with them, its miss one line with
-  Dismiss: 409 `noSession`, `nameTaken` ("another chat has the fork’s
-  name", as a second fork of a chat gets the same name) and
+  Dismiss: 409 `noSession` (a chat with no saved turn yet, such as a
+  fresh fork: "the chat has no saved turn yet; send it a message first"),
+  `nameTaken` ("another chat has the fork’s name", past "-fork-9") and
   `folderNotAllowed` each have their line, a 404 says "Not forked — that
   chat is gone" and reads the list again, a 5xx "Not forked — <kind>"
   with a report (kind and status only), and no answer in 75 s says the

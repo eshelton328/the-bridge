@@ -67,11 +67,13 @@
 // duplicateCreate, as the server keeps it pending. `starts` records each
 // body.
 //
-// Backend #443: `POST /api/chats/:chat/fork` takes the contract's
+// Backend #443, #446: `POST /api/chats/:chat/fork` takes the contract's
 // `ForkChatRequest` and starts as a start beside the chat does (`row` unless
-// set), named "<title>-fork" unless the body names it, listed with the chat
-// as its `fork` parent. A Codex chat or a shell is 409 noSession and an
-// unknown chat 404. `forks` records each body, and `answerForks` answers each
+// set), named the first free of "<title>-fork" and "-fork-2" to "-fork-9"
+// unless the body names it (past them 409 nameTaken), listed with the chat
+// as its `fork` parent. A Codex chat, a shell and a chat with no saved turn
+// (each chat this fake starts or forks, until `saveSession`) are 409
+// noSession, and an unknown chat 404. `forks` records each body, and `answerForks` answers each
 // next fork with a test's error.
 //
 // W10 (backend #382, #384): `POST /api/chats/:chat/effort` takes the
@@ -236,6 +238,8 @@ export function fakeWorkspacesServer(
   /** Backend #443: each fork's chat and body, and an answer in place of the next ones'. */
   const forks: { chat: string; body: unknown }[] = []
   let forkAnswer: (() => Response) | undefined
+  /** Backend #446: the chats whose session has no saved turn yet (each chat this fake starts or forks); no fork. */
+  const unsaved = new Set<string>()
   /** W10: each effort change's chat and body, and an answer in place of the next ones'. */
   const efforts: { chat: string; body: unknown }[] = []
   let effortAnswer: (() => Response) | undefined
@@ -587,6 +591,7 @@ export function fakeWorkspacesServer(
       ),
     })
     transcripts.set(chat, [])
+    unsaved.add(chat)
     if (place.in === 'split' && beside !== undefined)
       beside.tab.root =
         beside.tab.root &&
@@ -612,8 +617,9 @@ export function fakeWorkspacesServer(
   }
 
   /**
-   * A fork (backend #443): the contract's checks, the test's answer, then a Claude chat listed beside `chat` as
-   * "<title>-fork" (or the name given) with the chat as its `fork` parent, as a start beside it does. A Codex chat or a
+   * A fork (backend #443, #446): the contract's checks, the test's answer, then a Claude chat listed beside `chat` as
+   * the first free of "<title>-fork" to "-fork-9" (or the name given) with the chat as its `fork` parent, as a start
+   * beside it does. A chat with no saved turn, a Codex chat or a
    * shell is 409 noSession, an unknown chat 404.
    */
   const fork = (chat: string, init: RequestInit | undefined): Response => {
@@ -632,14 +638,17 @@ export function fakeWorkspacesServer(
         { kind: 'not-found', path: `/api/chats/${chat}`, message: 'Not found', requestId: 'r-404' },
         404,
       )
-    if (source.kind !== 'claude') return notReady('noSession')
+    if (source.kind !== 'claude' || unsaved.has(source.id)) return notReady('noSession')
     const { name, direction, createId } = parsed.data
+    // Backend #446: the first free of "<title>-fork" and "-fork-2" to "-fork-9"; past them nameTaken.
+    const titles = new Set(response.workspaces.flatMap((w) => w.chats).map((c) => c.title))
+    const stems = [`${source.title}-fork`, ...[2, 3, 4, 5, 6, 7, 8, 9].map((n) => `${source.title}-fork-${String(n)}`)]
     return startIn(
       { in: 'split', beside: source.id, direction: direction ?? 'row' },
       createId,
       name,
       { id: source.id, relation: 'fork' },
-      `${source.title}-fork`,
+      stems.find((t) => !titles.has(t)) ?? `${source.title}-fork`,
     )
   }
 
@@ -928,6 +937,10 @@ export function fakeWorkspacesServer(
     },
     /** Each fork the page posted (backend #443), with its chat as the server read it. */
     forks,
+    /** Gives `chat` a saved turn, as its first turn does, so the server can fork it (backend #446). */
+    saveSession: (chat: string) => {
+      unsaved.delete(chat)
+    },
     /** Answers each next fork with `answer` until it is set to undefined. */
     answerForks: (answer: (() => Response) | undefined) => {
       forkAnswer = answer

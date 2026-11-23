@@ -37,6 +37,12 @@
 // - 409 `chat-not-ready` for a move, one plain line by state: `sameWorkspace`
 //   ("It is already in {workspace}", the target's name filled in by the
 //   hook), `working`, `needsYou` and `holdsServer`.
+// - 409 `chat-not-ready` for a fork, one plain line by state: `noSession`
+//   (a Claude chat with no saved turn yet, such as a fresh fork, backend
+//   #446; a Codex chat and a shell, which the server refuses so too, have
+//   no Fork on the page), `nameTaken` (past "<name>-fork-9") and
+//   `folderNotAllowed`. A fork with no answer may have started, so its line
+//   says the list shows it if it did.
 // - Anything else is one quiet line by kind ("Not renamed —
 //   herdr-unavailable"). report() gets a WorkspaceEditMissError for a 5xx and
 //   for an answer the page does not expect, with the action, the kind and
@@ -106,7 +112,7 @@ const moveLines: Partial<Record<string, string>> = {
 
 /** The line of each state a fork can meet (409 `chat-not-ready`). */
 const forkLines: Partial<Record<string, string>> = {
-  noSession: 'Not forked — only a Claude chat can fork',
+  noSession: 'Not forked — the chat has no saved turn yet; send it a message first',
   nameTaken: 'Not forked — another chat has the fork’s name',
   folderNotAllowed: 'Not forked — the chat’s folder is not allowed for new chats',
 }

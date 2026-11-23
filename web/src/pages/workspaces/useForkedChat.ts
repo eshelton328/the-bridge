@@ -7,9 +7,9 @@
 // gets "This chat needs you on the Mac" under its composer. A later fork
 // replaces the one followed. Nothing goes to report() here.
 //
-// The wait is bounded (the real run of #443: a fork of a chat with no saved
-// turn answered 201, and Claude ended in the new pane, which herdr then
-// listed as a shell). A list read after the answer that shows the pane as a
+// The wait is bounded, as Claude can still end at its start in the new pane,
+// which herdr then lists as a shell (the real run of #443; since #446 the
+// server refuses a session with no saved turn before it makes a pane). A list read after the answer that shows the pane as a
 // shell reads the list once more after `shellCheckMs`; a read after that one
 // that still shows a shell there ends the wait with `shellLine`, as a shell
 // before Claude starts is never listed after the answer. With no chat by
