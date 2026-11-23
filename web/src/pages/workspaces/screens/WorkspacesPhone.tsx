@@ -90,6 +90,8 @@ import type { ComposerAnswer } from '../blocks/useComposerActions.ts'
 import { defaultVisiblePages, type NavPage, navLayout } from '../../../lib/deviceSettings.ts'
 
 export type WorkspacesPhoneProps = {
+  /** Draws the Settings gear in the rail and the Settings row in the More drawer (d-119): the page entry passes it; a Figma state does not. */
+  settingsEntry?: boolean | undefined
   /** The device whose width the screen has: the phone, or a tablet in a state with `tabletList` (T1). */
   device: 'phone' | 'tablet'
   /** The state's data, with the names the owner gave chats in place of their titles. */
@@ -135,6 +137,7 @@ export function WorkspacesPhone({
   text,
   ui,
   onNavigate,
+  settingsEntry,
   navPages = defaultVisiblePages,
   onUiChange,
   drafts,
@@ -715,6 +718,7 @@ export function WorkspacesPhone({
         />
       )}
       <MoreDrawer
+        settings={settingsEntry}
         open={moreOpen}
         onOpenChange={setMoreOpen}
         pages={navLayout(navPages, device).more}

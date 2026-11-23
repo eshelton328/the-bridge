@@ -90,4 +90,6 @@ In the app, the rail has a Settings gear before More, which this frame
 does not draw: Settings has no Figma page, and decision d-119 puts its
 entry in the rail (`web/src/blocks/AppRail.tsx`). The Notifications
 switch that d-118 put at the rail's end moved to the Settings page, so
-the rail no longer draws it.
+the rail no longer draws it. The screen draws the gear only when the
+page entry passes `settingsEntry`; this frame's state and story pass
+none, so the checks above are unchanged.

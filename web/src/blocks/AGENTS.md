@@ -14,6 +14,11 @@ second page needs it.
   `settingsStore` and its screen picks each bar's pages with `navLayout`
   (`lib/deviceSettings.ts`). Without the settings the screens pass the
   default order, as the Figma frames draw it (`app/NavOrderRoute.test.tsx`).
+- `AppRail` draws the Settings gear and `MoreDrawer` the Settings row only
+  with `settings` (d-119). Each page entry passes `settingsEntry` to its
+  screen, which passes it on; a Figma page's states pass none, as Figma
+  draws neither (`app/SettingsEntryRoute.test.tsx` fails when an entry
+  stops passing it).
 - Wrap rich content that can fail to render (markdown, code, charts) in
   `BlockBoundary` from `errors/`.
 - A detail pane uses `DetailFrame` (d-107). On a tablet or phone it must

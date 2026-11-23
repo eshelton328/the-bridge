@@ -4,7 +4,9 @@
 // (d-038, d-119; `pages`, from navLayout's `more`): Artifacts and Toolkit in
 // the default order. Brain and Workflows wait under Later (d-105).
 // Settings follows them in the same group (d-119), on every page: the owner
-// cannot hide it. It draws the library's MoreDrawer as it is. The tablet's
+// cannot hide it. The drawer draws it when the screen passes `settings`,
+// which every page entry does; a Figma page's states pass none, as Figma
+// draws no Settings row. It draws the library's MoreDrawer as it is. The tablet's
 // More opens it too (d-119; d-105 sent it to Toolkit). The Notifications
 // switch is on the Settings page (d-118, d-119).
 // Props only; the page entry does the navigation, and the screen keeps
@@ -37,9 +39,19 @@ export type MoreDrawerProps = {
   counts?: { artifacts?: number | undefined; toolkit?: number | undefined } | undefined
   /** Called with the page the owner picks; the drawer then closes. */
   onNavigate?: ((page: string) => void) | undefined
+  /** Draws the Settings row after the pages (d-119); see AppRail's `settings`. */
+  settings?: boolean | undefined
 }
 
-export function MoreDrawer({ open, onOpenChange, pages, selected, counts, onNavigate }: MoreDrawerProps) {
+export function MoreDrawer({
+  open,
+  onOpenChange,
+  pages,
+  selected,
+  counts,
+  onNavigate,
+  settings = false,
+}: MoreDrawerProps) {
   const { label: settingsLabel, description: settingsLine, Icon: SettingsIcon } = settingsItem
   return (
     <LibraryMoreDrawer
@@ -64,16 +76,20 @@ export function MoreDrawer({ open, onOpenChange, pages, selected, counts, onNavi
                 count: page === 'artifacts' ? counts?.artifacts : page === 'toolkit' ? counts?.toolkit : undefined,
               }
             }),
-            {
-              value: 'settings',
-              label: settingsLabel,
-              description: settingsLine,
-              icon: (
-                <Icon layer={undefined}>
-                  <SettingsIcon />
-                </Icon>
-              ),
-            },
+            ...(settings
+              ? [
+                  {
+                    value: 'settings',
+                    label: settingsLabel,
+                    description: settingsLine,
+                    icon: (
+                      <Icon layer={undefined}>
+                        <SettingsIcon />
+                      </Icon>
+                    ),
+                  },
+                ]
+              : []),
           ],
         },
         {

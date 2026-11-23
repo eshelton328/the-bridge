@@ -41,6 +41,8 @@ import { LibraryPhone } from './LibraryPhone.tsx'
 import { artifactHref, filedProject, openArtifact } from './openView.ts'
 
 export type ArtifactsScreenProps = {
+  /** Draws the Settings gear in the rail and the Settings row in the More drawer (d-119): the page entry passes it; a Figma state does not. */
+  settingsEntry?: boolean | undefined
   data: ArtifactsData
   ui: ArtifactsUi
   /** The layout before the screen measures its width; after that the width picks it. */
@@ -69,6 +71,7 @@ export function ArtifactsScreen({
   ui,
   viewport,
   onNavigate,
+  settingsEntry,
   navPages = defaultVisiblePages,
   onUiChange,
   onCopyLink,
@@ -173,7 +176,13 @@ export function ArtifactsScreen({
               size={layout}
               rail={
                 layout === 'desktop' ? (
-                  <AppRail selected="artifacts" pages={nav.rail} inboxBadge={data.railBadge} onSelect={onNavigate} />
+                  <AppRail
+                    settings={settingsEntry}
+                    selected="artifacts"
+                    pages={nav.rail}
+                    inboxBadge={data.railBadge}
+                    onSelect={onNavigate}
+                  />
                 ) : undefined
               }
               // The library and the artifact's page on a tablet or phone (T2, M2) run under the tab bar, as Figma draws them; their
@@ -319,6 +328,7 @@ export function ArtifactsScreen({
             {/* M8: the shared More drawer, Artifacts selected with its count. The phone's and the tablet's More open it
                 (d-119); a state with `moreOpen` shows it at any width, as a story at the width Storybook gives it does. */}
             <MoreDrawer
+              settings={settingsEntry}
               open={ui.moreOpen === true}
               onOpenChange={(moreOpen) => {
                 onUiChange?.({ moreOpen })

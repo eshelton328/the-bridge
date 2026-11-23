@@ -88,6 +88,8 @@ import type { ComposerAnswer } from '../blocks/useComposerActions.ts'
 const railSlot = css({ display: 'flex', flexDirection: 'column', flex: '1', minH: '[0]' })
 
 export type WorkspacesScreenProps = {
+  /** Draws the Settings gear in the rail and the Settings row in the More drawer (d-119): the page entry passes it; a Figma state does not. */
+  settingsEntry?: boolean | undefined
   data: WorkspacesData
   ui: WorkspacesUi
   viewport: Viewport
@@ -133,6 +135,7 @@ export function WorkspacesScreen({
   ui: stateUi,
   viewport,
   onNavigate,
+  settingsEntry,
   navPages,
   onUiChange,
   onSend,
@@ -288,6 +291,7 @@ export function WorkspacesScreen({
             ui={ui}
             viewport={viewport}
             onNavigate={onNavigate}
+            settingsEntry={settingsEntry}
             navPages={navPages}
             onSend={onSend}
             onStop={onStop}
@@ -364,6 +368,7 @@ function WorkspacesLayout({
   ui,
   viewport,
   onNavigate,
+  settingsEntry,
   navPages = defaultVisiblePages,
   onSend,
   onStop,
@@ -408,6 +413,7 @@ function WorkspacesLayout({
     return (
       <WorkspacesPhone
         device={phoneDevice}
+        settingsEntry={settingsEntry}
         data={named}
         text={data.phone}
         ui={ui}
@@ -443,6 +449,7 @@ function WorkspacesLayout({
   const rail = (
     <div data-figma="nav rail" className={railSlot}>
       <AppRail
+        settings={settingsEntry}
         selected="workspaces"
         pages={navLayout(navPages, 'desktop').rail}
         inboxBadge={data.railBadge}

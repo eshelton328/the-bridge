@@ -323,6 +323,8 @@ export function WorkspacesPage() {
   return (
     <>
       <WorkspacesScreen
+        // The app always shows the Settings gear and the drawer's Settings row (d-119); a Figma state's story does not.
+        settingsEntry
         navPages={navPages}
         data={screenData}
         ui={shownUi}

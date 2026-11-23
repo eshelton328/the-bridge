@@ -82,6 +82,8 @@ const fullHeight = css({ flexGrow: '1' })
 const chips = css({ alignSelf: 'flex-start', maxW: '[100%]' })
 
 export type ToolkitScreenProps = {
+  /** Draws the Settings gear in the rail and the Settings row in the More drawer (d-119): the page entry passes it; a Figma state does not. */
+  settingsEntry?: boolean | undefined
   data: ToolkitData
   ui: ToolkitUi
   /** The layout before the screen measures its width; after that the width picks it. */
@@ -111,6 +113,7 @@ function ToolkitLayout({
   ui,
   layout,
   onNavigate,
+  settingsEntry,
   navPages = defaultVisiblePages,
   onUiChange: report,
   onCopyPath,
@@ -452,7 +455,13 @@ function ToolkitLayout({
         view="detail"
         rail={
           desktop ? (
-            <AppRail selected="toolkit" pages={nav.rail} inboxBadge={data.railBadge} onSelect={onNavigate} />
+            <AppRail
+              settings={settingsEntry}
+              selected="toolkit"
+              pages={nav.rail}
+              inboxBadge={data.railBadge}
+              onSelect={onNavigate}
+            />
           ) : undefined
         }
         tabBarOverlay
@@ -527,6 +536,7 @@ function ToolkitLayout({
       {/* The phone's and the tablet's More open it (d-119); a state with `moreOpen` (M4) shows it at any width, as a
           story renders it. */}
       <MoreDrawer
+        settings={settingsEntry}
         open={ui.moreOpen === true}
         onOpenChange={(open) => {
           onUiChange({ moreOpen: open })

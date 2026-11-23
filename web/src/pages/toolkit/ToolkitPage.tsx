@@ -36,6 +36,8 @@ export function ToolkitPage() {
   const own = changed.of === state.ui ? changed.ui : {}
   return (
     <ToolkitScreen
+      // The app always shows the Settings gear and the drawer's Settings row (d-119); a Figma state's story does not.
+      settingsEntry
       navPages={navPages}
       data={{ ...state.data, railBadge }}
       ui={{ ...state.ui, ...own }}

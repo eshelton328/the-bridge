@@ -101,6 +101,8 @@ export function InboxPage() {
       : { ...state.data, live: { ...liveData, line: liveItem.listLine } }
   return (
     <InboxScreen
+      // The app always shows the Settings gear and the drawer's Settings row (d-119); a Figma state's story does not.
+      settingsEntry
       navPages={navPages}
       data={data}
       liveOpen={liveItem.open}

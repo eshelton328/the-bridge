@@ -23,7 +23,17 @@ import { NavigationSection } from '../blocks/NavigationSection.tsx'
 import { NotificationsSection } from '../blocks/NotificationsSection.tsx'
 import type { SettingsData, SettingsUi } from '../types.ts'
 
-const column = css({ display: 'flex', flexDirection: 'column', gap: '24' })
+// One readable column, centred, as the lab page draws it (references/settings/).
+const column = css({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '24',
+  w: '[100%]',
+  maxW: 'shell.dialogWide',
+  mx: 'auto',
+  pt: '16',
+  pb: '40',
+})
 
 export type SettingsScreenProps = {
   data: SettingsData
@@ -67,7 +77,13 @@ export function SettingsScreen({
               view="detail"
               rail={
                 layout === 'desktop' ? (
-                  <AppRail selected="settings" pages={nav.rail} inboxBadge={data.railBadge} onSelect={onNavigate} />
+                  <AppRail
+                    settings
+                    selected="settings"
+                    pages={nav.rail}
+                    inboxBadge={data.railBadge}
+                    onSelect={onNavigate}
+                  />
                 ) : undefined
               }
               // The page runs under the tab bar, as every page's list does; its end scrolls clear of it.
@@ -115,6 +131,7 @@ export function SettingsScreen({
               }}
               pages={navLayout(navPages, layout === 'tablet' ? 'tablet' : 'phone').more}
               selected="settings"
+              settings
               onNavigate={onNavigate}
             />
           </Backdrop>

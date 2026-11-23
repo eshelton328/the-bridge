@@ -68,6 +68,8 @@ export function ArtifactsPage() {
   const railBadge = useInboxBadge(state.data.railBadge, live !== undefined)
   return (
     <ArtifactsScreen
+      // The app always shows the Settings gear and the drawer's Settings row (d-119); a Figma state's story does not.
+      settingsEntry
       navPages={navPages}
       data={{ ...state.data, railBadge }}
       ui={ui}

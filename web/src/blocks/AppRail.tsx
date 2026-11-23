@@ -19,6 +19,11 @@ export type AppRailProps = {
   /** The number of Inbox items that need the owner. */
   inboxBadge: number
   onSelect?: ((page: string) => void) | undefined
+  /**
+   * Draws the Settings gear before More (d-119). Every page entry passes it, so the app always shows the gear; a
+   * Figma page's state and story pass none, as Figma draws no gear, so its fidelity checks are unchanged.
+   */
+  settings?: boolean | undefined
 }
 
 /** The item the rail marks: the page on screen, or More for a page it does not show. */
@@ -27,7 +32,7 @@ function railSelected(selected: AppRailProps['selected'], pages: readonly NavPag
   return pages.includes(selected) ? selected : 'more'
 }
 
-export function AppRail({ selected, pages, inboxBadge, onSelect }: AppRailProps) {
+export function AppRail({ selected, pages, inboxBadge, onSelect, settings = false }: AppRailProps) {
   const { label: settingsLabel, Icon: SettingsIcon } = settingsItem
   return (
     <NavRail
@@ -49,7 +54,9 @@ export function AppRail({ selected, pages, inboxBadge, onSelect }: AppRailProps)
             ...(page === 'inbox' ? { badge: inboxBadge } : {}),
           }
         }),
-        { value: 'settings', label: settingsLabel, figma: 'rail · Settings', icon: <SettingsIcon /> },
+        ...(settings
+          ? [{ value: 'settings', label: settingsLabel, figma: 'rail · Settings', icon: <SettingsIcon /> }]
+          : []),
         { value: 'more', label: 'More', figma: 'rail · More', icon: <MoreIcon /> },
       ]}
     />

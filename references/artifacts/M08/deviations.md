@@ -97,4 +97,6 @@ In the app, the More drawer has a Settings row after its pages, which this
 frame does not draw: Settings has no Figma page, and decision d-119 puts
 its entry in the drawer (`web/src/blocks/MoreDrawer.tsx`). The
 Notifications switch that d-118 put below the drawer's pages moved to the
-Settings page, so the drawer no longer draws it.
+Settings page, so the drawer no longer draws it. The screen draws the row only when the
+page entry passes `settingsEntry`; this frame's state and story pass
+none, so the checks above are unchanged.
