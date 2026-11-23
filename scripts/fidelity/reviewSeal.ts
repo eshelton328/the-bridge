@@ -82,7 +82,6 @@ const buildInputs: ReadonlySet<string> = new Set([
 const packageEntries: Record<string, string> = {
   '@bridge/shared': 'shared/src/index.ts',
   '@bridge/contract': 'contract/src/index.ts',
-  '@bridge/contract/push': 'contract/src/push.ts',
   '@bridge/server/client': 'server/src/client.ts',
 }
 

@@ -160,8 +160,7 @@ void test('importSpecifiers and resolveImport follow every import form to a repo
 })
 
 void test('resolveImport follows each workspace subpath to its file and throws on an unknown one', () => {
-  const known = new Set(['contract/src/index.ts', 'contract/src/push.ts', 'server/src/client.ts'])
-  assert.equal(resolveImport('web/src/lib/pushServer.ts', '@bridge/contract/push', known), 'contract/src/push.ts')
+  const known = new Set(['contract/src/index.ts', 'server/src/client.ts'])
   assert.equal(resolveImport('web/src/lib/api.ts', '@bridge/server/client', known), 'server/src/client.ts')
   assert.throws(
     () => resolveImport('web/src/lib/x.ts', '@bridge/contract/inbox', known),
