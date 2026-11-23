@@ -169,9 +169,12 @@ const doneDays: readonly InboxGroupId[] = ['today', 'yesterday']
  * means every open task, not Done; D7 and T7 notes), with the items the owner
  * finished from the task bar in Today, which it adds when the state has
  * none. A state with no Done days shows its search's Done list (Show it,
- * D10). The other chips show the state's groups.
+ * D10). A chip of one group (Needs you, To review, Next steps, Running)
+ * shows only that group; All shows the state's groups.
  */
 function chipView(data: InboxData, groups: readonly InboxGroupView[], ui: InboxUi): readonly InboxGroupView[] {
+  const only = chipGroups[ui.filter]
+  if (only !== undefined) return groups.filter((group) => group.id === only)
   if (ui.filter !== 'done') return groups
   const own = groups.filter((group) => doneDays.includes(group.id))
   const days = own.length === 0 ? (data.search?.done ?? []) : own

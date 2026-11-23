@@ -2,6 +2,7 @@ import { InboxResponse } from '@bridge/contract'
 import { describe, expect, it } from 'vitest'
 import { inboxHome } from './home.ts'
 import { liveList, snoozeAt } from './liveList.ts'
+import { listView } from './screens/listView.ts'
 
 // The live Inbox's mapping (liveList.ts): made-up items onto the home's words.
 const now = new Date(2026, 0, 15, 10, 0)
@@ -37,6 +38,16 @@ const response = InboxResponse.parse({
     },
   ],
   counts: { needsYou: 1, total: 2 },
+})
+
+/** The response with a finished chat's turn and an open brain request added. */
+const withReview = InboxResponse.parse({
+  items: [
+    ...response.items,
+    { ...response.items[0], id: 'c000000000000003', kind: 'review', title: 'Sample review', needsYou: false },
+    { ...response.items[1], id: 'b000000000000004', title: 'Open request', needsYou: true, snoozedUntil: null },
+  ],
+  counts: { needsYou: 2, total: 4 },
 })
 
 describe('liveList', () => {
@@ -87,22 +98,7 @@ describe('liveList', () => {
   })
 
   it("puts a finished chat's turn in To review, and counts the groups, chips and header as the server does", () => {
-    const review = {
-      ...response.items[0],
-      id: 'c000000000000003',
-      kind: 'review',
-      title: 'Sample review',
-      needsYou: false,
-    }
-    const open = {
-      ...response.items[1],
-      id: 'b000000000000004',
-      title: 'Open request',
-      needsYou: true,
-      snoozedUntil: null,
-    }
-    const read = InboxResponse.parse({ items: [...response.items, review, open], counts: { needsYou: 2, total: 4 } })
-    const live = liveList(inboxHome, read, { now }).data
+    const live = liveList(inboxHome, withReview, { now }).data
     expect(live.groups.map((g) => [g.label, g.count, g.rows.map((r) => r.title)])).toEqual([
       ['Needs you', 2, ['Sample question', 'Open request']],
       ['To review', 1, ['Sample review']],
@@ -117,6 +113,15 @@ describe('liveList', () => {
       ['Running', 0],
       ['Done', 0],
     ])
+  })
+
+  it('shows only the group of the chip the owner picked', () => {
+    const live = liveList(inboxHome, withReview, { now })
+    const shownFor = (filter: string) =>
+      listView(live.data, { ...live.ui, filter }, '').groups.map((g) => [g.id, g.rows.map((r) => r.title)])
+    expect(shownFor('review')).toEqual([['toReview', ['Sample review']]])
+    expect(shownFor('needs')).toEqual([['needsYou', ['Sample question', 'Open request']]])
+    expect(shownFor('all').map(([id]) => id)).toEqual(['needsYou', 'toReview', 'snoozed'])
   })
 
   it('keeps the line of a list that missed', () => {
