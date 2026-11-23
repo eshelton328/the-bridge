@@ -30,6 +30,15 @@ describe('the push preview line', () => {
     expect(plainText('- one\n- two\n> quoted')).toBe('one two quoted')
   })
 
+  it('keeps a period inside a word, and drops the whole line when any part of the reply looks like a secret', () => {
+    expect(previewOf('done', [reply('Updated SettingsPage.tsx. Then ran the tests.')])).toBe(
+      'Updated SettingsPage.tsx.',
+    )
+    expect(previewOf('needsYou', [reply('Is v1.2.3 fine?')])).toBe('Is v1.2.3 fine?')
+    expect(previewOf('done', [reply('Set password: correct.horse.battery.staple now.')])).toBeNull()
+    expect(previewOf('done', [reply('Done. The password: hunter2 is set.')])).toBeNull()
+  })
+
   it('says the tool a chat waits on, and never its result', () => {
     expect(previewOf('needsYou', [reply('I run the checks.'), tool()])).toBe('Wants to run: pnpm')
     expect(previewOf('needsYou', [tool({ target: '' })])).toBe('Wants to run: Run the full verify')

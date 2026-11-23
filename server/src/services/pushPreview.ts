@@ -39,8 +39,12 @@ export function plainText(markdown: string): string {
     .trim()
 }
 
-/** The sentences of plain text, each with its end mark. */
-const sentences = (text: string): string[] => text.match(/[^.!?]+(?:[.!?]+(?=\s|$)|$)/g)?.map((s) => s.trim()) ?? []
+/** The sentences of plain text, each with its end mark: a sentence ends only at a mark before a space or the end, so "SettingsPage.tsx" stays one word. */
+const sentences = (text: string): string[] =>
+  text
+    .split(/(?<=[.!?])\s+/)
+    .map((s) => s.trim())
+    .filter((s) => s !== '')
 
 /** `text` cut to at most `maxPushBody` characters at a word, with "…" when cut. */
 export function cutAtWord(text: string, max: number = maxPushBody): string {
@@ -70,12 +74,15 @@ function lastAssistant(entries: readonly TranscriptEntry[]): string {
 /** The preview line of a push, or null for today's line. */
 export function previewOf(event: PushEvent, entries: readonly TranscriptEntry[]): string | null {
   const last = entries.at(-1)
+  // The secret check reads the whole text first, so a cut can never leave a part of a secret.
+  const source = event === 'needsYou' && last?.type === 'tool' ? toolLine(last) : lastAssistant(entries)
+  if (looksSecret(source)) return null
   const raw =
     event === 'done'
-      ? (sentences(lastAssistant(entries))[0] ?? '')
+      ? (sentences(source)[0] ?? '')
       : last?.type === 'tool'
-        ? toolLine(last)
-        : (sentences(lastAssistant(entries)).findLast((s) => s.endsWith('?')) ?? '')
+        ? source
+        : (sentences(source).findLast((s) => s.endsWith('?')) ?? '')
   const line = raw.trim()
   if (line === '' || looksSecret(line)) return null
   return cutAtWord(line)
