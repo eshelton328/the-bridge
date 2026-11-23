@@ -108,13 +108,31 @@ Both modes record the same way:
   `visualViewport`) and `dockInset` (the `inset` of the last
   `appShellDockEvent`, the height the shell's dock moves to, 0 for a
   close; null before the first). `keyboardTop` and `dockInset` read no
-  layout: the dock event only stores its inset for the next sample.
+  layout: in the dock event the trace only stores the inset.
   Together with `composerTop` they show whether the composer's first
   step matches the keyboard or jumps. `pnpm keyboard:slide <trace.json>` lists the samples that
   show a moved page (screen review R27). A focus or pointer sample (`focusin`, `focusout`,
   `pointerdown`, `pointerup`) adds the target's `targetTag` and
   `targetRole`, never its text, value, name or id. The pointer target
   shows whether a tap landed on the composer's field or its box.
+- Each move of AppShell's keyboard dock adds a `dock-start` sample and,
+  when it ends, a `dock-end` sample. The library's event has only the
+  move's target `inset` and AppShell sends no event at the end, so the
+  trace times the move by its clock: the animation with no keyframes that
+  AppShell starts on `.app-shell__root` right after the event, whose
+  finish ends the move. `dock-start` is taken in a microtask after the
+  event, once AppShell has started that clock, so no layout is read inside
+  the event. It adds `dockEventAt` (the event's `timeStamp`),
+  `dockMoveStart` (the clock's `startTime`, which AppShell may date back
+  to when the keyboard began) and `dockDuration` (the clock's duration),
+  all in ms on the `performance.now()` clock. `dock-end` is taken when
+  the clock finishes, on the first frame at or after `dockMoveStart + dockDuration`,
+  and repeats `dockMoveStart` to pair the two. A move that a new move
+  replaces ends with `dock-cancel` instead. A move that jumps (no clock)
+  has `dockMoveStart` and `dockDuration` null and its `dock-end` at once.
+  With the `focusin`, `vv-resize` and `raf` samples, one keyboard open
+  shows the time from the focus to the first keyboard report
+  (`vv-resize`) to the dock's start and its end.
 - The last 20000 samples stay in a ring buffer.
 - The trace's header, read at its start (each session's own start), has `startedAt`,
   `userAgent`, `displayMode` (`standalone` when

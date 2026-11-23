@@ -5,7 +5,9 @@
 // sample on each animation frame and on the focus, pointer, resize and scroll
 // events (each with the document's scroll, the tops of `#root` and the
 // composer, so a page that iOS moves shows, the keyboard's top and the
-// shell's last dock target), a small overlay with the live values (the param only), and a POST of
+// shell's last dock target), one `dock-start` and one `dock-end` (or
+// `dock-cancel`) sample for each move of the shell's keyboard dock, timed by
+// the move's own animation clock, a small overlay with the live values (the param only), and a POST of
 // the whole trace every 2 s to the dev server's endpoint
 // (scripts/keyboardTracePlugin.ts), which writes it to disk. With the param
 // it traces the whole page; from the switch keyboardChatTrace.ts runs one
@@ -23,7 +25,10 @@ declare const __KEYBOARD_TRACE_BUILD__: KeyboardTraceBuild | undefined
 export type KeyboardTraceSample = {
   /** `performance.now()`, in ms. */
   t: number
-  /** The event type, `vv-resize` or `vv-scroll` for the visual viewport's, or `raf`. */
+  /**
+   * The event type, `vv-resize` or `vv-scroll` for the visual viewport's, `raf`, or `dock-start`, `dock-end` and
+   * `dock-cancel` for the shell's keyboard dock moves.
+   */
   type: string
   innerHeight: number
   vvHeight: number | null
@@ -48,6 +53,16 @@ export type KeyboardTraceSample = {
    * close). Null before the first.
    */
   dockInset: number | null
+  /** `dock-start` only: the dock event's `timeStamp`, in ms on the `performance.now()` clock. */
+  dockEventAt?: number
+  /**
+   * Dock samples only: the `startTime` of the move's clock, the shell's empty-keyframe animation on its root, in ms on
+   * the `performance.now()` clock. The shell may date a move from before its event, when the keyboard began. Null for
+   * a move that jumps (no clock).
+   */
+  dockMoveStart?: number | null
+  /** `dock-start` only: the clock's duration in ms, so the move ends at `dockMoveStart + dockDuration`; null for a jump. */
+  dockDuration?: number | null
   /** Focus and pointer events only: the target's tag name and role, never its text, value, name or id. */
   targetTag?: string
   targetRole?: string | null
@@ -255,6 +270,23 @@ export async function readHeader(
   return { ...now, safeArea: await readSafeArea(win) }
 }
 
+/**
+ * The clock of the dock move that just started: the newest running animation on the shell's root with no keyframes
+ * (the shell's `root.animate([], { duration })`, whose finish ends the move). The shell cancels the last move's clock
+ * before its event, so an older one is never running. Undefined for a jump, which has none.
+ */
+function moveClock(root: Element): Animation | undefined {
+  return root
+    .getAnimations()
+    .filter(
+      (animation) =>
+        animation.effect instanceof KeyframeEffect &&
+        animation.effect.target === root &&
+        animation.effect.getKeyframes().length === 0,
+    )
+    .at(-1)
+}
+
 const WINDOW_EVENTS = ['focusin', 'focusout', 'pointerdown', 'pointerup', 'resize', 'scroll'] as const
 const VIEWPORT_EVENTS = ['resize', 'scroll'] as const
 
@@ -340,8 +372,9 @@ export function recordKeyboardTrace({
   let sent = 'not sent'
   // The dock's target inset from the last `appShellDockEvent`, carried into each sample.
   let dockInset: number | null = null
-  const record = (type: string, target: EventTarget | null) => {
-    const sample = readSample(type, target, win, dockInset)
+  let live = true
+  const record = (type: string, target: EventTarget | null, fields: Partial<KeyboardTraceSample> = {}) => {
+    const sample = { ...readSample(type, target, win, dockInset), ...fields }
     ring.push(sample)
     onSample?.(sample)
     return sample
@@ -349,11 +382,40 @@ export function recordKeyboardTrace({
   const onWindow = (event: Event) => record(event.type, event.target)
   const onViewport = (event: Event) => record(`vv-${event.type}`, null)
   // The shell sends the dock event to its root without bubbling; a capture listener on the window still sees it.
-  // It only keeps the inset for the next sample: a sample here would read layout while the shell starts its move.
+  // In the event it only keeps the inset: a sample there would read layout while the shell starts its move.
   const onDock = (event: Event) => {
     const detail: unknown = event instanceof CustomEvent ? event.detail : undefined
     const inset: unknown = typeof detail === 'object' && detail !== null ? Reflect.get(detail, 'inset') : undefined
     dockInset = typeof inset === 'number' && Number.isFinite(inset) ? round(inset) : null
+    const root = event.target instanceof Element ? event.target : null
+    const eventAt = round(event.timeStamp)
+    // The shell starts the move's animations after the event, in the same task; a microtask runs once it has.
+    queueMicrotask(() => {
+      if (!live) return
+      const clock = root === null ? undefined : moveClock(root)
+      const startTime = clock?.startTime
+      const moveStart = typeof startTime === 'number' ? round(startTime) : null
+      const duration = clock?.effect?.getTiming().duration
+      record('dock-start', null, {
+        dockEventAt: eventAt,
+        dockMoveStart: moveStart,
+        dockDuration: typeof duration === 'number' ? round(duration) : null,
+      })
+      // A jump has no clock: its layout is already in place.
+      if (clock === undefined) {
+        record('dock-end', null, { dockMoveStart: null })
+        return
+      }
+      clock.finished.then(
+        () => {
+          if (live) record('dock-end', null, { dockMoveStart: moveStart })
+        },
+        // The shell cancels a move that a new move or a jump replaces.
+        () => {
+          if (live) record('dock-cancel', null, { dockMoveStart: moveStart })
+        },
+      )
+    })
   }
   const options = { capture: true, passive: true }
   for (const type of WINDOW_EVENTS) win.addEventListener(type, onWindow, options)
@@ -401,6 +463,7 @@ export function recordKeyboardTrace({
   const stop = ({ flush = false }: { flush?: boolean } = {}) => {
     if (stopped) return
     stopped = true
+    live = false
     win.cancelAnimationFrame(frame)
     win.clearInterval(timer)
     win.document.removeEventListener('visibilitychange', onHidden)
