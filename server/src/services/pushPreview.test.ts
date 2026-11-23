@@ -28,6 +28,9 @@ describe('the push preview line', () => {
     expect(previewOf('done', [reply(text)])).toBe('Done All nine frames sealed with check:reviews.')
     expect(plainText('```\nconst a = 1\n```')).toBe('')
     expect(plainText('- one\n- two\n> quoted')).toBe('one two quoted')
+    expect(plainText('Run this:\n\n    pnpm verify --filter web\n\tmore code\n\nThen stop.')).toBe(
+      'Run this: Then stop.',
+    )
   })
 
   it('keeps a period inside a word, and drops the whole line when any part of the reply looks like a secret', () => {

@@ -26,17 +26,21 @@ export function looksSecret(text: string): boolean {
 
 /** Markdown as plain text: no code blocks, no inline code marks, links as their text, no emphasis, headings or list marks. */
 export function plainText(markdown: string): string {
-  return markdown
-    .replace(/(`{3,}|~{3,})[\s\S]*?(?:\1|$)/g, ' ')
-    .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')
-    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
-    .replace(/`([^`]*)`/g, '$1')
-    .replace(/^\s{0,3}(?:#{1,6}\s+|>\s?|[-*+]\s+|\d+[.)]\s+|\|)/gm, '')
-    .replace(/\|/g, ' ')
-    .replace(/(\*\*|__|\*|_|~~)(\S(?:.*?\S)?)\1/g, '$2')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
+  return (
+    markdown
+      .replace(/(`{3,}|~{3,})[\s\S]*?(?:\1|$)/g, ' ')
+      // An indented code block: a line of four spaces or a tab first.
+      .replace(/^(?: {4,}|\t).*$/gm, ' ')
+      .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')
+      .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+      .replace(/`([^`]*)`/g, '$1')
+      .replace(/^\s{0,3}(?:#{1,6}\s+|>\s?|[-*+]\s+|\d+[.)]\s+|\|)/gm, '')
+      .replace(/\|/g, ' ')
+      .replace(/(\*\*|__|\*|_|~~)(\S(?:.*?\S)?)\1/g, '$2')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+  )
 }
 
 /** The sentences of plain text, each with its end mark: a sentence ends only at a mark before a space or the end, so "SettingsPage.tsx" stays one word. */
