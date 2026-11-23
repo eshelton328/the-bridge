@@ -61,8 +61,10 @@ client of a socket or a file sits beside them.
   "human", or an older line with no origin and no `isMeta`. A harness
   input is a `note` entry, by the line's marks and never by words in
   its text: `origin.kind` "task-notification" is "Background task
-  finished: <summary>" (the summary of its whole-message wrapper, one
-  line), `origin.kind` "peer" is "Message from <origin.name>", and an
+  finished: <summary>" for the status `completed` ("failed" for
+  `failed`, "update" for any other or none; the summary of its
+  whole-message wrapper, one line of at most 160 characters, never cut
+  inside a surrogate pair), `origin.kind` "peer" is "Message from <origin.name>", and an
   `isMeta` line with no origin that starts "Stop hook feedback:" is
   "Stop hook: reply rewritten". A queued line of a task or a peer gives
   the same note. Any other meta line or origin (an idle notice, a skill

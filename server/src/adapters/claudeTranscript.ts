@@ -76,7 +76,11 @@ const oneLine = (text: string, max: number) => {
     clean += code < 0x20 || (code >= 0x7f && code <= 0x9f) ? ' ' : ch
   }
   const flat = clean.replace(/\s+/g, ' ').trim()
-  return flat.length <= max ? flat : `${flat.slice(0, max - 1).trimEnd()}…`
+  if (flat.length <= max) return flat
+  // A cut never splits a character's surrogate pair.
+  const high = flat.charCodeAt(max - 2)
+  const end = high >= 0xd800 && high <= 0xdbff ? max - 2 : max - 1
+  return `${flat.slice(0, end).trimEnd()}…`
 }
 
 /**
@@ -92,8 +96,18 @@ function noteOf(
 ): { kind: NoteKind; text: string } | undefined {
   if (origin?.kind === 'task-notification') {
     const wrapped = raw.trimStart().startsWith('<task-notification>')
-    const summary = wrapped ? oneLine(/<summary>([\s\S]*?)<\/summary>/.exec(raw)?.[1] ?? '', 160) : ''
-    return { kind: 'task', text: summary === '' ? 'Background task finished' : `Background task finished: ${summary}` }
+    const field = (name: string) =>
+      wrapped ? oneLine(new RegExp(`<${name}>([\\s\\S]*?)</${name}>`).exec(raw)?.[1] ?? '', 160) : ''
+    // Only a completed task "finished"; a task that failed, waits or goes on says so, and one with no status is an update.
+    const status = field('status')
+    const lead =
+      status === 'completed'
+        ? 'Background task finished'
+        : status === 'failed'
+          ? 'Background task failed'
+          : 'Background task update'
+    const summary = field('summary')
+    return { kind: 'task', text: summary === '' ? lead : `${lead}: ${summary}` }
   }
   if (origin?.kind === 'peer') {
     const name = oneLine(origin.name ?? '', 64)

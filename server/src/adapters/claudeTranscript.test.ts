@@ -180,7 +180,7 @@ describe('Claude transcript', () => {
       { type: 'user', id: 'h1', text: 'we can resume now', cut: false },
       { type: 'user', id: 'o1', text: 'an older prompt with no origin', cut: false },
       { type: 'note', id: 't1', kind: 'task', text: 'Background task finished: Agent "Check the PR text" finished' },
-      { type: 'note', id: 't2', kind: 'task', text: 'Background task finished' },
+      { type: 'note', id: 't2', kind: 'task', text: 'Background task update' },
       { type: 'note', id: 'p1', kind: 'peer', text: 'Message from bridge- coord' },
       { type: 'note', id: 's1', kind: 'hook', text: 'Stop hook: reply rewritten' },
       {
@@ -305,5 +305,56 @@ describe('Claude transcript', () => {
 
   it('gives no entries for a missing file', async () => {
     expect(await readClaudeTranscript(join(dir, 'missing.jsonl'), options)).toEqual({ entries: [], earlier: false })
+  })
+
+  it('says a task failed or goes on as it is, and never cuts a surrogate pair (R46 review)', async () => {
+    const wrap = (status: string, summary: string) =>
+      `<task-notification>\n<status>${status}</status>\n<summary>${summary}</summary>\n</task-notification>`
+    const origin = { origin: { kind: 'task-notification' } }
+    // 158 characters, then a two-unit emoji across the cut.
+    const long = `${'a'.repeat(158)}${String.fromCodePoint(0x1f600)}tail`
+    const path = file([
+      user('t1', wrap('failed', 'Agent "lint" failed'), origin),
+      user('t2', wrap('blocked', 'Agent "deploy" waits'), origin),
+      user('t3', wrap('completed', long), origin),
+    ])
+    const entries = (await readClaudeTranscript(path, options)).entries
+    expect(entries.slice(0, 2)).toEqual([
+      { type: 'note', id: 't1', kind: 'task', text: 'Background task failed: Agent "lint" failed' },
+      { type: 'note', id: 't2', kind: 'task', text: 'Background task update: Agent "deploy" waits' },
+    ])
+    const cut = entries[2]
+    if (cut?.type !== 'note') throw new Error('no note')
+    expect(cut.text).toBe(`Background task finished: ${'a'.repeat(158)}…`)
+    // encodeURIComponent throws on a lone surrogate.
+    expect(() => encodeURIComponent(cut.text)).not.toThrow()
+  })
+
+  it('keeps a prompt that the app sent through herdr, with its files, and puts no peer text in a note (R46)', async () => {
+    // A prompt the app types into the pane has the owner's shape: no origin on an older line, "human" on a newer one.
+    const uploads = '/home/dev/.local/share/the-bridge/uploads'
+    const longName = `peer-${'n'.repeat(200)}`
+    const path = file([
+      user('a1', withAttachments('Look at this', [`${uploads}/u-1/screen.png`]), { origin: { kind: 'human' } }),
+      user('a2', withAttachments('', [`${uploads}/u-2/notes.md`])),
+      user(
+        'p1',
+        'Another Claude session sent a message: <cross-session-message>marker-5150 secret plan</cross-session-message>',
+        {
+          isMeta: true,
+          origin: { kind: 'peer', name: longName },
+        },
+      ),
+    ])
+    const entries = (await readClaudeTranscript(path, { ...options, uploads })).entries
+    expect(entries.slice(0, 2)).toEqual([
+      { type: 'user', id: 'a1', text: 'Look at this', cut: false, files: ['screen.png'] },
+      { type: 'user', id: 'a2', text: '', cut: false, files: ['notes.md'] },
+    ])
+    const note = entries[2]
+    if (note?.type !== 'note') throw new Error('no note')
+    expect(note.text.length).toBeLessThanOrEqual('Message from '.length + 64)
+    expect(note.text).toMatch(/^Message from peer-n+…$/)
+    expect(JSON.stringify(entries)).not.toMatch(/marker-5150|secret plan/)
   })
 })
