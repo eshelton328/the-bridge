@@ -452,6 +452,39 @@ describe('watchTranscript', () => {
     await expect.poll(ids).toEqual(['u1', 'a1'])
   })
 
+  it('ends a connection whose read has no answer on Retry, and reads again at once with no line', async () => {
+    const server = fakeTranscriptServer()
+    server.set(chat, [user('u1', 'go')])
+    // The first read gets no answer until the page ends it, as a read that hangs past the skeleton's limit.
+    let hang = true
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
+        const path = new URL(url, window.location.origin).pathname
+        if (hang && !path.endsWith('/events')) {
+          hang = false
+          return new Promise<Response>((_resolve, reject) => {
+            init?.signal?.addEventListener('abort', () => {
+              reject(new DOMException('The read was ended', 'AbortError'))
+            })
+          })
+        }
+        const answer = server.handle(path, init)
+        if (answer === undefined) throw new TypeError(`no stub for ${url}`)
+        return answer
+      }),
+    )
+    // A retry time longer than the test: only Retry can start the next connection.
+    stops.push(watchTranscript(chat, { retryMs: 60_000 }))
+    await expect.poll(() => server.opens.length).toBe(1)
+    await settle()
+    retryTranscript(chat)
+    await expect.poll(ids).toEqual(['u1'])
+    expect(view()?.problem).toBeUndefined()
+    expect(getReports()).toEqual([])
+  })
+
   it('shows a missed read with its kind, reports it once for the outage, and Retry reads again', async () => {
     const server = fakeTranscriptServer()
     server.set(chat, [user('u1', 'go')])

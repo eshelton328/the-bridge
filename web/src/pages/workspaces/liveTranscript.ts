@@ -285,6 +285,10 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
   const abort = new AbortController()
   const closed = () => abort.signal.aborted
   let wake: (() => void) | undefined
+  /** The connection that runs now, so Retry can end it and start again; none between connections. */
+  let current: AbortController | undefined
+  /** Retry ended the connection that ran: it shows no line and reports nothing, and the next one starts at once. */
+  let restart = false
   /** The trip to the background whose quiet miss this chat has had (`hidesSoFar`); -1 for none yet. */
   let quietFor = -1
   /**
@@ -345,7 +349,7 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
   }
   armStall()
   const fail = (line: string, miss: TranscriptMiss) => {
-    if (closed()) return
+    if (closed() || restart) return
     update((view) => ({ ...view, problem: line }))
     noteOutage(chat, miss)
   }
@@ -406,6 +410,7 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
   const connect = async (): Promise<Outcome> => {
     const mark = resumeMark()
     const connection = new AbortController()
+    current = connection
     const signal = AbortSignal.any([abort.signal, connection.signal])
     let res: Response
     // A stream that gives no answer at all would leave the pane blank, as the read waits for it: after `openMs` it
@@ -543,7 +548,12 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
   const run = async () => {
     while (!closed()) {
       const outcome = await connect()
+      current = undefined
       if (closed()) return
+      if (restart) {
+        restart = false
+        continue
+      }
       if (outcome === 'resume') {
         // Back from the background: at once when the page shows, else after the retry time or as soon as it shows.
         if (!isHidden()) continue
@@ -562,7 +572,13 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
     retry: () => {
       update((view) => ({ ...view, problem: undefined }))
       armStall()
-      wake?.()
+      // Between connections Retry ends the wait; during one (a stream or a read with no answer yet) it ends that
+      // connection and starts a new one.
+      if (wake !== undefined) wake()
+      else if (current !== undefined) {
+        restart = true
+        current.abort()
+      }
     },
     stop: () => {
       endGrace()
