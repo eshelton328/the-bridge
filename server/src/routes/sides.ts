@@ -89,15 +89,35 @@ export function sidesRoutes(sides: SideAnswers, log: Logger) {
           watching.stop?.()
           finish()
         }
+        // A slow reader gets the newest answer only: each event holds the whole answer, so a skipped one loses nothing.
+        let pending: SideAnswer | undefined
+        let writing = false
+        const flush = async () => {
+          if (writing) return
+          writing = true
+          for (let answer = pending; answer !== undefined; answer = pending) {
+            pending = undefined
+            const event = SideChangedEvent.parse({ source, seq, type: 'side.changed', data: answer })
+            seq += 1
+            await stream.writeSSE({ event: event.type, id: String(event.seq), data: JSON.stringify(event) })
+            if (answer.state !== 'answering') {
+              done()
+              break
+            }
+          }
+          writing = false
+        }
         const write = (answer: SideAnswer) => {
-          const event = SideChangedEvent.parse({ source, seq, type: 'side.changed', data: answer })
-          seq += 1
-          void stream.writeSSE({ event: event.type, id: String(event.seq), data: JSON.stringify(event) }).then(() => {
-            if (answer.state !== 'answering') done()
-          })
+          pending = answer
+          void flush()
         }
         stream.onAbort(done)
         await stream.writeSSE({ event: 'open', data: '{}', retry: retryMs })
+        // A client that left during the open frame gets no watch.
+        if (stream.aborted || stream.closed) {
+          done()
+          return
+        }
         // The answer as it is now, then each change; the page replaces the answer at each event.
         const stop = sides.watch(chat, side, write)
         if (stop !== undefined) watching.stop = stop
