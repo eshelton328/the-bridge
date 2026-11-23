@@ -79,6 +79,8 @@ export type LibraryToolsProps = {
   /** The Grid or List switch's value; without it the row has no switch (D2). */
   view?: ViewValue | undefined
   onViewChange?: ((view: ViewValue) => void) | undefined
+  /** While the page loads: every control drawn and off, with no menu (the loading standard, R12). */
+  disabled?: boolean | undefined
 }
 
 export function LibraryTools({
@@ -108,7 +110,11 @@ export function LibraryTools({
   className,
   view,
   onViewChange,
+  disabled = false,
 }: LibraryToolsProps) {
+  // While the page loads, Sort and Filter are the plain buttons their menus open from, off.
+  const sorts = disabled ? undefined : sortMenu
+  const filters = disabled ? undefined : filterMenu
   const large = size === 'lg'
   // The desktop's 32 px Sort and Filter pad 10 at the sides (D1 402:15404, 402:15413); T1's 36 px ones keep 16.
   const sidePadding = large ? 'default' : 'compact'
@@ -123,6 +129,7 @@ export function LibraryTools({
       align="center"
       className={className}
       data-figma="list tools"
+      data-fit="tools"
       data-keyboard-keep=""
     >
       <div ref={searchRef} className={grow} data-figma={searchFigma}>
@@ -140,18 +147,26 @@ export function LibraryTools({
           clearLabel="Clear the search"
           value={query}
           onValueChange={onQueryChange}
+          disabled={disabled}
         />
       </div>
-      {sortMenu === undefined ? (
+      {sorts === undefined ? (
         <span data-figma="button · Sort">
           {iconOnly ? (
-            <Button size={size} iconOnly aria-label={`Sort: ${sortLabel}`} onClick={onSortClick}>
+            <Button size={size} iconOnly aria-label={`Sort: ${sortLabel}`} onClick={onSortClick} disabled={disabled}>
               <span className={mutedIcon}>
                 <SortDescIcon />
               </span>
             </Button>
           ) : (
-            <Button size={size} textSize="sm" padding={sidePadding} keepIconSize onClick={onSortClick}>
+            <Button
+              size={size}
+              textSize="sm"
+              padding={sidePadding}
+              keepIconSize
+              onClick={onSortClick}
+              disabled={disabled}
+            >
               <SortDescIcon />
               {sortLabel}
               <ChevronDownIcon size="12" />
@@ -160,7 +175,7 @@ export function LibraryTools({
         </span>
       ) : sortAs === 'sheet' ? (
         <SortSheet
-          menu={sortMenu}
+          menu={sorts}
           sort={sort}
           sortLabel={sortLabel}
           open={sortOpen}
@@ -169,7 +184,7 @@ export function LibraryTools({
         />
       ) : (
         <SortMenu
-          menu={sortMenu}
+          menu={sorts}
           sort={sort}
           sortLabel={sortLabel}
           open={sortOpen}
@@ -177,16 +192,16 @@ export function LibraryTools({
           onSortChange={onSortChange}
         />
       )}
-      {filterMenu === undefined ? (
+      {filters === undefined ? (
         <span data-figma="button · Filter">
           {iconOnly ? (
-            <Button size={size} iconOnly aria-label="Filter" onClick={onFilterClick}>
+            <Button size={size} iconOnly aria-label="Filter" onClick={onFilterClick} disabled={disabled}>
               <span className={mutedIcon}>
                 <FilterIcon />
               </span>
             </Button>
           ) : (
-            <Button size={size} textSize="sm" padding={sidePadding} onClick={onFilterClick}>
+            <Button size={size} textSize="sm" padding={sidePadding} onClick={onFilterClick} disabled={disabled}>
               <FilterIcon />
               Filter
             </Button>
@@ -194,7 +209,7 @@ export function LibraryTools({
         </span>
       ) : filterAs === 'sheet' ? (
         <FilterSheet
-          menu={filterMenu}
+          menu={filters}
           checks={filterChecks}
           open={filterOpen}
           onOpenChange={onFilterOpenChange}
@@ -204,7 +219,7 @@ export function LibraryTools({
         />
       ) : (
         <FilterPopover
-          menu={filterMenu}
+          menu={filters}
           checks={filterChecks}
           open={filterOpen}
           onOpenChange={onFilterOpenChange}
@@ -223,6 +238,7 @@ export function LibraryTools({
               size={size}
               iconOnly
               label="View"
+              disabled={disabled}
               value={view}
               onValueChange={(value) => {
                 const picked = ViewValue.safeParse(value)

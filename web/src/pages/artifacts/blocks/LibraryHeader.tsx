@@ -16,8 +16,8 @@ const ownWidth = css({ alignSelf: 'flex-start' })
 
 export type LibraryHeaderProps = {
   title: string
-  /** The library's count, or during a search what it shows of it, such as "3 of 24". */
-  count: number | string
+  /** The library's count, or during a search what it shows of it, such as "3 of 24"; none while the page loads. */
+  count?: number | string | undefined
   found: string
   addLink: string
   /** The desktop puts the status in the header's row, a tablet under the header; a phone leaves it to the library. */
@@ -29,12 +29,12 @@ export function LibraryHeader({ title, count, found, addLink, layout = 'desktop'
   const desktop = layout === 'desktop'
   const phone = layout === 'phone'
   const header = (
-    <div data-figma="header" className={desktop ? undefined : tabletHeader}>
+    <div data-figma="header" data-fit="header" className={desktop ? undefined : tabletHeader}>
       {/* T1's title (405:107) is a 34 px text box; the nearest size is the library's phone title (28). */}
       <PageHeader
         title={title}
         count={count}
-        countLabel={`${String(count)} artifacts`}
+        countLabel={count === undefined ? undefined : `${String(count)} artifacts`}
         size={desktop ? 'page' : 'phone'}
         // The count is Regular 16/20 on every layout (library `countSize="lg"`): D1 402:15373, T1 405:108, M1 406:72.
         countSize="lg"
@@ -62,7 +62,7 @@ export function LibraryHeader({ title, count, found, addLink, layout = 'desktop'
   return (
     <Stack gap="10">
       {header}
-      <div className={ownWidth}>
+      <div className={ownWidth} data-fit="found">
         <FoundStatus text={found} />
       </div>
     </Stack>

@@ -24,6 +24,9 @@ export function ageOf(iso: string, now: Date): string {
   return days < 7 ? `${String(days)}d` : `${String(Math.floor(days / 7))}w`
 }
 
+/** The status line while the page reads the library for the first time (R58): the loading screen's own words. */
+export const checkingLine = 'Checking Claude'
+
 /** The status line for a list read at `checkedAt`: when the library last checked Claude's chats, or that it goes on. */
 export function foundLine(checkedAt: string | null, partial: boolean, now: Date): string {
   if (partial) return 'Checked part of Claude — the rest comes next'

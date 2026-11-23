@@ -12,6 +12,7 @@ import { FilterChips, Stack } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { CardGroup } from '../blocks/CardGroup.tsx'
+import { CardGroupSkeleton } from '../blocks/CardGroupSkeleton.tsx'
 import { LibraryHeader } from '../blocks/LibraryHeader.tsx'
 import { LibraryTools } from '../blocks/LibraryTools.tsx'
 import { type ArtifactsData, type ArtifactsUi, ArtifactChip } from '../types.ts'
@@ -42,6 +43,8 @@ export type ArtifactsLibraryProps = {
   onSubmitAddLink?: (() => void) | undefined
   /** The last Add's miss, under the link field. */
   addLinkError?: string | undefined
+  /** While the library loads (R58): the real header and tools, off and with no counts, and cards that load. */
+  loading?: boolean | undefined
 }
 
 export function ArtifactsLibrary({
@@ -53,6 +56,7 @@ export function ArtifactsLibrary({
   onAddLink,
   onSubmitAddLink,
   addLinkError,
+  loading = false,
 }: ArtifactsLibraryProps) {
   const groups = libraryView(data, ui)
   const sort = data.sorts.find((s) => s.value === ui.sort) ?? data.sorts[0]
@@ -61,7 +65,7 @@ export function ArtifactsLibrary({
     <Stack gap={layout === 'tablet' ? '10' : '12'} className={page[layout]}>
       <LibraryHeader
         title={data.title}
-        count={ui.query.trim() === '' ? data.count : `${String(shown)} of ${String(data.count)}`}
+        count={loading ? undefined : ui.query.trim() === '' ? data.count : `${String(shown)} of ${String(data.count)}`}
         found={data.found}
         addLink={data.addLink}
         layout={layout}
@@ -82,10 +86,11 @@ export function ArtifactsLibrary({
           error={addLinkError}
         />
       )}
-      <div className={chips} data-figma="filter · chips">
+      <div className={chips} data-figma="filter · chips" data-fit="chips">
         <FilterChips
           label="Filter by source"
-          items={data.chips}
+          items={loading ? data.chips.map((chip) => ({ ...chip, count: undefined })) : data.chips}
+          disabled={loading}
           value={[ui.filter]}
           multiple={false}
           size="compact"
@@ -131,11 +136,13 @@ export function ArtifactsLibrary({
         onViewChange={(view) => {
           onUiChange?.({ view })
         }}
+        disabled={loading}
       />
-      {ui.view === 'list' ? (
+      {loading ? <CardGroupSkeleton layout={layout} /> : null}
+      {!loading && ui.view === 'list' ? (
         <LibraryRows data={data} ui={ui} onUiChange={onUiChange} onOpenArtifact={onOpenArtifact} />
       ) : null}
-      {(ui.view === 'list' ? [] : groups).map((group) => (
+      {(loading || ui.view === 'list' ? [] : groups).map((group) => (
         <CardGroup
           key={group.id}
           group={group}

@@ -17,6 +17,7 @@ import { FoundStatus } from '../blocks/FoundStatus.tsx'
 import { LibraryHeader } from '../blocks/LibraryHeader.tsx'
 import { LibraryTools } from '../blocks/LibraryTools.tsx'
 import { RowGroup } from '../blocks/RowGroup.tsx'
+import { RowGroupSkeleton } from '../blocks/RowGroupSkeleton.tsx'
 import { type ArtifactsData, type ArtifactsUi, ArtifactChip } from '../types.ts'
 import { addLinkEntry, shownSource } from './addLinkView.ts'
 import { libraryView, matchLine, searchMatches } from './libraryView.ts'
@@ -43,6 +44,8 @@ export type LibraryPhoneProps = {
   onSubmitAddLink?: (() => void) | undefined
   /** The last Add's miss, under the link field. */
   addLinkError?: string | undefined
+  /** While the library loads (R58): the real header and tools, off and with no counts, and rows that load. */
+  loading?: boolean | undefined
 }
 
 export function LibraryPhone({
@@ -53,6 +56,7 @@ export function LibraryPhone({
   onAddLink,
   onSubmitAddLink,
   addLinkError,
+  loading = false,
 }: LibraryPhoneProps) {
   const groups = libraryView(data, ui)
   const sort = data.sorts.find((s) => s.value === ui.sort) ?? data.sorts[0]
@@ -68,7 +72,7 @@ export function LibraryPhone({
         <Stack gap="2">
           <LibraryHeader
             title={data.title}
-            count={query === '' ? data.count : `${String(shown)} of ${String(data.count)}`}
+            count={loading ? undefined : query === '' ? data.count : `${String(shown)} of ${String(data.count)}`}
             found={data.found}
             addLink={data.addLink}
             layout="phone"
@@ -107,10 +111,11 @@ export function LibraryPhone({
               }
             />
           )}
-          <div className={chipRow} data-figma="filter · chips">
+          <div className={chipRow} data-figma="filter · chips" data-fit="chips">
             <FilterChips
               label="Filter by source"
-              items={data.chips}
+              items={loading ? data.chips.map((chip) => ({ ...chip, count: undefined })) : data.chips}
+              disabled={loading}
               value={[ui.filter]}
               multiple={false}
               size="compact"
@@ -159,18 +164,20 @@ export function LibraryPhone({
           iconOnly
           searchFigma={query === '' ? undefined : data.search?.fieldLayer}
           className={toolsRow}
+          disabled={loading}
         />
       </Stack>
       {query === '' ? (
         <>
-          <div className={chips}>
+          <div className={chips} data-fit="found">
             <FoundStatus text={data.found} className={statusRow} />
           </div>
           {/* 406:196: Earlier's header is 34 high, 2 under Found's last row (499 to 501), its label centred at
               y 518. The render's GroupHeader is 36 high, 1 more above and below the label, so the group starts right
               under the last row: its header is 1 above Figma's, its rows 1 below, and its label where Figma's is. */}
           <Stack gap="0">
-            {groups.map((group) => (
+            {loading ? <RowGroupSkeleton /> : null}
+            {(loading ? [] : groups).map((group) => (
               <RowGroup
                 key={group.id}
                 group={group}

@@ -57,7 +57,7 @@ export function RowGroup({
   return (
     <Stack gap="2">
       {/* Level 2 under the list's h1, around the toggle, as CardGroup's heading. */}
-      <div role="heading" aria-level={2} data-figma={figma ?? `group · ${group.label.toUpperCase()}`}>
+      <div role="heading" aria-level={2} data-figma={figma ?? `group · ${group.label.toUpperCase()}`} data-fit="group">
         <GroupHeader
           label={group.label}
           count={group.count}
@@ -68,7 +68,7 @@ export function RowGroup({
         />
       </div>
       {open ? (
-        <Stack gap="2" id={contentId}>
+        <Stack gap="2" id={contentId} data-fit="items">
           {group.cards.map((card) => {
             const place = search?.places.get(card.id)
             return (
