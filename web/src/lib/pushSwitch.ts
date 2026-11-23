@@ -1,7 +1,8 @@
 // The Notifications switch of d-118: what it shows, and what turning it on
 // or off does. On asks for the permission, subscribes this browser with the
-// server's key and saves the subscription; off ends the subscription and
-// removes it from the server. A miss goes to the sink that
+// server's key and saves the subscription with the "Show message preview"
+// choice; off ends the subscription and removes it from the server. A change
+// of the choice while push is on saves the subscription again. A miss goes to the sink that
 // errors/globalHandlers.ts sets (lib may not import errors) as a
 // PushMissError, with its kind only. A build that reads no live server (a
 // production build on fixtures, d-117) registers no worker and has no
@@ -16,19 +17,25 @@ import { readPushKey, removePushSubscription, savePushSubscription } from './pus
  */
 export type PushSwitchState = 'unsupported' | 'homeScreen' | 'denied' | 'off' | 'on'
 
-/** The switch as a screen draws it: its state, whether a change runs, whether the last turn on or off missed. */
+/**
+ * The switch as a screen draws it: its state, whether a change runs, whether the last turn on or off missed, and the
+ * "Show message preview" switch below it (on by default; whether its last save missed).
+ */
 export type PushSwitch = {
   readonly state: PushSwitchState | 'unknown'
   readonly busy: boolean
   readonly failed: boolean
   readonly onCheckedChange: (on: boolean) => void
+  readonly preview: boolean
+  readonly previewFailed: boolean
+  readonly onPreviewChange: (preview: boolean) => void
 }
 
 /** A Web Push step that missed, for report(): its kind only, never a key, an endpoint or the server's message. */
 export class PushMissError extends Error {
   readonly miss: string
 
-  constructor(step: 'key' | 'subscribe' | 'save' | 'remove', miss: string) {
+  constructor(step: 'key' | 'subscribe' | 'save' | 'remove' | 'preview', miss: string) {
     super(`A push ${step} missed: ${miss}`)
     this.name = 'PushMissError'
     this.miss = `${step} ${miss}`
@@ -72,7 +79,7 @@ export type PushTurn = { readonly state: PushSwitchState; readonly failed: boole
  * Turns push on. `asked` is the permission request, which the caller starts inside the tap. A miss of the key, the
  * subscribe or the save leaves the switch off with `failed`, and a subscription made before a missed save ends.
  */
-export async function turnPushOn(asked: Promise<NotificationPermission>): Promise<PushTurn> {
+export async function turnPushOn(asked: Promise<NotificationPermission>, preview: boolean): Promise<PushTurn> {
   let permission: NotificationPermission
   try {
     permission = await asked
@@ -98,7 +105,7 @@ export async function turnPushOn(asked: Promise<NotificationPermission>): Promis
     missed(new PushMissError('subscribe', 'no-worker'))
     return { state: 'off', failed: true }
   }
-  const saved = await savePushSubscription(subscription.toJSON())
+  const saved = await savePushSubscription(subscription.toJSON(), preview)
   if (saved === undefined) return { state: 'on', failed: false }
   missed(new PushMissError('save', saved.miss))
   await endSubscription(subscription)
@@ -112,6 +119,33 @@ async function endSubscription(subscription: PushSubscriptionLike): Promise<void
   } catch (error) {
     missed(new PushMissError('remove', error instanceof Error ? error.name : 'unknown'))
   }
+}
+
+/**
+ * Saves the "Show message preview" choice with this browser's subscription. True when it is saved, or when there is no
+ * subscription (the next turn on sends the choice); false on a miss, which is reported.
+ */
+export async function savePushPreview(preview: boolean): Promise<boolean> {
+  let subscription: PushSubscriptionLike | null
+  try {
+    subscription = await pushBrowser.subscription()
+  } catch (error) {
+    missed(new PushMissError('preview', error instanceof Error ? error.name : 'unknown'))
+    return false
+  }
+  if (subscription === null) return true
+  const saved = await savePushSubscription(subscription.toJSON(), preview)
+  if (saved === undefined) return true
+  missed(new PushMissError('preview', saved.miss))
+  return false
+}
+
+/**
+ * At the app's start: saves this browser's subscription again with the preview choice, when push is on here. A page
+ * from before the choice saved it with no `preview` key, so the server sends it sw.js version 2's payload until then.
+ */
+export async function savePushPreviewAtStart(preview: boolean): Promise<void> {
+  if ((await readPushState()) === 'on') await savePushPreview(preview)
 }
 
 /**

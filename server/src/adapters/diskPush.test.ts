@@ -1,4 +1,4 @@
-import { mkdtempSync, readdirSync, readFileSync, statSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { maxPushSubscriptions, PushKeyResponse } from '@bridge/contract'
@@ -46,6 +46,23 @@ describe('the disk push store', () => {
     expect(statSync(join(root, 'subscriptions.json')).mode & 0o777).toBe(0o600)
     expect(readdirSync(root).filter((name) => name.endsWith('.tmp'))).toEqual([])
     expect(JSON.parse(readFileSync(join(root, 'subscriptions.json'), 'utf8'))).toHaveLength(9)
+  })
+
+  it('keeps the preview choice of a subscription, and reads a file from before it with no choice, as on', async () => {
+    const root = newRoot()
+    const store = createDiskPushStore(root)
+    value(await store.save({ ...sub(1), preview: false }))
+    expect(value(await store.subscriptions()).map((s) => s.preview)).toEqual([false])
+    value(await store.save({ ...sub(1), preview: true }))
+    expect(value(await store.subscriptions()).map((s) => s.preview)).toEqual([true])
+    // A subscriptions.json written before the choice existed: no preview key.
+    const old = newRoot()
+    mkdirSync(old, { recursive: true, mode: 0o700 })
+    writeFileSync(join(old, 'subscriptions.json'), JSON.stringify([{ ...sub(2), savedAt: 1 }]), { mode: 0o600 })
+    const read = value(await createDiskPushStore(old).subscriptions())
+    expect(read.map((s) => s.endpoint)).toEqual([sub(2).endpoint])
+    expect(read[0]?.preview).toBeUndefined()
+    expect(read[0]?.preview !== false).toBe(true)
   })
 
   it('removes a subscription saved in a loose form by its written form', async () => {

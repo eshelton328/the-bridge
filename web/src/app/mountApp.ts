@@ -15,6 +15,7 @@ import { ErrorTray } from '../errors/ErrorTray.tsx'
 import { type ErrorEventTarget, installGlobalHandlers } from '../errors/globalHandlers.ts'
 import { rootErrorOptions } from '../errors/rootErrorOptions.ts'
 import { readsLiveServer } from '../lib/dataSource.ts'
+import { readPushPreview } from '../state/settingsStore.ts'
 import { pushRuns, startPush } from './push/startPush.ts'
 import { router } from './router.ts'
 
@@ -37,7 +38,7 @@ export function mountApp(container: Element, options: MountOptions = {}): () => 
     (options.push ?? pushByDefault())
       ? startPush((chat) => {
           void appRouter.navigate({ to: '/workspaces', search: { chat } })
-        })
+        }, readPushPreview)
       : undefined
   const routes = createElement(RouterProvider, { router: appRouter })
   const root = createRoot(container, rootErrorOptions)

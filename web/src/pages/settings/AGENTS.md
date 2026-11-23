@@ -20,6 +20,9 @@ folder is for and the rules of every page.
 - Four sections: Appearance, Navigation, Notifications and New chat
   defaults. The Notifications section (bridge-coord, 2026-11-23) is the
   one place of the d-118 switch; the rail and the drawer no longer draw it.
+  Below it, "Show message preview" (on by default) is a device setting
+  that goes to the server with the subscription, again at each change
+  while push is on (`app/PushSwitchRoute.test.tsx`).
 - The page reads no server. With no `?state=` the entry shows the store's
   settings (`state/settingsStore.ts`) and the live switch
   (`state/pushStore.ts`); each change goes to the store, which saves it.

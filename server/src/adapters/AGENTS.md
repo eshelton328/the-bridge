@@ -380,8 +380,9 @@ client of a socket or a file sits beside them.
 - The push store (`diskPush.ts`) keeps `vapid.json` and
   `subscriptions.json` in a 0700 folder beside the database, each file
   0600 and replaced in one rename; it makes the P-256 VAPID keys once
-  with Node's crypto, keeps at most 10 subscriptions, and a fault gives
-  its errno code only (`diskPush.test.ts`).
+  with Node's crypto, keeps at most 10 subscriptions with each one's
+  `preview` choice (a file from before the choice reads as none, which
+  is on), and a fault gives its errno code only (`diskPush.test.ts`).
 - `webPushSender.ts` sends a push with the `web-push` package: the
   payload encrypted for the browser's keys, a VAPID JWT whose contact
   is `BRIDGE_PUSH_SUBJECT` (else the public repository's URL; never a

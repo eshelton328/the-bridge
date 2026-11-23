@@ -16,6 +16,7 @@ import {
   useSettingsMode,
   useSettingsNav,
   useSettingsChatWidth,
+  useSettingsPushPreview,
   useSettingsTextSize,
 } from '../../state/settingsStore.ts'
 import { SettingsScreen } from './screens/SettingsScreen.tsx'
@@ -37,12 +38,13 @@ export function SettingsPage() {
   const nav = useSettingsNav()
   const chat = useSettingsChatDefaults()
   const actions = useSettingsActions()
-  const push = usePushSwitch()
+  const pushPreview = useSettingsPushPreview()
+  const push = usePushSwitch(pushPreview, actions.setPushPreview)
   // The Inbox badge: the app's live count on the home in development, the state's number otherwise (lib/inboxFeed.ts).
   const railBadge = useInboxBadge(state.data.railBadge, import.meta.env.DEV && own && search.source === undefined)
   const [changed, setChanged] = useState<Changed>({ of: search.state, ui: {} })
   const ui = { ...state.ui, ...(changed.of === search.state ? changed.ui : {}) }
-  const settings = own ? { mode, textSize, chatWidth, nav: [...nav], chat } : state.data.settings
+  const settings = own ? { mode, textSize, chatWidth, nav: [...nav], chat, pushPreview } : state.data.settings
   return (
     <SettingsScreen
       data={{ ...state.data, railBadge, settings }}

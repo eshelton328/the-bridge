@@ -74,7 +74,13 @@ export function SettingsScreen({
   onNavMove,
   onChatDefaultsChange,
 }: SettingsScreenProps) {
-  const shownPush: PushSwitch = push ?? { ...data.push, onCheckedChange: () => undefined }
+  const shownPush: PushSwitch = push ?? {
+    ...data.push,
+    onCheckedChange: () => undefined,
+    preview: data.settings.pushPreview,
+    previewFailed: false,
+    onPreviewChange: () => undefined,
+  }
   const navPages = visibleNavPages(data.settings.nav)
   return (
     <ViewportFrame initial={viewport}>

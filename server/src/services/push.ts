@@ -1,7 +1,7 @@
 // Web Push (d-118): the store of the VAPID keys and the owner's push
 // subscriptions, which push services a subscription may name, and when the
 // owner last had a page open.
-import type { PushPayload, PushSubscriptionRequest } from '@bridge/contract'
+import type { PushMessage, PushSubscriptionRequest } from '@bridge/contract'
 import type { Result } from '@bridge/shared'
 
 /** The server's VAPID keys, base64url: the public key as an uncompressed P-256 point, the private key as its d. */
@@ -30,7 +30,7 @@ export type PushSender = {
   /** Sends one push; `gone` when the push service no longer knows the subscription (404 or 410). */
   send(
     subscription: PushSubscriptionRequest,
-    payload: PushPayload,
+    payload: PushMessage,
     keys: VapidKeys,
   ): Promise<Result<'sent' | 'gone', PushSendError>>
 }

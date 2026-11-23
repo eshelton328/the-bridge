@@ -11,6 +11,9 @@ const push = (change: Partial<PushSwitch>): PushSwitch => ({
   busy: false,
   failed: false,
   onCheckedChange: fn(),
+  preview: true,
+  previewFailed: false,
+  onPreviewChange: fn(),
   ...change,
 })
 

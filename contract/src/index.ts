@@ -107,10 +107,13 @@ export {
   StartUploadResponse,
 } from './uploads.ts'
 export {
+  maxPushBody,
   maxPushName,
   maxPushSubscriptions,
   PushEvent,
   PushKeyResponse,
+  LegacyPushPayload,
+  PushMessage,
   PushPayload,
   PushSeenRequest,
   PushSubscriptionRequest,

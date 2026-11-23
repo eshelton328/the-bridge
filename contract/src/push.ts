@@ -1,13 +1,18 @@
 // Web Push (d-118): the server's VAPID public key, the owner's push
 // subscriptions, the page's "seen" signal and the payload of one push. A
-// payload names the chat and the event only, never message text.
+// payload names the chat, its workspace and the event, and, when the
+// subscription wants a preview, one short line of what the chat did or
+// waits on (bridge-coord, 2026-11-23): never a code block, a tool result
+// or a file's text.
 import { z } from 'zod'
 import { ChatId } from './ids.ts'
 
 /** The most push subscriptions the server keeps; a new one past it replaces the oldest. */
 export const maxPushSubscriptions = 10
-/** The most characters of the chat name in a push. */
+/** The most characters of the chat name, or of the workspace name, in a push. */
 export const maxPushName = 120
+/** The most characters (code points) of a push's preview line. */
+export const maxPushBody = 140
 
 const base64url = /^[A-Za-z0-9_-]+$/
 
@@ -26,6 +31,8 @@ export const PushSubscriptionRequest = z.strictObject({
     p256dh: z.string().regex(base64url).max(128),
     auth: z.string().regex(base64url).max(64),
   }),
+  /** Whether a push to this browser may hold a preview line ("Show message preview"); absent is true. */
+  preview: z.boolean().optional(),
 })
 export type PushSubscriptionRequest = z.infer<typeof PushSubscriptionRequest>
 
@@ -41,6 +48,28 @@ export type PushSeenRequest = z.infer<typeof PushSeenRequest>
 export const PushEvent = z.enum(['needsYou', 'done'])
 export type PushEvent = z.infer<typeof PushEvent>
 
-/** The JSON text of one push: the chat, its name and the event. */
-export const PushPayload = z.strictObject({ chat: ChatId, name: z.string().max(maxPushName), event: PushEvent })
+/** The JSON text of one push: the chat, its name, its workspace's name, the event and the preview line (null: none). */
+export const PushPayload = z.strictObject({
+  chat: ChatId,
+  name: z.string().max(maxPushName),
+  workspace: z.string().max(maxPushName),
+  event: PushEvent,
+  body: z
+    .string()
+    .min(1)
+    .refine((text) => Array.from(text).length <= maxPushBody, { message: `at most ${String(maxPushBody)} characters` })
+    .nullable(),
+})
 export type PushPayload = z.infer<typeof PushPayload>
+
+/**
+ * The push of sw.js version 2: the chat, its name and the event only. The server sends it to a subscription saved
+ * with no `preview` key, as a page from before the preview choice saved it; the app saves its subscription again at
+ * its start, with the key, so the phone then gets the new payload.
+ */
+export const LegacyPushPayload = z.strictObject({ chat: ChatId, name: z.string().max(maxPushName), event: PushEvent })
+export type LegacyPushPayload = z.infer<typeof LegacyPushPayload>
+
+/** What the server sends: the new payload, or the old one to an old subscription. */
+export const PushMessage = z.union([PushPayload, LegacyPushPayload])
+export type PushMessage = z.infer<typeof PushMessage>

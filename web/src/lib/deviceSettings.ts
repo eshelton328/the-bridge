@@ -1,7 +1,9 @@
 // The owner's settings on this device (d-119): mode, text size, chat width, the nav
-// pages' order and visibility (d-038) and the new chat defaults. They live
-// in this browser's localStorage under one key and are never sent to the
-// server; each device keeps its own on purpose. This file holds the shape,
+// pages' order and visibility (d-038), the new chat defaults and whether a
+// push shows a preview line. They live in this browser's localStorage under
+// one key, and each device keeps its own on purpose. Only `pushPreview` goes
+// to the server, with this browser's push subscription (lib/pushSwitch.ts),
+// as the server builds the push; no other value is sent. This file holds the shape,
 // the parse of what is stored, the nav rules and which bar shows which
 // page; state/settingsStore.ts keeps the values and reads and writes the key.
 // index.html reads the same key's `mode` before the first paint
@@ -54,6 +56,8 @@ export type DeviceSettings = {
   readonly chatWidth: ChatWidth
   readonly nav: readonly NavEntry[]
   readonly chat: ChatDefaults
+  /** "Show message preview": a push to this browser holds one line of what the chat did or waits on. */
+  readonly pushPreview: boolean
 }
 
 /** Today's look: Dark, default text, full-width chats, every page shown in the default order, Settings last. */
@@ -63,6 +67,7 @@ export const defaultSettings: DeviceSettings = {
   chatWidth: 'full',
   nav: barPages.map((page) => ({ page, visible: true })),
   chat: { model: 'opus', effort: 'high', permission: 'default' },
+  pushPreview: true,
 }
 
 /** Why a nav change or a stored nav is refused. */
@@ -97,6 +102,7 @@ const stored = z.object({
   chatWidth: z.unknown(),
   nav: z.unknown(),
   chat: z.unknown(),
+  pushPreview: z.unknown(),
 })
 
 /**
@@ -113,12 +119,14 @@ export function parseSettings(value: unknown): DeviceSettings {
   const nav = z.array(navEntry).safeParse(data.nav)
   const checked = nav.success ? checkNav(nav.data) : undefined
   const chat = chatDefaults.safeParse(data.chat)
+  const pushPreview = z.boolean().safeParse(data.pushPreview)
   return {
     mode: mode.success ? mode.data : defaultSettings.mode,
     textSize: textSize.success ? textSize.data : defaultSettings.textSize,
     chatWidth: chatWidth.success ? chatWidth.data : defaultSettings.chatWidth,
     nav: checked?.ok === true ? checked.value : defaultSettings.nav,
     chat: chat.success ? chat.data : defaultSettings.chat,
+    pushPreview: pushPreview.success ? pushPreview.data : defaultSettings.pushPreview,
   }
 }
 

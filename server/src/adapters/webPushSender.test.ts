@@ -18,7 +18,13 @@ describe('the web-push sender', () => {
       endpoint: 'https://127.0.0.1:9/push/example',
       keys: { p256dh: browser.getPublicKey('base64url'), auth: randomBytes(16).toString('base64url') },
     }
-    const payload = { chat: ChatId.parse('test-mac/c1'), name: 'writer', event: 'done' as const }
+    const payload = {
+      chat: ChatId.parse('test-mac/c1'),
+      name: 'writer',
+      workspace: 'the-bridge',
+      event: 'done' as const,
+      body: null,
+    }
     const sent = await createWebPushSender('mailto:push@example.com').send(subscription, payload, keys.value)
     expect(sent).toEqual({ ok: false, error: { code: 'ECONNREFUSED' } })
   })

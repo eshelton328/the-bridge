@@ -33,8 +33,9 @@ afterEach(() => {
 
 describe('settingsStore', () => {
   it('starts at the defaults, Dark', () => {
-    const { mode, textSize, chatWidth, nav, chat } = settingsStore.getState()
-    expect({ mode, textSize, chatWidth, nav, chat }).toEqual(defaultSettings)
+    const { mode, textSize, chatWidth, nav, chat, pushPreview } = settingsStore.getState()
+    expect({ mode, textSize, chatWidth, nav, chat, pushPreview }).toEqual(defaultSettings)
+    expect(pushPreview).toBe(true)
   })
 
   it('sets the mode, the text size and the chat defaults and keeps the actions object', () => {
@@ -67,6 +68,11 @@ describe('settingsStore', () => {
         .nav.filter((e) => e.visible)
         .map((e) => e.page),
     ).toEqual(['home', 'toolkit', 'settings'])
+  })
+
+  it('sets the message preview choice', () => {
+    settingsStore.getState().actions.setPushPreview(false)
+    expect(settingsStore.getState().pushPreview).toBe(false)
   })
 
   it('sets the chat width', () => {

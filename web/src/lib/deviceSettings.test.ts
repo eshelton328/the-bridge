@@ -30,6 +30,12 @@ describe('parseStoredSettings', () => {
     expect(settings.nav).toEqual(defaultSettings.nav)
   })
 
+  it('reads the message preview choice, on by default and for a value that is not a boolean', () => {
+    expect(parseSettings({ pushPreview: false }).pushPreview).toBe(false)
+    expect(parseSettings({ pushPreview: 'no' }).pushPreview).toBe(true)
+    expect(parseSettings({}).pushPreview).toBe(true)
+  })
+
   it('reads the chat width, Full by default and for a value it does not know', () => {
     expect(defaultSettings.chatWidth).toBe('full')
     expect(parseSettings({ chatWidth: 'narrow' }).chatWidth).toBe('narrow')
