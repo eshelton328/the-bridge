@@ -7,6 +7,8 @@ import { SettingsScreen } from './SettingsScreen.tsx'
 // PNG reference in references/settings/ (d-119): the fidelity tools render
 // its story at the reference's size and mode. A Light state's colours come
 // from the story's `mode` global, as the app's come from the html class.
+// A story renders at the test runner's width, so the tablet and phone states
+// check no bar here; app/SettingsRoute.test.tsx checks More at 390 and 744.
 const meta = {
   title: 'Pages/Settings/States',
   component: SettingsScreen,
@@ -19,8 +21,9 @@ type Canvas = Parameters<NonNullable<Story['play']>>[0]['canvas']
 /** What every state shows: the title, the four sections and Text size waiting for step D. */
 async function expectSections(canvas: Canvas) {
   await expect(canvas.getByRole('heading', { name: 'Settings' })).toBeVisible()
+  // Each section's title; Notifications is also the switch's label, so the title is the first match.
   for (const section of ['Appearance', 'Navigation', 'Notifications', 'New chat defaults'])
-    await expect(canvas.getByText(section, { exact: true })).toBeVisible()
+    await expect(canvas.getAllByText(section, { exact: true })[0]).toBeVisible()
   await expect(canvas.getByText('Coming soon')).toBeVisible()
   await expect(canvas.getByRole('switch', { name: 'Notifications' })).not.toBeChecked()
 }
@@ -55,7 +58,6 @@ export const SettingsTablet: Story = {
   play: async ({ canvas }) => {
     await expectSections(canvas)
     await expect(canvas.getByRole('radio', { name: 'Dark' })).toBeChecked()
-    await expect(canvas.getByRole('button', { name: /More/ })).toHaveAttribute('aria-current', 'page')
   },
 }
 
@@ -69,7 +71,6 @@ export const SettingsTabletLight: Story = {
   play: async ({ canvas }) => {
     await expectSections(canvas)
     await expect(canvas.getByRole('radio', { name: 'Light' })).toBeChecked()
-    await expect(canvas.getByRole('button', { name: /More/ })).toHaveAttribute('aria-current', 'page')
   },
 }
 
@@ -79,7 +80,6 @@ export const SettingsTabletWide: Story = {
   play: async ({ canvas }) => {
     await expectSections(canvas)
     await expect(canvas.getByRole('radio', { name: 'Dark' })).toBeChecked()
-    await expect(canvas.getByRole('button', { name: /More/ })).toHaveAttribute('aria-current', 'page')
   },
 }
 
@@ -93,7 +93,6 @@ export const SettingsTabletWideLight: Story = {
   play: async ({ canvas }) => {
     await expectSections(canvas)
     await expect(canvas.getByRole('radio', { name: 'Light' })).toBeChecked()
-    await expect(canvas.getByRole('button', { name: /More/ })).toHaveAttribute('aria-current', 'page')
   },
 }
 
@@ -103,7 +102,6 @@ export const SettingsPhone: Story = {
   play: async ({ canvas }) => {
     await expectSections(canvas)
     await expect(canvas.getByRole('radio', { name: 'Dark' })).toBeChecked()
-    await expect(canvas.getByRole('button', { name: /More/ })).toHaveAttribute('aria-current', 'page')
   },
 }
 
@@ -113,7 +111,6 @@ export const SettingsPhoneLight: Story = {
   play: async ({ canvas }) => {
     await expectSections(canvas)
     await expect(canvas.getByRole('radio', { name: 'Light' })).toBeChecked()
-    await expect(canvas.getByRole('button', { name: /More/ })).toHaveAttribute('aria-current', 'page')
   },
 }
 

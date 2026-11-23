@@ -117,13 +117,14 @@ describe('the Inbox home', () => {
     await expect.poll(() => router?.state.location.pathname).toBe('/workspaces')
   })
 
-  it('reaches Toolkit from More in the tablet tab bar, as the tablet has no rail', async () => {
+  it('reaches Toolkit from the More drawer of the tablet tab bar, as the tablet has no rail (d-119)', async () => {
     await setViewport(756, 1158)
     view = await renderAt('/inbox?source=fixtures')
     await expect.poll(tabBar).not.toBeNull()
     await userEvent.click(page.getByRole('button', { name: 'More' }))
-    const toolkit = page.getByRole('button', { name: 'Toolkit' })
-    if (router?.state.location.pathname !== '/toolkit') await userEvent.click(toolkit)
+    const drawer = page.getByRole('dialog', { name: 'More' })
+    await expect.element(drawer).toBeVisible()
+    await userEvent.click(drawer.getByRole('button', { name: /^Toolkit/ }))
     await expect.poll(() => router?.state.location.pathname).toBe('/toolkit')
   })
 

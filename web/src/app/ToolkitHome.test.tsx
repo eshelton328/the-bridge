@@ -125,14 +125,16 @@ describe('the Toolkit home', () => {
     await expect.poll(() => router?.state.location.pathname).toBe('/inbox')
   })
 
-  it('stays on the Toolkit list from More in the tablet tab bar, as More is the way to it', async () => {
+  it('opens the More drawer over the Toolkit list from the tablet tab bar, Toolkit selected (d-119)', async () => {
     await setViewport(756, 1024)
     view = await renderAt('/toolkit')
     await expect.poll(tabBar).not.toBeNull()
     await userEvent.click(page.getByRole('button', { name: 'More' }))
+    const drawer = page.getByRole('dialog', { name: 'More' })
+    await expect.element(drawer).toBeVisible()
+    await expect.element(drawer.getByRole('button', { name: /^Toolkit/ })).toHaveAttribute('aria-current', 'page')
     expect(router?.state.location.pathname).toBe('/toolkit')
     expect(layer('toolkit row · agents-md')).not.toBeNull()
-    expect(overlays()).toHaveLength(0)
   })
 
   it('opens the More drawer from the phone tab bar and goes to Artifacts from it', async () => {
