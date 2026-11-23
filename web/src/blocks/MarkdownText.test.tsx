@@ -28,11 +28,11 @@ describe("a task list's boxes", () => {
 })
 
 describe('a link', () => {
-  it('is a link only to an http or https URL; a relative path stays text', async () => {
+  it('is a link only to an http, https or mailto URL; a relative path and a data: URL stay text', async () => {
     view = await testRender(
       <MarkdownText
         text={
-          '[the plan](/sample/plan.md), [the page](https://example.com/sample) and [old](http://www.example.com/old)'
+          '[the plan](/sample/plan.md), [the page](https://example.com/sample), [old](http://www.example.com/old), [mail](mailto:sample@example.com) and [raw](data:text/plain,sample)'
         }
       />,
     )
@@ -41,7 +41,9 @@ describe('a link', () => {
       .toHaveAttribute('href', 'https://example.com/sample')
     // An explicit http link keeps its URL: only a bare www. autolink goes to https.
     await expect.element(page.getByRole('link', { name: 'old' })).toHaveAttribute('href', 'http://www.example.com/old')
-    expect(document.querySelectorAll('a')).toHaveLength(2)
+    await expect.element(page.getByRole('link', { name: 'mail' })).toHaveAttribute('href', 'mailto:sample@example.com')
+    expect(document.querySelectorAll('a')).toHaveLength(3)
+    await expect.element(page.getByText(/raw/)).toBeVisible()
     await expect.element(page.getByText(/the plan/)).toBeVisible()
   })
 })

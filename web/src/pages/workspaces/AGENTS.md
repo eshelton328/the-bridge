@@ -652,8 +652,8 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   (`blocks/EntryText.tsx`, through the shared `../../blocks/MarkdownText.tsx`):
   GitHub's tables, strikethrough, task lists and autolinks render
   (remark-gfm, review R51), HTML in the text stays text, a bare URL
-  and a `www.` link (to https) are links, only an http or https link is
-  a link and it opens in a new tab (review R56,
+  and a `www.` link (to https) are links, only an http, https or mailto
+  link is a link and it opens in a new tab (review R56,
   `app/WorkspacesMarkdownLinks.test.tsx`), and an image shows its alt
   text. A table's elements
   come from `../../blocks/markdownTableParts.ts`

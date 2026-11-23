@@ -1,6 +1,6 @@
 // Shared by the Markdown route tests (WorkspacesMarkdownLinks, InboxMarkdownLinks; review R56, the owner: "Can we
 // provide clickable links in the output text"): a made-up text with a bare URL, a `www.` link, a 200-character URL, a
-// `javascript:` link, a `mailto:` link and a bare email address, and the checks of how the app draws them on the
+// `javascript:` link, a `mailto:` link and a bare email address (both links), and the checks of how the app draws them on the
 // owner's screen. Every value in the text is made up.
 import { expect } from 'vitest'
 
@@ -37,8 +37,8 @@ function computed(value: string): string {
 }
 
 /**
- * Fails unless `scope` has exactly the http and https links, each opening in a new tab, the `www.` link going to
- * https, the other links and the email as text, each link in the accent colour and underlined, and the long URL
+ * Fails unless `scope` has exactly the http, https and mailto links, each opening in a new tab, the `www.` link
+ * going to https, the `javascript:` link as text, each link in the accent colour and underlined, and the long URL
  * wrapped inside `scope` with no page-wide sideways scroll.
  */
 export function expectLinks(scope: Element) {
@@ -47,9 +47,10 @@ export function expectLinks(scope: Element) {
     [bare, bare, ...tab],
     [www, `https://${www}`, ...tab],
     [longUrl, longUrl, ...tab],
+    ['write', 'mailto:sample@example.com', ...tab],
+    ['sample@example.com', 'mailto:sample@example.com', ...tab],
   ])
   expect(scope.textContent).toContain('Run it')
-  expect(scope.textContent).toContain('sample@example.com')
   const accent = computed('var(--colors-fg-accent)')
   expect(accent).not.toBe(computed('inherit'))
   for (const a of scope.querySelectorAll('a')) {

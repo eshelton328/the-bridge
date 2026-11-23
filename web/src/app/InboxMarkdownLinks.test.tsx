@@ -11,8 +11,8 @@ import { expectLinks, linkText } from './markdownLinkChecks.ts'
 // Review R56 (the owner: "Can we provide clickable links in the output text"): a brain item's record with links, on
 // the owner's path: the app with no URL parameters, Inbox in the nav, then a tap on the item's row, with the
 // contract-checked fake of the server's routes (lib/fakeInboxServer.ts). A bare URL and a `www.` link (to https) are
-// links that open in a new tab, in the accent colour and underlined; a `javascript:` link, a `mailto:` link and an
-// email stay text; a 200-character URL wraps inside Context with no page-wide sideways scroll
+// links that open in a new tab, in the accent colour and underlined; a `mailto:` link and an email are links too; a
+// `javascript:` link stays text; a 200-character URL wraps inside Context with no page-wide sideways scroll
 // (markdownLinkChecks.ts). Every value is made up.
 answerLateServerReads()
 
@@ -31,7 +31,7 @@ const phoneAndTablet: readonly Device[] = [
 
 describe("a brain record's links (review R56)", () => {
   for (const device of phoneAndTablet)
-    it(`makes the http and https URLs links and keeps the rest text, on ${device.name}`, async () => {
+    it(`makes the http, https and mailto URLs links and keeps the rest text, on ${device.name}`, async () => {
       withServer([request], { details: { [request.id]: { source: 'brain', body: linkText } } })
       await openInbox(device)
       await expect.poll(shown).toContain(request.title)

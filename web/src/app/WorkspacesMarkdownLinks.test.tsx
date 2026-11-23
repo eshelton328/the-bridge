@@ -26,8 +26,8 @@ import { answerLateServerReads } from '../lib/lateServerReads.ts'
 // the live chat, with a stubbed server (`fetch`) whose transcript routes are
 // the contract-checked fake (lib/fakeTranscriptServer.ts). A bare URL and a
 // `www.` link (to https) are links that open in a new tab, in the accent
-// colour and underlined; a `javascript:` link, a `mailto:` link and an email
-// stay text; a 200-character URL wraps inside the chat with no page-wide
+// colour and underlined; a `mailto:` link and an email are links too; a
+// `javascript:` link stays text; a 200-character URL wraps inside the chat with no page-wide
 // sideways scroll (markdownLinkChecks.ts). Every value is made up.
 document.documentElement.classList.add('dark')
 document.documentElement.dataset.pandaTheme = 'viewscreen'
@@ -155,7 +155,7 @@ const devices = [
 
 describe("a reply's links (review R56)", () => {
   for (const device of devices)
-    it(`makes the http and https URLs links and keeps the rest text, on ${device.name}`, async () => {
+    it(`makes the http, https and mailto URLs links and keeps the rest text, on ${device.name}`, async () => {
       const server = fakeTranscriptServer()
       server.set(plan, [reply('a1', linkText)])
       fakeServer(server)

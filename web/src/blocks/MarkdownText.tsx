@@ -2,11 +2,11 @@
 // EntryText) and in a brain item's record (Inbox LiveDetail): react-markdown
 // with GitHub's extensions (remark-gfm: tables, strikethrough, task lists
 // and autolinks, review R51), inside the caller's MarkdownView. HTML in the
-// text stays text. A link is a link only with an http or https URL, and
-// opens in a new tab (review R56): a bare URL and a `www.` link (which
-// remark-gfm gives `http://`) become links, the `www.` one to https; a link
-// with any other URL (`javascript:`, `mailto:`, a relative path) stays
-// plain text. MarkdownView draws a link in the accent colour, underlined,
+// text stays text. A link is a link only with an http, https or mailto URL,
+// and opens in a new tab (review R56): a bare URL, a `www.` link (which
+// remark-gfm gives `http://`) and a bare email become links, the `www.` one
+// to https; a link with any other URL (`javascript:`, `data:`, a relative
+// path) stays plain text. MarkdownView draws a link in the accent colour, underlined,
 // and breaks a long URL anywhere, so it wraps in its column. An image shows
 // its alt text, so the text loads nothing from another site. A task list's
 // box is named by its state ("Task done", "Task not done"). A table is the
@@ -20,12 +20,12 @@ import { type MarkdownSize, markdownTableParts } from './markdownTableParts.ts'
 
 const remarkPlugins = [remarkGfm]
 
-/** The URL a link opens, or undefined when it is not http or https; a GFM `www.` autolink goes to https. */
+/** The URL a link opens, or undefined when it is not http, https or mailto; a GFM `www.` autolink goes to https. */
 function linkUrl(href: string | undefined, children: ReactNode): string | undefined {
   if (href === undefined) return undefined
   const www = typeof children === 'string' && children.startsWith('www.') && href === `http://${children}`
   const url = www ? `https://${children}` : href
-  return /^https?:\/\//i.test(url) ? url : undefined
+  return /^(https?:\/\/|mailto:)/i.test(url) ? url : undefined
 }
 
 const inline: Components = {
