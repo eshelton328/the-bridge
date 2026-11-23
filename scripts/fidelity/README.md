@@ -97,7 +97,9 @@ and a hand-written `reference.json`, with no `frame.json`. `pnpm fidelity
   reuse. The reviewer reads the side-by-side, labelled Reference, and may
   read the diff.
 
-A run that passes with `--review` saves the record as
+A run that passes with `--review` (one frame id; it builds Storybook and
+refuses `--skip-build`, so a build older than the source is never sealed)
+saves the record as
 `references/<page>/<frameId>/review.json`, sealed with a hash of the
 review's inputs (`reviewSeal.ts`): the frame folder's files, the state
 file that lists the frame, the page's stories, Storybook's config in

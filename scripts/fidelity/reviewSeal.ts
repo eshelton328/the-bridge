@@ -146,6 +146,20 @@ export function reviewInputs(root: string, page: string, frameId: string): { fil
   return { files, library: libraryVersion(readFileSync(join(root, 'pnpm-workspace.yaml'), 'utf8')) }
 }
 
+/**
+ * Why a `--review` run cannot seal a record, or undefined when it can. A
+ * record is for one frame's render, so the run names one frame. It must
+ * build Storybook: with `--skip-build`, a Storybook built before a source
+ * change would match the render the reviewer saw, and the seal would
+ * take the new source's hash for an old render.
+ */
+export function reviewRunProblem(frames: number, skipBuild: boolean): string | undefined {
+  if (frames !== 1) return '--review <file> takes one frame id: pnpm fidelity <page> <frameId> --review <file>'
+  if (skipBuild)
+    return '--review builds Storybook from the current source before it seals the record; run it without --skip-build'
+  return undefined
+}
+
 /** The sealed record of a passing review of `frameId` whose inputs hash to `inputs`. */
 export function sealReview(frameId: string, inputs: string, library: string, record: unknown): SealedReview {
   return { frameId, inputs, library, recordSha256: sha256(canonicalJson(record)), record }

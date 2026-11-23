@@ -51,7 +51,7 @@ import {
 } from './references.ts'
 import { comparePngs } from './pixelDiff.ts'
 import { parseReview, pngLabel, pngReviewGate } from './pngReview.ts'
-import { inputsDigest, reviewFileName, reviewInputs, sealReview } from './reviewSeal.ts'
+import { inputsDigest, reviewFileName, reviewInputs, reviewRunProblem, sealReview } from './reviewSeal.ts'
 import { composeSideBySide } from './sideBySide.ts'
 import { serveStatic, stateForFrame, storybookDir, storyForState, storyUrl } from './storyServer.ts'
 
@@ -90,9 +90,9 @@ const frameIds =
   requested.length > 0
     ? requested.map(normaliseFrameId)
     : allFrames.filter((id) => stateForFrame(page, codeOf(id)) !== undefined)
-// A reviewer record is for one frame's render, so --review takes exactly one frame id.
-if (values.review !== undefined && requested.length !== 1) {
-  console.error('--review <file> takes one frame id: pnpm fidelity <page> <frameId> --review <file>')
+const reviewProblem = values.review === undefined ? undefined : reviewRunProblem(requested.length, values['skip-build'])
+if (reviewProblem !== undefined) {
+  console.error(reviewProblem)
   process.exit(2)
 }
 const reviewFile = values.review === undefined ? undefined : resolve(values.review)

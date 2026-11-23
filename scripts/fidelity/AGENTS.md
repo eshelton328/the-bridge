@@ -35,7 +35,8 @@ rejects.
   never passes one. Nothing about a PNG reference changes a Figma
   frame's checks.
 - A passing `--review` run saves the record, sealed with a hash of its
-  inputs, as the frame's `review.json`; commit it. `pnpm check:reviews`
+  inputs, as the frame's `review.json`; commit it. `--review` builds
+  Storybook and refuses `--skip-build`, so it never seals an old render. `pnpm check:reviews`
   (CI) fails a built PNG frame whose record is missing, stale or edited
   (`reviewSeal.ts`). Never write or edit a `review.json` by hand.
 - The `fidelity-builder` agent's hooks call `pnpm fidelity:check-build`

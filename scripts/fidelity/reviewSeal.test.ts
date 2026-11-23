@@ -15,6 +15,7 @@ import {
   inputsDigest,
   resolveImport,
   reviewInputs,
+  reviewRunProblem,
   sealReview,
 } from './reviewSeal.ts'
 import { referencesDir } from './references.ts'
@@ -197,4 +198,11 @@ void test('the inputs hash ignores key order in the record and file order', () =
   assert.equal(inputsDigest(files, 'x'), inputsDigest([...files].reverse(), 'x'))
   assert.notEqual(inputsDigest(files, 'x'), inputsDigest(files, 'y'))
   assert.equal(checkSeal({}, 'D01', '0'.repeat(64)).problem, 'invalid')
+})
+
+void test('a --review run names one frame and builds Storybook, so it never seals an old render', () => {
+  assert.equal(reviewRunProblem(1, false), undefined)
+  assert.match(reviewRunProblem(1, true) ?? '', /without --skip-build/)
+  assert.match(reviewRunProblem(0, false) ?? '', /one frame id/)
+  assert.match(reviewRunProblem(2, false) ?? '', /one frame id/)
 })
