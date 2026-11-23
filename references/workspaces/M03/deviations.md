@@ -138,3 +138,15 @@ chat and started none opens a library dialog with `claude --resume
 chat's header leaves with the chat. Figma draws none of these. It is a
 frame exception that bridge-workbench owns. This frame's fixture chat is
 a sample chat, so its chip and render do not change.
+
+## Second row under the kind mark (d-121)
+
+The owner chose the chat header's option E (decision d-121, 2026-11-23): the
+header keeps its two rows, and the second row (the model chip, the context
+meter and its label) starts at the left edge of the kind mark. Figma draws
+that row from the back button's left edge (x 16). With the back button, the
+header now gives the back button its own column, and both rows sit in the
+next one, so the chip starts at the kind mark's x (44). The header's
+height and the first row do not change, so the frame's header box (105:2748)
+still passes the position check. It is a frame exception that the owner's
+decision sets (`blocks/ChatHead.tsx`, `app/WorkspacesChatHeadRows.test.tsx`).
