@@ -164,3 +164,7 @@ The owner chose the chat header's option E (decision d-121, 2026-11-23): the
 second row starts at the left edge of the kind mark. This frame's header has
 no back button, so its second row starts there already, and its render does
 not change (`app/WorkspacesChatHeadRows.test.tsx`, the desktop case).
+
+## Live side chat (backend #460)
+
+On the live page a Claude chat's Side chat asks the server (`useSideChats.ts`). Its composer draws no paperclip, as the side question route takes the question only (bridge-coord's decision, 2026-11-23). Figma draws one here. The live note fills in the chat's name in M5's words ("Nothing here enters <chat>. Close it and the main chat carries on."). This frame's state and story are the fixture's, so the checks above are unchanged.

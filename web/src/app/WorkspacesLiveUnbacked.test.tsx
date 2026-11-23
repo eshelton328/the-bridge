@@ -17,10 +17,11 @@ import { routeTree } from './routeTree.gen.ts'
 // Reviews R41 and R42: the live page offers only what a server route backs. The phone's and the tablet's list has
 // Edit, which renames and orders the workspaces since backend #423 (WorkspacesLiveEdits.test.tsx); a live chat's
 // actions are New chat (`POST /api/chats`), Fork (`POST /api/chats/:chat/fork`, backend #443,
-// WorkspacesLiveFork.test.tsx), Move to workspace (`POST /api/chats/:chat/workspace`, backend #435,
+// WorkspacesLiveFork.test.tsx), Side chat (`POST /api/chats/:chat/side`, backend #460, WorkspacesLiveSide.test.tsx),
+// Move to workspace (`POST /api/chats/:chat/workspace`, backend #435,
 // WorkspacesLiveMove.test.tsx), Rename chat (`POST /api/chats/:chat/rename`), Close pane… (`POST
 // /api/chats/:chat/close`, after its confirm), Compact context… and Clear context… (`POST /api/chats/:chat/command`),
-// and none of the sample's Side chat or Subtask. The fixture states keep Edit and every
+// and none of the sample's Subtask. The fixture states keep Edit and every
 // action. Each live test takes the owner's path: the app with no URL, then
 // Workspaces, with the contract-checked fakes as the server; nothing reaches a real server.
 document.documentElement.classList.add('dark')
@@ -133,6 +134,7 @@ const sheetLabels = () =>
 const kept = [
   'New chat',
   'Fork',
+  'Side chat (/btw)',
   'Move to workspace',
   'Rename chat',
   'Close pane…',
@@ -143,6 +145,7 @@ const kept = [
 const keptOnPhone = [
   'New chat',
   'Fork',
+  'Side chat',
   'Move to workspace',
   'Rename',
   'Close pane…',
@@ -176,8 +179,8 @@ describe('the live list has Edit (R41, backend #423)', () => {
     })
 })
 
-describe("a live chat's actions are the seven the server backs (R42, backend #435, #443)", () => {
-  it('lists New chat, Fork, Move to workspace, Rename chat, Close pane…, Compact context… and Clear context… in the tablet menu', async () => {
+describe("a live chat's actions are the eight the server backs (R42, backend #435, #443, #460)", () => {
+  it('lists New chat, Fork, Side chat, Move to workspace, Rename chat, Close pane…, Compact context… and Clear context… in the tablet menu', async () => {
     withChats()
     await tapWorkspaces(tablet)
     await tapChat('sketch the plan')
@@ -186,15 +189,14 @@ describe("a live chat's actions are the seven the server backs (R42, backend #43
     expect(menuLabels()).toEqual(kept)
   })
 
-  it('lists the same seven in the phone sheet', async () => {
+  it('lists the same eight in the phone sheet', async () => {
     withChats()
     await tapWorkspaces(phone)
     await tapChat('sketch the plan')
     await userEvent.click(actionsButton('sketch the plan'))
     await expect.element(page.getByText('Close pane…', { exact: true })).toBeVisible()
     for (const label of keptOnPhone) await expect.element(page.getByText(label, { exact: true })).toBeVisible()
-    for (const label of ['Side chat', 'Subtask'])
-      expect(page.getByText(label, { exact: true }).elements()).toHaveLength(0)
+    expect(page.getByText('Subtask', { exact: true }).elements()).toHaveLength(0)
     expect(sheetLabels()).toHaveLength(keptOnPhone.length)
   })
 

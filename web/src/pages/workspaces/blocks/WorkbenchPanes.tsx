@@ -10,7 +10,8 @@
 // A chat's composer starts from the owner's draft (`drafts`, draftBook.ts) and sets
 // it as he types, so the draft outlives the pane: a page visit, a closed pane. Its
 // Send goes to `onSend` with the chat's id. A live Claude chat's pane menu ends
-// with /compact and /clear (W5), which open their dialog for that chat.
+// with /compact and /clear (W5), which open their dialog for that chat. Its
+// Side chat opens inside the pane (D5); a live one asks through `onSideAsk`.
 // A live chat's pane (W2, layoutActions.ts) adds Zoom pane or Unzoom pane,
 // Swap with… (the other chats of its herdr tab) and Close pane…, which opens
 // the close dialog; Maximise zooms, a tap on its header and a Send in it
@@ -96,6 +97,8 @@ export type WorkbenchPanesProps = {
   onMoveChat?: ((chat: string, workspace: string) => void) | undefined
   /** Forks a live Claude chat beside it (backend #443); none on a fixture. */
   onForkChat?: ((chat: string) => void) | undefined
+  /** Asks a live Claude chat's side question (useSideChats.ts), by chat id; none on a fixture. */
+  onSideAsk?: ((chat: string, question: string) => Promise<ComposerAnswer>) | undefined
 }
 
 export function WorkbenchPanes({
@@ -116,6 +119,7 @@ export function WorkbenchPanes({
   onResize,
   onMoveChat,
   onForkChat,
+  onSideAsk,
 }: WorkbenchPanesProps) {
   const targets = data.workspaces.filter((w) => w.id !== data.current)
   const panes = data.layers?.panes ?? paneLayers
@@ -209,6 +213,9 @@ export function WorkbenchPanes({
             onUiChange?.({ menuFor: null, moveOpen: false })
             onForkChat(pane.id)
           }
+          // The side chat opens inside this pane (D5); a live one asks about this pane's chat.
+          if (action === 'sideChat' && (data.sideChat !== undefined || onSideAsk !== undefined))
+            onUiChange?.({ menuFor: null, moveOpen: false, sideChatOpen: true, sideChatFor: pane.id })
           if (live !== undefined && (action === 'zoom' || action === 'unzoom')) {
             onUiChange?.({ menuFor: null, moveOpen: false })
             live.zoom(pane.id, action === 'zoom')
@@ -322,6 +329,7 @@ export function WorkbenchPanes({
                   placement="pane"
                   layers={data.layers}
                   onCopy={onCopy}
+                  onSend={onSideAsk === undefined ? undefined : (text) => onSideAsk(pane.id, text)}
                   onClose={() => onUiChange?.({ sideChatOpen: false })}
                 />
               ) : undefined

@@ -114,3 +114,7 @@ switch that d-118 put at the rail's end moved to the Settings page, so
 the rail no longer draws it. The screen draws the gear only when the
 page entry passes `settingsEntry`; this frame's state and story pass
 none, so the checks above are unchanged.
+
+## Live side chat (backend #460)
+
+On the live page a Claude chat's Side chat asks the server (`useSideChats.ts`). Its composer draws no paperclip, as the side question route takes the question only (bridge-coord's decision, 2026-11-23); here that matches Figma, which draws none (158:545), where the fixture draws one (W1b, above). Nor does it draw "Open as its own pane" (158:540): no route moves a side chat into a pane of its own, so the live data has no `openAsPane`. The live note fills in the chat's name in M5's words ("Nothing here enters <chat>. Close it and the main chat carries on."). This frame's state and story are the fixture's, so the checks above are unchanged.

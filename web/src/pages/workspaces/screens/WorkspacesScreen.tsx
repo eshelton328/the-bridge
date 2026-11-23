@@ -131,6 +131,8 @@ export type WorkspacesScreenProps = {
   newChat?: NewChatStarter | undefined
   /** The live list's edits (R41, R42): renames and the workspaces' order; none on a fixture. */
   edits?: WorkspaceEdits | undefined
+  /** Asks a live Claude chat's side question (useSideChats.ts), by chat id; none on a fixture. */
+  onSideAsk?: ((chat: string, question: string) => Promise<ComposerAnswer>) | undefined
   /**
    * The page waits for its first workspace list (R58): the list draws its real header with its controls off, and
    * workspaces that load in place of the groups. Only the phone's and the tablet's list draw it.
@@ -161,6 +163,7 @@ export function WorkspacesScreen({
   layoutWrites,
   newChat,
   edits,
+  onSideAsk,
   loading,
 }: WorkspacesScreenProps) {
   const [changed, setChanged] = useState<{ of: WorkspacesUi; ui: WorkspacesUi }>({ of: stateUi, ui: stateUi })
@@ -318,6 +321,7 @@ export function WorkspacesScreen({
             layoutWrites={layoutWrites}
             newChat={newChat}
             edits={edits}
+            onSideAsk={onSideAsk}
             loading={loading}
           />
           {phoneDeviceOf(layout, data) === undefined || data.phone === undefined ? (
@@ -397,6 +401,7 @@ function WorkspacesLayout({
   layoutWrites,
   newChat,
   edits,
+  onSideAsk,
   loading,
 }: WorkspacesLayoutProps) {
   // The names the owner gave chats (D21) take the place of their titles: in the sidebar, in the header of the chat
@@ -448,6 +453,7 @@ function WorkspacesLayout({
         layoutWrites={layoutWrites}
         newChat={newChat}
         edits={edits}
+        onSideAsk={onSideAsk}
         loading={loading}
       />
     )
@@ -540,6 +546,9 @@ function WorkspacesLayout({
               change({ menuFor: null, moveOpen: false })
               edits.forkChat(chat.id)
             }
+            // The side chat opens beside the chat (D2); a live one asks about this chat.
+            if (action === 'sideChat' && (data.sideChat !== undefined || onSideAsk !== undefined))
+              change({ menuFor: null, moveOpen: false, sideChatOpen: true, sideChatFor: chat.id })
             if (isChatCommand(action))
               change({ menuFor: null, moveOpen: false, chatDialog: action, commandFor: chat.id })
             if (action === 'focus' && layoutWrites !== undefined) {
@@ -583,12 +592,17 @@ function WorkspacesLayout({
           }}
         />
       ) : undefined
+    // A live side chat belongs to one chat (its `pane`): it shows beside that chat only.
+    const sideFor = data.sideChat?.pane
     const sideChat =
-      ui.sideChatOpen === true && data.sideChat !== undefined ? (
+      ui.sideChatOpen === true &&
+      data.sideChat !== undefined &&
+      (onSideAsk === undefined || (sideFor !== undefined && sideFor === chat?.id)) ? (
         <SideChatPanel
           chat={data.sideChat}
           layers={data.layers}
           onCopy={onCopy}
+          onSend={onSideAsk === undefined || sideFor === undefined ? undefined : (text) => onSideAsk(sideFor, text)}
           onClose={() => {
             change({ sideChatOpen: false })
           }}
@@ -681,6 +695,7 @@ function WorkspacesLayout({
                   layout={layoutWrites}
                   onMoveChat={moveChat}
                   onForkChat={edits?.forkChat}
+                  onSideAsk={onSideAsk}
                 />
               </SlotBoundary>
             ) : (
@@ -797,6 +812,7 @@ function WorkspacesLayout({
               layout={layoutWrites}
               onMoveChat={moveChat}
               onForkChat={edits?.forkChat}
+              onSideAsk={onSideAsk}
             />
           </SlotBoundary>
         }

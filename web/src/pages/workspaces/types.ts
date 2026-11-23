@@ -149,6 +149,8 @@ export const ComposerState = z.object({
   model: z.string().optional(),
   /** The chat is working: the composer shows Stop. */
   running: z.boolean(),
+  /** The composer takes no files, as a live side chat's (its route takes the question only): no paperclip. */
+  noAttach: z.boolean().optional(),
   /**
    * A live chat (d-117) that cannot send yet: the composer is disabled and shows this text, such as "Sending not live
    * yet", in place of its placeholder, and sends nothing; none when not set.
@@ -275,6 +277,8 @@ export type PaneAction = z.infer<typeof PaneAction>
 
 /** The side chat beside the main chat (D2 105:920): a quick question that never enters it. */
 export const SideChat = z.object({
+  /** Names its composer, so each chat's side chat keeps its own box; its command and title when not set. */
+  id: z.string().optional(),
   title: z.string(),
   /** The command that opens it, such as "/btw". */
   command: z.string(),
@@ -1013,6 +1017,11 @@ export const WorkspacesUi = z.object({
   drag: z.object({ chat: z.string(), over: z.string() }).nullable().optional(),
   /** The side chat shows beside the main chat, or inside its pane of the split (D5). */
   sideChatOpen: z.boolean().optional(),
+  /**
+   * The chat (its pane id) whose live side chat is open or last opened: the page draws that chat's side questions in
+   * `data.sideChat`. A fixture's side chat is the state's own, so it has none.
+   */
+  sideChatFor: z.string().nullable().optional(),
   /** The subagents panel shows beside the main chat, in place of the side chat (D3). */
   subagentsOpen: z.boolean().optional(),
   /** The subagents whose transcript is open. */

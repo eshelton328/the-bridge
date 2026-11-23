@@ -593,7 +593,8 @@ export function ChatPane(props: ChatPaneProps) {
     event.currentTarget.value = ''
     if (picked.length > 0) files?.add(picked)
   }
-  // A live chat's files; a sample chat's chips come from its state, and a live Codex chat has no paperclip.
+  // A live chat's files; a sample chat's chips come from its state, and a live Codex chat and a live side chat have no
+  // paperclip.
   const attachProps =
     files !== undefined
       ? {
@@ -608,7 +609,7 @@ export function ChatPane(props: ChatPaneProps) {
       : {
           attachments: composer.attachments.map((name) => ({ id: name, name })),
           onRemoveAttachment: () => undefined,
-          onAttach: composer.notLive === undefined ? () => undefined : undefined,
+          onAttach: composer.notLive === undefined && composer.noAttach !== true ? () => undefined : undefined,
         }
   // R31: one row while nothing is in or on the box; the library draws it expanded anyway with chips. R45: a running
   // chat too, so a turn that starts or ends changes no height; the row draws Stop beside Send.

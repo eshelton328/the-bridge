@@ -69,3 +69,7 @@ the focus is in its message box.
 - **What the side chat does not do yet.** The composer does not send; ×,
   the scrim and Escape close the sheet, and Side chat in the chat actions
   sheet opens it again.
+
+## Live side chat (backend #460)
+
+On the live page a Claude chat's Side chat asks the server (`useSideChats.ts`). Its composer draws no paperclip, as the side question route takes the question only (bridge-coord's decision, 2026-11-23). Figma draws one here. The live note fills in the chat's name in M5's words ("Nothing here enters <chat>. Close it and the main chat carries on."). This frame's state and story are the fixture's, so the checks above are unchanged.

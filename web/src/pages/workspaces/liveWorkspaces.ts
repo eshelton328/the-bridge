@@ -254,15 +254,32 @@ const chatCommands: PaneAction[] = [
  * /api/chats/:chat/fork` starts beside a Claude chat (backend #443; `withCommands` drops it for a Codex chat or a shell,
  * which the server refuses), and Rename, which `POST /api/chats/:chat/rename` saves as herdr's label of the chat's pane
  * (backend #423). The live actions follow them: Close pane… (layoutActions.ts) and /compact and /clear
- * (`chatCommands`). Side chat and Subtask have no route yet, so a live chat does not offer them. The desktop
- * workbench's pane menu has no rename field, so it keeps New chat, Fork and Move to workspace.
+ * (`chatCommands`). Side chat asks a side question of a Claude chat (`POST /api/chats/:chat/side`, backend #460,
+ * useSideChats.ts); `withCommands` drops it where it drops Fork. Subtask has no route yet, so a live chat does not
+ * offer it. The desktop workbench's pane menu has no rename field, so it keeps New chat, Fork, Side chat and Move to
+ * workspace.
  */
 const liveNewChat: PaneAction = { value: 'newChat', label: 'New chat' }
 const liveFork: PaneAction = { value: 'fork', label: 'Fork' }
+// D2b and D1 name the side chat's command in the menus; the phone's sheet (M4) does not.
+const liveSide: PaneAction = { value: 'sideChat', label: 'Side chat (/btw)' }
+const livePhoneSide: PaneAction = { value: 'sideChat', label: 'Side chat' }
 // Move to workspace (backend #435) lists the other workspaces; the live list has no New workspace row.
 const liveMove: PaneAction = { value: 'move', label: 'Move to workspace' }
-const liveChatMenu: PaneAction[] = [liveNewChat, liveFork, liveMove, { value: 'rename', label: 'Rename chat' }]
-const livePhoneChatMenu: PaneAction[] = [liveNewChat, liveFork, liveMove, { value: 'rename', label: 'Rename' }]
+const liveChatMenu: PaneAction[] = [
+  liveNewChat,
+  liveFork,
+  liveSide,
+  liveMove,
+  { value: 'rename', label: 'Rename chat' },
+]
+const livePhoneChatMenu: PaneAction[] = [
+  liveNewChat,
+  liveFork,
+  livePhoneSide,
+  liveMove,
+  { value: 'rename', label: 'Rename' },
+]
 
 /**
  * The live dialog that × in edit mode opens (M13's words; backend #427): it asks about any workspace and lists the
@@ -342,8 +359,8 @@ function liveOnly(
       // The sample's summary and alert name a sample workspace and chat. The summary counts the first workspace's
       // panes, and none shows with no workspace; the live alerts are set by the caller.
       status: { ...data.status, summary: summaryOf(workspaces[0], layouts), alert: undefined },
-      // Review R42: of the sample's chat actions only New chat, Fork (backend #443), Move to workspace (backend #435)
-      // and Rename work on a live chat; the others have no route.
+      // Review R42: of the sample's chat actions only New chat, Fork (backend #443), Side chat (backend #460), Move to
+      // workspace (backend #435) and Rename work on a live chat; the others have no route.
       ...(data.chatMenu === undefined ? {} : { chatMenu: liveChatMenu }),
       chatCommands,
       liveTabs: Object.fromEntries(tabs),
@@ -351,7 +368,7 @@ function liveOnly(
       // W3: New chat starts a live Claude chat, from the phone's + and a workspace's ⋯ (M15, M14) in a new tab, from
       // the desktop's tab + (D1) in a new tab, and from a chat's actions or a pane's menu (D2b) beside that chat.
       newChat: liveNewChatForm(current ?? ''),
-      paneMenu: [liveNewChat, liveFork, liveMove],
+      paneMenu: [liveNewChat, liveFork, liveSide, liveMove],
       newWorkspace: undefined,
       ...(data.phone === undefined
         ? {}

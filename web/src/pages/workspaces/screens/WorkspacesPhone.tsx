@@ -131,6 +131,8 @@ export type WorkspacesPhoneProps = {
   newChat?: NewChatStarter | undefined
   /** The live list's edits (R41, R42): renames and the order go to the server; none on a fixture. */
   edits?: WorkspaceEdits | undefined
+  /** Asks a live Claude chat's side question (useSideChats.ts), by chat id; none on a fixture. */
+  onSideAsk?: ((chat: string, question: string) => Promise<ComposerAnswer>) | undefined
   /**
    * The page waits for its first workspace list (R58): the list draws its real header with its controls off, and
    * workspaces that load in place of the groups. Only the phone's and the tablet's list draw it.
@@ -161,6 +163,7 @@ export function WorkspacesPhone({
   layoutWrites,
   newChat,
   edits,
+  onSideAsk,
   loading,
 }: WorkspacesPhoneProps) {
   // The tab bar's More opens the More drawer over it (Toolkit M4); picking a page navigates.
@@ -367,7 +370,9 @@ export function WorkspacesPhone({
       })
     if (action === 'rename')
       onUiChange({ renaming: true, messageFocus: false, refocusMessage: ui.messageFocus === true })
-    if (action === 'sideChat' && data.sideChat !== undefined) onUiChange({ sideChatOpen: true })
+    // M5: the side chat opens as a sheet over the chat; a live one asks about this chat.
+    if (action === 'sideChat' && (data.sideChat !== undefined || onSideAsk !== undefined))
+      onUiChange({ sideChatOpen: true, sideChatFor: ui.focusedPane, menuFor: null, moveOpen: false })
     if (action === 'fork' && data.fork !== undefined) onUiChange({ chatDialog: 'fork' })
     // A live Claude chat's Fork starts its copy beside it (backend #443); it opens once the list shows it.
     if (action === 'fork' && edits !== undefined && chat !== undefined) {
@@ -574,7 +579,7 @@ export function WorkspacesPhone({
             </SlotBoundary>
           }
         />
-        {data.sideChat === undefined ? null : (
+        {data.sideChat === undefined || (onSideAsk !== undefined && data.sideChat.pane !== ui.focusedPane) ? null : (
           <PhoneSideChat
             chat={data.sideChat}
             device={device}
@@ -584,6 +589,7 @@ export function WorkspacesPhone({
             }}
             layers={data.layers}
             onCopy={onCopy}
+            onSend={onSideAsk === undefined ? undefined : (text) => onSideAsk(ui.focusedPane, text)}
           />
         )}
         {data.fork === undefined || device !== 'phone' ? null : (
