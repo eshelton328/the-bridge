@@ -33,6 +33,7 @@ export function chatItem(n: number, title: string, kind: 'question' | 'review', 
     snoozedUntil: null,
     createdAt: minutesAgo(age),
     chat: `mac-mini/s${String(n)}`,
+    origin: null,
     actions: ['snooze', 'done', 'dismiss'],
   }
 }
@@ -50,6 +51,7 @@ export function brainItem(n: number, title: string, age: number, snoozedUntil: s
     snoozedUntil,
     createdAt: minutesAgo(age),
     chat: null,
+    origin: null,
     actions: [],
   }
 }

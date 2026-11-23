@@ -13,6 +13,7 @@ const chatItem = {
   snoozedUntil: null,
   createdAt: '2026-11-21T10:00:00.000Z',
   chat: 'test-mac/0b7f2c1e-4d3a-4f6b-9a8c-1e2d3c4b5a69',
+  origin: null,
   actions: ['snooze', 'done', 'dismiss'],
 }
 const brainItem = {
@@ -23,6 +24,7 @@ const brainItem = {
   title: 'Example request',
   tags: ['global/review', 'project/example-project/web'],
   chat: null,
+  origin: null,
   actions: [],
 }
 
@@ -37,6 +39,14 @@ describe('the inbox contract', () => {
     expect(InboxItem.safeParse(brainItem).success).toBe(true)
     expect(InboxItem.safeParse({ ...chatItem, chat: null }).success).toBe(false)
     expect(InboxItem.safeParse({ ...brainItem, chat: chatItem.chat }).success).toBe(false)
+  })
+
+  it('gives only a brain item an origin chat, live or not', () => {
+    const origin = { chat: chatItem.chat, live: false }
+    expect(InboxItem.safeParse({ ...brainItem, origin }).success).toBe(true)
+    expect(InboxItem.safeParse({ ...brainItem, origin: { ...origin, live: true } }).success).toBe(true)
+    expect(InboxItem.safeParse({ ...chatItem, origin }).success).toBe(false)
+    expect(InboxItem.safeParse({ ...brainItem, origin: { chat: 'no-machine', live: true } }).success).toBe(false)
   })
 
   it('allows no action on a brain item', () => {

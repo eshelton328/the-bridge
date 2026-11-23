@@ -15,6 +15,7 @@ const request: BrainRequest = {
   tags: ['global/review'],
   created: '2026-11-20T09:00:00.000Z',
   snoozedUntil: null,
+  origin: null,
 }
 
 function setup(
@@ -67,6 +68,30 @@ describe('the inbox', () => {
     ])
     expect(listed.counts).toEqual({ needsYou: 2, total: 2 })
     expect(listed.items[1]?.actions).toEqual([])
+  })
+
+  it("names a brain item's origin chat: live when listed, not when not, this machine's for a session alone, none for another machine", async () => {
+    const at = (machine: string, session: string) => ({
+      ...request,
+      origin: { machine: MachineId.parse(machine), session },
+    })
+    const requests = [
+      { ...at('test-mac', 'drift-check'), id: InboxId.parse('0000000000000001') },
+      { ...at('test-mac', 'gone-chat'), id: InboxId.parse('0000000000000002') },
+      { ...at('other-mac', 'drift-check'), id: InboxId.parse('0000000000000003') },
+      { ...request, id: InboxId.parse('0000000000000004') },
+      { ...request, origin: { machine: null, session: 'drift-check' }, id: InboxId.parse('0000000000000005') },
+    ]
+    const listed = await setup({ requests }).list()
+    const origins = Object.fromEntries(listed.items.map((i) => [i.id, i.origin]))
+    expect(origins).toEqual({
+      [listed.items.find((i) => i.source === 'chat')?.id ?? 'none']: null,
+      '0000000000000001': { chat: question, live: true },
+      '0000000000000002': { chat: ChatId.parse('test-mac/gone-chat'), live: false },
+      '0000000000000003': null,
+      '0000000000000004': null,
+      '0000000000000005': { chat: question, live: true },
+    })
   })
 
   it('lists a done chat as a review that is not on the badge, and drops it when the chat works again', async () => {

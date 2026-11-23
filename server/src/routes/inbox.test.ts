@@ -41,6 +41,7 @@ function setup(options: { failing?: boolean } = {}) {
                   tags: ['global/review'],
                   created: '2026-11-20T09:00:00.000Z',
                   snoozedUntil: null,
+                  origin: null,
                 },
               ]),
         ),

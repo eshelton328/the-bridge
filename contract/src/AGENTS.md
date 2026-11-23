@@ -80,7 +80,11 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
   server answers 409 `inbox-read-only`). `needsYou` marks what waits on
   the owner, and `counts.needsYou` is the tab badge. A brain record's
   text goes only in the detail's `body`; no prompt or transcript text
-  in an item (`inbox.test.ts`). `inbox.changed` on `/api/events`
+  in an item. A brain item's `origin` is the chat that filed it
+  (`{ chat, live }`), from the record's origin keys; a chat item, a
+  record with none and one of another machine have null, and a chat
+  that is not live is `live: false`, never an error (R49,
+  `inbox.test.ts`). `inbox.changed` on `/api/events`
   says to read the list again.
 - The Toolkit page (R21, `toolkit.ts`): an item of the brain's shared
   toolkit or of one project's toolkit, read-only. Its `scope` is

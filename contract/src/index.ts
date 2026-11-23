@@ -37,6 +37,7 @@ export {
   InboxDetail,
   InboxDetailResponse,
   InboxItem,
+  InboxOrigin,
   InboxKind,
   InboxResponse,
   InboxSource,

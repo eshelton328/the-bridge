@@ -27,6 +27,14 @@ export type InboxAction = z.infer<typeof InboxAction>
 /** A project's folder name, such as "ncc-1701". */
 const InboxProject = z.string().regex(/^[a-z0-9][a-z0-9._-]{0,63}$/)
 
+/**
+ * The chat that filed a brain request, from the record's `origin_machine` and `origin_session`: its chat ID and
+ * whether that chat is in this machine's workspace list now. A chat that is not live is `live: false`, never an
+ * error.
+ */
+export const InboxOrigin = z.strictObject({ chat: ChatId, live: z.boolean() })
+export type InboxOrigin = z.infer<typeof InboxOrigin>
+
 /** One item of the Inbox. */
 export const InboxItem = z
   .strictObject({
@@ -45,12 +53,18 @@ export const InboxItem = z
     createdAt: z.iso.datetime(),
     /** The chat of a chat item; null for a brain item. */
     chat: ChatId.nullable(),
+    /** The chat that filed a brain item; null for a chat item, a record with no origin, or one from another machine. */
+    origin: InboxOrigin.nullable(),
     /** What the owner can do to it here; the page hides the rest. */
     actions: z.array(InboxAction),
   })
   .refine((i) => (i.source === 'chat') === (i.chat !== null), {
     message: 'a chat item names its chat, and a brain item none',
     path: ['chat'],
+  })
+  .refine((i) => i.source === 'brain' || i.origin === null, {
+    message: 'only a brain item has an origin chat',
+    path: ['origin'],
   })
   .refine((i) => i.source === 'chat' || i.actions.length === 0, {
     message: 'a brain item is read-only here',

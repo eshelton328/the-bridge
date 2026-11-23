@@ -52,8 +52,46 @@ describe('the brain requests', () => {
         tags: ['global/human-input', 'project/example-project/web'],
         created: '2026-11-21T10:50:00.000Z',
         snoozedUntil: null,
+        origin: null,
       },
     ])
+  })
+
+  it('reads the origin chat from a valid session, with a valid machine or none, so an old record has none', async () => {
+    const session = '0b7f2c1e-4d3a-4f6b-9a8c-1e2d3c4b5a69'
+    const withOrigin = (machine: string, id: string) =>
+      open.replace('snoozed_until: null', `snoozed_until: null\norigin_machine: ${machine}\norigin_session: '${id}'`)
+    const brain = await brainWith({
+      'projects/example-project/inbox/a.md': withOrigin('test-mac', session),
+      'projects/example-project/inbox/b.md': withOrigin('Test Mac', session),
+      'projects/example-project/inbox/c.md': withOrigin('test-mac', 'marker-5150'),
+      'projects/example-project/inbox/d.md': open.replace(
+        'snoozed_until: null',
+        'snoozed_until: null\norigin_machine: test-mac',
+      ),
+      'projects/example-project/inbox/e.md': open,
+      'projects/example-project/inbox/g.md': open.replace(
+        'snoozed_until: null',
+        `snoozed_until: null\norigin_machine: []\norigin_session: '${session}'`,
+      ),
+      'projects/example-project/inbox/f.md': open.replace(
+        'snoozed_until: null',
+        `snoozed_until: null\norigin_session: '${session}'`,
+      ),
+    })
+    const listed = await brain.list()
+    expect(listed.ok && listed.value.map((r) => r.origin)).toEqual(
+      expect.arrayContaining([
+        { machine: 'test-mac', session },
+        { machine: null, session },
+        null,
+        null,
+        null,
+        null,
+        null,
+      ]),
+    )
+    expect(listed.ok && listed.value.filter((r) => r.origin !== null)).toHaveLength(2)
   })
 
   it('gives the body after the front matter by ID, and null for an ID it does not have', async () => {
