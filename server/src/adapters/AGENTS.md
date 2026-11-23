@@ -251,7 +251,9 @@ client of a socket or a file sits beside them.
   --fork-session --no-session-persistence` with the model `sonnet`, the
   tools `Read,Grep,Glob` only, stream-json output and an empty MCP
   config (`--strict-mcp-config`), in the chat's folder with an argument
-  list, never a shell. The question goes on stdin. The answer is the
+  list, never a shell, with the server's environment less each `HERDR_`
+  variable (in a herdr pane, Claude Code's herdr hook would report the
+  side session as the server pane's). The question goes on stdin. The answer is the
   text of each top-level assistant message; an error result, an exit
   with no result or a command that does not start is `failed`, and an
   abort ends the process (`claudeSide.test.ts`, a fake `claude`). The fake answers

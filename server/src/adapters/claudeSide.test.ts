@@ -13,7 +13,8 @@ const [seen] = process.argv.slice(2)
 let question = ''
 process.stdin.on('data', (d) => { question += d })
 process.stdin.on('end', () => {
-  writeFileSync(seen, JSON.stringify({ args: process.argv.slice(3), question, cwd: process.cwd() }))
+  const herdr = Object.keys(process.env).filter((k) => k.startsWith('HERDR_'))
+  writeFileSync(seen, JSON.stringify({ args: process.argv.slice(3), question, herdr, marker: process.env.SIDE_MARKER }))
   const out = (line) => process.stdout.write(JSON.stringify(line) + '\\n')
   const say = (text, parent = null) =>
     out({ type: 'assistant', parent_tool_use_id: parent, message: { content: [{ type: 'text', text }] } })
@@ -41,6 +42,13 @@ afterEach(async () => {
 async function ask(question: string, signal = new AbortController().signal) {
   const run = claudeSideRunner({
     model: 'sonnet',
+    env: {
+      PATH: '/usr/bin',
+      SIDE_MARKER: 'marker-5150',
+      HERDR_ENV: '1',
+      HERDR_PANE_ID: 'w1:p1',
+      HERDR_SOCKET_PATH: '/home/dev/h.sock',
+    },
     command: [process.execPath, join(dir, 'fake.cjs'), join(dir, 'seen.json')],
   })
   const chunks: SideChunk[] = []
@@ -56,7 +64,13 @@ describe('claude side runner', () => {
       { end: 'done' },
     ])
     const seen: unknown = JSON.parse(await readFile(join(dir, 'seen.json'), 'utf8'))
-    expect(seen).toMatchObject({ args: sideArgs('session-5150', 'sonnet'), question: 'What does marker-5150 do?' })
+    expect(seen).toMatchObject({
+      args: sideArgs('session-5150', 'sonnet'),
+      question: 'What does marker-5150 do?',
+      // No herdr pane identity: Claude Code's herdr hook would give the side session to the server's pane.
+      herdr: [],
+      marker: 'marker-5150',
+    })
     expect(sideArgs('s', 'm')).toEqual(
       expect.arrayContaining(['--fork-session', '--no-session-persistence', '--strict-mcp-config']),
     )
@@ -66,7 +80,7 @@ describe('claude side runner', () => {
   it('ends as failed on an error result, an exit with no result, or a command that does not start', async () => {
     expect((await ask('fail')).at(-1)).toEqual({ end: 'failed' })
     expect(await ask('crash')).toEqual([{ end: 'failed' }])
-    const run = claudeSideRunner({ model: 'sonnet', command: [join(dir, 'no-such-claude')] })
+    const run = claudeSideRunner({ model: 'sonnet', env: {}, command: [join(dir, 'no-such-claude')] })
     const chunks: SideChunk[] = []
     for await (const chunk of run({ session: 's', folder: dir, question: 'q', signal: new AbortController().signal }))
       chunks.push(chunk)

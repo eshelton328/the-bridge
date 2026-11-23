@@ -55,7 +55,7 @@ const agents = createHerdrAgents({
   // The coordinator's chat runs the served server and Vite; its workspace never closes from the page.
   guardedAgents: ['bridge-coord'],
   // A side question runs `claude -p` on a fork of the chat's session that is not saved, with the read tools only.
-  runSide: claudeSideRunner({ model: 'sonnet' }),
+  runSide: claudeSideRunner({ model: 'sonnet', env: process.env }),
 })
 const uploads = createDiskUploads({ root: uploadsRoot, convert: sipsConvert })
 // The VAPID keys and push subscriptions go beside the database too, 0700 and 0600 (d-118). The notifier

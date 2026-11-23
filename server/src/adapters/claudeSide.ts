@@ -53,21 +53,37 @@ function lineOf(raw: string): z.infer<typeof Line> | undefined {
 }
 
 /**
+ * The environment of a side run: the server's own, less each `HERDR_` variable. In a herdr pane those name the
+ * server's pane, and Claude Code's herdr hook would report the side session as that pane's session.
+ */
+function sideEnv(env: Readonly<Record<string, string | undefined>>): Record<string, string> {
+  const kept: Record<string, string> = {}
+  for (const [key, value] of Object.entries(env))
+    if (!key.startsWith('HERDR_') && value !== undefined) kept[key] = value
+  return kept
+}
+
+/**
  * A side runner that starts `command` (`claude` by default) with {@link sideArgs}. `model` is the model of every
- * side answer.
+ * side answer, and `env`
+ * the server's environment, which the run gets through {@link sideEnv}.
  */
 export function claudeSideRunner({
   model,
+  env,
   command = ['claude'],
 }: {
   readonly model: string
+  readonly env: Readonly<Record<string, string | undefined>>
   readonly command?: readonly [string, ...string[]]
 }): SideRunner {
+  const childEnv = sideEnv(env)
   const [bin, ...pre] = command
   return async function* run({ session, folder, question, signal }): AsyncGenerator<SideChunk> {
     if (signal.aborted) return
     const child = spawn(bin, [...pre, ...sideArgs(session, model)], {
       cwd: folder,
+      env: childEnv,
       stdio: ['pipe', 'pipe', 'ignore'],
     })
     const exited = new Promise<void>((resolve) => {
