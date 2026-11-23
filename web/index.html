@@ -11,6 +11,15 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
     <meta name="apple-mobile-web-app-title" content="The Bridge" />
+    <script id="color-mode">
+      // The saved colour mode before the first paint (d-119; app/colorMode.ts keeps it after). It reads only the
+      // settings key; a missing or bad value, or blocked storage, keeps Dark, the class above.
+      try {
+        var mode = JSON.parse(localStorage.getItem('bridge/settings')).mode
+        var dark = mode === 'system' ? matchMedia('(prefers-color-scheme: dark)').matches : mode !== 'light'
+        document.documentElement.classList.toggle('dark', dark)
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>
