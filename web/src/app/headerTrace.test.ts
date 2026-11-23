@@ -189,4 +189,35 @@ describe('chat header dump', () => {
     await new Promise((done) => setTimeout(done, 150))
     expect(posts).toEqual([])
   })
+
+  it('keeps one POST out at a time and sends only the newest snapshot after a slow one', async () => {
+    mountChat()
+    const bodies: string[] = []
+    const answers: (() => void)[] = []
+    const running = startHeaderTrace({
+      route: routeAt('/workspaces').route,
+      everyMs: 20,
+      post: (_endpoint, body) => {
+        bodies.push(body)
+        return new Promise<void>((done) => {
+          answers.push(done)
+        })
+      },
+    })
+    onTestFinished(running.stop)
+    await expect.poll(() => bodies.length).toBe(1)
+    // Many ticks pass while the first POST is out: none of them posts.
+    await new Promise((done) => setTimeout(done, 200))
+    expect(bodies.length).toBe(1)
+    answers.shift()?.()
+    await expect.poll(() => bodies.length).toBe(2)
+    const samples = (body: string | undefined) => {
+      const trace: unknown = JSON.parse(body ?? '')
+      return isTrace(trace) ? trace.samples.length : 0
+    }
+    // The second POST is the newest snapshot, with every tick since the first.
+    expect(samples(bodies[1])).toBeGreaterThan(samples(bodies[0]) + 5)
+    await new Promise((done) => setTimeout(done, 100))
+    expect(bodies.length).toBe(2)
+  })
 })

@@ -246,9 +246,27 @@ export function startHeaderTrace({
   const doc = win.document
   let session: HeaderTrace | undefined
   let title: Element | null = null
+  // One POST at a time: while one is out, each session keeps only its newest snapshot, sent when the POST ends, so a
+  // slow link holds at most one snapshot per session and never stacks requests beside the chat's own.
+  let inFlight = false
+  const waiting = new Map<string, string>()
+  const upload = (body: string) => {
+    inFlight = true
+    post(endpoint, body)
+      .catch(() => undefined)
+      .finally(() => {
+        inFlight = false
+        const next = waiting.entries().next()
+        if (next.done === true) return
+        waiting.delete(next.value[0])
+        upload(next.value[1])
+      })
+  }
   const send = () => {
     if (session === undefined) return
-    post(endpoint, JSON.stringify(session)).catch(() => undefined)
+    const body = JSON.stringify(session)
+    if (inFlight) waiting.set(session.startedAt, body)
+    else upload(body)
   }
   const end = () => {
     send()
