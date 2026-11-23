@@ -2,10 +2,14 @@
 // mapped onto the home's words. The home keeps its layout words (the title,
 // the chips' and groups' labels, the sorts, the menus' headings); every row,
 // count and the Filter menu's sections come from the server, and the tab
-// badge is the server's `counts.needsYou`. An item that is not snoozed is in
-// Needs you, as Figma D1 puts its approvals, questions, reviews and actions
-// there; a snoozed one is in Snoozed. Next steps, Running and Done have no
-// source yet, so they are empty. No row shows Allow or Deny (v1). The
+// badge is the server's `counts.needsYou`. The server's flag puts each item
+// in a group (f-003, R20; screen review R48): one that needs the owner (a
+// chat's question, an open brain request) in Needs you, a finished chat's
+// turn in To review, a snoozed one in Snoozed. Figma D1 draws a review in
+// Needs you; the server's rule wins, and To review has its own chip. Needs
+// you's group and chip are `counts.needsYou`, the badge's number; the header
+// and the All chip are `counts.total`, from the same read. Next steps,
+// Running and Done have no source yet, so they are empty. No row shows Allow or Deny (v1). The
 // discussion, the toast and the selected task are the sample's alone and are
 // dropped. Pure; tested in liveList.test.ts.
 import type { InboxItem, InboxResponse } from '@bridge/contract'
@@ -86,6 +90,9 @@ function liveRow(item: InboxItem, now: Date): InboxRowView {
   }
 }
 
+/** The live group of finished chat turns, and its chip: Figma has neither. */
+const reviewLabel = 'To review'
+
 const countOf = <T>(items: readonly T[], test: (item: T) => boolean) => items.filter(test).length
 
 /** The labels of `items` in first-seen order, each with how many items have it and its box's value (`valueOf`). */
@@ -145,16 +152,22 @@ export function liveList(
   { now, line = null }: { now: Date; line?: string | null },
 ): { data: InboxData; ui: InboxUi } {
   const { items, counts } = response
-  const rows = items.map((item) => liveRow(item, now))
-  const waiting = rows.filter((r) => r.snoozed === undefined)
-  const snoozed = rows.filter((r) => r.snoozed !== undefined)
+  const rowsOf = (test: (item: InboxItem) => boolean) => items.filter(test).map((item) => liveRow(item, now))
+  const needsYou = rowsOf((i) => i.needsYou)
+  const toReview = rowsOf((i) => !i.needsYou && i.snoozedUntil === null)
+  const snoozed = rowsOf((i) => !i.needsYou && i.snoozedUntil !== null)
   const label = (id: InboxGroupView['id'], fallback: string) =>
     base.data.groups.find((g) => g.id === id)?.label ?? fallback
   const groups: InboxGroupView[] = [
-    { id: 'needsYou', label: label('needsYou', 'Needs you'), count: waiting.length, dot: 'needsYou', rows: waiting },
+    { id: 'needsYou', label: label('needsYou', 'Needs you'), count: counts.needsYou, dot: 'needsYou', rows: needsYou },
+    { id: 'toReview', label: reviewLabel, count: toReview.length, dot: null, rows: toReview },
     { id: 'snoozed', label: label('snoozed', 'Snoozed'), count: snoozed.length, dot: null, rows: snoozed },
   ]
-  const chipCounts: Record<string, number> = { all: waiting.length, needs: waiting.length }
+  const chipCounts: Record<string, number> = { all: counts.total, needs: counts.needsYou, review: toReview.length }
+  // To review's chip follows Needs you's.
+  const filters = base.data.filters.flatMap((f) =>
+    f.value === 'needs' ? [f, { value: 'review', label: reviewLabel, count: 0 }] : [f],
+  )
   const filterMenu = liveFilterMenu(base.data.filterMenu, items)
   const checks = noFilterOf(filterMenu)
   return {
@@ -162,8 +175,8 @@ export function liveList(
     data: {
       sortMenu: base.data.sortMenu,
       railBadge: counts.needsYou,
-      count: waiting.length,
-      filters: base.data.filters.map((f) => ({ ...f, count: chipCounts[f.value] ?? 0 })),
+      count: counts.total,
+      filters: filters.map((f) => ({ ...f, count: chipCounts[f.value] ?? 0 })),
       filterMenu,
       snoozeMenu: liveSnoozeMenu(base.data.snoozeMenu, now),
       groups,

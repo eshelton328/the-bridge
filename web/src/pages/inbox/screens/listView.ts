@@ -34,9 +34,20 @@ export type ListView = {
   results: number
 }
 
-/** The groups the header and the filter chips count; Snoozed and the Done days are not tasks to do. */
-const counted: readonly InboxGroupId[] = ['needsYou', 'nextSteps', 'running']
-const chipGroups: Partial<Record<string, InboxGroupId>> = { needs: 'needsYou', next: 'nextSteps', running: 'running' }
+/**
+ * The groups the header and the filter chips count; Snoozed and the Done days are not tasks to do. To review (the live
+ * Inbox's finished chat turns, liveList.ts) has its own chip.
+ */
+const counted: readonly InboxGroupId[] = ['needsYou', 'toReview', 'nextSteps', 'running']
+/** The live Inbox's header and All are the server's `counts.total`, which holds the snoozed items too (R48). */
+const countedOf = (data: InboxData): readonly InboxGroupId[] =>
+  data.live === undefined ? counted : [...counted, 'snoozed']
+const chipGroups: Partial<Record<string, InboxGroupId>> = {
+  needs: 'needsYou',
+  review: 'toReview',
+  next: 'nextSteps',
+  running: 'running',
+}
 
 /** A row's project: the first part of its meta line ("ncc-1701 · f-005" is in ncc-1701). */
 const projectOf = (row: InboxRowView): string => row.meta.split(' · ')[0] ?? ''
@@ -161,9 +172,12 @@ const doneDays: readonly InboxGroupId[] = ['today', 'yesterday']
  * means every open task, not Done; D7 and T7 notes), with the items the owner
  * finished from the task bar in Today, which it adds when the state has
  * none. A state with no Done days shows its search's Done list (Show it,
- * D10). The other chips show the state's groups.
+ * D10). A chip of one group (Needs you, To review, Next steps, Running)
+ * shows only that group; All shows the state's groups.
  */
 function chipView(data: InboxData, groups: readonly InboxGroupView[], ui: InboxUi): readonly InboxGroupView[] {
+  const only = chipGroups[ui.filter]
+  if (only !== undefined) return groups.filter((group) => group.id === only)
   if (ui.filter !== 'done') return groups
   const own = groups.filter((group) => doneDays.includes(group.id))
   const days = own.length === 0 ? (data.search?.done ?? []) : own
@@ -189,8 +203,9 @@ export function listView(data: InboxData, ui: InboxUi, query: string): ListView 
   const applied = appliedSections(data.filterMenu, ui.filters)
   const keep = (row: InboxRowView) => passes(row, applied)
   const all = () => true
-  const removed = less(data.groups, groups, all, counted)
-  const hidden = less(groups, groups, keep, counted)
+  const countedIds = countedOf(data)
+  const removed = less(data.groups, groups, all, countedIds)
+  const hidden = less(groups, groups, keep, countedIds)
   const drafted = appliedSections(data.filterMenu, ui.filterChecks)
   const searching = query.trim() !== ''
   const shown = chipView(data, groups, ui).flatMap((group) => {
@@ -220,7 +235,7 @@ export function listView(data: InboxData, ui: InboxUi, query: string): ListView 
     applied,
     hidden,
     preview: {
-      shown: data.count - removed - less(groups, groups, (row) => passes(row, drafted), counted),
+      shown: data.count - removed - less(groups, groups, (row) => passes(row, drafted), countedIds),
       of: data.count - removed,
     },
     results: shown.reduce((n, group) => n + group.rows.length, 0),

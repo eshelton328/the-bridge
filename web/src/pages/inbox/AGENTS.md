@@ -36,6 +36,16 @@ in `references/inbox/`.
   `GET /api/events` and each time the stream opens, never on a timer. The
   tab badge is the server's `counts.needsYou`. `?state=` and
   `?source=fixtures` show the sample data.
+- The server's `needsYou` flag places a live item (f-003, R20; R48): Needs
+  you holds what waits on the owner, To review a finished chat's turn and
+  Snoozed the rest. Needs you's group and chip and the badge are
+  `counts.needsYou`; the header and All are `counts.total` of the same
+  read (`app/InboxNeedsYouLive.test.tsx`).
+- A list read with no answer (none, a timeout, or a 5xx with no error
+  body) after the page showed a list keeps that list for 10 s with no
+  line (review R43b, as the Workspaces list); past it the line shows with
+  one report. A 4xx, an error body or a first read shows at once
+  (`liveInbox.ts` `watchLiveInbox`, `app/InboxListGrace.test.tsx`).
 - The stream and the list read are the app's (`app/InboxFeedProvider.tsx`,
   `lib/inboxFeed.ts`): the page follows the feed and gives it the count it
   loaded, so the app reads the list once per burst. Every page's rail and
