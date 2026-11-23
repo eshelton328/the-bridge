@@ -135,9 +135,13 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   sent-file chip yet, so each chip is a `MetaChipButton`
   (LIBRARY_GAPS.md: Sent file chips).
   A slash command's error output (`ErrorEntry`) shows as an `event`
-  entry labelled "Error" with its text, and a harness note
-  (`NoteEntry`, R46: a task's report, a peer's message, a Stop hook) as
-  an `event` entry labelled by its kind, never as the owner's bubble.
+  entry labelled "Error" with its text. A harness note (`NoteEntry`,
+  R46: a task's report, a peer's message, a Stop hook) is a `note`
+  entry: a small `fg.muted` line with its kind's library icon (task
+  `AgentIcon`, peer `ChatIcon`, hook `HookIcon`, named Task, Message,
+  Hook) and no bubble, never the owner's bubble or its colour
+  (`blocks/NoteLine.tsx`, `app/WorkspacesNoteLines.test.tsx`). Figma
+  draws no note.
 - A live tool call (review R32, backend #371) carries its `kind`, a
   readable `title` and its own one-line `label`: it draws its kind's
   icon, the title and the label in a quieter colour on one line

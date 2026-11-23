@@ -544,15 +544,29 @@ function liveData() {
 }
 
 describe('a harness note (R46)', () => {
-  it("draws as an event line labelled by its kind, never as the owner's message", () => {
+  it("draws as a note line labelled by its kind, never as the owner's message", () => {
     expect(
       chatEntryOf({ type: 'note', id: 'n1', kind: 'task', text: 'Background task finished: tests pass' }, 'claude'),
-    ).toEqual({ type: 'event', label: transcriptText.note.task, text: 'Background task finished: tests pass' })
+    ).toEqual({
+      type: 'note',
+      kind: 'task',
+      label: transcriptText.note.task,
+      text: 'Background task finished: tests pass',
+    })
     expect(chatEntryOf({ type: 'note', id: 'n2', kind: 'peer', text: 'Message from bridge-coord' }, 'claude')).toEqual({
-      type: 'event',
+      type: 'note',
+      kind: 'peer',
       label: transcriptText.note.peer,
       text: 'Message from bridge-coord',
     })
+    expect(chatEntryOf({ type: 'note', id: 'n3', kind: 'hook', text: 'Stop hook: reply rewritten' }, 'claude')).toEqual(
+      {
+        type: 'note',
+        kind: 'hook',
+        label: transcriptText.note.hook,
+        text: 'Stop hook: reply rewritten',
+      },
+    )
   })
 })
 

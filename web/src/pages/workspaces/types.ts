@@ -1,7 +1,7 @@
 // The Workspaces page's view models, display-ready, each from its Zod schema.
 // The Workbench (Figma page 89:2): workspace tabs over one to four split
 // panes, each a chat, a shell or an empty pane, and a status bar.
-import { ChatEffort, LayoutNode, ModelAlias, TabId, ToolKind } from '@bridge/contract'
+import { ChatEffort, LayoutNode, ModelAlias, NoteKind, TabId, ToolKind } from '@bridge/contract'
 import { z } from 'zod'
 
 export const AgentKind = z.enum(['claude', 'codex', 'shell'])
@@ -123,6 +123,11 @@ export const ChatEntry = z.discriminatedUnion('type', [
    * text in mono, as a tool line. `label` names the dot for assistive technology.
    */
   z.object({ type: z.literal('event'), label: z.string(), text: z.string() }),
+  /**
+   * A harness note the chat got, never a prompt of the owner's (R46): a background task's report, a peer's message
+   * or a Stop hook. It draws as a small muted line with its kind's icon and no bubble. `label` names the icon.
+   */
+  z.object({ type: z.literal('note'), kind: NoteKind, label: z.string(), text: z.string() }),
   /** Lines of an agent's progress, in mono. */
   z.object({ type: z.literal('progress'), lines: z.array(z.string()) }),
   /** A command the agent asks to run. */
