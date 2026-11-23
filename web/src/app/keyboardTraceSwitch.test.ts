@@ -49,10 +49,31 @@ async function start(
         return Promise.resolve(undefined)
       },
     },
+    header: { everyMs: 40 },
   })
   if (running) onTestFinished(running.stop)
   return { running, posts }
 }
+
+/** An open chat's header, as PhoneChat draws it: ChatHead's title h2 in the AppShell detail (headerTrace.ts). */
+function mountChatTitle() {
+  const host = document.createElement('div')
+  host.className = 'app-shell__root app-shell__root--size_tablet'
+  host.innerHTML = '<div class="app-shell__detail"><header data-figma="105:785"><h2>secret title</h2></header></div>'
+  document.body.append(host)
+  onTestFinished(() => {
+    host.remove()
+  })
+}
+
+/** A route source fixed at `/workspaces`. */
+const onWorkspaces: RouteSource = {
+  current: () => ({ pathname: '/workspaces', search: '' }),
+  subscribe: () => () => undefined,
+}
+
+/** The posts that are header dumps (headerTrace.ts). */
+const headerPosts = (posts: string[]) => posts.filter((body) => body.includes('"trace":"header"'))
 
 const overlay = () => document.querySelector('[data-keyboard-trace]')
 
@@ -88,12 +109,16 @@ describe('keyboard trace switch', () => {
     withWebdriver(false)
     const fetchSwitch = vi.fn<FetchSwitch>(answer({ enabled: true }))
     const route = { pathname: '/inbox', search: '' }
-    let changed: () => void = () => undefined
+    // The router calls each subscriber: the chat sessions and the header dump both follow it.
+    const subscribers = new Set<() => void>()
+    const changed = () => {
+      for (const onChange of subscribers) onChange()
+    }
     const { running, posts } = await start(fetchSwitch, 500, {
       current: () => route,
       subscribe: (onChange) => {
-        changed = onChange
-        return () => undefined
+        subscribers.add(onChange)
+        return () => subscribers.delete(onChange)
       },
     })
     expect(fetchSwitch).toHaveBeenCalledTimes(1)
@@ -182,5 +207,31 @@ describe('keyboard trace switch', () => {
     expect(running).toBeDefined()
     await expect.poll(() => posts.length).toBeGreaterThan(0)
     expect(JSON.parse(posts[0] ?? '')).toMatchObject({ automated: true })
+  })
+
+  it('dumps an open chat header with the switch on, never its title', async () => {
+    withSearch('')
+    withWebdriver(false)
+    mountChatTitle()
+    const { running, posts } = await start(vi.fn<FetchSwitch>(answer({ enabled: true })), 500, onWorkspaces)
+    expect(running).toBeDefined()
+    await expect.poll(() => headerPosts(posts).length).toBeGreaterThan(0)
+    expect(JSON.parse(headerPosts(posts).at(-1) ?? '')).toMatchObject({
+      trace: 'header',
+      route: { pathname: '/workspaces' },
+    })
+    expect(posts.join('')).not.toContain('secret')
+  })
+
+  it('takes no header dump when the switch is off or fails', async () => {
+    withSearch('')
+    withWebdriver(false)
+    mountChatTitle()
+    for (const answerSwitch of [answer({ enabled: false }), () => Promise.reject(new TypeError('Failed to fetch'))]) {
+      const { running, posts } = await start(vi.fn<FetchSwitch>(answerSwitch), 50, onWorkspaces)
+      expect(running).toBeUndefined()
+      await new Promise((done) => setTimeout(done, 150))
+      expect(posts).toEqual([])
+    }
   })
 })

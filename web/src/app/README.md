@@ -167,6 +167,54 @@ Both modes record the same way:
   the session's file `<startedAt>.json` in the brain's
   `engine/_local/phone-review/traces/`.
 
+### Chat header dump
+
+Both modes also start the chat header dump (`headerTrace.ts`, screen
+review R57: a soft, doubled chat name on the owner's iPad), so a trace
+from the device shows what draws the title. `keyboardTraceSwitch.ts`
+imports it dynamically with the trace, so a build has none of it.
+
+- It runs only on `/workspaces` while a chat is open: while its header's
+  title, the h2 of ChatHead (`.app-shell__detail header[data-figma] h2`),
+  is on the page. That is the phone's and the tablet's open chat; the
+  desktop panes are not the AppShell detail, so they take no dump
+  (`WorkspacesHeaderTrace.test.tsx`). Off that route it holds only the
+  router subscription.
+- It takes one dump at the open, every 3 s, and after a `scroll`,
+  `resize`, `focusin`, `focusout`, `orientationchange`, `pageshow` or
+  `visibilitychange` of the window, or a resize or scroll of
+  `window.visualViewport`. An event's dump runs in a timer after it, at
+  most one each 250 ms, never inside the event, because the dump reads
+  layout and a resize is when AppShell moves its keyboard dock.
+- A dump has `t` (`performance.now()`), `at` (the wall clock, ISO, to
+  match a screenshot's time), `type`, `devicePixelRatio`, `innerWidth`,
+  `innerHeight`, `visibility`, `visualViewport` (`offsetTop`, `pageTop`,
+  `scale`, `width`, `height`), `title` (its unrounded box, its offset
+  inside the header and `textLength`), `fonts` (each Geist face's
+  family, weight and load status) and `chain`: the title and each
+  ancestor up to `html`, each with its box, `scrollTop`, `scrollLeft`,
+  the computed styles of `DUMP_STYLES` (transform, translate, scale,
+  rotate, will-change, backdrop-filter, filter, opacity, mask, clip-path,
+  overflow, position, top, contain, isolation, z-index, font family,
+  weight, size and line height, font-synthesis, text-shadow,
+  -webkit-text-stroke, background-clip, color, -webkit-font-smoothing)
+  and its animations (kind, play state, target, keyframe count, the
+  properties they set, start and current time).
+- It records no text of the page: of the title only its length, and an
+  element by its tag, its `data-figma` layer and its component classes
+  (`part__slot`), never an id, a name, a label or a value
+  (`headerTrace.test.ts`).
+- Each chat open is one session with its own `startedAt` and `trace:
+  'header'`, the keyboard trace's `userAgent`, `displayMode`, screen,
+  `devicePixelRatio`, `automated`, `build` and `route`, and at most the
+  last 400 dumps in `samples`. It POSTs to `/__keyboard-trace` after
+  each 3 s dump, at once when the page is hidden, and when the chat
+  closes, so it lands beside the keyboard traces as `<startedAt>.json`.
+  One POST is out at a time; while it is out, each session keeps only
+  its newest snapshot and sends it when the POST ends. A chat open for
+  12 hours starts a new session, as the endpoint refuses a `startedAt`
+  more than a day old.
+
 ## Proxy focus
 
 `keyboardProxy.ts` gives the composer the focus with no iOS scroll into

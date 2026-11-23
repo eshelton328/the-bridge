@@ -8,9 +8,12 @@
 // can type a URL. A failed, slow or odd answer means off, with no error
 // shown. Under automation (`navigator.webdriver`, as Playwright sets it) the
 // switch starts nothing, so a test run's traces never mix with the owner's;
-// the param still traces, and its header says `automated: true`. main.ts calls this only under `import.meta.env.DEV`, and both trace
+// the param still traces, and its header says `automated: true`. In both
+// modes it also starts the chat header dump (headerTrace.ts, screen review
+// R57). main.ts calls this only under `import.meta.env.DEV`, and the trace
 // modules are dynamic imports, so a build has none of them.
 import type { ChatTraceOptions, RouteSource } from './keyboardChatTrace.ts'
+import type { HeaderTraceOptions } from './headerTrace.ts'
 import type { TraceOptions } from './keyboardTrace.ts'
 
 /** How the trace runs: `overlay` from the URL param, `quiet` from the switch, or `off`. */
@@ -29,6 +32,8 @@ export type SwitchOptions = {
   route?: RouteSource
   /** Passed to the trace, beside the overlay choice; for tests. */
   trace?: Omit<TraceOptions, 'overlay' | 'win'> & Pick<ChatTraceOptions, 'closeDelayMs'>
+  /** Passed to the chat header dump; for tests. */
+  header?: Omit<HeaderTraceOptions, 'win' | 'route'>
 }
 
 /** Asks the switch; true only for a 200 with `{ "enabled": true }` within the timeout. */
@@ -66,24 +71,49 @@ const windowRoute = (win: Window): RouteSource => ({
   subscribe: () => () => undefined,
 })
 
+/** Starts the chat header dump (headerTrace.ts) on the router's location, posting as the trace does. */
+async function startHeader(options: SwitchOptions, win: Window, route: RouteSource) {
+  const { startHeaderTrace } = await import('./headerTrace.ts')
+  const { endpoint, post } = options.trace ?? {}
+  return startHeaderTrace({
+    ...(endpoint === undefined ? {} : { endpoint }),
+    ...(post === undefined ? {} : { post }),
+    ...options.header,
+    win,
+    route,
+  })
+}
+
+/** One stop for the keyboard trace and the header dump. */
+const both = (a: { stop: () => void }, b: { stop: () => void }) => ({
+  stop: () => {
+    a.stop()
+    b.stop()
+  },
+})
+
 /**
- * Starts the whole-page trace for the param, or the chat sessions for the switch; undefined when it is off. Returns
- * the function that stops it.
+ * Starts the whole-page trace for the param, or the chat sessions for the switch, each with the chat header dump;
+ * undefined when it is off. Returns the function that stops it.
  */
 export async function startKeyboardTraceIfOn(options: SwitchOptions = {}): Promise<{ stop: () => void } | undefined> {
   const mode = await keyboardTraceMode(options)
   const win = options.win ?? window
   const { closeDelayMs, ...trace } = options.trace ?? {}
+  if (mode === 'off') return undefined
+  const route = options.route ?? windowRoute(win)
   if (mode === 'overlay') {
     const { startKeyboardTrace } = await import('./keyboardTrace.ts')
-    return startKeyboardTrace({ ...trace, win, overlay: true })
+    return both(startKeyboardTrace({ ...trace, win, overlay: true }), await startHeader(options, win, route))
   }
-  if (mode === 'off') return undefined
   const { startChatKeyboardTrace } = await import('./keyboardChatTrace.ts')
-  return startChatKeyboardTrace({
-    ...trace,
-    ...(closeDelayMs === undefined ? {} : { closeDelayMs }),
-    win,
-    route: options.route ?? windowRoute(win),
-  })
+  return both(
+    startChatKeyboardTrace({
+      ...trace,
+      ...(closeDelayMs === undefined ? {} : { closeDelayMs }),
+      win,
+      route,
+    }),
+    await startHeader(options, win, route),
+  )
 }
