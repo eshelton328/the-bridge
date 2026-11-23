@@ -170,6 +170,15 @@ Thin Hono sub-apps, one file for each area, named after the area
   a chat item with no known turn end. A fault is 500 with its errno code
   in the log only; no title or record text goes into a log line
   (`inbox.test.ts`).
+- `sides.ts`, under `/api/chats`: `POST /:chat/side` (`{ question }`)
+  asks a side question: 202 with the side ID, 404 for an unknown chat,
+  409 `noSession` for a shell, a Codex chat or a chat with no saved
+  session, 409 `sideBusy` while one of the chat's own or three in all
+  answer, 400 for any other field. `GET /:chat/side/:side` gives the
+  answer so far, and `/events` streams `side.changed` with the whole
+  answer, from its state when the stream opens, and ends after its
+  last state; an unknown side is 404. The question and the answer never
+  go into a log line or an `ErrorBody` (`chats.test.ts`).
 - The JSON checks of each POST route are in `jsonBody.ts`.
 - A route takes its services or ports as function arguments; it never
   imports an adapter.

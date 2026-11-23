@@ -14,6 +14,9 @@ import {
   StartChatResponse,
   RestartModelResponse,
   MoveToWorkspaceResponse,
+  SideAnswer,
+  SideChangedEvent,
+  SideStarted,
 } from '@bridge/contract'
 import { ok, type Result } from '@bridge/shared'
 import { testClient } from 'hono/testing'
@@ -778,5 +781,65 @@ describe('POST /api/chats/:chat/fork', () => {
     ])
       expect((await fork(app, themes, body)).status).toBe(400)
     expect(agents.forks()).toEqual([])
+  })
+})
+
+describe('POST /api/chats/:chat/side and its answer', () => {
+  const ask = (app: ReturnType<typeof createApp>, chat: string, body: unknown) =>
+    app.request(`/api/chats/${encodeURIComponent(chat)}/side`, {
+      method: 'POST',
+      headers: { ...local, 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+  const sidePath = (chat: string, side: string) => `/api/chats/${encodeURIComponent(chat)}/side/${side}`
+
+  it('answers 202 with the side ID, then streams the answer as it comes and ends after its last state', async () => {
+    const agents = createFakeAgents(machine)
+    agents.setSideAnswer(ChatId.parse(themes), [
+      { text: 'The build ' },
+      { text: 'needs marker-5150.' },
+      { end: 'done' },
+    ])
+    const { log, lines } = memoryLogger()
+    const app = createApp({ agents, owner, log })
+    const res = await ask(app, themes, { question: '  Why did the build fail?  ' })
+    expect(res.status).toBe(202)
+    const { side } = SideStarted.parse(await res.json())
+    expect(agents.sideQuestions()).toEqual([{ chat: themes, question: 'Why did the build fail?' }])
+    const stream = await app.request(`${sidePath(themes, side)}/events`, { headers: local })
+    expect(stream.status).toBe(200)
+    if (stream.body === null) throw new Error('no body')
+    const read = await frames(stream.body, 2)
+    expect(read[0]?.event).toBe('open')
+    const last = SideChangedEvent.parse(JSON.parse(read[1]?.data ?? ''))
+    expect(last.source).toBe('test-mac/side')
+    expect(last.data).toEqual({ side, chat: themes, state: 'done', text: 'The build needs marker-5150.', cut: false })
+    const now = await app.request(sidePath(themes, side), { headers: local })
+    expect(SideAnswer.parse(await now.json()).state).toBe('done')
+    expect(JSON.stringify(lines())).not.toMatch(/marker-5150|Why did the build/)
+  })
+
+  it('answers 409 sideBusy for a second question of a chat while one answers, and noSession for a shell', async () => {
+    const agents = createFakeAgents(machine)
+    agents.setSideAnswer(ChatId.parse(themes), ['hang'])
+    const app = createApp({ agents, owner, log: memoryLogger().log })
+    expect((await ask(app, themes, { question: 'One?' })).status).toBe(202)
+    const busy = await ask(app, themes, { question: 'Two?' })
+    expect(busy.status).toBe(409)
+    expect(await busy.json()).toMatchObject({ error: { kind: 'chat-not-ready', state: 'sideBusy' } })
+    const shell = await ask(app, 'test-mac/brain-git', { question: 'Why?' })
+    expect(await shell.json()).toMatchObject({ error: { kind: 'chat-not-ready', state: 'noSession' } })
+  })
+
+  it('answers 404 for an unknown chat or side, and 400 for an empty question, a model or a bad side ID', async () => {
+    const agents = createFakeAgents(machine)
+    const app = createApp({ agents, owner, log: memoryLogger().log })
+    expect((await ask(app, 'test-mac/no-such-chat', { question: 'Why?' })).status).toBe(404)
+    expect((await app.request(sidePath(themes, 'a1b2c3d4e5f60718'), { headers: local })).status).toBe(404)
+    expect((await app.request(`${sidePath(themes, 'a1b2c3d4e5f60718')}/events`, { headers: local })).status).toBe(404)
+    expect((await app.request(sidePath(themes, 'not-hex'), { headers: local })).status).toBe(400)
+    for (const body of [{ question: '  ' }, { question: 'Why?', model: 'opus' }, {}])
+      expect((await ask(app, themes, body)).status).toBe(400)
+    expect(agents.sideQuestions()).toEqual([])
   })
 })

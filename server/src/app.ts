@@ -10,6 +10,8 @@ import { createRateLimit } from './rateLimit.ts'
 import { artifactsRoutes } from './routes/artifacts.ts'
 import { inboxRoutes } from './routes/inbox.ts'
 import { chatsRoutes } from './routes/chats.ts'
+import { sidesRoutes } from './routes/sides.ts'
+import { createSideAnswers } from './services/sideAnswers.ts'
 import { clientErrorsRoutes } from './routes/clientErrors.ts'
 import { eventsRoutes } from './routes/events.ts'
 import { pushRoutes } from './routes/push.ts'
@@ -128,6 +130,7 @@ export function createApp({
       })
       .route('/api/workspaces', workspacesRoutes(agents, log))
       .route('/api/chats', chatsRoutes(agents, log, uploads))
+      .route('/api/chats', sidesRoutes(createSideAnswers(agents), log))
       .route('/api/uploads', uploadsRoutes(uploads, log))
       .route('/api/events', eventsRoutes(live, log))
       .route('/api/push', pushRoutes(push, seen, log, pushChanged))
