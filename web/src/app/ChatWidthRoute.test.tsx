@@ -61,6 +61,8 @@ async function pickAndOpenChat(device: Device, choice: string | undefined) {
     }
     await expect.poll(() => router.state.location.pathname).toBe('/settings')
     const radio = page.getByRole('radio', { name: choice, exact: true })
+    // The page can draw after the path changes; element() does not wait.
+    await expect.element(radio).toBeInTheDocument()
     await userEvent.click(rowOf(radio))
     await expect.element(radio).toBeChecked()
   }
