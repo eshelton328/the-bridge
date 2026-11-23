@@ -221,6 +221,11 @@ export type HeaderTraceOptions = {
   scrollEveryMs?: number
   /** The most dumps a session keeps; the oldest go first. */
   cap?: number
+  /**
+   * How long a session runs before a new one starts, in ms: the endpoint refuses a trace whose `startedAt` is more
+   * than a day old, so a chat left open longer would lose its dumps.
+   */
+  rotateMs?: number
 }
 
 const isChatPath = (pathname: string) => pathname === '/workspaces' || pathname === '/workspaces/'
@@ -242,6 +247,7 @@ export function startHeaderTrace({
   everyMs = 3000,
   scrollEveryMs = 250,
   cap = 400,
+  rotateMs = 12 * 60 * 60 * 1000,
 }: HeaderTraceOptions): { stop: () => void } {
   const doc = win.document
   let session: HeaderTrace | undefined
@@ -275,8 +281,8 @@ export function startHeaderTrace({
   }
   const dump = (type: string) => {
     const now = chatTitle(doc)
-    // A different title element is a different chat open.
-    if (now !== title && session !== undefined) end()
+    // A different title element is a different chat open; an old session ends before the endpoint refuses it.
+    if (session !== undefined && (now !== title || Date.now() - Date.parse(session.startedAt) >= rotateMs)) end()
     if (now === null) return
     if (session === undefined) {
       title = now

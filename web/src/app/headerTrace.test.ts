@@ -220,4 +220,27 @@ describe('chat header dump', () => {
     await new Promise((done) => setTimeout(done, 100))
     expect(bodies.length).toBe(2)
   })
+
+  it('starts a new session for the same chat before the endpoint refuses an old one', async () => {
+    mountChat()
+    const posts: string[] = []
+    const running = startHeaderTrace({
+      route: routeAt('/workspaces').route,
+      everyMs: 20,
+      rotateMs: 100,
+      post: (_endpoint, body) => {
+        posts.push(body)
+        return Promise.resolve(undefined)
+      },
+    })
+    onTestFinished(running.stop)
+    const starts = () =>
+      new Set(
+        posts.map((body) => {
+          const trace: unknown = JSON.parse(body)
+          return isTrace(trace) ? trace.startedAt : ''
+        }),
+      )
+    await expect.poll(() => starts().size).toBeGreaterThan(1)
+  })
 })
