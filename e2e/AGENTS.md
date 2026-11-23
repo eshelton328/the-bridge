@@ -15,7 +15,9 @@ not in CI or `pnpm verify`.
 - `herdrSession.ts`: the global setup. It starts the herdr session,
   makes a workspace in a temporary folder, runs the fake agent in its
   pane, a second fake agent with no session (the status chat) beside
-  it and an idle shell pane under that, and stops and deletes the session after the tests.
+  it and an idle shell pane under that, and a second workspace with one
+  idle shell (the contract suite moves it into the first), and stops and
+  deletes the session after the tests.
 - `stack.ts`: starts the server and the web dev server of one test
   file on free ports, with the setup's herdr session.
 - `reportAgent.ts`: sets the status chat's status in herdr

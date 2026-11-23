@@ -79,6 +79,8 @@ export default async function setup(project: TestProject) {
   await until('the status chat show in herdr', () => herdr('agent', 'list').includes(statusTitle))
   // A shell pane with no job, which the adapter lists as a shell chat named by its shell.
   Split.parse(JSON.parse(herdr('pane', 'split', statusPane, '--direction', 'down', '--no-focus')))
+  // A second workspace with one idle shell, which the contract suite moves into the e2e workspace.
+  Created.parse(JSON.parse(herdr('workspace', 'create', '--label', 'bridge e2e other', '--no-focus', '--cwd', dir)))
   project.provide('herdrSocket', herdrSocket)
   project.provide('claudeProjects', claudeProjects)
   project.provide('fakeChat', { workspace, title })

@@ -1,12 +1,15 @@
 // The AgentPort contract suite on the herdr adapter and a real herdr
 // session (d-113), as it runs on the fake adapter in server/.
-import { ChatId, MachineId } from '@bridge/contract'
+import { dirname } from 'node:path'
+import { ChatId, MachineId, WorkspaceId } from '@bridge/contract'
 import { describe, expect, inject, it } from 'vitest'
+import { z } from 'zod'
 import { describeAgentPort } from '../server/src/adapters/agentPortContract.ts'
 import { createHerdrAgents } from '../server/src/adapters/herdrAgents.ts'
 import { memoryLogger } from '../server/src/logger.ts'
 import { appendTranscript } from './appendTranscript.ts'
 import { dropNextEnter } from './dropEnter.ts'
+import { herdrRequest } from './herdrRequest.ts'
 import { clearInput, typeInput } from './paneInput.ts'
 import { receivedBy } from './receivedBy.ts'
 import { renameTab } from './renameTab.ts'
@@ -60,6 +63,30 @@ describe('herdr adapter on a real session', () => {
       modelId: 'opus',
       status: 'idle',
     })
+  })
+
+  it('moves a shell out of a one-pane workspace into the e2e workspace, and herdr closes the old one', async () => {
+    const Created = z.object({ result: z.object({ workspace: z.object({ workspace_id: z.string() }) }) })
+    const created = Created.parse(
+      await herdrRequest('workspace.create', {
+        label: 'bridge e2e lone',
+        focus: false,
+        cwd: dirname(inject('claudeProjects')),
+      }),
+    )
+    const lone = WorkspaceId.parse(`${machine}/${created.result.workspace.workspace_id}`)
+    const read = await port().listWorkspaces()
+    if (!read.ok) throw new Error(read.error.message)
+    const shell = read.value.find((w) => w.id === lone)?.chats.find((c) => c.kind === 'shell')
+    const home = read.value.find((w) => w.label === inject('fakeChat').workspace)
+    if (shell === undefined || home === undefined) throw new Error('no lone shell or no e2e workspace')
+    expect(await port().moveToWorkspace(shell.id, home.id)).toEqual({
+      ok: true,
+      value: { from: shell.pane, to: shell.pane, sourceClosed: true },
+    })
+    const after = await port().listWorkspaces()
+    expect(after.ok && after.value.some((w) => w.id === lone)).toBe(false)
+    expect(after.ok && after.value.find((w) => w.id === home.id)?.chats.some((c) => c.id === shell.id)).toBe(true)
   })
 
   it("reads the fake chat's transcript from its session file", async () => {

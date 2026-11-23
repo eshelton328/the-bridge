@@ -243,25 +243,25 @@ export function describeAgentPort(name: string, setup: () => Promise<ContractSet
       expect(await port.orderWorkspaces([...ids, none])).toEqual({ ok: true, value: 'stale' })
     })
 
-    it('moves a shell to a new tab of another workspace with its chat ID, and no chat to its own workspace', async () => {
+    it("moves a shell to a new tab of the chat's workspace with its chat ID, and no chat to its own workspace", async () => {
       const { port, expected } = await setup()
       const { chat } = await chatsToUse(port, expected)
       const read = await port.listWorkspaces()
       if (!read.ok) throw new Error(read.error.message)
-      const away = read.value.find((w) => w.label === expected.shell.workspace)
       const home = read.value.find((w) => w.chats.some((c) => c.id === chat))
-      if (home === undefined || away === undefined) throw new Error('no workspace lists the chat or the shell')
-      // A pane of an agent that the port does not drive lists as a shell too, and no write reaches it (not found):
-      // take the first shell that the port finds, which a move to its own workspace shows.
-      let shell: ChatId | undefined
-      for (const candidate of away.chats.filter((c) => c.kind === 'shell')) {
-        const own = await port.moveToWorkspace(candidate.id, away.id)
-        if (own.ok && own.value === 'sameWorkspace') {
-          shell = candidate.id
-          break
+      if (home === undefined) throw new Error('no workspace lists the expected chat')
+      // A shell of another workspace than the chat's (the e2e session has one for this case). A pane of an agent that
+      // the port does not drive lists as a shell too, and no write reaches it: take the first shell that the port
+      // finds, which a move to its own workspace shows.
+      let found: { shell: ChatId; away: WorkspaceId } | undefined
+      for (const away of read.value.filter((w) => w.id !== home.id))
+        for (const candidate of away.chats.filter((c) => c.kind === 'shell')) {
+          const own = await port.moveToWorkspace(candidate.id, away.id)
+          if (found === undefined && own.ok && own.value === 'sameWorkspace')
+            found = { shell: candidate.id, away: away.id }
         }
-      }
-      if (shell === undefined) throw new Error('no shell of the expected workspace is in its workspace')
+      if (found === undefined) throw new Error("no shell of another workspace than the chat's is in its workspace")
+      const { shell } = found
       expect(await port.moveToWorkspace(shell, WorkspaceId.parse(`${port.machine}/no-such-workspace`))).toEqual({
         ok: true,
         value: 'notFound',
