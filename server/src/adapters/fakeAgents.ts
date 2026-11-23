@@ -675,9 +675,12 @@ export function createFakeAgents(
       if (found === undefined) return Promise.resolve(ok('notFound'))
       if (found.kind !== 'claude') return Promise.resolve(ok('noSession'))
       forks.push(chat)
+      const stem = `${found.title.slice(0, 25)}-fork`
+      const titles = new Set((data ?? []).flatMap((w) => w.chats.map((c) => c.title)))
+      const free = [stem, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (n === stem ? stem : `${stem}-${String(n)}`))
       return start({
         kind: 'claude',
-        name: name ?? `${found.title.slice(0, 27)}-fork`,
+        name: name ?? free.find((n) => !titles.has(n)) ?? stem,
         place: { in: 'split', beside: chat, direction },
       })
     },
