@@ -72,11 +72,14 @@ describe('the Workspaces home', () => {
     expect(visibleOverlays()).toHaveLength(0)
   })
 
-  it('goes to Toolkit from More in the tablet tab bar, as the tablet has no rail', async () => {
+  it('goes to Toolkit from the More drawer of the tablet tab bar, as the tablet has no rail (d-119)', async () => {
     await setViewport(756, 1024)
     view = await renderAt('/workspaces?source=fixtures')
     await expect.poll(tabBar).not.toBeNull()
     await userEvent.click(page.getByRole('button', { name: 'More' }))
+    const drawer = page.getByRole('dialog', { name: 'More' })
+    await expect.element(drawer).toBeVisible()
+    await userEvent.click(drawer.getByRole('button', { name: /^Toolkit/ }))
     await expect.poll(() => router?.state.location.pathname).toBe('/toolkit')
   })
 

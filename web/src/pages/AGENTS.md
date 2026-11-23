@@ -10,6 +10,8 @@ Start one with `pnpm new page <page> --state <id> --frame <D1>`.
   Toolkit page.
 - [workspaces/AGENTS.md](workspaces/AGENTS.md): read before you work on the
   Workspaces page.
+- [settings/AGENTS.md](settings/AGENTS.md): read before you work on the
+  Settings page.
 
 A page's own `AGENTS.md` files (the page, `screens/`, `blocks/`,
 `states/`) hold only what is true for that page.

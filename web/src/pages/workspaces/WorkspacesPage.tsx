@@ -68,7 +68,7 @@ import {
   workspacesDraftBook,
   type WorkspacesStateKey,
 } from './workspacesStore.ts'
-import { usePushSwitch } from '../../state/pushStore.ts'
+import { navRoute } from '../../lib/navRoutes.ts'
 import { useVisibleNavPages } from '../../state/settingsStore.ts'
 
 const route = getRouteApi('/workspaces')
@@ -99,7 +99,6 @@ const copyReply = (text: string) =>
 
 export function WorkspacesPage() {
   const state = route.useLoaderData()
-  const push = usePushSwitch()
   const navPages = useVisibleNavPages()
   const search = route.useSearch()
   const navigate = route.useNavigate()
@@ -324,7 +323,8 @@ export function WorkspacesPage() {
   return (
     <>
       <WorkspacesScreen
-        push={push}
+        // The app always shows the Settings gear and the drawer's Settings row (d-119); a Figma state's story does not.
+        settingsEntry
         navPages={navPages}
         data={screenData}
         ui={shownUi}
@@ -369,12 +369,10 @@ export function WorkspacesPage() {
               )
         }}
         onNavigate={(page) => {
-          // The tablet's More (the phone opens its drawer) goes to Toolkit, the one page behind More with a route
-          // (d-105), as the tablet has no rail.
-          if (page === 'more') void navigate({ to: '/toolkit' })
+          // The desktop rail's More goes to Toolkit (d-105); the tablet's and the phone's open the drawer (d-119).
           // Only the pages that have a route go somewhere; the others wait for theirs.
-          else if (page === 'inbox' || page === 'workspaces' || page === 'artifacts' || page === 'toolkit')
-            void navigate({ to: `/${page}` })
+          const to = page === 'more' ? '/toolkit' : navRoute(page)
+          if (to !== undefined) void navigate({ to })
         }}
       />
       <ModelRestartFailed

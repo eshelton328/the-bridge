@@ -1,0 +1,46 @@
+{
+  "frameId": "T02",
+  "inputs": "9db7ce2d9fcce2d74ca00790952a4ca6b23aaa65d4eddba0ee84ad87716eafe8",
+  "library": "1.0.0-beta.106",
+  "recordSha256": "25186a34fef0a885756377a60c4b838ff65380a6032def6f5583d99d2d7c79ac",
+  "record": {
+    "verdict": "match",
+    "viewport": "iPad portrait 820 x 1180, Light",
+    "inputs": {
+      "layout": "side-by-side",
+      "reference": "reports/fidelity/settings/T02.sideBySide.png",
+      "render": "reports/fidelity/settings/T02.sideBySide.png",
+      "reference_side": "left"
+    },
+    "summary": "The render matches the reference except for the accepted deviations. The header, Appearance, Navigation, the lower part of New chat defaults that is still visible, and the tab bar are the same.",
+    "findings": [],
+    "accepted_deviations": [
+      {
+        "id": "A1",
+        "as_given": "Text size: the control is disabled (muted labels) and its line under it says \"Coming soon\" in place of \"Scales the whole app: Small 87.5 %, Default 100 %, Large 112.5 %.\" (step D adds text size later). On a narrow screen the one-line note makes every section below it sit about one text line higher.",
+        "status": "as-described",
+        "finding": null,
+        "note": "Small, Default and Large are muted, Default is still selected, and the note says \"Coming soon\". At 820 px the reference note fits on one line, so the Navigation card starts at the same height in both pictures and nothing moves up."
+      },
+      {
+        "id": "A2",
+        "as_given": "A new \"NOTIFICATIONS\" section with one \"Notifications\" switch (off) sits between the Navigation section and the New chat defaults section. So New chat defaults sits lower, or below the bottom edge.",
+        "status": "as-described",
+        "finding": null,
+        "note": "The NOTIFICATIONS card with an off switch sits at about y 927-1019. New chat defaults starts at about y 1045, and the tab bar cuts it off at the dropdown row. The \"Saved on this device\" note is below the bottom edge, which this deviation covers."
+      },
+      {
+        "id": "A3",
+        "as_given": "The Notifications switch moved to that section: the desktop rail no longer has the \"Notifications / Blocked in Settings\" switch at its bottom, and the More drawer no longer has the \"Notifications / Blocked in Settings\" row at its end. So the drawer is shorter and its top edge sits lower.",
+        "status": "not-seen",
+        "finding": null,
+        "note": "Neither picture shows the desktop rail or an open More drawer. The tab bar (Home, Inbox, Workspaces, Projects, Artifacts, More) is the same in both."
+      }
+    ],
+    "limits": [
+      "Neither picture shows the desktop rail or the open More drawer, so the parts of A3 about them could not be checked.",
+      "Only part of New chat defaults is visible in the render, and its bottom note is below the edge, so the rest of that card could not be compared.",
+      "No region crops were given. I compared the side-by-side image at the size shown and did not check differences under about 2 px."
+    ]
+  }
+}

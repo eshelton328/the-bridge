@@ -24,7 +24,7 @@ import { AppRail } from '../../../blocks/AppRail.tsx'
 import { AppTabBar } from '../../../blocks/AppTabBar.tsx'
 import { MoreDrawer } from '../../../blocks/MoreDrawer.tsx'
 import { ViewportFrame } from '../../../blocks/ViewportFrame.tsx'
-import { defaultVisiblePages, type NavPage, navLayout, tabletMorePage } from '../../../lib/deviceSettings.ts'
+import { defaultVisiblePages, type NavPage, navLayout } from '../../../lib/deviceSettings.ts'
 import type { Viewport } from '../../../lib/screenState.ts'
 import type { AddLinkInput, ArtifactsData, ArtifactsNotice, ArtifactsUi, CopiedLink } from '../types.ts'
 import type { ProposalAct } from '../blocks/ArtifactProposal.tsx'
@@ -39,16 +39,15 @@ import { appliedView, discussionEntries, proposalEffect } from './discussionView
 import { LibraryList } from './LibraryList.tsx'
 import { LibraryPhone } from './LibraryPhone.tsx'
 import { artifactHref, filedProject, openArtifact } from './openView.ts'
-import type { PushSwitch } from '../../../lib/pushSwitch.ts'
 
 export type ArtifactsScreenProps = {
+  /** Draws the Settings gear in the rail and the Settings row in the More drawer (d-119): the page entry passes it; a Figma state does not. */
+  settingsEntry?: boolean | undefined
   data: ArtifactsData
   ui: ArtifactsUi
   /** The layout before the screen measures its width; after that the width picks it. */
   viewport: Viewport
   onNavigate?: ((page: string) => void) | undefined
-  /** The Notifications switch (d-118) at the rail's end and in the phone's More drawer; none in the Figma states. */
-  push?: PushSwitch | undefined
   /** The shown nav pages in the owner's order (d-038, d-119); the default order without it, as the Figma states draw. */
   navPages?: readonly NavPage[] | undefined
   /** Reports what the owner changes: the chip, the search, the view and the open groups. */
@@ -72,7 +71,7 @@ export function ArtifactsScreen({
   ui,
   viewport,
   onNavigate,
-  push,
+  settingsEntry,
   navPages = defaultVisiblePages,
   onUiChange,
   onCopyLink,
@@ -178,11 +177,11 @@ export function ArtifactsScreen({
               rail={
                 layout === 'desktop' ? (
                   <AppRail
+                    settings={settingsEntry}
                     selected="artifacts"
                     pages={nav.rail}
                     inboxBadge={data.railBadge}
                     onSelect={onNavigate}
-                    push={push}
                   />
                 ) : undefined
               }
@@ -199,8 +198,8 @@ export function ArtifactsScreen({
                     inboxBadge={data.railBadge}
                     onSelect={(next) => {
                       // M8: on the phone More opens the More drawer; the tablet's tabs navigate.
-                      if (next === 'more' && layout === 'phone') onUiChange?.({ moreOpen: true })
-                      else onNavigate?.(next === 'more' ? tabletMorePage(nav.more) : next)
+                      if (next === 'more') onUiChange?.({ moreOpen: true })
+                      else onNavigate?.(next)
                     }}
                   />
                 )
@@ -326,18 +325,18 @@ export function ArtifactsScreen({
                 }
               />
             )}
-            {/* M8: the shared More drawer, Artifacts selected with its count. Only the phone's More opens it; a state
-                with `moreOpen` shows it at any width, as a story at the width Storybook gives it does. */}
+            {/* M8: the shared More drawer, Artifacts selected with its count. The phone's and the tablet's More open it
+                (d-119); a state with `moreOpen` shows it at any width, as a story at the width Storybook gives it does. */}
             <MoreDrawer
+              settings={settingsEntry}
               open={ui.moreOpen === true}
               onOpenChange={(moreOpen) => {
                 onUiChange?.({ moreOpen })
               }}
-              pages={navLayout(navPages, 'phone').more}
+              pages={navLayout(navPages, layout === 'tablet' ? 'tablet' : 'phone').more}
               selected="artifacts"
               counts={{ artifacts: data.count }}
               onNavigate={onNavigate}
-              push={push}
             />
           </Backdrop>
         )

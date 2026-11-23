@@ -49,7 +49,15 @@ describe('the nav order of the device settings', () => {
     onTestFinished(view.unmount)
     await expect.poll(() => document.querySelector('[data-figma="rail · Inbox"]')).not.toBeNull()
     const rail = [...document.querySelectorAll('[data-figma^="rail · "]')].map((el) => el.getAttribute('data-figma'))
-    expect(rail).toEqual(['rail · Toolkit', 'rail · Inbox', 'rail · Workspaces', 'rail · Artifacts', 'rail · More'])
+    expect(rail).toEqual([
+      'rail · Toolkit',
+      'rail · Inbox',
+      'rail · Workspaces',
+      'rail · Artifacts',
+      // The Settings gear is never hidden and sits before More (d-119).
+      'rail · Settings',
+      'rail · More',
+    ])
     await view.unmount()
   })
 
@@ -90,10 +98,15 @@ describe('the nav order of the device settings', () => {
     await view.unmount()
   })
 
-  // The tablet has no More drawer, so its More opens the one shown page past its five tabs: Artifacts once Toolkit
-  // moves before it, on every page whose tab bar shows More.
-  for (const path of ['/inbox?source=fixtures', '/workspaces?source=fixtures', '/toolkit?source=fixtures']) {
-    it(`opens the page past the tablet tabs from More on ${path}`, async () => {
+  // The tablet's More opens the More drawer on every page (d-119), with the shown pages past its five tabs (Artifacts once
+  // Toolkit moves before it) and Settings; a tap on one opens it.
+  for (const path of [
+    '/inbox?source=fixtures',
+    '/workspaces?source=fixtures',
+    '/toolkit?source=fixtures',
+    '/settings',
+  ]) {
+    it(`opens the page past the tablet tabs from the More drawer on ${path}`, async () => {
       settingsStore.getState().actions.moveNavPage('toolkit', -1)
       await page.viewport(820, 1180)
       const view = await renderAt(path)
@@ -112,6 +125,10 @@ describe('the nav order of the device settings', () => {
         .or(page.getByRole('button', { name: 'More' }))
         .first()
         .click()
+      const drawer = page.getByRole('dialog', { name: 'More' })
+      await expect.element(drawer).toBeVisible()
+      await expect.element(drawer.getByRole('button', { name: /Settings/ })).toBeVisible()
+      await drawer.getByRole('button', { name: /Artifacts/ }).click()
       await expect.poll(() => router.state.location.pathname).toBe('/artifacts')
       await view.unmount()
     })

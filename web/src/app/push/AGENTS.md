@@ -21,4 +21,6 @@ context, in a build that reads the live server.
 
 The switch itself is `state/pushStore.ts` (its state), `lib/pushSwitch.ts`
 (turn on and off), `lib/pushBrowser.ts` (the browser's push API, which
-tests replace with `lib/fakePush.ts`) and `blocks/NotificationsSwitch.tsx`.
+tests replace with `lib/fakePush.ts`) and
+`pages/settings/blocks/NotificationsSwitch.tsx`, on the Settings page
+(d-119).

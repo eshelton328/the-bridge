@@ -1,0 +1,45 @@
+{
+  "frameId": "T03",
+  "inputs": "c763ac667b6366267260e06b8b8fc255b63fb082d8424c74945164a4a387d67f",
+  "library": "1.0.0-beta.106",
+  "recordSha256": "43170c36bdb03998b62a28dc694d47d22fd65f0137f09138bf2f649472ffbf8d",
+  "record": {
+    "verdict": "match",
+    "viewport": "iPad landscape 1180 x 820, Dark (tablet layout)",
+    "inputs": {
+      "layout": "side-by-side",
+      "reference": "reports/fidelity/settings/T03.sideBySide.png",
+      "render": "reports/fidelity/settings/T03.sideBySide.png",
+      "reference_side": "left"
+    },
+    "summary": "Apart from the accepted Text size change, the render matches the reference: same header, Appearance card, Navigation card with its first four rows, and tab bar.",
+    "findings": [],
+    "accepted_deviations": [
+      {
+        "id": "A1",
+        "as_given": "Text size: the control is disabled (muted labels) and its line under it says \"Coming soon\" in place of \"Scales the whole app: Small 87.5 %, Default 100 %, Large 112.5 %.\" (step D adds text size later). On a narrow screen the one-line note makes every section below it sit about one text line higher.",
+        "status": "as-described",
+        "finding": null,
+        "note": "The Small / Default / Large labels are muted and the note says \"Coming soon\". The old note was also one line at this width, so the Navigation card stays at the same y position (about 460 px) in both pictures."
+      },
+      {
+        "id": "A2",
+        "as_given": "A new \"NOTIFICATIONS\" section with one \"Notifications\" switch (off) sits between the Navigation section and the New chat defaults section. So New chat defaults sits lower, or below the bottom edge.",
+        "status": "not-seen",
+        "finding": null,
+        "note": "Both pictures end in the Navigation card at the Projects row, above the tab bar, so neither the Notifications section nor New chat defaults is in view."
+      },
+      {
+        "id": "A3",
+        "as_given": "The Notifications switch moved to that section: the desktop rail no longer has the \"Notifications / Blocked in Settings\" switch at its bottom, and the More drawer no longer has the \"Notifications / Blocked in Settings\" row at its end. So the drawer is shorter and its top edge sits lower.",
+        "status": "not-seen",
+        "finding": null,
+        "note": "This tablet frame shows a bottom tab bar, with no desktop rail and no open More drawer. The tab bar is the same in both pictures."
+      }
+    ],
+    "limits": [
+      "The side-by-side image was shown scaled down, so I could not check differences under about 2 px. The pixel diff shows only antialiasing-level outlines outside the Text size row.",
+      "Content below the Projects row of the Navigation card is outside the viewport in both pictures."
+    ]
+  }
+}

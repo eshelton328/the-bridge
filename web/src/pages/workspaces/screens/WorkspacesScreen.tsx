@@ -83,18 +83,17 @@ import { openableChats, openChat, shownView } from '../blocks/workspaceLayout.ts
 import type { WorkspaceEdits, WorkspacesData, WorkspacesUi } from '../types.ts'
 import { WorkspacesPhone } from './WorkspacesPhone.tsx'
 import type { ComposerAnswer } from '../blocks/useComposerActions.ts'
-import type { PushSwitch } from '../../../lib/pushSwitch.ts'
 
 // The rail's slot is a flex column; the rail fills it.
 const railSlot = css({ display: 'flex', flexDirection: 'column', flex: '1', minH: '[0]' })
 
 export type WorkspacesScreenProps = {
+  /** Draws the Settings gear in the rail and the Settings row in the More drawer (d-119): the page entry passes it; a Figma state does not. */
+  settingsEntry?: boolean | undefined
   data: WorkspacesData
   ui: WorkspacesUi
   viewport: Viewport
   onNavigate?: ((page: string) => void) | undefined
-  /** The Notifications switch (d-118) at the rail's end and in the phone's More drawer; none in the Figma states. */
-  push?: PushSwitch | undefined
   /** The shown nav pages in the owner's order (d-038, d-119); the default order without it, as the Figma states draw. */
   navPages?: readonly NavPage[] | undefined
   onUiChange?: ((change: Partial<WorkspacesUi>) => void) | undefined
@@ -136,7 +135,7 @@ export function WorkspacesScreen({
   ui: stateUi,
   viewport,
   onNavigate,
-  push,
+  settingsEntry,
   navPages,
   onUiChange,
   onSend,
@@ -292,7 +291,7 @@ export function WorkspacesScreen({
             ui={ui}
             viewport={viewport}
             onNavigate={onNavigate}
-            push={push}
+            settingsEntry={settingsEntry}
             navPages={navPages}
             onSend={onSend}
             onStop={onStop}
@@ -369,7 +368,7 @@ function WorkspacesLayout({
   ui,
   viewport,
   onNavigate,
-  push,
+  settingsEntry,
   navPages = defaultVisiblePages,
   onSend,
   onStop,
@@ -414,11 +413,11 @@ function WorkspacesLayout({
     return (
       <WorkspacesPhone
         device={phoneDevice}
+        settingsEntry={settingsEntry}
         data={named}
         text={data.phone}
         ui={ui}
         onNavigate={onNavigate}
-        push={push}
         navPages={navPages}
         onUiChange={change}
         drafts={drafts}
@@ -450,11 +449,11 @@ function WorkspacesLayout({
   const rail = (
     <div data-figma="nav rail" className={railSlot}>
       <AppRail
+        settings={settingsEntry}
         selected="workspaces"
         pages={navLayout(navPages, 'desktop').rail}
         inboxBadge={data.railBadge}
         onSelect={onNavigate}
-        push={push}
       />
     </div>
   )

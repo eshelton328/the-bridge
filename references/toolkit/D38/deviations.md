@@ -112,13 +112,12 @@ fade="none"` (library 1.0.0-beta.65), with the frame's
   icon at 24 (d-100), so the render's icon is 24 and `exceptions.json`
   names 495:701, as for `icon/artifacts`.
 
-## Notifications switch (d-118)
+## Settings gear (d-119)
 
-In the app, the rail has a Notifications switch at its end, which this
-frame does not draw. Erik asked on 2026-11-21: "Can we get lush
-notifications on the phone for this app?" ("lush" is a typo for "push"),
-and decision d-118 adds Web Push with this switch to turn it on. It is a
-frame exception that the app owns (`web/src/blocks/AppRail.tsx`,
-`web/src/blocks/NotificationsSwitch.tsx`). The screen draws the switch
-only when the page entry passes `push`; this frame's state and story pass
+In the app, the rail has a Settings gear before More, which this frame
+does not draw: Settings has no Figma page, and decision d-119 puts its
+entry in the rail (`web/src/blocks/AppRail.tsx`). The Notifications
+switch that d-118 put at the rail's end moved to the Settings page, so
+the rail no longer draws it. The screen draws the gear only when the
+page entry passes `settingsEntry`; this frame's state and story pass
 none, so the checks above are unchanged.

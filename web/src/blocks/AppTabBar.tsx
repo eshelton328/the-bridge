@@ -13,8 +13,8 @@ import type { NavPage } from '../lib/deviceSettings.ts'
 import { navPageItems } from './navPages.ts'
 
 export type AppTabBarProps = {
-  /** The page on screen; a page the tab bar does not show selects More. */
-  selected: NavPage | 'more'
+  /** The page on screen; a page the tab bar does not show, such as Settings, selects More. */
+  selected: NavPage | 'settings' | 'more'
   /** The tabs before More, in order: navLayout's `tabs` for the device. */
   pages: readonly NavPage[]
   device: 'tablet' | 'phone'
@@ -28,7 +28,7 @@ export function AppTabBar({ selected, pages, device, inboxBadge, onSelect }: App
     <div data-figma="tab bar">
       <TabBar
         size={device}
-        selected={selected !== 'more' && pages.includes(selected) ? selected : 'more'}
+        selected={selected !== 'more' && selected !== 'settings' && pages.includes(selected) ? selected : 'more'}
         onSelect={onSelect}
         items={[
           ...pages.map((page) => {

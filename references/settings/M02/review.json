@@ -1,0 +1,45 @@
+{
+  "frameId": "M02",
+  "inputs": "5ac44b1b1cb13c9c0e26144f52a972eb7b78bc91094818421b2baac1eb642f11",
+  "library": "1.0.0-beta.106",
+  "recordSha256": "18fae455dac27f2eaeb8222060c95f97036bbd6114e8dcd76eda8318cd6f7519",
+  "record": {
+    "verdict": "match",
+    "viewport": "390x844 phone, Light",
+    "inputs": {
+      "layout": "side-by-side",
+      "reference": "reports/fidelity/settings/M02.sideBySide.png",
+      "render": "reports/fidelity/settings/M02.sideBySide.png",
+      "reference_side": "left"
+    },
+    "summary": "Apart from the accepted Text size change, the render matches the reference: the Appearance card, Navigation card and tab bar have the same content, layout and states.",
+    "findings": [],
+    "accepted_deviations": [
+      {
+        "id": "A1",
+        "as_given": "Text size: the control is disabled (muted labels) and its line under it says \"Coming soon\" in place of \"Scales the whole app: Small 87.5 %, Default 100 %, Large 112.5 %.\" (step D adds text size later). On a narrow screen the one-line note makes every section below it sit about one text line higher.",
+        "status": "as-described",
+        "finding": null,
+        "note": "The Small, Default and Large labels are muted, the note reads \"Coming soon\", and the Navigation card starts about 16 px higher (y 465 against 481). Nothing below it changes in any other way."
+      },
+      {
+        "id": "A2",
+        "as_given": "A new \"NOTIFICATIONS\" section with one \"Notifications\" switch (off) sits between the Navigation section and the New chat defaults section. So New chat defaults sits lower, or below the bottom edge.",
+        "status": "not-seen",
+        "finding": null,
+        "note": "This frame shows only part of the Navigation section, so the area between Navigation and New chat defaults is below the visible area in both pictures."
+      },
+      {
+        "id": "A3",
+        "as_given": "The Notifications switch moved to that section: the desktop rail no longer has the \"Notifications / Blocked in Settings\" switch at its bottom, and the More drawer no longer has the \"Notifications / Blocked in Settings\" row at its end. So the drawer is shorter and its top edge sits lower.",
+        "status": "not-seen",
+        "finding": null,
+        "note": "This phone frame has no desktop rail, and the More drawer is closed in both pictures."
+      }
+    ],
+    "limits": [
+      "The side-by-side image is shown at about 1x for each 390 px half, so differences of 1 px or less in size or position may not be visible.",
+      "Only the visible part of the page was checked (Settings title down to the Projects row of the Navigation card, and the tab bar). The rest of the page is below the visible area."
+    ]
+  }
+}

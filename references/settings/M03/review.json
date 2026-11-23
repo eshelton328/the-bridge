@@ -1,0 +1,44 @@
+{
+  "frameId": "M03",
+  "inputs": "54162b45752e81aa3f859f9a8ea3007c8b5caac06a32e6ed1f5ef8007e8c4c85",
+  "library": "1.0.0-beta.106",
+  "recordSha256": "9cdbd16f97450888f31e852782075bd871aaa3387d419f5a6305c1909bc52bf7",
+  "record": {
+    "verdict": "match",
+    "viewport": "phone 390 x 844, Dark, the More drawer open",
+    "inputs": {
+      "layout": "side-by-side",
+      "reference": "reports/fidelity/settings/M03.sideBySide.png",
+      "render": "reports/fidelity/settings/M03.sideBySide.png",
+      "reference_side": "left"
+    },
+    "summary": "The render matches the reference apart from the accepted deviations: the drawer has no Notifications row, so it is shorter and its top sits about 64 px lower. That shows more of the page behind it, including the disabled Text size control.",
+    "findings": [],
+    "accepted_deviations": [
+      {
+        "id": "A1",
+        "as_given": "Text size: the control is disabled (muted labels) and its line under it says \"Coming soon\" in place of \"Scales the whole app: Small 87.5 %, Default 100 %, Large 112.5 %.\" (step D adds text size later). On a narrow screen the one-line note makes every section below it sit about one text line higher.",
+        "status": "as-described",
+        "finding": null,
+        "note": "The drawer now sits lower, so the Text size label and its control (Small, Default, Large, with muted labels) show above the drawer at about y 353-401 of the render half. The \"Coming soon\" line and the sections below it are behind the drawer."
+      },
+      {
+        "id": "A2",
+        "as_given": "A new \"NOTIFICATIONS\" section with one \"Notifications\" switch (off) sits between the Navigation section and the New chat defaults section. So New chat defaults sits lower, or below the bottom edge.",
+        "status": "not-seen",
+        "finding": null,
+        "note": "The open drawer hides this part of the page in both pictures."
+      },
+      {
+        "id": "A3",
+        "as_given": "The Notifications switch moved to that section: the desktop rail no longer has the \"Notifications / Blocked in Settings\" switch at its bottom, and the More drawer no longer has the \"Notifications / Blocked in Settings\" row at its end. So the drawer is shorter and its top edge sits lower.",
+        "status": "as-described",
+        "finding": null,
+        "note": "The drawer ends after the Workflows row and has no Notifications row. Its top edge is at about y 407 of the render half and at about y 343 of the reference half. All the drawer rows have the same content and spacing and moved down by the same amount."
+      }
+    ],
+    "limits": [
+      "The bottom padding under the last drawer row cannot be compared directly, because the last row differs (a Workflows link row in the render, a Notifications switch row in the reference). The space under the last row is about 50 px in the render and about 41 px in the reference."
+    ]
+  }
+}

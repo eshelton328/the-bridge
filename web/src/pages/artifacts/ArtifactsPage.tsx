@@ -16,7 +16,7 @@ import { enterVisit, sendSeen, takeFollowUp } from './liveArtifacts.ts'
 import { ArtifactsScreen } from './screens/ArtifactsScreen.tsx'
 import { useArtifactWrites } from './useArtifactWrites.ts'
 import type { ArtifactsUi, CopiedLink } from './types.ts'
-import { usePushSwitch } from '../../state/pushStore.ts'
+import { navRoute } from '../../lib/navRoutes.ts'
 import { useVisibleNavPages } from '../../state/settingsStore.ts'
 
 const route = getRouteApi('/artifacts')
@@ -32,7 +32,6 @@ const reportCopy = (error: unknown) => {
 
 export function ArtifactsPage() {
   const state = route.useLoaderData()
-  const push = usePushSwitch()
   const navPages = useVisibleNavPages()
   const search = route.useSearch()
   const navigate = route.useNavigate()
@@ -69,14 +68,16 @@ export function ArtifactsPage() {
   const railBadge = useInboxBadge(state.data.railBadge, live !== undefined)
   return (
     <ArtifactsScreen
-      push={push}
+      // The app always shows the Settings gear and the drawer's Settings row (d-119); a Figma state's story does not.
+      settingsEntry
       navPages={navPages}
       data={{ ...state.data, railBadge }}
       ui={ui}
       viewport="desktop"
       onNavigate={(page) => {
         // Only the pages that have a route go somewhere; the others wait for theirs.
-        if (page === 'inbox' || page === 'workspaces' || page === 'toolkit') void navigate({ to: `/${page}` })
+        const to = navRoute(page)
+        if (to !== undefined && to !== '/artifacts') void navigate({ to })
       }}
       onUiChange={(change) => {
         if (change.addLinkOpen === true) writes.clearAddLink()
