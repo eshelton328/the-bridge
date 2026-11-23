@@ -1,6 +1,7 @@
 import '@fontsource-variable/geist'
 import '@fontsource-variable/geist-mono'
 import '../index.css'
+import { ChatSummary } from '@bridge/contract'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
@@ -222,6 +223,27 @@ describe('Fork on a live Claude chat (backend #443)', () => {
     await expect.element(page.getByRole('heading', { name: 'sketch the plan' })).toBeVisible()
     fakes.list.setStatus(forked, 'idle')
     await expectOpen('tablet', 'sketch the plan-fork')
+  })
+
+  it('stops waiting with one line when the list shows the forked pane as a shell (#443 real run)', async () => {
+    const fakes = withChats()
+    fakes.list.startAs('starting')
+    await openChat('tablet', 'sketch the plan')
+    await tapFork('tablet', 'sketch the plan')
+    await expect.poll(() => fakes.list.chats().map((c) => c.id)).toContain(forked)
+    // Claude ended in the new pane ("No conversation found"): herdr lists the pane's shell in its place.
+    fakes.list.putOnPane(
+      forked,
+      ChatSummary.parse({
+        ...summary('test-box/term-9', 'zsh'),
+        kind: 'shell',
+        model: 'zsh',
+        modelId: null,
+        pane: `${forked}-pane`,
+      }),
+    )
+    await expect.element(line('Fork did not start — Claude ended in its new pane; look at it on the Mac')).toBeVisible()
+    await expect.element(page.getByRole('heading', { name: 'sketch the plan' })).toBeVisible()
   })
 
   for (const size of ['phone', 'tablet', 'desktop', 'workbench'] as const)

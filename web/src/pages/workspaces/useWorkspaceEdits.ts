@@ -192,6 +192,9 @@ export function useWorkspaceEdits(
       dismiss: () => {
         setLine(undefined)
       },
+      show: (next) => {
+        setLine(next)
+      },
       renameWorkspace: (workspace, name, was) => {
         const next = named('renameWorkspace', name, was)
         if (next === undefined) return

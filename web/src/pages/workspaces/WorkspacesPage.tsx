@@ -195,7 +195,18 @@ export function WorkspacesPage() {
   const movedRef = useRef<{ readonly chat: string; readonly workspace: string } | undefined>(undefined)
   // A fork (backend #443) is one of the edits: its new chat opens as a new chat does, once the list shows it.
   const currentUi = useCallback(() => uiRef.current, [])
-  const followFork = useForkedChat({ data, herdrTabs: liveData.liveTabs, ui: currentUi, change: changeUi })
+  // A fork whose chat does not start in time, or whose pane the list shows as a shell, ends with a line (#443 real run).
+  const forkFailRef = useRef<(line: string) => void>(() => undefined)
+  const followFork = useForkedChat({
+    data,
+    herdrTabs: liveData.liveTabs,
+    ui: currentUi,
+    change: changeUi,
+    readList: () => void router.invalidate(),
+    fail: (line) => {
+      forkFailRef.current(line)
+    },
+  })
   const workspaceEdits = useWorkspaceEdits(
     import.meta.env.DEV && live,
     data,
@@ -206,6 +217,11 @@ export function WorkspacesPage() {
     },
     followFork,
   )
+  useLayoutEffect(() => {
+    forkFailRef.current = (line) => {
+      workspaceEdits?.show(line)
+    }
+  })
   useEffect(() => {
     const moved = movedRef.current
     const tab =

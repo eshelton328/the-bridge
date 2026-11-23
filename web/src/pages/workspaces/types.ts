@@ -1182,6 +1182,8 @@ export type WorkspaceEdits = {
   readonly line: string | undefined
   /** Hides the line. */
   readonly dismiss: () => void
+  /** Shows `line` as the edits' line, such as a fork whose new chat did not start (useForkedChat.ts). */
+  readonly show: (line: string) => void
   /** Renames `workspace` to `name` (trimmed); nothing goes when it is empty or still `was`. */
   readonly renameWorkspace: (workspace: string, name: string, was: string) => void
   /** Gives the chat's pane the label `name` (trimmed); nothing goes when it is empty or still `was`. */

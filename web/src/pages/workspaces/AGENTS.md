@@ -102,7 +102,13 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   with `useNewChat.ts`) once the list shows it on that pane ready or
   needing the owner, and one that needs the owner gets "This chat needs
   you on the Mac" under its composer; a `starting` answer waits for
-  `workspaces.changed`. The chat it came from goes on. A fork is one of
+  `workspaces.changed`. The wait is bounded (the #443 real run: a fork of
+  a chat with no saved turn answered 201, and Claude ended in the new
+  pane): a list read after the answer that shows the pane as a shell
+  reads the list again after 2.5 s, and a later read that still does
+  ends the wait with "Fork did not start — Claude ended in its new pane;
+  look at it on the Mac"; no chat by 75 s ends it with "Fork did not
+  start". The chat it came from goes on. A fork is one of
   the list's edits, so one at a time with them, its miss one line with
   Dismiss: 409 `noSession`, `nameTaken` ("another chat has the fork’s
   name", as a second fork of a chat gets the same name) and
