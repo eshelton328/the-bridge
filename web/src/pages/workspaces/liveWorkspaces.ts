@@ -554,11 +554,6 @@ function quietMiss(key: QueryKey, mark: ResumeMark): boolean {
 }
 
 /**
- * R43b: the grace of a list read that got no answer (no answer, a timeout or a 5xx that is not an error body: the
- * Vite proxy for a server that is down) after the page had shown the server's list, as a restart makes. Undefined
- * when none runs; `over` once `reconnectGraceMs` passed, when it loads the page again so a miss then shows.
- */
-/**
  * What the page last showed of the server while the events watch it: the list and the layouts that a list read with
  * no answer keeps within the grace (R43b). It is kept here and not read from the cache, which drops a query no one
  * observes after five minutes (TanStack's `gcTime`).
@@ -572,6 +567,11 @@ let lastShown:
     }
   | undefined
 
+/**
+ * R43b: the grace of a list read that got no answer (no answer, a timeout or a 5xx that is not an error body: the
+ * Vite proxy for a server that is down) after the page had shown the server's list, as a restart makes. Undefined
+ * when none runs; `over` once `reconnectGraceMs` passed, when it loads the page again so a miss then shows.
+ */
 let listGrace: { readonly timer: ReturnType<typeof setTimeout>; over: boolean } | undefined
 
 const endListGrace = () => {
