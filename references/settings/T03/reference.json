@@ -1,0 +1,17 @@
+{
+  "frameId": "T03",
+  "code": "T3",
+  "name": "Settings · iPad landscape · Dark",
+  "device": "tablet",
+  "w": 1180,
+  "h": 820,
+  "mode": "dark",
+  "tolerance": 4,
+  "source": "lab a52ab2d4 + d-119",
+  "original": {
+    "file": "settings-ipad-landscape-dark.png",
+    "w": 2360,
+    "h": 1640,
+    "sha256": "4e93036fb63af480f94d45352381e6cee6834198fbe521092b682029c1c9e357"
+  }
+}

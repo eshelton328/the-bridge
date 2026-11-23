@@ -26,6 +26,10 @@ rejects.
   `inPage.test.ts`.
 - A frame with a status bar renders one viewport the bar's height shorter,
   and all three checks measure that render (d-089, d-102).
+- A PNG reference (`reference.json`, d-119) has no Figma layers: it runs
+  the rule check only and reports text, position and icons as not run.
+  `--checks` with any of those fails a PNG frame; it never passes one.
+  Nothing about a PNG reference changes a Figma frame's checks.
 - The `fidelity-builder` agent's hooks call `pnpm fidelity:check-build`
   (`buildRecord.ts`); change its checks only with that agent in the
   owner's brain (`engine/projects/ncc-1701/toolkit/agents/`, d-040).

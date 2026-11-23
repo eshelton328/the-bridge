@@ -1,7 +1,19 @@
 // Tests for references.ts. Run with `pnpm test:scripts`.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { gateResults, parseChecks, parseExceptions, parseFrameRef, parseTolerance } from './references.ts'
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import {
+  checksForPng,
+  frameKind,
+  gateResults,
+  parseChecks,
+  parseExceptions,
+  parseFrameRef,
+  parsePngRef,
+  parseTolerance,
+} from './references.ts'
 
 void test('parseChecks takes one or more check names, comma-separated', () => {
   assert.deepEqual(parseChecks('text,rules', '--checks'), ['text', 'rules'])
@@ -69,4 +81,58 @@ void test('the icons gate fails on an iconSize diff alone, whatever the other po
   assert.deepEqual(at(), { text: true, position: true, rules: true, icons: true })
   assert.deepEqual(at(offBy), { text: true, position: false, rules: true, icons: true })
   assert.deepEqual(at(offBy, iconSize), { text: true, position: false, rules: true, icons: false })
+})
+
+const pngReference = (over: Record<string, unknown> = {}) => ({
+  frameId: 'M01',
+  code: 'M1',
+  name: 'Settings · phone · dark',
+  device: 'phone',
+  w: 390,
+  h: 844,
+  mode: 'dark',
+  tolerance: 4,
+  source: 'lab a52ab2d4 + d-119',
+  original: { file: 'settings-phone-dark.png', w: 780, h: 1688, sha256: 'a'.repeat(64) },
+  ...over,
+})
+
+void test('parsePngRef takes a PNG reference with its source and original', () => {
+  const ref = parsePngRef(pngReference(), 'reference.json')
+  assert.equal(ref.frameId, 'M01')
+  assert.equal(ref.mode, 'dark')
+})
+
+void test('parsePngRef rejects a code of another frame, a wrong device letter, an odd aspect or a missing source', () => {
+  for (const [over, message] of [
+    [{ code: 'M2' }, /code M2 is not frame M01/],
+    [{ device: 'tablet' }, /a tablet frame id starts with T/],
+    [{ original: { file: 'x.png', w: 780, h: 1600, sha256: 'a'.repeat(64) } }, /aspect ratio/],
+    [{ source: '' }, /source/],
+    [{ mode: 'system' }, /mode/],
+    [{ layers: [] }, /layers/],
+  ] as const)
+    assert.throws(() => parsePngRef(pngReference(over), 'reference.json'), message)
+})
+
+void test('frameKind tells a Figma frame from a PNG reference and refuses a folder with both', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'frame-kind-'))
+  try {
+    assert.equal(frameKind(dir), undefined)
+    writeFileSync(join(dir, 'reference.json'), '{}')
+    assert.equal(frameKind(dir), 'png')
+    writeFileSync(join(dir, 'frame.json'), '{}')
+    assert.throws(() => frameKind(dir), /both frame\.json and reference\.json/)
+    rmSync(join(dir, 'reference.json'))
+    assert.equal(frameKind(dir), 'figma')
+  } finally {
+    rmSync(dir, { recursive: true })
+  }
+})
+
+void test('checksForPng runs the rule check and refuses a check that needs Figma layers', () => {
+  assert.deepEqual(checksForPng(undefined), ['rules'])
+  assert.deepEqual(checksForPng(['rules']), ['rules'])
+  for (const picked of [['text', 'rules'], ['position'], ['rules', 'icons']] as const)
+    assert.throws(() => checksForPng([...picked]), /has no Figma layers, so it cannot run/)
 })

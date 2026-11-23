@@ -1,0 +1,17 @@
+{
+  "frameId": "M01",
+  "code": "M1",
+  "name": "Settings · phone · Dark",
+  "device": "phone",
+  "w": 390,
+  "h": 844,
+  "mode": "dark",
+  "tolerance": 4,
+  "source": "lab a52ab2d4 + d-119",
+  "original": {
+    "file": "settings-phone-dark.png",
+    "w": 780,
+    "h": 1688,
+    "sha256": "3a741b5263e98452a1cf24dc4af82befb20fb5850a502a7398b6351ccbf2eb31"
+  }
+}

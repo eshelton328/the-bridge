@@ -26,3 +26,20 @@ A frame folder holds `frame.png` (Figma `get_screenshot` at 1:1),
   the UI.
 - This folder is an exception to the secret scan's personal-term rule
   only, as it keeps the names Figma draws (`.gitleaks.toml`).
+
+## PNG references
+
+A page with no Figma frame (Settings, d-119) has PNG references: a frame
+folder with `frame.png`, `reference.json` and `note.txt`, and no
+`frame.json`. `reference.json` is written by hand: the frame's size in
+CSS px, its device, its mode (`light` or `dark`), its `source` and the
+original picture's file, size and sha256. `frame.png` is the original
+scaled to that size. A folder holds `frame.json` or `reference.json`,
+never both. The fidelity tools run only the rule check on a PNG
+reference and give the reviewer a pixel diff
+([../scripts/fidelity/README.md](../scripts/fidelity/README.md)).
+
+- `settings/` holds the lab screenshots the owner approved; each note names
+  its source, `lab a52ab2d4 + d-119`. Never replace one to make a check
+  pass; a new design reference (a Claude Design artboard) replaces them
+  with a new source.

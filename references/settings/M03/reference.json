@@ -1,0 +1,17 @@
+{
+  "frameId": "M03",
+  "code": "M3",
+  "name": "Settings · phone · More drawer",
+  "device": "phone",
+  "w": 390,
+  "h": 844,
+  "mode": "dark",
+  "tolerance": 4,
+  "source": "lab a52ab2d4 + d-119",
+  "original": {
+    "file": "settings-phone-more-drawer.png",
+    "w": 780,
+    "h": 1688,
+    "sha256": "8eb7f66dea0fe9e4fa97a62e9622238a36f54a8373cc80b5f04e05d85c6f55bb"
+  }
+}

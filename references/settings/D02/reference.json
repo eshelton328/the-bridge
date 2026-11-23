@@ -1,0 +1,17 @@
+{
+  "frameId": "D02",
+  "code": "D2",
+  "name": "Settings · desktop · Light",
+  "device": "desktop",
+  "w": 1512,
+  "h": 982,
+  "mode": "light",
+  "tolerance": 4,
+  "source": "lab a52ab2d4 + d-119",
+  "original": {
+    "file": "settings-desktop-light.png",
+    "w": 3024,
+    "h": 1964,
+    "sha256": "c2eec3c8a6a64555a7bb36e97a39fcb1fda8963117ae8d8b313dee83366388fa"
+  }
+}

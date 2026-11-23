@@ -7,6 +7,10 @@
 //   <frameId>.render.png      the render the checks measured (below the status bar on a tablet or phone)
 //   <frameId>.sideBySide.png  Figma left, render right, for the reviewer
 // With no frame ids it checks every frame that a state file lists.
+// A page with no Figma frame has PNG references (reference.json, d-119):
+// they run only the rule check, and the report adds a pixel diff and its
+// picture (<frameId>.diff.png) for the reviewer; text, position and icons
+// need Figma layers, so naming one in --checks fails the frame.
 // Exits 1 when any check fails. Flags: --skip-build reuses
 // web/storybook-static; --tolerance <px> overrides frame.json;
 // --checks text,rules makes only those checks decide the result (CI runs
@@ -23,7 +27,9 @@ import { normaliseFrameId } from './figmaMetadata.ts'
 import { collectPageScript, type PageMeasure } from './inPage.ts'
 import { waitForAnimations, waitForLayout } from './settle.ts'
 import {
+  checksForPng,
   frameDir,
+  frameKind,
   fidelityChecks,
   gateResults,
   parseChecks,
@@ -31,10 +37,12 @@ import {
   readExceptions,
   type GateCheck,
   readFrameRef,
+  readPngRef,
   referencesDir,
   repoRoot,
   reportsDir,
 } from './references.ts'
+import { comparePngs } from './pixelDiff.ts'
 import { composeSideBySide } from './sideBySide.ts'
 import { serveStatic, stateForFrame, storybookDir, storyForState } from './storyServer.ts'
 
@@ -56,21 +64,22 @@ if (page === undefined || !existsSync(join(referencesDir, page))) {
 }
 let tolerance: number | undefined
 let checks: GateCheck[] = [...fidelityChecks]
+let picked: GateCheck[] | undefined
 try {
   tolerance = values.tolerance === undefined ? undefined : parseTolerance(values.tolerance, '--tolerance')
-  if (values.checks !== undefined) checks = parseChecks(values.checks, '--checks')
+  if (values.checks !== undefined) checks = picked = parseChecks(values.checks, '--checks')
 } catch (error) {
   console.error(error instanceof Error ? error.message : String(error))
   process.exit(2)
 }
 
-const allFrames = readdirSync(join(referencesDir, page)).filter((d) =>
-  existsSync(join(frameDir(page, d), 'frame.json')),
-)
+const allFrames = readdirSync(join(referencesDir, page)).filter((d) => frameKind(frameDir(page, d)) !== undefined)
+const codeOf = (id: string) =>
+  frameKind(frameDir(page, id)) === 'png' ? readPngRef(page, id).code : readFrameRef(page, id).code
 const frameIds =
   requested.length > 0
     ? requested.map(normaliseFrameId)
-    : allFrames.filter((id) => stateForFrame(page, readFrameRef(page, id).code) !== undefined)
+    : allFrames.filter((id) => stateForFrame(page, codeOf(id)) !== undefined)
 
 if (!values['skip-build'] || !existsSync(join(storybookDir, 'index.json'))) {
   console.error('Building Storybook (pass --skip-build to reuse web/storybook-static)…')
@@ -98,7 +107,11 @@ const summary: {
 try {
   for (const frameId of frameIds) {
     try {
-      summary.push(await runFrame(browser, server.origin, frameId))
+      summary.push(
+        frameKind(frameDir(page, frameId)) === 'png'
+          ? await runPngFrame(browser, server.origin, frameId)
+          : await runFrame(browser, server.origin, frameId),
+      )
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
       writeFileSync(
@@ -122,6 +135,8 @@ process.exit(gate ? 0 : 1)
 
 async function runFrame(b: Browser, origin: string, frameId: string) {
   if (page === undefined) throw new Error('no page')
+  if (frameKind(frameDir(page, frameId)) === undefined)
+    throw new Error(`references/${page}/${frameId} has no frame.json or reference.json`)
   const ref = readFrameRef(page, frameId)
   const exceptions = readExceptions(page, frameId)
   const state = stateForFrame(page, ref.code)
@@ -176,18 +191,82 @@ async function runFrame(b: Browser, origin: string, frameId: string) {
   return { frameId, ok, gate, text: text.ok, position: position.ok, rules: rules.ok }
 }
 
-/** Opens the story in a new context of `w` × `h` and waits until it has drawn; page errors go to `errors`. */
+/**
+ * A frame with a PNG reference (reference.json, d-119): the rule check
+ * decides it, as no Figma layers exist for the text, position and icon
+ * checks. The report names those as not run, never as passed, and adds the
+ * pixel diff of the render against frame.png for the reviewer.
+ */
+async function runPngFrame(b: Browser, origin: string, frameId: string) {
+  if (page === undefined) throw new Error('no page')
+  const ref = readPngRef(page, frameId)
+  const pngGate = checksForPng(picked)
+  const exceptions = readExceptions(page, frameId)
+  const state = stateForFrame(page, ref.code)
+  if (state === undefined) throw new Error(`No state file in web/src/pages/${page}/states lists frame ${ref.code}`)
+  const story = storyForState(page, state, indexJson)
+  if (story === undefined) throw new Error(`No story renders ${page}States.${state}; run pnpm check:states`)
+
+  // A PNG reference has no status bar layer, so the render is the frame's full size.
+  const flat = { ...ref, layers: [], exclude: [] }
+  const url = `${origin}/iframe.html?id=${story}&viewMode=story`
+  const errors: string[] = []
+  const shown = await openStory(b, url, ref.w, ref.h, errors, ref.mode)
+  const measured = await shown.tab.evaluate<PageMeasure>(collectPageScript('#storybook-root'))
+  const renderPng = join(outDir, `${frameId}.render.png`)
+  await shown.tab.screenshot({ path: renderPng })
+
+  const referencePng = join(frameDir(page, frameId), 'frame.png')
+  const sideBySide = join(outDir, `${frameId}.sideBySide.png`)
+  const diffPng = join(outDir, `${frameId}.diff.png`)
+  await composeSideBySide(shown.tab, referencePng, renderPng, sideBySide, ref.w, ref.h, 0, 'Reference')
+  const pixels = await comparePngs(shown.tab, referencePng, renderPng, diffPng, ref.w, ref.h)
+  await shown.context.close()
+
+  const rules = checkRules(flat, exceptions, measured)
+  // checksForPng allows only the rule check, so the gate is the frame's result.
+  const ok = rules.ok && errors.length === 0
+  const gate = ok
+  const report = {
+    frameId,
+    name: ref.name,
+    reference: 'png',
+    source: ref.source,
+    state: `${page}/${state}`,
+    story,
+    viewport: { w: ref.w, h: ref.h },
+    mode: ref.mode,
+    checks: pngGate,
+    notRun: { checks: ['text', 'position', 'icons'], reason: 'a PNG reference has no Figma layers' },
+    ok,
+    gate,
+    pageErrors: errors,
+    rules,
+    pixels,
+    images: { reference: referencePng, render: renderPng, sideBySide, diff: diffPng },
+    note: join(frameDir(page, frameId), 'note.txt'),
+  }
+  writeFileSync(join(outDir, `${frameId}.json`), `${JSON.stringify(report, null, 2)}\n`)
+  return { frameId, ok, gate, rules: rules.ok }
+}
+
+/**
+ * Opens the story in a new context of `w` × `h`, with the browser in the
+ * colour scheme `mode`, and waits until it has drawn; page errors go to
+ * `errors`.
+ */
 async function openStory(
   b: Browser,
   url: string,
   w: number,
   h: number,
   errors: string[],
+  mode: 'light' | 'dark' = 'dark',
 ): Promise<{ context: BrowserContext; tab: Page }> {
   const context = await b.newContext({
     viewport: { width: w, height: h },
     deviceScaleFactor: 1,
-    colorScheme: 'dark',
+    colorScheme: mode,
     reducedMotion: 'reduce',
   })
   const tab = await context.newPage()

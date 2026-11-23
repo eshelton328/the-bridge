@@ -1,0 +1,1 @@
+The Settings page on the desktop in Light: the same page with Mode set to Light. Source: lab a52ab2d4 + d-119. A screenshot of the lab prototype (the-bridge branch lab-settings, commit a52ab2d4) that the owner approved on 2026-11-22, scaled from 3024 x 1964 to 1512 x 982 CSS px; Settings has no Figma page. The prototype is a picture of the result, not code to copy.

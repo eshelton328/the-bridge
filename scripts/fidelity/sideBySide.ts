@@ -1,5 +1,5 @@
 // The side-by-side picture that the second review reads: Figma's frame
-// left, the render right, both at 1:1.
+// (or a PNG reference, d-119) left, the render right, both at 1:1.
 import { readFileSync } from 'node:fs'
 import type { Page } from 'playwright'
 
@@ -28,6 +28,7 @@ export async function composeSideBySide(
   w: number,
   h: number,
   rightTop = 0,
+  leftLabel = 'Figma',
 ) {
   const src = (f: string) => `data:image/png;base64,${readFileSync(f).toString('base64')}`
   const tab = await storyTab.context().newPage()
@@ -35,7 +36,7 @@ export async function composeSideBySide(
     await tab.setViewportSize({ width: w * 2 + sideBySideGap, height: h + sideBySideLabel })
     await tab.setContent(
       `<body style="margin:0;background:#fff;font:14px system-ui;display:flex;gap:${String(sideBySideGap)}px">` +
-        `<figure style="margin:0"><figcaption style="height:${String(sideBySideLabel)}px">Figma</figcaption><img src="${src(left)}" width="${String(w)}" height="${String(h)}"></figure>` +
+        `<figure style="margin:0"><figcaption style="height:${String(sideBySideLabel)}px">${leftLabel}</figcaption><img src="${src(left)}" width="${String(w)}" height="${String(h)}"></figure>` +
         `<figure style="margin:0"><figcaption style="height:${String(sideBySideLabel + rightTop)}px">Render</figcaption><img src="${src(right)}" width="${String(w)}" height="${String(h - rightTop)}"></figure>` +
         '</body>',
     )
