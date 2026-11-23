@@ -85,16 +85,38 @@ export const maxNoteText = 200
 export const NoteKind = z.enum(['task', 'peer', 'hook'])
 export type NoteKind = z.infer<typeof NoteKind>
 
+/** The most characters of the sender's name in a note's message. */
+export const maxNoteFrom = 64
+
+/**
+ * The text of a message from another chat (R55): the sender's chat name (null when the line names none), how it
+ * came (`message`: a peer message of Claude Code; `prompt`: typed into the pane in an `<agent-prompt>` wrapper),
+ * and the text, cut at `maxEntryText`.
+ */
+export const NoteMessage = z.object({
+  from: z.string().min(1).max(maxNoteFrom).nullable(),
+  via: z.enum(['message', 'prompt']),
+  ...Text,
+})
+export type NoteMessage = z.infer<typeof NoteMessage>
+
 /**
  * A harness input that the chat got, never a prompt of the owner's (R46): a short line such as "Background task
- * finished: <summary>" or "Message from <chat name>". The page draws it as a muted line, not as the owner's bubble.
+ * finished: <summary>" or "Message from <chat name>". A `peer` note may have its `message` (R55), which the page
+ * shows as another chat's text, not as the owner's bubble; no other kind has one.
  */
-export const NoteEntry = z.object({
-  type: z.literal('note'),
-  id: EntryId,
-  kind: NoteKind,
-  text: z.string().min(1).max(maxNoteText),
-})
+export const NoteEntry = z
+  .object({
+    type: z.literal('note'),
+    id: EntryId,
+    kind: NoteKind,
+    text: z.string().min(1).max(maxNoteText),
+    message: NoteMessage.optional(),
+  })
+  .refine((note) => note.message === undefined || note.kind === 'peer', {
+    message: 'only a peer note has a message',
+    path: ['message'],
+  })
 
 export const TranscriptEntry = z.discriminatedUnion('type', [
   UserEntry,

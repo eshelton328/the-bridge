@@ -9,6 +9,7 @@ import {
   TranscriptEntry,
   TranscriptResponse,
   UserEntry,
+  maxNoteFrom,
   maxNoteText,
 } from './transcripts.ts'
 
@@ -80,5 +81,21 @@ describe('transcripts', () => {
     expect(TranscriptEntry.safeParse({ ...note, kind: 'owner' }).success).toBe(false)
     expect(TranscriptEntry.safeParse({ ...note, text: '' }).success).toBe(false)
     expect(TranscriptEntry.safeParse({ ...note, text: 'x'.repeat(maxNoteText + 1) }).success).toBe(false)
+  })
+
+  it('takes a message from another chat on a peer note only, with a short sender name (R55)', () => {
+    const message = { from: 'sample-coord', via: 'prompt', text: 'Run the tests', cut: false }
+    const peer = { type: 'note', id: 'n2', kind: 'peer', text: 'Message from sample-coord', message }
+    expect(TranscriptEntry.parse(peer)).toEqual(peer)
+    expect(TranscriptEntry.parse({ ...peer, message: { ...message, from: null, via: 'message' } })).toBeDefined()
+    expect(TranscriptEntry.safeParse({ ...peer, kind: 'task' }).success).toBe(false)
+    expect(TranscriptEntry.safeParse({ ...peer, message: { ...message, from: '' } }).success).toBe(false)
+    expect(
+      TranscriptEntry.safeParse({ ...peer, message: { ...message, from: 'x'.repeat(maxNoteFrom + 1) } }).success,
+    ).toBe(false)
+    expect(TranscriptEntry.safeParse({ ...peer, message: { ...message, via: 'owner' } }).success).toBe(false)
+    expect(
+      TranscriptEntry.safeParse({ ...peer, message: { ...message, text: 'x'.repeat(maxEntryText + 1) } }).success,
+    ).toBe(false)
   })
 })

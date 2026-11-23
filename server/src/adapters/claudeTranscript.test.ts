@@ -181,7 +181,13 @@ describe('Claude transcript', () => {
       { type: 'user', id: 'o1', text: 'an older prompt with no origin', cut: false },
       { type: 'note', id: 't1', kind: 'task', text: 'Background task finished: Agent "Check the PR text" finished' },
       { type: 'note', id: 't2', kind: 'task', text: 'Background task update' },
-      { type: 'note', id: 'p1', kind: 'peer', text: 'Message from bridge- coord' },
+      {
+        type: 'note',
+        id: 'p1',
+        kind: 'peer',
+        text: 'Message from bridge- coord',
+        message: { from: 'bridge- coord', via: 'message', text: 'hi', cut: false },
+      },
       { type: 'note', id: 's1', kind: 'hook', text: 'Stop hook: reply rewritten' },
       {
         type: 'user',
@@ -330,7 +336,7 @@ describe('Claude transcript', () => {
     expect(() => encodeURIComponent(cut.text)).not.toThrow()
   })
 
-  it('keeps a prompt that the app sent through herdr, with its files, and puts no peer text in a note (R46)', async () => {
+  it("keeps a prompt that the app sent through herdr, with its files, and a peer's text only in the note's message (R55)", async () => {
     // A prompt the app types into the pane has the owner's shape: no origin on an older line, "human" on a newer one.
     const uploads = '/home/dev/.local/share/the-bridge/uploads'
     const longName = `peer-${'n'.repeat(200)}`
@@ -355,6 +361,104 @@ describe('Claude transcript', () => {
     if (note?.type !== 'note') throw new Error('no note')
     expect(note.text.length).toBeLessThanOrEqual('Message from '.length + 64)
     expect(note.text).toMatch(/^Message from peer-n+…$/)
-    expect(JSON.stringify(entries)).not.toMatch(/marker-5150|secret plan/)
+    expect(note.text).not.toMatch(/marker-5150|secret plan/)
+    expect(note.message).toEqual({
+      from: note.text.slice('Message from '.length),
+      via: 'message',
+      text: 'marker-5150 secret plan',
+      cut: false,
+    })
+  })
+
+  it("shows a whole <agent-prompt> wrapper as a message from that chat, and any other text as the owner's (R55)", async () => {
+    // Example lines: another chat typed the wrapper into this pane with herdr, so the line has the owner's marks.
+    const wrapped = (name: string, body: string) => `<agent-prompt from="${name}">\n${body}\n</agent-prompt>`
+    const paste = (id: string, t: string) => `<pasted_content id="${id}">\n${t}\n</pasted_content id="${id}">`
+    const mark = '<artifact-content-authored-by-others/>'
+    const path = file([
+      user('w1', wrapped('sample-coord', 'Run the tests, marker-5150.'), { origin: { kind: 'human' } }),
+      user('w2', paste('77', wrapped('sample-lab', 'A long brief.\n\nTwo parts.'))),
+      user('w3', `Look: ${wrapped('sample-coord', 'quoted by the owner')}`, { origin: { kind: 'human' } }),
+      user('w4', `${wrapped('a', 'one')}\n${wrapped('b', 'two')}`, { origin: { kind: 'human' } }),
+      user('w5', wrapped('sample-coord', 'a note'), { isMeta: true }),
+      user('w6', wrapped('sample-coord', ''), { origin: { kind: 'human' } }),
+      user('w7', wrapped('bad name', 'spaces are not a chat name'), { origin: { kind: 'human' } }),
+      user('w8', wrapped('sample-coord', '    indented code\nnext'), { origin: { kind: 'human' } }),
+      user(
+        'q1',
+        '<cross-session-message from="uds:/tmp/x.sock">\nIt ends with </cross-session-message> in text.\n</cross-session-message>',
+        {
+          isMeta: true,
+          origin: { kind: 'peer', name: 'sample-lab' },
+        },
+      ),
+      user('b1', 'Another Claude session sent a message: <cross-session-message>old</cross-session-message>', {
+        isMeta: true,
+        origin: { kind: 'peer', name: 'sample-lab', body: 'The body from the origin.' },
+      }),
+      user(
+        'p1',
+        `<cross-session-message from="uds:/tmp/x.sock" from-name="sample-coord">\nCheck #12.\n\n${mark}\n</cross-session-message>`,
+        {
+          isMeta: true,
+          origin: { kind: 'peer', name: 'sample-coord' },
+        },
+      ),
+    ])
+    const read = await readClaudeTranscript(path, options)
+    expect(read.entries).toEqual([
+      {
+        type: 'note',
+        id: 'w1',
+        kind: 'peer',
+        text: 'Message from sample-coord',
+        message: { from: 'sample-coord', via: 'prompt', text: 'Run the tests, marker-5150.', cut: false },
+      },
+      {
+        type: 'note',
+        id: 'w2',
+        kind: 'peer',
+        text: 'Message from sample-lab',
+        message: { from: 'sample-lab', via: 'prompt', text: 'A long brief.\n\nTwo parts.', cut: false },
+      },
+      { type: 'user', id: 'w3', text: `Look: ${wrapped('sample-coord', 'quoted by the owner')}`, cut: false },
+      { type: 'user', id: 'w4', text: `${wrapped('a', 'one')}\n${wrapped('b', 'two')}`, cut: false },
+      { type: 'note', id: 'w6', kind: 'peer', text: 'Message from sample-coord' },
+      { type: 'user', id: 'w7', text: wrapped('bad name', 'spaces are not a chat name'), cut: false },
+      {
+        type: 'note',
+        id: 'w8',
+        kind: 'peer',
+        text: 'Message from sample-coord',
+        message: { from: 'sample-coord', via: 'prompt', text: '    indented code\nnext', cut: false },
+      },
+      {
+        type: 'note',
+        id: 'q1',
+        kind: 'peer',
+        text: 'Message from sample-lab',
+        message: {
+          from: 'sample-lab',
+          via: 'message',
+          text: 'It ends with </cross-session-message> in text.',
+          cut: false,
+        },
+      },
+      {
+        type: 'note',
+        id: 'b1',
+        kind: 'peer',
+        text: 'Message from sample-lab',
+        message: { from: 'sample-lab', via: 'message', text: 'The body from the origin.', cut: false },
+      },
+      {
+        type: 'note',
+        id: 'p1',
+        kind: 'peer',
+        text: 'Message from sample-coord',
+        message: { from: 'sample-coord', via: 'message', text: 'Check #12.', cut: false },
+      },
+    ])
+    for (const entry of read.entries) TranscriptEntry.parse(entry)
   })
 })
