@@ -3,7 +3,7 @@
 // tools, the status line, the first group's header, and `items`, whose first two children are the first two rows or
 // cards. `fitRects` reads each block's top and height; `fitGaps` lists each block that moved or changed height by more
 // than `fitTolerancePx` between the two.
-export const fitTolerancePx = 2
+const fitTolerancePx = 2
 
 export type FitRect = { readonly top: number; readonly height: number }
 
