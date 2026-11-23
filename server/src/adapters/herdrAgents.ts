@@ -33,6 +33,7 @@ import {
   type RestartModelResponse,
   SessionId,
   splitId,
+  type StartChatRequest,
   type StartState,
   WorkspaceId,
   WorkspaceLayout,
@@ -1130,6 +1131,61 @@ export function createHerdrAgents({
       ? '/clear'
       : `/compact${command.instructions === undefined || command.instructions.trim() === '' ? '' : ` ${command.instructions.trim()}`}`
 
+  /** Starts Claude in a new pane, as `startChat` does; a fork adds its resume flags in `extra`. */
+  const startIn = async (
+    { name, model, place }: Omit<StartChatRequest, 'createId'>,
+    extra: readonly string[],
+  ): ReturnType<AgentPort['startChat']> => {
+    // The new pane's place: beside the chat in its folder, or a new tab in the folder of the workspace's first pane.
+    let beside: string | undefined
+    let workspace: string
+    let cwd: string | undefined
+    if (place.in === 'split') {
+      const found = await paneOf(place.beside)
+      if (!found.ok) return found
+      if (found.value?.workspace === undefined) return ok('notFound')
+      ;({ pane: beside, workspace, cwd } = found.value)
+    } else {
+      const { machine: on, local } = splitId(place.workspace)
+      if (on !== machine) return ok('notFound')
+      const panes = await call('pane.list', PaneList)
+      if (!panes.ok) return panes
+      const first = panes.value.panes.find((p) => p.workspace_id === local)
+      if (first === undefined) return ok('notFound')
+      workspace = local
+      cwd = first.cwd ?? undefined
+    }
+    if (cwd === undefined || !(await insideRoot(chatRoot, cwd))) return ok('folderNotAllowed')
+    const agents = await call('agent.list', AgentList)
+    if (!agents.ok) return agents
+    const chatName = name ?? `chat-${randomBytes(3).toString('hex')}`
+    if (agents.value.agents.some((a) => a.name === chatName)) return ok('nameTaken')
+    // No focus change: herdr's active tab and pane stay as they were.
+    const made =
+      beside === undefined
+        ? await paneWrite('tab.create', StartTabReply, { workspace_id: workspace, cwd, focus: false })
+        : await paneWrite('pane.split', StartSplitReply, {
+            target_pane_id: beside,
+            direction: place.in === 'split' && place.direction === 'row' ? 'right' : 'down',
+            focus: false,
+            cwd,
+          })
+    if (!made.ok) return made
+    if (made.value === 'notFound') return ok('notFound')
+    const pane = 'pane' in made.value ? made.value.pane : made.value.root_pane
+    forgetPlaces()
+    // An argument list, never a shell line: the name, model alias and fork flags only; no flag that skips a permission.
+    const args = ['-n', chatName, ...(model === undefined ? [] : ['--model', model]), ...extra]
+    const launched = await launchClaude(pane.pane_id, chatName, args)
+    if (!launched.started) return writeFailed('agent.start', launched.error)
+    if (launched.waitFailed !== undefined) return err(badReply(`herdr agent.wait: ${launched.waitFailed}`))
+    const paneId = paneIdOf(pane.terminal_id)
+    if (launched.agent === undefined) return ok({ pane: paneId, state: 'starting' })
+    const state = startStateOf(launched.agent)
+    const chat = sessionOf(launched.agent) === undefined ? undefined : chatIdOf(launched.agent, new Set())
+    return ok({ pane: paneId, ...(chat === undefined ? {} : { chat }), state })
+  }
+
   return {
     machine,
     async sendPrompt(chat, text) {
@@ -1519,55 +1575,24 @@ export function createHerdrAgents({
       if (written.value === 'notFound') return ok('notFound')
       return ok({ chat: ChatId.parse(`${machine}/${written.value.pane.terminal_id}`) })
     },
-    async startChat({ name, model, place }) {
-      // The new pane's place: beside the chat in its folder, or a new tab in the folder of the workspace's first pane.
-      let beside: string | undefined
-      let workspace: string
-      let cwd: string | undefined
-      if (place.in === 'split') {
-        const found = await paneOf(place.beside)
-        if (!found.ok) return found
-        if (found.value?.workspace === undefined) return ok('notFound')
-        ;({ pane: beside, workspace, cwd } = found.value)
-      } else {
-        const { machine: on, local } = splitId(place.workspace)
-        if (on !== machine) return ok('notFound')
-        const panes = await call('pane.list', PaneList)
-        if (!panes.ok) return panes
-        const first = panes.value.panes.find((p) => p.workspace_id === local)
-        if (first === undefined) return ok('notFound')
-        workspace = local
-        cwd = first.cwd ?? undefined
-      }
-      if (cwd === undefined || !(await insideRoot(chatRoot, cwd))) return ok('folderNotAllowed')
-      const agents = await call('agent.list', AgentList)
+    startChat: (request) => startIn(request, []),
+    async forkChat(chat, { name, direction }) {
+      const { machine: on } = splitId(chat)
+      if (on !== machine) return ok('notFound')
+      const [agents, panes] = await Promise.all([call('agent.list', AgentList), call('pane.list', PaneList)])
       if (!agents.ok) return agents
-      const chatName = name ?? `chat-${randomBytes(3).toString('hex')}`
-      if (agents.value.agents.some((a) => a.name === chatName)) return ok('nameTaken')
-      // No focus change: herdr's active tab and pane stay as they were.
-      const made =
-        beside === undefined
-          ? await paneWrite('tab.create', StartTabReply, { workspace_id: workspace, cwd, focus: false })
-          : await paneWrite('pane.split', StartSplitReply, {
-              target_pane_id: beside,
-              direction: place.in === 'split' && place.direction === 'row' ? 'right' : 'down',
-              focus: false,
-              cwd,
-            })
-      if (!made.ok) return made
-      if (made.value === 'notFound') return ok('notFound')
-      const pane = 'pane' in made.value ? made.value.pane : made.value.root_pane
-      forgetPlaces()
-      // An argument list, never a shell line: the name and the model alias only, and no flag that skips a permission.
-      const args = ['-n', chatName, ...(model === undefined ? [] : ['--model', model])]
-      const launched = await launchClaude(pane.pane_id, chatName, args)
-      if (!launched.started) return writeFailed('agent.start', launched.error)
-      if (launched.waitFailed !== undefined) return err(badReply(`herdr agent.wait: ${launched.waitFailed}`))
-      const paneId = paneIdOf(pane.terminal_id)
-      if (launched.agent === undefined) return ok({ pane: paneId, state: 'starting' })
-      const state = startStateOf(launched.agent)
-      const chat = sessionOf(launched.agent) === undefined ? undefined : chatIdOf(launched.agent, new Set())
-      return ok({ pane: paneId, ...(chat === undefined ? {} : { chat }), state })
+      if (!panes.ok) return panes
+      const shared = sharedSessions(agents.value.agents)
+      const agent = agents.value.agents.filter(isChat).find((a) => chatIdOf(a, shared) === chat)
+      if (agent === undefined)
+        return ok(panes.value.panes.some((p) => shellIdOf(p) === chat) ? 'noSession' : 'notFound')
+      const session = agent.agent === 'claude' ? sessionOf(agent) : undefined
+      if (session === undefined) return ok('noSession')
+      const base = /^[a-z][a-z0-9_-]*$/.test(agent.name ?? '') ? (agent.name ?? 'chat') : 'chat'
+      return startIn(
+        { kind: 'claude', name: name ?? `${base.slice(0, 27)}-fork`, place: { in: 'split', beside: chat, direction } },
+        ['--resume', session, '--fork-session'],
+      )
     },
     async setSplitRatio(tab, path, ratio) {
       const { machine: on, local } = splitId(tab)
