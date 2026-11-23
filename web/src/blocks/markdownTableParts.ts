@@ -1,16 +1,32 @@
 // The elements a Markdown table renders to (GitHub's pipe tables, through
 // remark-gfm), in one place: MarkdownText maps `table`, `thead`, `tbody`,
-// `tr`, `th` and `td` to these. The library has no Table part yet
-// (LIBRARY_GAPS.md: Table part for Markdown tables, R51), so each maps to
-// its own plain element, with no style of the app's; the release that
-// brings the part maps them to it here, and nowhere else.
+// `tr`, `th` and `td` to the library's Table part (review R51). Its frame
+// scrolls a wide table sideways inside the text's column, so the page never
+// does, and a column is never narrower than its longest word. The table's
+// text size matches the MarkdownView around it: `sm` in the Inbox record,
+// `md` in a chat's transcript.
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeaderCell,
+  TableRow,
+} from '@eshelton328/component-library-1701'
+import { createElement } from 'react'
 import type { Components } from 'react-markdown'
 
-export const markdownTableParts = {
-  table: 'table',
-  thead: 'thead',
-  tbody: 'tbody',
-  tr: 'tr',
-  th: 'th',
-  td: 'td',
-} as const satisfies Components
+/** The text size of a MarkdownView, and so of a table in it. */
+export type MarkdownSize = 'md' | 'sm'
+
+const partsOf = (size: MarkdownSize) =>
+  ({
+    table: (props) => createElement(Table, { ...props, size }),
+    thead: TableHead,
+    tbody: TableBody,
+    tr: TableRow,
+    th: TableHeaderCell,
+    td: TableCell,
+  }) satisfies Components
+
+export const markdownTableParts = { md: partsOf('md'), sm: partsOf('sm') } as const

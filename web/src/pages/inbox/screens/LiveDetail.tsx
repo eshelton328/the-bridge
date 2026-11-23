@@ -111,7 +111,7 @@ export function LiveDetail({ row, open, layout, snooze, onBack, onOpenChat }: Li
           <DetailSection title="Context">
             <BlockBoundary contentKey={row.id}>
               <MarkdownView size="sm" padding="none">
-                <MarkdownText text={open.body} />
+                <MarkdownText text={open.body} size="sm" />
               </MarkdownView>
             </BlockBoundary>
           </DetailSection>

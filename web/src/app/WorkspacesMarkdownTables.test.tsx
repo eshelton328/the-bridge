@@ -178,7 +178,7 @@ describe("a reply's GitHub Markdown (review R51)", () => {
       await expect.element(chat.getByText('Sample rollout status:')).toBeVisible()
       await expect.element(chat.getByRole('table')).toBeVisible()
       expectGfmInline(chat.element())
-      expectReadableTable(tableIn(chat.element()), chat.element())
+      expectReadableTable(tableIn(chat.element()), chat.element(), 'md')
       expect(getReports()).toEqual([])
     })
 
@@ -204,7 +204,7 @@ describe("a reply's GitHub Markdown (review R51)", () => {
     if (pane === null) throw new Error('no pane')
     await expect.poll(() => pane.querySelector('table')).not.toBeNull()
     expectGfmInline(pane)
-    expectReadableTable(tableIn(pane), pane)
+    expectReadableTable(tableIn(pane), pane, 'md')
     expect(getReports()).toEqual([])
   })
 })

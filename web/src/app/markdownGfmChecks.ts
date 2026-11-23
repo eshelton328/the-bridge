@@ -44,9 +44,9 @@ function sidewaysFrame(el: Element): HTMLElement | null {
  * Fails unless the table has its header and rows, sits in a frame of its own (inside its Markdown view) that scrolls
  * sideways inside `scope`,
  * nothing between that frame and `scope` is wider than its box, the first column's longest word stays on one line,
- * and the page does not scroll sideways.
+ * the frame has the text size `size`, and the page does not scroll sideways.
  */
-export function expectReadableTable(table: HTMLTableElement, scope: Element) {
+export function expectReadableTable(table: HTMLTableElement, scope: Element, size: 'md' | 'sm') {
   expect([...table.querySelectorAll('thead th')].map((th) => th.textContent)).toEqual([
     'Service',
     'Region',
@@ -62,6 +62,8 @@ export function expectReadableTable(table: HTMLTableElement, scope: Element) {
   const frame = sidewaysFrame(table)
   expect(frame, 'the table scrolls sideways in a frame of its own').not.toBeNull()
   if (frame === null) return
+  // The table's text size is the MarkdownView's: `sm` in the Inbox record, `md` in a transcript.
+  expect(frame.className).toContain(`table__frame--size_${size}`)
   const own = frame.getBoundingClientRect()
   const outer = scope.getBoundingClientRect()
   expect(own.left).toBeGreaterThanOrEqual(outer.left - 0.5)

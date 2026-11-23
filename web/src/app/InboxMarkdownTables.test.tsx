@@ -34,7 +34,7 @@ describe("a brain record's GitHub Markdown (review R51)", () => {
       await expect.element(context.getByText('Sample rollout status:')).toBeVisible()
       await expect.element(context.getByRole('table')).toBeVisible()
       expectGfmInline(context.element())
-      expectReadableTable(tableIn(context.element()), context.element())
+      expectReadableTable(tableIn(context.element()), context.element(), 'sm')
       expect(getReports()).toEqual([])
     })
 })
