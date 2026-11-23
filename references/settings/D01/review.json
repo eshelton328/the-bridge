@@ -1,8 +1,8 @@
 {
   "frameId": "D01",
-  "inputs": "f15c7a176463ef538e6a33bc4d12fa966367cfb5cc058218141ebe2aa60a43a2",
+  "inputs": "3273289608daf62943755e6e45f53b8a1d220d6388fa847e21226e0d793edf7f",
   "library": "1.0.0-beta.106",
-  "recordSha256": "951e48f32868657d3b7445242b6164cbe416a507eb2924f7b381efde9eb5b13b",
+  "recordSha256": "9ac55294a16390efddc9a2b71d23a940ed495bf0f80c8164d2ad273ad7989756",
   "record": {
     "verdict": "match",
     "viewport": "desktop 1512x982, Dark",
@@ -12,7 +12,7 @@
       "render": "reports/fidelity/settings/D01.sideBySide.png",
       "reference_side": "left"
     },
-    "summary": "Apart from the four accepted deviations, the render matches the reference.",
+    "summary": "Apart from the accepted deviations, the render matches the reference: the rail, page title, Appearance card and the Navigation rows from Home to Toolkit have the same content, layout and state.",
     "findings": [],
     "accepted_deviations": [
       {
@@ -20,34 +20,34 @@
         "as_given": "Text size: the control is disabled (muted labels) and its line under it says \"Coming soon\" in place of \"Scales the whole app: Small 87.5 %, Default 100 %, Large 112.5 %.\" (step D adds text size later). On a narrow screen the one-line note makes every section below it sit about one text line higher.",
         "status": "as-described",
         "finding": null,
-        "note": "The Small, Default and Large labels are muted and the line under them says \"Coming soon\". This is a desktop viewport, so the sections below do not move."
+        "note": "Small, Default and Large are muted, and the line under them says \"Coming soon\". At this desktop width the Appearance card keeps the same height."
       },
       {
         "id": "A2",
         "as_given": "A new \"NOTIFICATIONS\" section with one \"Notifications\" switch (off) sits between the Navigation section and the New chat defaults section. So New chat defaults sits lower, or below the bottom edge.",
-        "status": "as-described",
+        "status": "not-seen",
         "finding": null,
-        "note": "Only the top edge of the next card shows at the bottom of the render, below the Navigation card. The section's content and New chat defaults are below the bottom edge."
+        "note": "Only the top edge of the next card shows below the Navigation card (render y about 845 of 854 in the scaled image). Its heading and switch are below the bottom edge, so the frame does not show the Notifications section. New chat defaults is also below the bottom edge, as described."
       },
       {
         "id": "A3",
         "as_given": "The Notifications switch moved to that section: the desktop rail no longer has the \"Notifications / Blocked in Settings\" switch at its bottom, and the More drawer no longer has the \"Notifications / Blocked in Settings\" row at its end. So the drawer is shorter and its top edge sits lower.",
         "status": "as-described",
         "finding": null,
-        "note": "The bottom of the rail has no switch in the render. The More drawer is closed in both pictures, so the drawer part cannot be seen."
+        "note": "The rail has no switch at its bottom. The More drawer is closed in both pictures, so the drawer part cannot be seen."
       },
       {
         "id": "A4",
         "as_given": "The Navigation list has a new last row, \"Settings\", with the line \"Always shown: in the bar or under More.\" under it and up and down buttons but no switch (the owner's decision: Settings is an entry of the bar order that cannot be hidden). So Toolkit's down button is now enabled, the Navigation card is taller, and every section below it sits lower or below the bottom edge.",
         "status": "as-described",
         "finding": null,
-        "note": "The Settings row shows the line \"Always shown: in the bar or under More.\", an up button and a down button, and no switch. Toolkit's down button is enabled and the card is taller."
+        "note": "The Settings row shows the line \"Always shown: in the bar or under More.\", has up and down buttons and no switch. Toolkit's down button is enabled, and the Navigation card is taller."
       }
     ],
     "limits": [
-      "The side-by-side image (3048x1010) was shown scaled to 2576x854, so differences under about 2 px could not be checked.",
-      "The Notifications section and New chat defaults in the render are below the bottom edge, so their content could not be compared.",
-      "The More drawer is closed in both pictures, so the drawer part of A3 could not be checked."
+      "The side-by-side image is 3048x1010 and was shown scaled to 2576x854, so differences under about 2 px were not checked.",
+      "Region crops were not given. At this scale I could not tell if the down button on the new last Settings row is disabled or enabled.",
+      "The Notifications section, the New chat defaults section and the More drawer are below the bottom edge or closed, so I could not check them."
     ]
   }
 }
