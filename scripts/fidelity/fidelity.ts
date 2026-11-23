@@ -48,7 +48,7 @@ import {
 import { comparePngs } from './pixelDiff.ts'
 import { parseReview, pngLabel, pngReviewGate } from './pngReview.ts'
 import { composeSideBySide } from './sideBySide.ts'
-import { serveStatic, stateForFrame, storybookDir, storyForState } from './storyServer.ts'
+import { serveStatic, stateForFrame, storybookDir, storyForState, storyUrl } from './storyServer.ts'
 
 const { values, positionals } = parseArgs({
   allowPositionals: true,
@@ -166,7 +166,7 @@ async function runFrame(b: Browser, origin: string, frameId: string) {
   // that much lower. A desktop frame renders at its full size.
   const viewport = renderViewport(ref)
   const { statusBar } = viewport
-  const url = `${origin}/iframe.html?id=${story}&viewMode=story`
+  const url = storyUrl(origin, story)
   const errors: string[] = []
   const shown = await openStory(b, url, viewport.w, viewport.h, errors)
   const measured = await shown.tab.evaluate<PageMeasure>(collectPageScript('#storybook-root'))
@@ -225,7 +225,8 @@ async function runPngFrame(b: Browser, origin: string, frameId: string) {
 
   // A PNG reference has no status bar layer, so the render is the frame's full size.
   const flat = { ...ref, layers: [], exclude: [] }
-  const url = `${origin}/iframe.html?id=${story}&viewMode=story`
+  // The story draws the reference's mode, as the browser reports it.
+  const url = storyUrl(origin, story, ref.mode)
   const errors: string[] = []
   const renderPng = join(outDir, `${frameId}.render.png`)
   // The render the reviewer saw: the one the last run left, read before this run replaces it.

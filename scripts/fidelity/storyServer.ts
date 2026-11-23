@@ -60,6 +60,17 @@ const storyIndex = z.object({
   ),
 })
 
+/**
+ * The iframe URL that renders `story`. With `mode` (a PNG reference, d-119)
+ * it sets Storybook's `mode` global, which puts the `dark` class on <html>
+ * (web/.storybook/preview.ts): the browser's colour scheme alone leaves a
+ * Light frame Dark. A Figma frame passes none and keeps Storybook's Dark.
+ */
+export function storyUrl(origin: string, story: string, mode?: 'light' | 'dark'): string {
+  const globals = mode === undefined ? '' : `&globals=mode:${mode}`
+  return `${origin}/iframe.html?id=${story}&viewMode=story${globals}`
+}
+
 /** The state file of `page` whose `frames` list the frame code ("D1"), by its file name ("nextStep"). */
 export function stateForFrame(page: string, code: string, dir = pagesDir): string | undefined {
   const statesDir = join(dir, page, 'states')
