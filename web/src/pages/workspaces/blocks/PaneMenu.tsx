@@ -81,7 +81,8 @@ export type PaneMenuProps = {
   actions: readonly PaneAction[]
   /** The workspaces a chat can move to: every one but the current. */
   targets: readonly Workspace[]
-  newWorkspace: string
+  /** The list's last row, which makes a workspace for the chat; none on the live page. */
+  newWorkspace?: string | undefined
   open: boolean
   onOpenChange?: ((open: boolean) => void) | undefined
   moveOpen: boolean
@@ -111,15 +112,19 @@ export type PaneMenuProps = {
 }
 
 export function PaneMenu(props: PaneMenuProps) {
-  const { title, actions, targets, newWorkspace, open, onOpenChange, moveOpen, onMoveOpenChange } = props
+  const { title, targets, newWorkspace, open, onOpenChange, moveOpen, onMoveOpenChange } = props
+  // A live chat with no other workspace to go to has no Move to workspace (backend #435): its list would be empty.
+  const actions =
+    props.onMove !== undefined && targets.length === 0 ? props.actions.filter((a) => a.value !== 'move') : props.actions
   const separatorBefore = props.separatorBefore ?? 'move'
   const moveItems: MenuEntry[] = [
     ...targets.map((w) => ({ value: w.id, label: w.label, icon: <GridIcon size="16" /> })),
-    { type: 'separator' },
-    { value: 'new', label: newWorkspace, icon: <PlusIcon size="16" /> },
+    ...(newWorkspace === undefined
+      ? []
+      : [{ type: 'separator' as const }, { value: 'new', label: newWorkspace, icon: <PlusIcon size="16" /> }]),
   ]
   // A pick in the list reaches the menu's onSelect: a workspace (or New workspace) moves the chat.
-  const moveValues = new Set([...targets.map((w) => w.id), 'new'])
+  const moveValues = new Set([...targets.map((w) => w.id), ...(newWorkspace === undefined ? [] : ['new'])])
   const swapItems: MenuEntry[] = (props.swapTargets ?? []).map((c) => ({ value: swapValue(c.id), label: c.title }))
   const swapChats = new Map((props.swapTargets ?? []).map((c) => [swapValue(c.id), c.id]))
   const tabItems: MenuEntry[] = (props.moveTabs ?? []).map((t) => ({

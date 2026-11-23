@@ -256,8 +256,10 @@ const chatCommands: PaneAction[] = [
  * field, so it keeps New chat alone.
  */
 const liveNewChat: PaneAction = { value: 'newChat', label: 'New chat' }
-const liveChatMenu: PaneAction[] = [liveNewChat, { value: 'rename', label: 'Rename chat' }]
-const livePhoneChatMenu: PaneAction[] = [liveNewChat, { value: 'rename', label: 'Rename' }]
+// Move to workspace (backend #435) lists the other workspaces; the live list has no New workspace row.
+const liveMove: PaneAction = { value: 'move', label: 'Move to workspace' }
+const liveChatMenu: PaneAction[] = [liveNewChat, liveMove, { value: 'rename', label: 'Rename chat' }]
+const livePhoneChatMenu: PaneAction[] = [liveNewChat, liveMove, { value: 'rename', label: 'Rename' }]
 
 /**
  * The live dialog that × in edit mode opens (M13's words; backend #427): it asks about any workspace and lists the
@@ -306,6 +308,7 @@ function liveOnly(
   tabs: ReadonlyMap<string, LiveTab[]> = new Map(),
 ): WorkspacesScreenState {
   const panes = livePanes(workspaces, machine)
+  // No route makes a workspace from a chat's Move to workspace list, so the live list has no New workspace row.
   const data = state.data
   const layouts = Object.fromEntries(
     workspaces.map((w): [string, WorkspaceLayout] => {
@@ -336,7 +339,8 @@ function liveOnly(
       // The sample's summary and alert name a sample workspace and chat. The summary counts the first workspace's
       // panes, and none shows with no workspace; the live alerts are set by the caller.
       status: { ...data.status, summary: summaryOf(workspaces[0], layouts), alert: undefined },
-      // Review R42: of the sample's chat actions only New chat and Rename work on a live chat; the others have no route.
+      // Review R42: of the sample's chat actions only New chat, Move to workspace (backend #435) and Rename work on a
+      // live chat; the others have no route.
       ...(data.chatMenu === undefined ? {} : { chatMenu: liveChatMenu }),
       chatCommands,
       liveTabs: Object.fromEntries(tabs),
@@ -344,7 +348,8 @@ function liveOnly(
       // W3: New chat starts a live Claude chat, from the phone's + and a workspace's ⋯ (M15, M14) in a new tab, from
       // the desktop's tab + (D1) in a new tab, and from a chat's actions or a pane's menu (D2b) beside that chat.
       newChat: liveNewChatForm(current ?? ''),
-      paneMenu: [liveNewChat],
+      paneMenu: [liveNewChat, liveMove],
+      newWorkspace: undefined,
       ...(data.phone === undefined
         ? {}
         : {

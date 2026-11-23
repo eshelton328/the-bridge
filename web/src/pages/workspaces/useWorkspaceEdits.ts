@@ -16,7 +16,9 @@
 // whose count the server does not match reads the list again and calls
 // `again` once that read changed the list (or after 2.5 s), so the dialog
 // asks with the new list and its count, never the old one (Codex review
-// of #432).
+// of #432). A chat moved to another workspace (backend #435) opens there
+// with the list read that shows it moved (`onMoved`); a workspace it left
+// empty leaves with that read.
 import { Label, maxLabel } from '@bridge/contract'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { report } from '../../errors/reporter.ts'
@@ -34,6 +36,8 @@ type Pending = {
   seen: string
   order?: readonly string[]
   timer?: ReturnType<typeof setTimeout>
+  /** What the page does with the list read that shows the edit, such as open a moved chat. */
+  after?: (data: WorkspacesData) => void
 }
 
 const lead: Record<WorkspaceEdit, string> = {
@@ -41,6 +45,7 @@ const lead: Record<WorkspaceEdit, string> = {
   renameChat: 'Not renamed',
   order: 'Not reordered',
   close: 'Not closed',
+  moveChat: 'Not moved',
 }
 
 const viaLive = (run: (live: Live) => Promise<EditAnswer>): Promise<EditAnswer> =>
@@ -61,7 +66,15 @@ const listJson = (data: WorkspacesData) =>
   JSON.stringify(data.workspaces.map((w) => [w.id, w.label, (w.chats ?? []).map((c) => [c.id, c.title])]))
 
 /** The live list's edits, or none when the page shows fixtures. */
-export function useWorkspaceEdits(live: boolean, data: WorkspacesData): WorkspaceEdits | undefined {
+export function useWorkspaceEdits(
+  live: boolean,
+  data: WorkspacesData,
+  onMoved?: (chat: string, data: WorkspacesData) => void,
+): WorkspaceEdits | undefined {
+  const onMovedRef = useRef(onMoved)
+  useLayoutEffect(() => {
+    onMovedRef.current = onMoved
+  })
   const [pending, setPending] = useState<Pending>()
   const [line, setLine] = useState<string>()
   const dataRef = useRef(data)
@@ -94,7 +107,10 @@ export function useWorkspaceEdits(live: boolean, data: WorkspacesData): Workspac
   useLayoutEffect(() => {
     dataRef.current = data
     const p = pendingRef.current
-    if (p?.timer !== undefined && listJson(data) !== p.seen) done(p)
+    if (p?.timer !== undefined && listJson(data) !== p.seen) {
+      done(p)
+      p.after?.(data)
+    }
     // A refused close asks again only with the list read after it.
     if (againRef.current !== undefined && listJson(data) !== againRef.current.seen) askAgain()
   })
@@ -106,6 +122,7 @@ export function useWorkspaceEdits(live: boolean, data: WorkspacesData): Workspac
       run: (live: Live, machine: string) => Promise<EditAnswer>,
       order?: readonly string[],
       again?: () => void,
+      after?: (data: WorkspacesData) => void,
     ) => {
       const machine = dataRef.current.liveMachine
       if (machine === undefined) return false
@@ -113,7 +130,12 @@ export function useWorkspaceEdits(live: boolean, data: WorkspacesData): Workspac
         setLine(`${lead[action]} — wait for the last change`)
         return false
       }
-      const entry: Pending = { action, seen: listJson(dataRef.current), ...(order === undefined ? {} : { order }) }
+      const entry: Pending = {
+        action,
+        seen: listJson(dataRef.current),
+        ...(order === undefined ? {} : { order }),
+        ...(after === undefined ? {} : { after }),
+      }
       pendingRef.current = entry
       setPending(entry)
       setLine(undefined)
@@ -121,8 +143,10 @@ export function useWorkspaceEdits(live: boolean, data: WorkspacesData): Workspac
         if (!aliveRef.current || pendingRef.current !== entry) return
         if (answer.kind === 'done') {
           // The event may have come before the 204: a list that changed since the edit started is its answer.
-          if (listJson(dataRef.current) !== entry.seen) done(entry)
-          else
+          if (listJson(dataRef.current) !== entry.seen) {
+            done(entry)
+            entry.after?.(dataRef.current)
+          } else
             entry.timer = setTimeout(() => {
               readList()
               done(entry)
@@ -178,6 +202,21 @@ export function useWorkspaceEdits(live: boolean, data: WorkspacesData): Workspac
       },
       close: (workspace, panes, again) => {
         start('close', (m, machine) => m.closeWorkspace(`${machine}/${workspace}`, panes), undefined, again)
+      },
+      moveChat: (chat, workspace) => {
+        const label = dataRef.current.workspaces.find((w) => w.id === workspace)?.label ?? workspace
+        start(
+          'moveChat',
+          (m, machine) =>
+            m
+              .moveToWorkspace(`${machine}/${chat}`, `${machine}/${workspace}`)
+              .then((answer) =>
+                answer.kind === 'done' ? answer : { ...answer, line: answer.line.replaceAll('{workspace}', label) },
+              ),
+          undefined,
+          undefined,
+          (next) => onMovedRef.current?.(chat, next),
+        )
       },
     }),
     [pending, line, named, start],

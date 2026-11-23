@@ -880,8 +880,8 @@ const WorkspacesDataFields = z.object({
   liveNotice: z.object({ title: z.string(), description: z.string() }).optional(),
   /** A pane menu's actions, with a separator before `move`. */
   paneMenu: z.array(PaneAction),
-  /** The last row of Move to workspace. */
-  newWorkspace: z.string(),
+  /** The last row of Move to workspace; the live page has none, as no route makes a workspace from there. */
+  newWorkspace: z.string().optional(),
   /** What typing / in a composer lists. */
   skillsLabel: z.string(),
   /**
@@ -1026,6 +1026,11 @@ export const WorkspacesUi = z.object({
   commandFor: z.string().nullable().optional(),
   /** The herdr tab (its server ID) that the Move to tab… dialog of the chat in `commandFor` moves it to (W2d). */
   moveToTab: z.string().nullable().optional(),
+  /**
+   * A live move to another workspace that asks first (backend #435): the chat, by pane id, is its workspace's last, so
+   * the move closes that workspace.
+   */
+  moveAsk: z.object({ chat: z.string(), workspace: z.string() }).nullable().optional(),
   /**
    * The herdr tab the workbench shows in place of the active one, by workspace id (W2d, `shownTabs.ts`): the tab a
    * moved open pane went to (`tab`), while herdr's active tab is still `over`.
@@ -1188,4 +1193,6 @@ export type WorkspaceEdits = {
    * (409 `panesChanged`), after the page asked for the list again, so the dialog can ask with the new list.
    */
   readonly close: (workspace: string, panes: number, again: () => void) => void
+  /** Moves `chat` to a new tab of `workspace`; the chat opens there with the list read that shows it moved. */
+  readonly moveChat: (chat: string, workspace: string) => void
 }

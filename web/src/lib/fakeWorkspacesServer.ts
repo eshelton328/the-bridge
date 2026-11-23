@@ -100,7 +100,12 @@
 // unknown one 404, and a `panes` that is not its number of chats 409
 // workspace-not-ready panesChanged; else the workspace leaves the list,
 // which sends `workspaces.changed`, and the answer is 204. `answerEdits`
-// gives the other 409 states.
+// gives the other 409 states. Backend #435: `POST /api/chats/:chat/workspace`
+// takes `MoveToWorkspaceRequest`; an unknown chat or workspace is 404 and its
+// own workspace 409 chat-not-ready sameWorkspace; else the chat (same ID)
+// goes last in that workspace, its old workspace leaves when it is empty,
+// which sends `workspaces.changed`, and the answer is 200 with the contract's
+// `MoveToWorkspaceResponse`. `answerEdits` gives the other 409 states.
 import {
   ChatId,
   type ChatSummary,
@@ -108,6 +113,8 @@ import {
   CloseWorkspaceRequest,
   type ErrorBody,
   FocusChatRequest,
+  MoveToWorkspaceRequest,
+  MoveToWorkspaceResponse,
   chatsOf,
   LayoutChangedEvent,
   type LayoutNode,
@@ -224,7 +231,11 @@ export function fakeWorkspacesServer(
   const models: { chat: string; body: unknown }[] = []
   let modelAnswer: (() => Response) | undefined
   /** R41, R42: each edit's action, its target (none for an order) and its body, and an answer in place of the next ones'. */
-  const edits: { action: 'renameWorkspace' | 'renameChat' | 'order' | 'close'; target?: string; body: unknown }[] = []
+  const edits: {
+    action: 'renameWorkspace' | 'renameChat' | 'order' | 'close' | 'moveChat'
+    target?: string
+    body: unknown
+  }[] = []
   let editAnswer: (() => Response) | undefined
 
   /** The ID of the tab made `at`th for `workspace`; it stays while the tab lives. */
@@ -728,6 +739,47 @@ export function fakeWorkspacesServer(
     return new Response(null, { status: 204 })
   }
 
+  /** A move of a chat to another workspace (backend #435): the contract's checks, the test's answer, then 200. */
+  const moveChat = (target: string, init: RequestInit | undefined) => {
+    const body = bodyOf(init)
+    edits.push({ action: 'moveChat', target, body })
+    const parsed = MoveToWorkspaceRequest.safeParse(body)
+    if (new Headers(init?.headers).get('content-type') !== 'application/json' || !parsed.success) return badBody()
+    if (editAnswer !== undefined) return editAnswer()
+    const from = response.workspaces.find((w) => w.chats.some((c) => c.id === target))
+    const moved = from?.chats.find((c) => c.id === target)
+    const to = response.workspaces.find((w) => w.id === parsed.data.workspace)
+    if (from === undefined || moved === undefined || to === undefined)
+      return errorAnswer({ kind: 'not-found', path: `/api/${target}`, message: 'Not found', requestId: 'r-404' }, 404)
+    if (from === to)
+      return errorAnswer(
+        {
+          kind: 'chat-not-ready',
+          state: 'sameWorkspace',
+          message: 'the chat is in that workspace',
+          requestId: 'r-409',
+        },
+        409,
+      )
+    const sourceClosed = from.chats.length === 1
+    response = WorkspacesResponse.parse({
+      ...response,
+      workspaces: response.workspaces.flatMap((w) =>
+        w === from
+          ? sourceClosed
+            ? []
+            : [{ ...w, chats: w.chats.filter((c) => c !== moved) }]
+          : w === to
+            ? [{ ...w, chats: [...w.chats, moved] }]
+            : [w],
+      ),
+    })
+    changed()
+    return json(
+      MoveToWorkspaceResponse.parse({ chat: target, pane: { from: moved.pane, to: moved.pane }, sourceClosed }),
+    )
+  }
+
   /** Changes the list with `change`, checked against the contract, and tells the event streams unless `quiet`. */
   const update = (change: (chat: ChatSummary) => ChatSummary, quiet = false) => {
     response = WorkspacesResponse.parse({
@@ -831,9 +883,9 @@ export function fakeWorkspacesServer(
     chats: () => response.workspaces.flatMap((w) => w.chats),
     /** The workspaces of the list now, in its order: their IDs and labels. */
     workspaces: () => response.workspaces.map((w) => ({ id: w.id, label: w.label })),
-    /** Each rename, order and close the page posted (R41, R42, backend #427), in order. */
+    /** Each rename, order, close and move the page posted (R41, R42, backend #427, #435), in order. */
     edits,
-    /** Answers each next rename, order and close with `answer` until it is set to undefined. */
+    /** Answers each next rename, order, close and move with `answer` until it is set to undefined. */
     answerEdits: (answer: (() => Response) | undefined) => {
       editAnswer = answer
     },
@@ -863,6 +915,8 @@ export function fakeWorkspacesServer(
       if (path === '/api/workspaces/order' && init?.method === 'POST') return order(init)
       const closePath = /^\/api\/workspaces\/([^/]+)\/close$/.exec(path)
       if (closePath !== null && init?.method === 'POST') return close(decodeURIComponent(closePath[1] ?? ''), init)
+      const movePath = /^\/api\/chats\/([^/]+)\/workspace$/.exec(path)
+      if (movePath !== null && init?.method === 'POST') return moveChat(decodeURIComponent(movePath[1] ?? ''), init)
       const renamed = /^\/api\/(workspaces|chats)\/([^/]+)\/rename$/.exec(path)
       if (renamed !== null && init?.method === 'POST')
         return rename(

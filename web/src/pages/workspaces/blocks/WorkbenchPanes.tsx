@@ -89,6 +89,8 @@ export type WorkbenchPanesProps = {
    * drew before them.
    */
   onResize?: ((part: SplitPart, sizes: number[], drawn?: readonly number[]) => void) | undefined
+  /** Moves a live chat to another workspace, or asks first (backend #435, moveToWorkspace.ts); none on a fixture. */
+  onMoveChat?: ((chat: string, workspace: string) => void) | undefined
 }
 
 export function WorkbenchPanes({
@@ -106,6 +108,7 @@ export function WorkbenchPanes({
   onCopy,
   layout,
   onResize,
+  onMoveChat,
 }: WorkbenchPanesProps) {
   const targets = data.workspaces.filter((w) => w.id !== data.current)
   const panes = data.layers?.panes ?? paneLayers
@@ -167,6 +170,13 @@ export function WorkbenchPanes({
         }
         targets={targets}
         newWorkspace={data.newWorkspace}
+        onMove={
+          onMoveChat === undefined
+            ? undefined
+            : (workspace) => {
+                onMoveChat(pane.id, workspace)
+              }
+        }
         open={ui.menuFor === pane.id}
         onOpenChange={(open) => onUiChange?.({ menuFor: open ? pane.id : null, moveOpen: false })}
         moveOpen={ui.menuFor === pane.id && ui.moveOpen}
