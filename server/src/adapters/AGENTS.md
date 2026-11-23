@@ -235,8 +235,10 @@ client of a socket or a file sits beside them.
   blocked start is `needsYou` and stays so: the adapter sends no key
   and answers no prompt of it, such as Claude's folder trust question
   (`herdrAgents.test.ts`). A fork starts so beside a Claude chat, adding
-  only `--resume <session> --fork-session`; a Codex chat or a shell is
-  `noSession`. The contract suite has no start or fork (a real Claude).
+  only `--resume <session> --fork-session`; a Codex chat, a shell and a
+  session with no saved file (no turn yet, so `--resume` starts nothing)
+  are `noSession`, with no pane made. The default name is the first
+  free of `<name>-fork`, `-fork-2` to `-fork-9`. The contract suite has no start or fork (a real Claude).
 - An effort change (slice W10) goes to an idle Claude chat with an
   empty box only, as Claude Code's effort keys (`shift+up` and
   `shift+down` in one `agent.send_keys`), never as `/effort` or

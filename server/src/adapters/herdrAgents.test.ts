@@ -2429,9 +2429,13 @@ describe('herdr agents: a new chat (slice W3)', () => {
       workspace_id: 'w17',
     },
   })
-  const setup = async ({ chatRoot }: { chatRoot: string | undefined } = { chatRoot: root }) => {
+  const setup = async (
+    { chatRoot }: { chatRoot: string | undefined } = { chatRoot: root },
+    moreAgents: readonly Record<string, unknown>[] = [],
+  ) => {
     const socket = await startFakeHerdrSocket({
       ...results,
+      'agent.list': { ...results['agent.list'], agents: [...results['agent.list'].agents, ...moreAgents] },
       'pane.list': withCwd({ 'w17:p1': repo, 'w17:p2': repo, 'w18:p1': join(root, 'link'), 'w18:p2': outside }),
       'pane.split': { type: 'pane_info', pane: newPane },
       'tab.create': { type: 'tab_created', tab: { tab_id: 'w17:t2' }, root_pane: newPane },
@@ -2571,6 +2575,32 @@ describe('herdr agents: a new chat (slice W3)', () => {
       ['-n', 'side-copy', '--resume', 'session-a', '--fork-session'],
     ])
     expect(refused).toEqual([ok('noSession'), ok('noSession'), ok('notFound'), ok('notFound')])
+  })
+
+  it('numbers a fork whose name is taken, and refuses a session with no saved turn, with no pane made', async () => {
+    const claudeAt = (pane: string, terminal: string, name: string, session: string) => ({
+      agent: 'claude',
+      agent_session: { agent: 'claude', kind: 'id', source: 'herdr:claude', value: session },
+      agent_status: 'idle',
+      cwd: repo,
+      name,
+      pane_id: pane,
+      terminal_id: terminal,
+      workspace_id: 'w18',
+    })
+    const { socket, adapter, sent } = await setup({ chatRoot: root }, [
+      claudeAt('w18:p1', 'term_7', 'bridge-coord-fork', 'session-b'),
+      claudeAt('w18:p2', 'term_8', 'fresh', 'session-empty'),
+    ])
+    const fresh = await adapter.forkChat(ChatId.parse('test-mac/session-empty'), { direction: 'row' })
+    const splits = sent('pane.split').length
+    const second = await adapter.forkChat(ChatId.parse('test-mac/session-a'), { direction: 'row' })
+    await socket.close()
+    expect([fresh, splits]).toEqual([ok('noSession'), 0])
+    expect(second.ok).toBe(true)
+    expect(
+      sent('agent.start').map((s) => (typeof s === 'object' && s !== null && 'args' in s ? s.args : null)),
+    ).toEqual([['-n', 'bridge-coord-fork-2', '--resume', 'session-a', '--fork-session']])
   })
 })
 

@@ -1605,10 +1605,25 @@ export function createHerdrAgents({
       if (agent === undefined)
         return ok(panes.value.panes.some((p) => shellIdOf(p) === chat) ? 'noSession' : 'notFound')
       const session = agent.agent === 'claude' ? sessionOf(agent) : undefined
-      if (session === undefined) return ok('noSession')
+      const file = session === undefined ? undefined : sessionPath(agent)
+      // A session with no saved turn has no file, and `--resume` of it starts nothing in the new pane.
+      const saved =
+        file !== undefined &&
+        (await stat(file).then(
+          (s) => s.isFile() && s.size > 0,
+          () => false,
+        ))
+      if (session === undefined || !saved) return ok('noSession')
       const base = /^[a-z][a-z0-9_-]*$/.test(agent.name ?? '') ? (agent.name ?? 'chat') : 'chat'
+      const stem = `${base.slice(0, 25)}-fork`
+      const taken = new Set(agents.value.agents.map((a) => a.name))
+      const free = [stem, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (n === stem ? stem : `${stem}-${String(n)}`))
       return startIn(
-        { kind: 'claude', name: name ?? `${base.slice(0, 27)}-fork`, place: { in: 'split', beside: chat, direction } },
+        {
+          kind: 'claude',
+          name: name ?? free.find((n) => !taken.has(n)) ?? stem,
+          place: { in: 'split', beside: chat, direction },
+        },
         ['--resume', session, '--fork-session'],
       )
     },
