@@ -46,7 +46,7 @@ import { reportShellDiagnostic } from '../../../errors/shellDiagnostic.ts'
 import { AppRail } from '../../../blocks/AppRail.tsx'
 import { ViewportFrame } from '../../../blocks/ViewportFrame.tsx'
 import { SlotBoundary } from '../../../errors/SlotBoundary.tsx'
-import { defaultVisiblePages, type NavPage, navLayout } from '../../../lib/deviceSettings.ts'
+import { defaultVisiblePages, type BarPage, navLayout } from '../../../lib/deviceSettings.ts'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { css } from '../../../../styled-system/css/index.js'
 import { LiveNotice } from '../blocks/LiveNotice.tsx'
@@ -95,7 +95,7 @@ export type WorkspacesScreenProps = {
   viewport: Viewport
   onNavigate?: ((page: string) => void) | undefined
   /** The shown nav pages in the owner's order (d-038, d-119); the default order without it, as the Figma states draw. */
-  navPages?: readonly NavPage[] | undefined
+  navPages?: readonly BarPage[] | undefined
   onUiChange?: ((change: Partial<WorkspacesUi>) => void) | undefined
   /** Sends a chat's message; resolves `false` when the send failed, and the composer keeps the draft (ChatPane). */
   onSend?: ((chat: string, text: string) => Promise<ComposerAnswer>) | undefined

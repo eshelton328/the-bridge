@@ -15,7 +15,7 @@ import { AppRail } from '../../../blocks/AppRail.tsx'
 import { AppTabBar } from '../../../blocks/AppTabBar.tsx'
 import { MoreDrawer } from '../../../blocks/MoreDrawer.tsx'
 import { ViewportFrame } from '../../../blocks/ViewportFrame.tsx'
-import { defaultVisiblePages, type NavPage, navLayout } from '../../../lib/deviceSettings.ts'
+import { defaultVisiblePages, type BarPage, navLayout } from '../../../lib/deviceSettings.ts'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { kindValue } from '../types.ts'
 import { DiscussionPanel } from '../blocks/DiscussionPanel.tsx'
@@ -62,7 +62,7 @@ export type InboxScreenProps = {
   viewport: Viewport
   onNavigate?: ((page: string) => void) | undefined
   /** The shown nav pages in the owner's order (d-038, d-119); the default order without it, as the Figma states draw. */
-  navPages?: readonly NavPage[] | undefined
+  navPages?: readonly BarPage[] | undefined
   /** What the owner typed in the open item, from the page store; without it the screen keeps its own. */
   drafts?: InboxDrafts | undefined
   onFilterChange?: ((filter: string) => void) | undefined
@@ -430,6 +430,7 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
             <AppTabBar
               selected="inbox"
               pages={nav.tabs}
+              more={nav.more.length > 0}
               device={layout === 'tablet' ? 'tablet' : 'phone'}
               inboxBadge={data.railBadge}
               onSelect={(next) => {

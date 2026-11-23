@@ -12,6 +12,7 @@ import {
   type Mode,
   moveNavPage,
   type NavEntry,
+  type BarPage,
   type NavPage,
   type NavProblem,
   parseStoredSettings,
@@ -28,7 +29,7 @@ type SettingsState = DeviceSettings & {
     setTextSize: (textSize: TextSize) => void
     setChatDefaults: (chat: Partial<ChatDefaults>) => void
     /** Moves `page` one place up (-1) or down (1) in the nav order. */
-    moveNavPage: (page: NavPage, by: -1 | 1) => void
+    moveNavPage: (page: BarPage, by: -1 | 1) => void
     /**
      * Shows or hides `page`. Refused, with the reason, when it would hide
      * `current` (the page on screen) or leave no shown page besides Home.
@@ -123,12 +124,12 @@ export const useSettingsActions = (): SettingsState['actions'] => useSettingsSto
  * nav array changes only with a nav action, so the list is made once per
  * change.
  */
-export function useVisibleNavPages(): readonly NavPage[] {
+export function useVisibleNavPages(): readonly BarPage[] {
   return visibleFor(useSettingsNav())
 }
 
-const visibleCache = new WeakMap<readonly NavEntry[], readonly NavPage[]>()
-function visibleFor(nav: readonly NavEntry[]): readonly NavPage[] {
+const visibleCache = new WeakMap<readonly NavEntry[], readonly BarPage[]>()
+function visibleFor(nav: readonly NavEntry[]): readonly BarPage[] {
   const known = visibleCache.get(nav)
   if (known !== undefined) return known
   const visible = visibleNavPages(nav)

@@ -1,7 +1,8 @@
 // The Settings page (d-119) as one props-only screen, laid out by the width it
 // gets (ViewportFrame): on the desktop the rail with the Settings gear
-// selected; on a tablet or phone the tab bar, with More selected, whose More
-// opens the More drawer with Settings in it (M3). The page is one column of
+// selected; on a tablet or phone the tab bar, with the Settings tab selected
+// when the owner moved Settings into the bar, else More, which opens the More
+// drawer with Settings in it (M3). The page is one column of
 // sections: Appearance, Navigation, Notifications (d-118) and New chat
 // defaults. The bars show the pages `data.settings.nav` shows, in its order,
 // so a change on the page shows in them at once. A state's data and ui are its
@@ -14,7 +15,14 @@ import { DetailFrame } from '../../../blocks/DetailFrame.tsx'
 import { MoreDrawer } from '../../../blocks/MoreDrawer.tsx'
 import { ViewportFrame } from '../../../blocks/ViewportFrame.tsx'
 import { reportShellDiagnostic } from '../../../errors/shellDiagnostic.ts'
-import { type ChatDefaults, type Mode, type NavPage, navLayout, visibleNavPages } from '../../../lib/deviceSettings.ts'
+import {
+  type BarPage,
+  type ChatDefaults,
+  type Mode,
+  type NavPage,
+  navLayout,
+  visibleNavPages,
+} from '../../../lib/deviceSettings.ts'
 import type { PushSwitch } from '../../../lib/pushSwitch.ts'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { AppearanceSection } from '../blocks/AppearanceSection.tsx'
@@ -47,7 +55,7 @@ export type SettingsScreenProps = {
   onModeChange?: ((mode: Mode) => void) | undefined
   /** Shows or hides a nav page; returns false when the nav rules refuse it (the last page besides Home). */
   onNavVisibleChange?: ((page: NavPage, visible: boolean) => boolean) | undefined
-  onNavMove?: ((page: NavPage, by: -1 | 1) => void) | undefined
+  onNavMove?: ((page: BarPage, by: -1 | 1) => void) | undefined
   onChatDefaultsChange?: ((chat: Partial<ChatDefaults>) => void) | undefined
 }
 
@@ -91,9 +99,10 @@ export function SettingsScreen({
               tabBar={
                 layout === 'desktop' ? undefined : (
                   <AppTabBar
-                    // Settings is not a tab: More is selected, as it holds Settings (M1).
+                    // The Settings tab when Settings is in the bar; else More, as it holds Settings (M1).
                     selected="settings"
                     pages={nav.tabs}
+                    more={nav.more.length > 0}
                     device={layout === 'tablet' ? 'tablet' : 'phone'}
                     inboxBadge={data.railBadge}
                     onSelect={(next) => {
@@ -111,6 +120,7 @@ export function SettingsScreen({
                     <NavigationSection
                       nav={data.settings.nav}
                       notice={ui.navNotice}
+                      cutAfter={layout !== 'desktop' && nav.more.length > 0 ? nav.tabs.at(-1) : undefined}
                       onVisibleChange={(page, visible) => {
                         const done = onNavVisibleChange?.(page, visible) ?? true
                         onUiChange?.({ navNotice: done ? undefined : { page, problem: 'noVisiblePage' } })

@@ -34,7 +34,7 @@ import { AppRail } from '../../../blocks/AppRail.tsx'
 import { AppTabBar } from '../../../blocks/AppTabBar.tsx'
 import { MoreDrawer } from '../../../blocks/MoreDrawer.tsx'
 import { ViewportFrame } from '../../../blocks/ViewportFrame.tsx'
-import { defaultVisiblePages, type NavPage, navLayout } from '../../../lib/deviceSettings.ts'
+import { defaultVisiblePages, type BarPage, navLayout } from '../../../lib/deviceSettings.ts'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { ToolkitGroup } from '../blocks/ToolkitGroup.tsx'
 import { ToolkitHeader } from '../blocks/ToolkitHeader.tsx'
@@ -90,7 +90,7 @@ export type ToolkitScreenProps = {
   viewport: Viewport
   onNavigate?: ((page: string) => void) | undefined
   /** The shown nav pages in the owner's order (d-038, d-119); the default order without it, as the Figma states draw. */
-  navPages?: readonly NavPage[] | undefined
+  navPages?: readonly BarPage[] | undefined
   /** Reports what the owner changes: the view, the kind chip, the search or a group opened or closed. */
   onUiChange?: ((change: Partial<ToolkitUi>) => void) | undefined
   /** Copies an open item's path, from its path badge. */
@@ -472,6 +472,7 @@ function ToolkitLayout({
               // A page the tab bar does not show selects More, as Toolkit in the default order (d-105).
               selected="toolkit"
               pages={nav.tabs}
+              more={nav.more.length > 0}
               device={layout === 'tablet' ? 'tablet' : 'phone'}
               inboxBadge={data.railBadge}
               onSelect={(next) => {

@@ -1,8 +1,8 @@
 {
   "frameId": "M02",
-  "inputs": "5ac44b1b1cb13c9c0e26144f52a972eb7b78bc91094818421b2baac1eb642f11",
+  "inputs": "1fe828e5cb930c59d4743388c84374a1ac09e39df29815b88fa0d9e7ceca9ab3",
   "library": "1.0.0-beta.106",
-  "recordSha256": "18fae455dac27f2eaeb8222060c95f97036bbd6114e8dcd76eda8318cd6f7519",
+  "recordSha256": "2784ba37999055791164c6c9c23d4d79109087bd8abd9717c2e0a9dfad7d7826",
   "record": {
     "verdict": "match",
     "viewport": "390x844 phone, Light",
@@ -12,7 +12,7 @@
       "render": "reports/fidelity/settings/M02.sideBySide.png",
       "reference_side": "left"
     },
-    "summary": "Apart from the accepted Text size change, the render matches the reference: the Appearance card, Navigation card and tab bar have the same content, layout and states.",
+    "summary": "The render matches the reference except for the accepted deviations: the Text size control is disabled with \"Coming soon\" under it, and the sections below sit about one text line higher.",
     "findings": [],
     "accepted_deviations": [
       {
@@ -20,26 +20,41 @@
         "as_given": "Text size: the control is disabled (muted labels) and its line under it says \"Coming soon\" in place of \"Scales the whole app: Small 87.5 %, Default 100 %, Large 112.5 %.\" (step D adds text size later). On a narrow screen the one-line note makes every section below it sit about one text line higher.",
         "status": "as-described",
         "finding": null,
-        "note": "The Small, Default and Large labels are muted, the note reads \"Coming soon\", and the Navigation card starts about 16 px higher (y 465 against 481). Nothing below it changes in any other way."
+        "note": "Small and Large labels are muted and Default stays selected with a muted tint. The note reads \"Coming soon\". The Navigation card and its rows sit about 16 px higher than in the reference."
       },
       {
         "id": "A2",
         "as_given": "A new \"NOTIFICATIONS\" section with one \"Notifications\" switch (off) sits between the Navigation section and the New chat defaults section. So New chat defaults sits lower, or below the bottom edge.",
         "status": "not-seen",
         "finding": null,
-        "note": "This frame shows only part of the Navigation section, so the area between Navigation and New chat defaults is below the visible area in both pictures."
+        "note": "The visible area ends inside the Navigation list, so the region where this section would be is below the bottom edge in both pictures."
       },
       {
         "id": "A3",
         "as_given": "The Notifications switch moved to that section: the desktop rail no longer has the \"Notifications / Blocked in Settings\" switch at its bottom, and the More drawer no longer has the \"Notifications / Blocked in Settings\" row at its end. So the drawer is shorter and its top edge sits lower.",
         "status": "not-seen",
         "finding": null,
-        "note": "This phone frame has no desktop rail, and the More drawer is closed in both pictures."
+        "note": "This is a phone screen with the More drawer closed, so neither the rail nor the drawer is visible."
+      },
+      {
+        "id": "A4",
+        "as_given": "The Navigation list has a new last row, \"Settings\", with the line \"Always shown: in the bar or under More.\" under it and up and down buttons but no switch (the owner's decision: Settings is an entry of the bar order that cannot be hidden). So Toolkit's down button is now enabled, the Navigation card is taller, and every section below it sits lower or below the bottom edge.",
+        "status": "not-seen",
+        "finding": null,
+        "note": "The rows after Projects (Toolkit and the new Settings row) are below the bottom edge in both pictures."
+      },
+      {
+        "id": "A5",
+        "as_given": "On the phone and the tablet only: a thin rule line with the text \"Under More on this device\" under it sits after the last page that the tab bar shows (Projects on the phone, Artifacts on the tablet), so the rows after it sit lower by about 40 px.",
+        "status": "not-seen",
+        "finding": null,
+        "note": "The Projects row is the last visible row, just above the tab bar. Whatever comes after it is hidden behind the tab bar or below the bottom edge."
       }
     ],
     "limits": [
-      "The side-by-side image is shown at about 1x for each 390 px half, so differences of 1 px or less in size or position may not be visible.",
-      "Only the visible part of the page was checked (Settings title down to the Projects row of the Navigation card, and the tab bar). The rest of the page is below the visible area."
+      "Only the first screen of the page is shown. The Navigation rows after Projects, the Notifications section, New chat defaults and everything further down are below the bottom edge in both pictures, so they could not be compared.",
+      "The side-by-side image is about 804 px wide, with each side near 390 px. Differences under about 2 px could not be checked reliably.",
+      "The More drawer and the desktop rail are not in this image, so A3 could not be checked."
     ]
   }
 }
