@@ -32,8 +32,11 @@ type PushState = {
      * before any wait.
      */
     setOn: (on: boolean, preview: boolean) => Promise<void>
-    /** Saves the preview choice with the subscription while push is on; with push off the next turn on sends it. */
-    setPreview: (preview: boolean) => Promise<void>
+    /**
+     * Saves the preview choice with the subscription while push is on; with push off the next turn on sends it.
+     * Resolves false when the save missed, so the caller puts the device setting back.
+     */
+    setPreview: (preview: boolean) => Promise<boolean>
   }
 }
 
@@ -65,11 +68,12 @@ const usePushStore = createAppStore<PushState>('push', (set, get) => {
       setPreview: async (preview) => {
         if (get().busy || get().status !== 'on') {
           set({ previewFailed: false }, undefined, 'push/previewLater')
-          return
+          return true
         }
         set({ busy: true, previewFailed: false }, undefined, 'push/previewStart')
         const saved = await savePushPreview(preview)
         set({ busy: false, previewFailed: !saved }, undefined, 'push/previewEnd')
+        return saved
       },
     },
   }
@@ -118,7 +122,10 @@ export function usePushSwitch(preview: boolean, onPreview: (preview: boolean) =>
     previewFailed,
     onPreviewChange: (next) => {
       onPreview(next)
-      void setPreview(next)
+      // A save that missed puts the choice back, so the device never says off while the server still sends lines.
+      void setPreview(next).then((saved) => {
+        if (!saved) onPreview(!next)
+      })
     },
   }
 }

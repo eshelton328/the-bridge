@@ -7,6 +7,7 @@ import { page, userEvent } from 'vitest/browser'
 import { fakeEndpoint, fakePush, type FakePushOptions } from '../lib/fakePush.ts'
 import { testRender, unmountRendered } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
+import { settingsStore } from '../state/settingsStore.ts'
 import { routeTree } from './routeTree.gen.ts'
 
 // d-118, d-119: the Notifications switch, through the real route, on the owner's path: on the phone and the tablet he
@@ -131,6 +132,18 @@ describe.each(layouts)('the Notifications switch in $name', (layout) => {
       body: { endpoint: fakeEndpoint, preview: false },
     })
     await expect.element(toggle).toBeChecked()
+  })
+
+  it('puts "Show message preview" back with a line when its save misses', async () => {
+    const { toggle } = await show(layout, { permission: 'granted', subscribed: true, status: { save: 503 } })
+    await expect.element(toggle).toBeChecked()
+    const preview = page.getByRole('switch', { name: 'Show message preview' })
+    const previewRow = preview.element().closest('label')
+    if (previewRow === null) throw new Error('the preview switch has no label row')
+    await userEvent.click(previewRow)
+    await expect.element(page.getByText('Not saved. Try again.')).toBeVisible()
+    await expect.element(preview).toBeChecked()
+    expect(settingsStore.getState().pushPreview).toBe(true)
   })
 
   it('shows a line and stays off when the save misses', async () => {
