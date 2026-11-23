@@ -383,6 +383,15 @@ describe('Claude transcript', () => {
       user('w5', wrapped('sample-coord', 'a note'), { isMeta: true }),
       user('w6', wrapped('sample-coord', ''), { origin: { kind: 'human' } }),
       user('w7', wrapped('bad name', 'spaces are not a chat name'), { origin: { kind: 'human' } }),
+      user('w8', wrapped('sample-coord', '    indented code\nnext'), { origin: { kind: 'human' } }),
+      user(
+        'q1',
+        '<cross-session-message from="uds:/tmp/x.sock">\nIt ends with </cross-session-message> in text.\n</cross-session-message>',
+        {
+          isMeta: true,
+          origin: { kind: 'peer', name: 'sample-lab' },
+        },
+      ),
       user('b1', 'Another Claude session sent a message: <cross-session-message>old</cross-session-message>', {
         isMeta: true,
         origin: { kind: 'peer', name: 'sample-lab', body: 'The body from the origin.' },
@@ -416,6 +425,25 @@ describe('Claude transcript', () => {
       { type: 'user', id: 'w4', text: `${wrapped('a', 'one')}\n${wrapped('b', 'two')}`, cut: false },
       { type: 'note', id: 'w6', kind: 'peer', text: 'Message from sample-coord' },
       { type: 'user', id: 'w7', text: wrapped('bad name', 'spaces are not a chat name'), cut: false },
+      {
+        type: 'note',
+        id: 'w8',
+        kind: 'peer',
+        text: 'Message from sample-coord',
+        message: { from: 'sample-coord', via: 'prompt', text: '    indented code\nnext', cut: false },
+      },
+      {
+        type: 'note',
+        id: 'q1',
+        kind: 'peer',
+        text: 'Message from sample-lab',
+        message: {
+          from: 'sample-lab',
+          via: 'message',
+          text: 'It ends with </cross-session-message> in text.',
+          cut: false,
+        },
+      },
       {
         type: 'note',
         id: 'b1',

@@ -114,7 +114,7 @@ function noteOf(
   if (origin?.kind === 'peer') {
     const name = oneLine(origin.name ?? '', maxNoteFrom)
     // The text is the origin's own body, else what the harness's wrapper holds (R55); with neither, the name only.
-    const body = (origin.body ?? peerWrapper.exec(raw)?.[1] ?? '').replace(contentMark, '').trim()
+    const body = bodyOf((origin.body ?? peerWrapper.exec(raw)?.[1] ?? '').replace(contentMark, ''))
     return {
       kind: 'peer',
       text: `Message from ${name === '' ? 'another chat' : name}`,
@@ -126,8 +126,12 @@ function noteOf(
   return undefined
 }
 
+/** A message's text with blank lines cut from both ends; a first line indented as code keeps its indent. */
+const bodyOf = (text: string) => text.replace(/^(?:[ \t]*\n)+/, '').trimEnd()
+
 /** Claude Code's wrapper of a peer's message, and the mark it can add inside it (R55). */
-const peerWrapper = /<cross-session-message\b[^>]*>([\s\S]*?)<\/cross-session-message>/
+// Greedy to the last close tag, so a message that quotes the close tag keeps its text.
+const peerWrapper = /<cross-session-message\b[^>]*>([\s\S]*)<\/cross-session-message>/
 const contentMark = /^<artifact-content-authored-by-others\/>$/gm
 
 /** The text, cut at the limit; a cut never splits a character's surrogate pair. */
@@ -186,7 +190,7 @@ function agentPromptOf(uuid: string, raw: string): TranscriptEntry | undefined {
   const inner = match?.[2]
   if (match === null || inner === undefined || inner.includes('</agent-prompt>')) return undefined
   const name = oneLine(match[1] ?? '', maxNoteFrom)
-  const body = inner.trim()
+  const body = bodyOf(inner)
   if (name === '') return undefined
   return {
     type: 'note',
