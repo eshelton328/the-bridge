@@ -649,8 +649,12 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   newest).
 - A message's and a reply's text renders as Markdown in the library's
   `MarkdownView`, as the Inbox detail draws its text
-  (`blocks/EntryText.tsx`): HTML in the text stays text, a link keeps
-  only a safe URL, and an image shows its alt text.
+  (`blocks/EntryText.tsx`, through the shared `../../blocks/MarkdownText.tsx`):
+  GitHub's tables, strikethrough, task lists and autolinks render
+  (remark-gfm, review R51), HTML in the text stays text, a link keeps
+  only a safe URL, and an image shows its alt text. A table's elements
+  come from `../../blocks/markdownTableParts.ts`
+  (`app/WorkspacesMarkdownTables.test.tsx`).
 - The chat width (Settings → Appearance, `settingsStore` `chatWidth`):
   `WorkspacesPage` passes it down to each `ChatPane`. Wide and Narrow
   centre the transcript and the composer in one column of the library's
