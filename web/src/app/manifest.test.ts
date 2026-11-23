@@ -36,6 +36,19 @@ describe('the web app manifest', () => {
     expect(attr('meta[name="theme-color"]', 'content')).toBe(canvasDark)
   })
 
+  it("keeps the theme-color's Light and Dark copies equal to bg.canvas in each mode", () => {
+    const theme = head.querySelector('meta[name="theme-color"]')
+    expect(theme?.getAttribute('data-dark')).toBe(canvasDark)
+    document.documentElement.classList.remove('dark')
+    try {
+      const canvasLight = getComputedStyle(document.documentElement).getPropertyValue('--colors-bg-canvas').trim()
+      expect(canvasLight).toMatch(/^#[0-9a-f]{6}$/)
+      expect(theme?.getAttribute('data-light')).toBe(canvasLight)
+    } finally {
+      document.documentElement.classList.add('dark')
+    }
+  })
+
   it('matches the background the shell paints', () => {
     const painted = getComputedStyle(document.body).backgroundColor
     const hex = `#${[...painted.matchAll(/\d+/g)].map(([n]) => Number(n).toString(16).padStart(2, '0')).join('')}`

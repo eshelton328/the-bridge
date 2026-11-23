@@ -8,6 +8,7 @@ import { type DeviceSettings, settingsKey } from '../lib/deviceSettings.ts'
 import { testRender, unmountRendered } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { settingsStore, startSettingsStorage } from '../state/settingsStore.ts'
+import { canvasVariable, followColorMode } from './colorMode.ts'
 import { stubLiveServer } from './liveServerStub.ts'
 import { routeTree } from './routeTree.gen.ts'
 
@@ -87,6 +88,42 @@ describe('a change on the Settings page', () => {
     await expect.element(light).toBeChecked()
     expect(changes.at(-1)?.mode).toBe('light')
     expect(JSON.parse(data.get(settingsKey) ?? '{}')).toMatchObject({ mode: 'light' })
+  })
+
+  it('sets the theme-color, which colours the iOS status bar, to the canvas of each mode picked on the page', async () => {
+    const theme = document.createElement('meta')
+    theme.name = 'theme-color'
+    theme.content = '#070b14'
+    document.head.append(theme)
+    const colorMode = followColorMode()
+    const stop = startSettingsStorage({
+      storage: () => ({ getItem: () => null, setItem: () => undefined }),
+      report: vi.fn(),
+      onChange: (s) => {
+        colorMode.apply(s.mode)
+      },
+    })
+    onTestFinished(() => {
+      stop()
+      colorMode.stop()
+      for (const meta of document.querySelectorAll('meta[name="theme-color"]')) meta.remove()
+      document.documentElement.classList.add('dark')
+    })
+    const themeColor = () => document.querySelector('meta[name="theme-color"]')?.getAttribute('content')
+    const canvas = () => getComputedStyle(document.documentElement).getPropertyValue(canvasVariable).trim()
+    const view = await renderAt('/settings')
+    onTestFinished(view.unmount)
+    const darkCanvas = canvas()
+    await userEvent.click(rowOf(page.getByRole('radio', { name: 'Light' })))
+    await expect.poll(() => themeColor()).not.toBe(darkCanvas)
+    expect(themeColor()).toBe(canvas())
+    expect(themeColor()).toMatch(/^#[0-9a-f]{6}$/)
+    const lightCanvas = themeColor()
+    await userEvent.click(rowOf(page.getByRole('radio', { name: 'Dark' })))
+    await expect.poll(() => themeColor()).toBe(darkCanvas)
+    await userEvent.click(rowOf(page.getByRole('radio', { name: 'System' })))
+    const deviceDark = matchMedia('(prefers-color-scheme: dark)').matches
+    await expect.poll(() => themeColor()).toBe(deviceDark ? darkCanvas : lightCanvas)
   })
 
   it('shows the saved settings for a ?state= in a production build, which ignores it', async () => {
