@@ -22,11 +22,10 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   Retry in every layout; any other error goes to RouteError
   (`app/WorkspacesLiveDefault.test.tsx`). The live page offers only what
   a route backs (reviews R41, R42): a live chat's actions are New chat,
-  Rename chat (Rename in the phone's sheet), Close pane…, Compact
-  context… and Clear context… (with the layout actions in a desktop
-  pane, whose menu has no Rename, as it has no name field). Fork, Side
-  chat, Subtask and Move to workspace stay hidden until their routes
-  come. The fixture states keep every action, and their edit mode every
+  Move to workspace, Rename chat (Rename in the phone's sheet), Close
+  pane…, Compact context… and Clear context… (with the layout actions in
+  a desktop pane, whose menu has no Rename, as it has no name field).
+  Fork, Side chat and Subtask stay hidden until their routes come. The fixture states keep every action, and their edit mode every
   control (`app/WorkspacesLiveUnbacked.test.tsx`).
 - The live list's edits (R41, R42, backend #423 and #427; `useWorkspaceEdits.ts`,
   `liveWorkspaceEdits.ts`): the phone's and tablet's Edit opens edit
@@ -54,8 +53,8 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   reads the list again and opens the dialog again with the new list; a
   400 or a 404 shows one line and reads the list again
   (`app/WorkspacesLiveClose.test.tsx`). The chats have no handle, no
-  field and no Move to…: ordering chats and moving a chat have no route
-  yet. A name is trimmed; an empty
+  field and no Move to… in edit mode: ordering chats has no route, and a
+  chat moves from its actions. A name is trimmed; an empty
   one or the same name is not sent, and one the contract's `Label`
   refuses (over 64 characters, a control character) shows a line and is
   not sent. A new name or order shows only from the list read, never
@@ -66,6 +65,28 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   Dismiss. report() gets only a 5xx or an unexpected answer, with the
   action, kind and status (`app/WorkspacesLiveEdits.test.tsx`; the fake
   is `lib/fakeWorkspacesServer.ts`).
+- Move to workspace (backend #435, `blocks/moveToWorkspace.ts`): a
+  live chat's actions in the phone's sheet, the tablet's menu and the
+  desktop's chat and pane menus list the other workspaces of the list,
+  never the chat's own and with no New workspace row (no route makes
+  one); with no other workspace there is no Move to workspace. A pick
+  posts `POST /api/chats/:chat/workspace` with `{ workspace }`
+  (`liveWorkspaceEdits.ts`, the contract's `MoveToWorkspaceRequest`).
+  A chat that is its workspace's last asks first in a library
+  `alertdialog` ("Move <chat> to <workspace>?", "Moving it closes
+  <workspace>.", `blocks/MoveWorkspaceDialog.tsx`, `ui.moveAsk`), as the
+  move closes that workspace; Cancel sends nothing. A 200 keeps the chat
+  ID: the first list read that shows it in its new workspace, however
+  late, opens it there as a tap on its row would and selects that
+  workspace (`useWorkspaceEdits` `onMoved`, `openMoved`); herdr puts it in
+  a new tab there, which the workbench shows once a layout read lists it
+  (`followTab`, as after Move to tab), and a workspace
+  it left empty (`sourceClosed`) leaves with that read. 409
+  chat-not-ready shows one line by state: `sameWorkspace` ("It is
+  already in <workspace>"), `working`, `needsYou`, `holdsServer`; a 404
+  says "Not moved — that chat or workspace is gone" and reads the list
+  again. It is one of the list's edits, so one at a time and report()
+  only for a 5xx or an unexpected answer (`app/WorkspacesLiveMove.test.tsx`).
 - Each live workspace's panes are its herdr layout's active tab (slice
   3a): `liveWorkspaces.ts` reads `GET /api/workspaces/:workspace/layout`
   on load, on `workspaces.changed` and on that workspace's

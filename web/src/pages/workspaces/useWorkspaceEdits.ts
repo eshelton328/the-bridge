@@ -16,7 +16,10 @@
 // whose count the server does not match reads the list again and calls
 // `again` once that read changed the list (or after 2.5 s), so the dialog
 // asks with the new list and its count, never the old one (Codex review
-// of #432).
+// of #432). A chat moved to another workspace (backend #435) opens there
+// with the list read that shows it in that workspace (`onMoved`), however
+// late that read comes, and never with a read that shows another change
+// (Codex review of #438); a workspace it left empty leaves with that read.
 import { Label, maxLabel } from '@bridge/contract'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { report } from '../../errors/reporter.ts'
@@ -41,6 +44,7 @@ const lead: Record<WorkspaceEdit, string> = {
   renameChat: 'Not renamed',
   order: 'Not reordered',
   close: 'Not closed',
+  moveChat: 'Not moved',
 }
 
 const viaLive = (run: (live: Live) => Promise<EditAnswer>): Promise<EditAnswer> =>
@@ -61,7 +65,17 @@ const listJson = (data: WorkspacesData) =>
   JSON.stringify(data.workspaces.map((w) => [w.id, w.label, (w.chats ?? []).map((c) => [c.id, c.title])]))
 
 /** The live list's edits, or none when the page shows fixtures. */
-export function useWorkspaceEdits(live: boolean, data: WorkspacesData): WorkspaceEdits | undefined {
+export function useWorkspaceEdits(
+  live: boolean,
+  data: WorkspacesData,
+  onMoved?: (chat: string, data: WorkspacesData) => void,
+): WorkspaceEdits | undefined {
+  const onMovedRef = useRef(onMoved)
+  /** The chat a move took, and its workspace, until a list read shows it there. */
+  const movedRef = useRef<{ readonly chat: string; readonly workspace: string } | undefined>(undefined)
+  useLayoutEffect(() => {
+    onMovedRef.current = onMoved
+  })
   const [pending, setPending] = useState<Pending>()
   const [line, setLine] = useState<string>()
   const dataRef = useRef(data)
@@ -95,6 +109,15 @@ export function useWorkspaceEdits(live: boolean, data: WorkspacesData): Workspac
     dataRef.current = data
     const p = pendingRef.current
     if (p?.timer !== undefined && listJson(data) !== p.seen) done(p)
+    // A moved chat opens with the first list read that shows it in the workspace it went to.
+    const moved = movedRef.current
+    if (
+      moved !== undefined &&
+      data.workspaces.find((w) => w.id === moved.workspace)?.chats?.some((c) => c.id === moved.chat) === true
+    ) {
+      movedRef.current = undefined
+      onMovedRef.current?.(moved.chat, data)
+    }
     // A refused close asks again only with the list read after it.
     if (againRef.current !== undefined && listJson(data) !== againRef.current.seen) askAgain()
   })
@@ -178,6 +201,16 @@ export function useWorkspaceEdits(live: boolean, data: WorkspacesData): Workspac
       },
       close: (workspace, panes, again) => {
         start('close', (m, machine) => m.closeWorkspace(`${machine}/${workspace}`, panes), undefined, again)
+      },
+      moveChat: (chat, workspace) => {
+        const label = dataRef.current.workspaces.find((w) => w.id === workspace)?.label ?? workspace
+        start('moveChat', (m, machine) =>
+          m.moveToWorkspace(`${machine}/${chat}`, `${machine}/${workspace}`).then((answer) => {
+            if (answer.kind !== 'done') return { ...answer, line: answer.line.replaceAll('{workspace}', label) }
+            movedRef.current = { chat, workspace }
+            return answer
+          }),
+        )
       },
     }),
     [pending, line, named, start],

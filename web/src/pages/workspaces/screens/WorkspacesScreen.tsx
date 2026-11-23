@@ -61,6 +61,8 @@ import { isChatCommand, withCommands } from '../blocks/chatCommands.ts'
 import { CloseChatDialog } from '../blocks/CloseChatDialog.tsx'
 import { type LayoutWrites, tabOf, withLayoutActions } from '../blocks/layoutActions.ts'
 import { MoveChatDialog } from '../blocks/MoveChatDialog.tsx'
+import { MoveWorkspaceDialog } from '../blocks/MoveWorkspaceDialog.tsx'
+import { moveOrAsk, workspaceOf } from '../blocks/moveToWorkspace.ts'
 import { ChatNameField } from '../blocks/ChatNameField.tsx'
 import { ChatToast } from '../blocks/ChatToast.tsx'
 import { ForkDialog } from '../blocks/ForkDialog.tsx'
@@ -257,6 +259,28 @@ export function WorkspacesScreen({
         }}
       />
     )
+  // Move to workspace of a live chat that is its workspace's last (backend #435): the move closes that workspace, so
+  // the screen asks first, while the chat and the target are still listed.
+  const ask = ui.moveAsk ?? undefined
+  const askFrom = ask === undefined ? undefined : workspaceOf(data, ask.chat)
+  const askTo = ask === undefined ? undefined : data.workspaces.find((w) => w.id === ask.workspace)
+  const workspaceName = (w: { id: string; label: string }) => ui.workspaceNames?.[w.id] ?? w.label
+  const moveAskDialog =
+    edits === undefined || ask === undefined || askFrom === undefined || askTo === undefined ? null : (
+      <MoveWorkspaceDialog
+        key={`${ask.chat} ${ask.workspace}`}
+        chat={nameOf(ask.chat)}
+        to={workspaceName(askTo)}
+        from={workspaceName(askFrom)}
+        onOpenChange={(open) => {
+          if (!open) change({ moveAsk: null })
+        }}
+        onMove={() => {
+          edits.moveChat(ask.chat, ask.workspace)
+          change({ moveAsk: null })
+        }}
+      />
+    )
   // The ui lives here, above the layout, so a width change that swaps the layout keeps what the owner changed.
   return (
     <ViewportFrame initial={viewport}>
@@ -291,6 +315,7 @@ export function WorkspacesScreen({
           {commandDialog}
           {closeDialog}
           {moveDialog}
+          {moveAskDialog}
         </>
       )}
     </ViewportFrame>
@@ -414,6 +439,13 @@ function WorkspacesLayout({
   // The shown workspace (R6): a tab the owner picked shows its own panes, so the focused chat, the chats the sidebar can
   // open and the chat actions' targets come from its panes, not the state's.
   const shown = shownView(named, ui).data
+  // A live chat's Move to workspace (backend #435): it moves, or the screen asks first when it is its workspace's last.
+  const moveChat =
+    edits === undefined
+      ? undefined
+      : (chat: string, workspace: string) => {
+          change(moveOrAsk(data, edits, chat, workspace))
+        }
   const current = workspaces.find((w) => w.id === shown.current)
   const rail = (
     <div data-figma="nav rail" className={railSlot}>
@@ -445,6 +477,13 @@ function WorkspacesLayout({
           )}
           targets={workspaces.filter((w) => w.id !== shown.current)}
           newWorkspace={data.newWorkspace}
+          onMove={
+            moveChat === undefined
+              ? undefined
+              : (workspace) => {
+                  moveChat(chat.id, workspace)
+                }
+          }
           open={menuOpen}
           onOpenChange={(open) => {
             change({ menuFor: open ? chat.id : null, moveOpen: false })
@@ -607,6 +646,7 @@ function WorkspacesLayout({
                   skillLists={skillLists}
                   onCopy={onCopy}
                   layout={layoutWrites}
+                  onMoveChat={moveChat}
                 />
               </SlotBoundary>
             ) : (
@@ -719,6 +759,7 @@ function WorkspacesLayout({
               onCopy={onCopy}
               notice={notice}
               layout={layoutWrites}
+              onMoveChat={moveChat}
             />
           </SlotBoundary>
         }

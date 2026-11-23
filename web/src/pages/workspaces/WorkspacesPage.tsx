@@ -42,6 +42,7 @@ import { readsLive } from '../../lib/dataSource.ts'
 import { useInboxBadge, useInboxStreamHost } from '../../lib/inboxFeed.ts'
 import { workspacesSources } from './loadWorkspacesState.ts'
 import { createDraftBook } from './blocks/draftBook.ts'
+import { openMoved } from './blocks/moveToWorkspace.ts'
 import { layoutsSeenOf, withLoadedLayouts } from './blocks/workspaceLayout.ts'
 import { followTab, withShownTabs } from './shownTabs.ts'
 import { dropRestored, dropSend, keepSend, loadDrafts, markRestored, newSendId, saveDrafts } from './draftStorage.ts'
@@ -185,7 +186,25 @@ export function WorkspacesPage() {
     changeUi(followTab(liveData, uiRef.current, workspace, chat, tab))
   })
   // The live list's edits (R41, R42): renames, the workspaces' order and a close, shown from the next list read.
-  const workspaceEdits = useWorkspaceEdits(import.meta.env.DEV && live, data)
+  // A chat moved to another workspace (backend #435) keeps its ID: the list read that shows it moved opens it there, as
+  // a tap on its row would, and the phone's or tablet's open chat stays open. herdr puts it in a new tab of that
+  // workspace, which is not its active one, so once a layout read lists that tab the workbench shows it, as it does
+  // after a Move to tab (W2d, `followTab`).
+  const movedRef = useRef<{ readonly chat: string; readonly workspace: string } | undefined>(undefined)
+  const workspaceEdits = useWorkspaceEdits(import.meta.env.DEV && live, data, (chat, next) => {
+    const owner = next.workspaces.find((w) => w.chats?.some((c) => c.id === chat))?.id
+    movedRef.current = owner === undefined ? undefined : { chat, workspace: owner }
+    changeUi(openMoved(next, uiRef.current, chat))
+  })
+  useEffect(() => {
+    const moved = movedRef.current
+    const tab =
+      moved === undefined ? undefined : liveData.liveTabs?.[moved.workspace]?.find((t) => t.chats.includes(moved.chat))
+    if (moved === undefined || tab === undefined) return
+    movedRef.current = undefined
+    if (!tab.active && tab.id !== undefined)
+      changeUi(followTab(liveData, uiRef.current, moved.workspace, moved.chat, tab.id))
+  })
   // The file chips of a chat that left for a new ID on its pane go, as its draft stays behind: the server holds each
   // upload for the chat that started it, so the new chat's send could not name them.
   // Its pending send goes as its pane stops reading its transcript (livePending.ts).

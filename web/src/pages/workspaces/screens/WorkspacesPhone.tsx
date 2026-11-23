@@ -63,6 +63,7 @@ import { ChatToast } from '../blocks/ChatToast.tsx'
 import { ForkDialog } from '../blocks/ForkDialog.tsx'
 import { NewChatDialog } from '../blocks/NewChatDialog.tsx'
 import { PhoneChat } from '../blocks/PhoneChat.tsx'
+import { moveOrAsk } from '../blocks/moveToWorkspace.ts'
 import { PhoneChatActions } from '../blocks/PhoneChatActions.tsx'
 import { PhoneFolders } from '../blocks/PhoneFolders.tsx'
 import { PhoneFork } from '../blocks/PhoneFork.tsx'
@@ -370,6 +371,14 @@ export function WorkspacesPhone({
     if (action === 'close' && layoutWrites !== undefined && tabOf(data, ui.focusedPane) !== undefined)
       onUiChange({ chatDialog: 'close', commandFor: ui.focusedPane, menuFor: null, moveOpen: false })
   }
+  // A live chat's Move to workspace (backend #435): it moves, or the screen asks first when it is its workspace's last.
+  const moving = chat?.id
+  const moveChat =
+    edits === undefined || moving === undefined
+      ? undefined
+      : (workspace: string) => {
+          onUiChange(moveOrAsk(data, edits, moving, workspace))
+        }
   // The chat's actions with a live Claude chat's commands after them (W5): the tablet's menu and the phone's sheet.
   const liveChat = layoutWrites === undefined ? undefined : chat?.id
   const tabletActions =
@@ -468,6 +477,7 @@ export function WorkspacesPhone({
                           targets={data.workspaces.filter((w) => w.id !== chatWorkspace)}
                           newWorkspace={data.newWorkspace}
                           trigger={trigger}
+                          onMove={moveChat}
                           open={ui.menuFor === chat.id}
                           onOpenChange={(open) => {
                             onUiChange({ menuFor: open ? chat.id : null, moveOpen: false })
@@ -500,6 +510,7 @@ export function WorkspacesPhone({
                             targets={data.workspaces.filter((w) => w.id !== chatWorkspace)}
                             newWorkspace={data.newWorkspace}
                             trigger={trigger}
+                            onMove={moveChat}
                             open={ui.menuFor === chat.id}
                             onOpenChange={(open) => {
                               onUiChange({ menuFor: open ? chat.id : null, moveOpen: false })

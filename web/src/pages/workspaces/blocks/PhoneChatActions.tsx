@@ -103,7 +103,8 @@ export type PhoneChatActionsProps = {
   actions: readonly PaneAction[]
   /** The workspaces the chat can move to: every one but its own. */
   targets: readonly Workspace[]
-  newWorkspace: string
+  /** The move list's last row, which makes a workspace; none on the live page. */
+  newWorkspace?: string | undefined
   /** The ⋯ that opens the sheet; without it, `open` alone opens it, as a held row of the phone's list does (M9). */
   trigger?: ReactElement | undefined
   open: boolean
@@ -116,6 +117,8 @@ export type PhoneChatActionsProps = {
   /** The action drawn filled while Move to workspace's list is closed, such as `rename` after a hold (M9 146:374). */
   highlight?: string | null | undefined
   onMoveTargetChange?: ((workspace: string) => void) | undefined
+  /** Called with the workspace picked in Move to workspace's list; the sheet then closes. Without it, a pick checks it. */
+  onMove?: ((workspace: string) => void) | undefined
   /** Called with the picked action, such as `rename`; the sheet then closes. */
   onSelect?: ((action: PaneAction['value']) => void) | undefined
   /** The icons' Figma layers, by action value, workspace id or `new`. */
@@ -125,7 +128,10 @@ export type PhoneChatActionsProps = {
 }
 
 export function PhoneChatActions(props: PhoneChatActionsProps) {
-  const { title, actions, targets, newWorkspace, trigger, open, onOpenChange, moveOpen, layers } = props
+  const { title, targets, newWorkspace, trigger, open, onOpenChange, moveOpen, layers } = props
+  // A live chat with no other workspace to go to has no Move to workspace (backend #435): its list would be empty.
+  const actions =
+    props.onMove !== undefined && targets.length === 0 ? props.actions.filter((a) => a.value !== 'move') : props.actions
   const row = (a: PaneAction): OptionListItem => ({
     value: a.value,
     label: a.label,
@@ -165,17 +171,21 @@ export function PhoneChatActions(props: PhoneChatActionsProps) {
         </Icon>
       ),
     })),
-    {
-      value: 'new',
-      label: newWorkspace,
-      leading: (
-        <Icon layer={layers?.new} tone="muted">
-          <PlusIcon size="16" />
-        </Icon>
-      ),
-    },
+    ...(newWorkspace === undefined
+      ? []
+      : [
+          {
+            value: 'new',
+            label: newWorkspace,
+            leading: (
+              <Icon layer={layers?.new} tone="muted">
+                <PlusIcon size="16" />
+              </Icon>
+            ),
+          },
+        ]),
   ]
-  const moveLabel = actions.find((a) => a.value === 'move')?.label ?? newWorkspace
+  const moveLabel = actions.find((a) => a.value === 'move')?.label ?? newWorkspace ?? title
   return (
     <BottomSheet
       size="sm"
@@ -201,7 +211,12 @@ export function PhoneChatActions(props: PhoneChatActionsProps) {
             items={workspaces}
             value={props.moveTarget ?? null}
             onItemSelect={(value) => {
-              props.onMoveTargetChange?.(value)
+              if (props.onMove === undefined) {
+                props.onMoveTargetChange?.(value)
+                return
+              }
+              props.onMove(value)
+              onOpenChange?.(false)
             }}
           />
         </div>

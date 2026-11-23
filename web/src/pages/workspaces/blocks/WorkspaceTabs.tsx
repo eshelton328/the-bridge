@@ -51,6 +51,8 @@ export type WorkspaceTabsProps = {
   notice?: ReactNode
   /** The live chats' layout writes (W2); none on a fixture. */
   layout?: LayoutWrites | undefined
+  /** Moves a live chat to another workspace, or asks first (backend #435, moveToWorkspace.ts); none on a fixture. */
+  onMoveChat?: ((chat: string, workspace: string) => void) | undefined
 }
 
 // The box that sees a press on a handle draws no box of its own: the panes lay out as they do without it.
@@ -74,6 +76,7 @@ export function WorkspaceTabs({
   onCopy,
   notice,
   layout,
+  onMoveChat,
 }: WorkspaceTabsProps) {
   const shown = shownWorkspace(data, ui)
   const current = data.workspaces.find((w) => w.id === shown)
@@ -102,6 +105,7 @@ export function WorkspaceTabs({
         skillLists={skillLists}
         onCopy={onCopy}
         layout={layout}
+        onMoveChat={onMoveChat}
       />
     </div>
   )

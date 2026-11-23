@@ -14,11 +14,14 @@ export type ChatActionsMenuProps = {
   actions: readonly PaneAction[]
   /** The workspaces a chat can move to: every one but its own. */
   targets: readonly Workspace[]
-  newWorkspace: string
+  /** The move list's last row, which makes a workspace; none on the live page. */
+  newWorkspace?: string | undefined
   open: boolean
   onOpenChange?: ((open: boolean) => void) | undefined
   moveOpen: boolean
   onMoveOpenChange?: ((open: boolean) => void) | undefined
+  /** Called with the workspace picked in Move to workspace's list (the live page, backend #435). */
+  onMove?: ((workspace: string) => void) | undefined
   /** Called with the picked action, such as `rename` (D21). */
   onSelect?: ((action: string) => void) | undefined
   /** The highlighted row and the highlighted workspace of Move to workspace's list, as on `PaneMenu`. */

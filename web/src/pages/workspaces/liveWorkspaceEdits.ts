@@ -8,7 +8,11 @@
 // chat's title; the agent's own name does not change. `POST
 // /api/workspaces/:workspace/close` (backend #427) takes `{ confirm, panes }`:
 // the workspace's ID and the number of chats the dialog listed. It never
-// asks for herdr's group close, and the page offers no force.
+// asks for herdr's group close, and the page offers no force. `POST
+// /api/chats/:chat/workspace` (backend #435) takes `{ workspace }` and moves
+// the chat's pane to a new tab of that workspace: 200 with `{ chat, pane,
+// sourceClosed }`, the chat ID unchanged; the list read after it shows the
+// chat in its new workspace and, when `sourceClosed`, the old one gone.
 //
 // What a miss means to the page:
 // - 409 `workspace-not-ready` `orderStale`: the order does not name the list
@@ -24,6 +28,9 @@
 //   `working`, `needsYou`, `holdsServer` (the workspace runs the Bridge
 //   server) and `group` (herdr groups it); `panesChanged` reads the list
 //   again and asks again with the new list (`again`).
+// - 409 `chat-not-ready` for a move, one plain line by state: `sameWorkspace`
+//   ("It is already in {workspace}", the target's name filled in by the
+//   hook), `working`, `needsYou` and `holdsServer`.
 // - Anything else is one quiet line by kind ("Not renamed —
 //   herdr-unavailable"). report() gets a WorkspaceEditMissError for a 5xx and
 //   for an answer the page does not expect, with the action, the kind and
@@ -33,6 +40,8 @@
 import {
   CloseWorkspaceRequest,
   ErrorBody,
+  MoveToWorkspaceRequest,
+  MoveToWorkspaceResponse,
   RenameChatRequest,
   RenameWorkspaceRequest,
   WorkspaceOrderRequest,
@@ -42,7 +51,7 @@ import { api } from '../../lib/api.ts'
 import { liveReadTimeoutMs, readJson } from './liveWorkspaces.ts'
 
 /** An edit the page sends. */
-export type WorkspaceEdit = 'renameWorkspace' | 'renameChat' | 'order' | 'close'
+export type WorkspaceEdit = 'renameWorkspace' | 'renameChat' | 'order' | 'close' | 'moveChat'
 
 /** What the page does after an edit answered. */
 export type EditAnswer =
@@ -69,6 +78,15 @@ export const editLead: Record<WorkspaceEdit, string> = {
   renameChat: 'Not renamed',
   order: 'Not reordered',
   close: 'Not closed',
+  moveChat: 'Not moved',
+}
+
+/** The line of each state a move can meet (409 `chat-not-ready`); "{workspace}" is the target's name. */
+const moveLines: Partial<Record<string, string>> = {
+  sameWorkspace: 'It is already in {workspace}',
+  working: 'It is working — stop it first',
+  needsYou: 'It needs you — answer it first',
+  holdsServer: 'This chat runs the Bridge server, so it can’t move',
 }
 
 /** The line of each state a close can meet (409 `workspace-not-ready`), as the owner reads it. */
@@ -112,7 +130,9 @@ async function missOf(action: WorkspaceEdit, res: Response): Promise<EditAnswer>
     case 'not-found':
       return {
         kind: 'gone',
-        line: `${editLead[action]} — that ${action === 'renameChat' ? 'chat' : 'workspace'} is gone`,
+        line: `${editLead[action]} — that ${
+          action === 'renameChat' ? 'chat' : action === 'moveChat' ? 'chat or workspace' : 'workspace'
+        } is gone`,
       }
     case 'invalid-input':
       // The server's own words, as one line: the name passed the contract's check here. A close's confirm the server
@@ -126,7 +146,10 @@ async function missOf(action: WorkspaceEdit, res: Response): Promise<EditAnswer>
     case 'too-many-requests':
     case 'forbidden':
       return missLine(action, error.kind)
-    case 'chat-not-ready':
+    case 'chat-not-ready': {
+      const line = action === 'moveChat' ? moveLines[error.state] : undefined
+      return line === undefined ? reported(action, `${error.kind} ${error.state}`, res.status) : { kind: 'miss', line }
+    }
     case 'too-large':
     case 'unsupported-media':
     case 'upload-conflict':
@@ -147,6 +170,15 @@ async function post(action: WorkspaceEdit, call: (signal: AbortSignal) => Promis
     return missLine(action, signal.aborted ? 'timeout' : 'unreachable')
   }
   if (res.status === 204) return { kind: 'done' }
+  // A move answers 200 with the moved chat; any other body is an answer the page does not expect.
+  if (action === 'moveChat' && res.status === 200) {
+    try {
+      if (MoveToWorkspaceResponse.safeParse(readJson(await res.text())).success) return { kind: 'done' }
+    } catch {
+      return missLine(action, signal.aborted ? 'timeout' : 'unreachable')
+    }
+    return reported(action, 'bad-reply', res.status)
+  }
   try {
     return await missOf(action, res)
   } catch {
@@ -187,5 +219,13 @@ export function closeWorkspace(workspace: string, panes: number): Promise<EditAn
       { param: { workspace: encodeURIComponent(workspace) }, json },
       { init: { signal } },
     ),
+  )
+}
+
+/** Moves `chat` (its server ID) to a new tab of `workspace` (its server ID); the chat keeps its ID. */
+export function moveToWorkspace(chat: string, workspace: string): Promise<EditAnswer> {
+  const json = MoveToWorkspaceRequest.parse({ workspace })
+  return post('moveChat', (signal) =>
+    api.api.chats[':chat'].workspace.$post({ param: { chat: encodeURIComponent(chat) }, json }, { init: { signal } }),
   )
 }
