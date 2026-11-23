@@ -14,7 +14,9 @@ import {
   maxEntryText,
   maxErrorText,
   maxTranscriptEntries,
+  maxNoteFrom,
   type NoteKind,
+  type NoteMessage,
   type TranscriptEntry,
 } from '@bridge/contract'
 import { z } from 'zod'
@@ -36,7 +38,7 @@ const Block = z.discriminatedUnion('type', [
 ])
 
 /** Who wrote a line's input (R46): "human" for the owner, "task-notification" or "peer" for the harness. */
-const Origin = z.object({ kind: z.string(), name: z.string().optional() })
+const Origin = z.object({ kind: z.string(), name: z.string().optional(), body: z.string().optional() })
 
 const Line = z.object({
   type: z.enum(['user', 'assistant']),
@@ -93,7 +95,7 @@ function noteOf(
   origin: z.infer<typeof Origin> | undefined,
   isMeta: boolean | undefined,
   raw: string,
-): { kind: NoteKind; text: string } | undefined {
+): { kind: NoteKind; text: string; message?: NoteMessage } | undefined {
   if (origin?.kind === 'task-notification') {
     const wrapped = raw.trimStart().startsWith('<task-notification>')
     const field = (name: string) =>
@@ -110,13 +112,23 @@ function noteOf(
     return { kind: 'task', text: summary === '' ? lead : `${lead}: ${summary}` }
   }
   if (origin?.kind === 'peer') {
-    const name = oneLine(origin.name ?? '', 64)
-    return { kind: 'peer', text: `Message from ${name === '' ? 'another chat' : name}` }
+    const name = oneLine(origin.name ?? '', maxNoteFrom)
+    // The text is the origin's own body, else what the harness's wrapper holds (R55); with neither, the name only.
+    const body = (origin.body ?? peerWrapper.exec(raw)?.[1] ?? '').replace(contentMark, '').trim()
+    return {
+      kind: 'peer',
+      text: `Message from ${name === '' ? 'another chat' : name}`,
+      ...(body !== '' && { message: { from: name === '' ? null : name, via: 'message', ...textOf(body) } }),
+    }
   }
   if (origin === undefined && isMeta === true && raw.startsWith('Stop hook feedback:'))
     return { kind: 'hook', text: 'Stop hook: reply rewritten' }
   return undefined
 }
+
+/** Claude Code's wrapper of a peer's message, and the mark it can add inside it (R55). */
+const peerWrapper = /<cross-session-message\b[^>]*>([\s\S]*?)<\/cross-session-message>/
+const contentMark = /^<artifact-content-authored-by-others\/>$/gm
 
 /** The text, cut at the limit; a cut never splits a character's surrogate pair. */
 const textOf = (text: string) => {
@@ -163,6 +175,29 @@ function commandOf(text: string): { command: string } | { error: string } | null
 const pasted = /<pasted_content id="([^"]{1,100})">\n?([\s\S]*?)\n?<\/pasted_content id="\1">/g
 
 /**
+ * A message that another chat typed into this pane (R55): the whole prompt is one `<agent-prompt from="NAME">`
+ * wrapper, so text the owner types with the tag inside it, or with more around it, stays the owner's.
+ */
+const agentPrompt = /^<agent-prompt from="([A-Za-z0-9][A-Za-z0-9._-]{0,63})">([\s\S]*)<\/agent-prompt>$/
+
+function agentPromptOf(uuid: string, raw: string): TranscriptEntry | undefined {
+  // herdr types a long prompt as a paste, so Claude Code's paste tags can hold the whole wrapper.
+  const match = agentPrompt.exec(raw.replace(pasted, (_all, _id, inner: string) => inner).trim())
+  const inner = match?.[2]
+  if (match === null || inner === undefined || inner.includes('</agent-prompt>')) return undefined
+  const name = oneLine(match[1] ?? '', maxNoteFrom)
+  const body = inner.trim()
+  if (name === '') return undefined
+  return {
+    type: 'note',
+    id: uuid,
+    kind: 'peer',
+    text: `Message from ${name}`,
+    ...(body !== '' && { message: { from: name, via: 'prompt', ...textOf(body) } }),
+  }
+}
+
+/**
  * A prompt as the owner wrote it: each paste's tags removed, and the file lines that the server adds below a
  * prompt with files (`uploads.ts`) taken out, with the name of each file.
  */
@@ -188,6 +223,8 @@ function promptOf(raw: string, uploads: string | undefined): { text: string; fil
 
 /** The entry of an owner's prompt: a slash command as typed, its error output, or the prompt with its files. */
 function promptEntries(uuid: string, raw: string, options: TranscriptOptions): TranscriptEntry[] {
+  const agent = agentPromptOf(uuid, raw)
+  if (agent !== undefined) return [agent]
   const command = commandOf(raw)
   if (command === null) return []
   if (command !== undefined && 'error' in command) {

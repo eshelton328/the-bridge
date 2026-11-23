@@ -37,7 +37,10 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
   output, text only, at most `maxErrorText` (500) characters. A note
   entry (R46) is a harness input that the chat got, never the owner's
   prompt: a `NoteKind` (`task`, `peer`, `hook`) and a short text of at
-  most `maxNoteText` (200) characters (`transcripts.test.ts`).
+  most `maxNoteText` (200) characters. Only a `peer` note may have a
+  `message` (R55): the sender's chat name (null when none), `via`
+  (`message` or `prompt`) and the text, cut as a user entry's
+  (`transcripts.test.ts`).
 - A chat's "/" list (`ChatSkillsResponse`) names each skill as typed
   after "/", never a path, with a one-line description and its source
   (`skills.test.ts`).

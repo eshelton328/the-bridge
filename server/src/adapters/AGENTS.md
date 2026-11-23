@@ -64,7 +64,12 @@ client of a socket or a file sits beside them.
   finished: <summary>" for the status `completed` ("failed" for
   `failed`, "update" for any other or none; the summary of its
   whole-message wrapper, one line of at most 160 characters, never cut
-  inside a surrogate pair), `origin.kind` "peer" is "Message from <origin.name>", and an
+  inside a surrogate pair), `origin.kind` "peer" is "Message from <origin.name>" with a
+  `message` of `origin.body`, else of the inner text of its
+  `<cross-session-message>` wrapper (R55); a user line whose whole text,
+  or one whole paste, is `<agent-prompt from="NAME">…</agent-prompt>`
+  (NAME of a chat name's form) is the same note from NAME, `via`
+  `prompt`, and any other text with the tag stays the owner's; and an
   `isMeta` line with no origin that starts "Stop hook feedback:" is
   "Stop hook: reply rewritten". A queued line of a task or a peer gives
   the same note. Any other meta line or origin (an idle notice, a skill
