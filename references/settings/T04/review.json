@@ -1,18 +1,18 @@
 {
   "frameId": "T04",
-  "inputs": "cc2bc6765267b0af05210c629a2e2751e5dd589ecd7ae79c4c90ddcf4eded1c3",
-  "library": "1.0.0-beta.108",
-  "recordSha256": "64abf4eb9e65a436244418af540f9bac06aedf0d182573610d4d8c80003af206",
+  "inputs": "7db387c8b1fc58aa0a43f5303f722b389cad38e92e352a53860a8c0e1b9d4914",
+  "library": "1.0.0-beta.109",
+  "recordSha256": "209c4f48371e790e99a630d7e5eb0dd9b0f863131d5ab9d5c4653b010ef5602a",
   "record": {
     "verdict": "match",
-    "viewport": "iPad landscape 1180 x 820, Light (tablet layout)",
+    "viewport": "1180x820 iPad landscape, Light (tablet layout)",
     "inputs": {
       "layout": "side-by-side",
       "reference": "reports/fidelity/settings/T04.sideBySide.png",
       "render": "reports/fidelity/settings/T04.sideBySide.png",
       "reference_side": "left"
     },
-    "summary": "Apart from the accepted deviations (the disabled Text size control with \"Coming soon\", and the new Chat width row that moves the Navigation card down by about 100 px), the render matches the reference.",
+    "summary": "The render matches the reference except for the accepted Text size and Chat width changes. The other accepted changes are below the bottom edge or in views this frame does not show.",
     "findings": [],
     "accepted_deviations": [
       {
@@ -20,47 +20,47 @@
         "as_given": "Text size: the control is disabled (muted labels) and its line under it says \"Coming soon\" in place of \"Scales the whole app: Small 87.5 %, Default 100 %, Large 112.5 %.\" (step D adds text size later). On a narrow screen the one-line note makes every section below it sit about one text line higher.",
         "status": "as-described",
         "finding": null,
-        "note": "Small, Default and Large are muted and Default is still selected. The line says \"Coming soon\". The reference note is one line on the tablet too, so nothing below it moves up."
+        "note": "The Small, Default and Large labels are muted and the line says \"Coming soon\". The tablet is wide, so the reference note also fits on one line and no section moves up."
       },
       {
         "id": "A2",
         "as_given": "A new \"NOTIFICATIONS\" section with one \"Notifications\" switch (off) sits between the Navigation section and the New chat defaults section. So New chat defaults sits lower, or below the bottom edge.",
         "status": "not-seen",
         "finding": null,
-        "note": "The section is below the bottom edge in both frames."
+        "note": "The Navigation card runs past the bottom edge, so the Notifications section is not in the frame."
       },
       {
         "id": "A3",
         "as_given": "The Notifications switch moved to that section: the desktop rail no longer has the \"Notifications / Blocked in Settings\" switch at its bottom, and the More drawer no longer has the \"Notifications / Blocked in Settings\" row at its end. So the drawer is shorter and its top edge sits lower.",
         "status": "not-seen",
         "finding": null,
-        "note": "The tablet layout has no rail, and the More drawer is closed in both frames."
+        "note": "The tablet layout has no rail, and the More drawer is closed in both pictures. The tab bar is the same in both."
       },
       {
         "id": "A4",
         "as_given": "The Navigation list has a new last row, \"Settings\", with the line \"Always shown: in the bar or under More.\" under it and up and down buttons but no switch (the owner's decision: Settings is an entry of the bar order that cannot be hidden). So Toolkit's down button is now enabled, the Navigation card is taller, and every section below it sits lower or below the bottom edge.",
         "status": "not-seen",
         "finding": null,
-        "note": "Only the Home and Inbox rows of the Navigation list are visible in the render, so the Settings row and the Toolkit row are below the bottom edge."
+        "note": "The render shows only the Home and Inbox rows of the Navigation list. The rest is below the bottom edge."
       },
       {
         "id": "A5",
         "as_given": "On the phone and the tablet only: a thin rule line with the text \"Under More on this device\" under it sits after the last page that the tab bar shows (Projects on the phone, Artifacts on the tablet), so the rows after it sit lower by about 40 px.",
         "status": "not-seen",
         "finding": null,
-        "note": "The Artifacts row and the rule after it are below the bottom edge in the render."
+        "note": "The Artifacts row and the rule line after it are below the bottom edge."
       },
       {
         "id": "A6",
         "as_given": "Appearance has a new last row, \"Chat width\", under Text size: a three-way control \"Full\", \"Wide\", \"Narrow\" with Full selected, and a line under it. On the desktop and the tablet the control is enabled and the line says \"The messages and the message box of a Workspaces chat, centred.\"; on the phone the control is disabled (muted labels) and the line says \"Phone: always full\". So the Appearance card is taller, and every section below it sits lower (about one row) or below the bottom edge.",
         "status": "as-described",
         "finding": null,
-        "note": "Chat width is enabled with Full selected, and the line under it says \"The messages and the message box of a Workspaces chat, centred.\" The Navigation card starts about 100 px lower, so its content below Inbox is below the bottom edge."
+        "note": "The control is enabled and Full is selected. The line says \"The messages and the message box of a Workspaces chat, centred.\" The Appearance card and the Navigation card are about 100 px lower, so only the Home and Inbox rows fit above the tab bar."
       }
     ],
     "limits": [
-      "The side-by-side image was shown scaled down, so I could not check differences under about 2 px.",
-      "Content below the bottom edge (the rest of the Navigation list, Notifications, New chat defaults) is not in either frame, so I could not check it."
+      "The side-by-side image is shown scaled down to about 1 px per px of each frame, so I could not check differences under about 2 px.",
+      "Everything below the Inbox row of the Navigation card is outside the render's frame, so I could not compare the Workspaces and Projects rows, which the reference shows."
     ]
   }
 }
