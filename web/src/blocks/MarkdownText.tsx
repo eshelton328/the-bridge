@@ -2,26 +2,43 @@
 // EntryText) and in a brain item's record (Inbox LiveDetail): react-markdown
 // with GitHub's extensions (remark-gfm: tables, strikethrough, task lists
 // and autolinks, review R51), inside the caller's MarkdownView. HTML in the
-// text stays text, and a link keeps only a safe URL (react-markdown's
-// `defaultUrlTransform`: http, https, mailto and a few more; a
-// `javascript:` URL becomes empty) and opens in a new tab. An image shows
+// text stays text. A link is a link only with an http or https URL, and
+// opens in a new tab (review R56): a bare URL and a `www.` link (which
+// remark-gfm gives `http://`) become links, the `www.` one to https; a link
+// with any other URL (`javascript:`, `mailto:`, a relative path) stays
+// plain text. MarkdownView draws a link in the accent colour, underlined,
+// and breaks a long URL anywhere, so it wraps in its column. An image shows
 // its alt text, so the text loads nothing from another site. A task list's
 // box is named by its state ("Task done", "Task not done"). A table is the
 // library's Table part (`markdownTableParts.ts`) at the caller's `size`, the
 // size of its MarkdownView. The caller wraps it in a BlockBoundary. Props
 // only.
+import type { ReactNode } from 'react'
 import Markdown, { type Components } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { type MarkdownSize, markdownTableParts } from './markdownTableParts.ts'
 
 const remarkPlugins = [remarkGfm]
 
+/** The URL a link opens, or undefined when it is not http or https; a GFM `www.` autolink goes to https. */
+function linkUrl(href: string | undefined, children: ReactNode): string | undefined {
+  if (href === undefined) return undefined
+  const www = typeof children === 'string' && children.startsWith('www.') && href === `http://${children}`
+  const url = www ? `https://${children}` : href
+  return /^https?:\/\//i.test(url) ? url : undefined
+}
+
 const inline: Components = {
-  a: ({ href, children }) => (
-    <a href={href} target="_blank" rel="noreferrer">
-      {children}
-    </a>
-  ),
+  a: ({ href, children }) => {
+    const url = linkUrl(href, children)
+    return url === undefined ? (
+      children
+    ) : (
+      <a href={url} target="_blank" rel="noopener noreferrer">
+        {children}
+      </a>
+    )
+  },
   img: ({ alt }) => alt ?? null,
   // remark-gfm writes a task list's box with no label (axe: label); the box is read-only, so its name is its state.
   input: ({ type, checked, disabled }) => (

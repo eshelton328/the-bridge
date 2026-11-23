@@ -26,3 +26,22 @@ describe("a task list's boxes", () => {
       expect(box.getAttribute('aria-label')).not.toBeNull()
   })
 })
+
+describe('a link', () => {
+  it('is a link only to an http or https URL; a relative path stays text', async () => {
+    view = await testRender(
+      <MarkdownText
+        text={
+          '[the plan](/sample/plan.md), [the page](https://example.com/sample) and [old](http://www.example.com/old)'
+        }
+      />,
+    )
+    await expect
+      .element(page.getByRole('link', { name: 'the page' }))
+      .toHaveAttribute('href', 'https://example.com/sample')
+    // An explicit http link keeps its URL: only a bare www. autolink goes to https.
+    await expect.element(page.getByRole('link', { name: 'old' })).toHaveAttribute('href', 'http://www.example.com/old')
+    expect(document.querySelectorAll('a')).toHaveLength(2)
+    await expect.element(page.getByText(/the plan/)).toBeVisible()
+  })
+})
