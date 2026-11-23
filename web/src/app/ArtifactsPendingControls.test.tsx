@@ -40,4 +40,10 @@ describe('the Artifacts loading screen', () => {
       await openLoading(device)
       await expect.element(page.getByRole('button', { name: /Add a link/ })).toBeDisabled()
     })
+
+  it("sends the desktop rail's More to Toolkit, as the old loading screen did", async () => {
+    const router = await openLoading(devices[0])
+    await page.getByRole('button', { name: /^More/ }).click()
+    await expect.poll(() => router.state.location.pathname).toBe('/toolkit')
+  })
 })

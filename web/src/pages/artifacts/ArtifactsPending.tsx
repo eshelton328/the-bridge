@@ -30,7 +30,9 @@ export function ArtifactsPending() {
         setUi((now) => ({ ...now, ...change }))
       }}
       onNavigate={(page) => {
-        const to = navRoute(page)
+        // The desktop rail's More goes to Toolkit (d-105), as from the Inbox and Workspaces; the tablet's and the
+        // phone's open the drawer in the screen.
+        const to = page === 'more' ? '/toolkit' : navRoute(page)
         if (to !== undefined && to !== '/artifacts') void navigate({ to })
       }}
     />
