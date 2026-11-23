@@ -204,6 +204,10 @@ describe('claude side runner', () => {
       '39',
     ])
     expect(kept.every((block) => block.length === 108)).toBe(true)
+    // A newest entry larger than the cap is left out, and the older ones still fit.
+    const huge: TranscriptEntry = { type: 'assistant', id: 'big', text: 'y'.repeat(2000), cut: false }
+    expect(sideRecord([...many, huge], 1100).split('\n\n')).toEqual(kept)
+    expect(sidePrompt('', 'q')).toContain('\n(The record has no entries.)\n')
   })
 
   it("reads Code Mode from the session file's newest repl-mode line", async () => {
