@@ -101,12 +101,14 @@ A run that passes with `--review` saves the record as
 `references/<page>/<frameId>/review.json`, sealed with a hash of the
 review's inputs (`reviewSeal.ts`): the frame folder's files, the state
 file that lists the frame, the page's stories, Storybook's config in
-`web/.storybook/`, `web/panda.config.ts` (it makes the generated CSS), every repository file those import, transitively
+`web/.storybook/`, the build files `web/panda.config.ts`, `web/vite.config.ts`,
+`web/postcss.config.js` and `pnpm-lock.yaml` (the generated CSS and every
+package version, fonts included), every repository file those import, transitively
 (relative imports and `@bridge/shared` and `@bridge/contract`, so the
 app frame, the rail, the tab bar and shared blocks count), and the
 library version pinned in `pnpm-workspace.yaml`. Generated and ignored
 files (`styled-system/`) and packages from `node_modules` are not
-hashed; the library version stands for them. Commit it with the page.
+hashed; the lockfile and the library version stand for them. Commit it with the page.
 
 `pnpm check:reviews` runs in `verify` and CI, which cannot run the
 reviewer agent. It fails when a state lists a PNG frame's code and the

@@ -66,6 +66,14 @@ function libraryVersion(workspaceYaml: string): string {
   return m[1]
 }
 
+/** The build files every story depends on, outside the import walk. */
+const buildInputs: ReadonlySet<string> = new Set([
+  'web/panda.config.ts',
+  'web/vite.config.ts',
+  'web/postcss.config.js',
+  'pnpm-lock.yaml',
+])
+
 /** The workspace packages web imports by name, as their entry file. */
 const packageEntries: Record<string, string> = {
   '@bridge/shared': 'shared/src/index.ts',
@@ -97,7 +105,7 @@ export function resolveImport(from: string, spec: string, known: ReadonlySet<str
  * The inputs of a PNG frame's review in `root`: the frame's reference
  * files (not the sealed record itself); the state file that lists the
  * frame, the page's stories, Storybook's own config (its preview draws
- * every story), Panda's config (it makes the CSS every story uses) and every repository file they import, transitively
+ * every story), the build configs (Panda, Vite, PostCSS) and the lockfile, and every repository file they import, transitively
  * (web/src, shared, contract; not generated or ignored files); and the
  * library version.
  */
@@ -119,8 +127,9 @@ export function reviewInputs(root: string, page: string, frameId: string): { fil
       p === `${pageFolder}states/${state ?? ''}.ts` ||
       (p.startsWith(pageFolder) && p.endsWith('.stories.tsx')) ||
       /^web\/\.storybook\/[^/]+\.tsx?$/.test(p) ||
-      // Panda's config decides the generated CSS (styled-system/, not hashed) that every story draws with.
-      p === 'web/panda.config.ts',
+      // Panda's config decides the generated CSS (styled-system/, not hashed) that every story draws with;
+      // Vite's and PostCSS's configs build it, and the lockfile pins every package a story loads (fonts included).
+      buildInputs.has(p),
   )
   const seen = new Set<string>()
   const queue = [...roots]

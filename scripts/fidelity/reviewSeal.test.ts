@@ -51,6 +51,9 @@ function scratch(t: { after: (fn: () => void) => void }) {
   write('shared/src/index.ts', 'export const shared = 1\n')
   write('web/.storybook/preview.ts', 'export default {}\n')
   write('web/panda.config.ts', "export default { designSystem: 'library' }\n")
+  write('web/vite.config.ts', 'export default {}\n')
+  write('web/postcss.config.js', 'export default {}\n')
+  write('pnpm-lock.yaml', "lockfileVersion: '9.0'\n")
   execFileSync('git', ['init', '-q'], { cwd: root })
   /** Seals `rec` against the inputs as they are now and saves it as review.json. */
   const seal = (rec: unknown) => {
@@ -104,6 +107,16 @@ void test('an input change with a stale record fails', (t) => {
     },
     (s: ReturnType<typeof scratch>) => {
       s.write('web/panda.config.ts', "export default { designSystem: 'library', preflight: false }\n")
+    },
+    (s: ReturnType<typeof scratch>) => {
+      s.write('web/vite.config.ts', 'export default { base: "/x/" }\n')
+    },
+    (s: ReturnType<typeof scratch>) => {
+      s.write('web/postcss.config.js', 'export default { plugins: {} }\n')
+    },
+    (s: ReturnType<typeof scratch>) => {
+      // A dependency version moves, such as the Geist font packages the preview imports.
+      s.write('pnpm-lock.yaml', "lockfileVersion: '9.0'\n# @fontsource-variable/geist 5.2.9\n")
     },
     (s: ReturnType<typeof scratch>) => {
       s.write('references/settings/D01/note.txt', 'another note\n')
