@@ -25,10 +25,9 @@ import { report } from '../../errors/reporter.ts'
 import type { DraftBook } from './blocks/draftBook.ts'
 import type { NewChatStarter, NewChatValues } from './blocks/newChatStart.ts'
 import type { ComposerAnswer } from './blocks/useComposerActions.ts'
-import { openChat } from './blocks/workspaceLayout.ts'
 import { newSendId } from './draftStorage.ts'
 import { showNotice } from './livePending.ts'
-import { followTab } from './shownTabs.ts'
+import { listedChats, openListedChat } from './openListedChat.ts'
 import type { WorkspacesData, WorkspacesUi } from './types.ts'
 
 /** One start: its request (with its create ID), the workspace, the first message, and the panes listed before it. */
@@ -43,11 +42,8 @@ type Attempt = {
 type Follow = { readonly attempt: Attempt; readonly pane?: string | undefined; readonly ready: boolean }
 
 const nameRule = 'Start with a small letter, then small letters, digits, - or _ (32 at most)'
-const needsYouLine = 'This chat needs you on the Mac'
-
-/** Each chat the workspaces list, with its workspace. */
-const listed = (data: WorkspacesData) =>
-  data.workspaces.flatMap((w) => (w.chats ?? []).map((chat) => ({ chat, workspace: w.id })))
+/** The line under the composer of a chat the page started or forked that waits for the owner on the Mac. */
+export const needsYouLine = 'This chat needs you on the Mac'
 
 export type NewChatDeps = {
   /** The data the screen draws: a tab the workbench follows is `active` in it (shownTabs.ts). */
@@ -84,7 +80,7 @@ export function useNewChat(enabled: boolean, deps: NewChatDeps): NewChatStarter 
     }
     const { attempt } = follow
     const name = attempt.request.name
-    const hit = listed(data).find(({ chat, workspace }) =>
+    const hit = listedChats(data).find(({ chat, workspace }) =>
       follow.pane === undefined
         ? workspace === attempt.workspace &&
           chat.pane !== undefined &&
@@ -93,45 +89,12 @@ export function useNewChat(enabled: boolean, deps: NewChatDeps): NewChatStarter 
         : chat.pane === follow.pane,
     )
     if (hit === undefined) return
-    const pane = data.panes.find((p) => p.id === hit.chat.id)
-    const needsYou = hit.chat.status.tone === 'needsYou'
-    const ready = !needsYou && (follow.ready || (pane?.type === 'chat' && pane.takesCommands === true))
-    if (!ready && !needsYou) return
-    // The desktop draws a chat in a herdr tab the layout read has: wait for the read that brings it. Herdr's own tabs
-    // say which tab is herdr's active one, as the page may show another (shownTabs.ts).
-    const tabs = herdrTabs?.[hit.workspace]
-    const tab = tabs?.find((t) => t.chats.includes(hit.chat.id))
-    if (tabs !== undefined && tab === undefined) return
+    const open = openListedChat(data, herdrTabs, ui(), hit, follow.ready)
+    if (open === undefined) return
     followRef.current = undefined
     attemptRef.current = undefined
-    const now = ui()
-    const opened: Partial<WorkspacesUi> = {
-      ...openChat(data, now, hit.chat.id),
-      phoneView: 'chat',
-      newChatOpen: false,
-      newChatStart: null,
-      newChatBeside: null,
-      keyboardOpen: false,
-    }
-    // A chat in herdr's active tab shows that tab; one in another tab shows it in its place, as a moved chat does.
-    const shown =
-      tab?.id === undefined
-        ? {}
-        : tab.active
-          ? {
-              shownTabs: Object.fromEntries(
-                Object.entries(now.shownTabs ?? {}).filter(([workspace]) => workspace !== hit.workspace),
-              ),
-            }
-          : followTab(
-              { liveTabs: herdrTabs, current: data.current },
-              { ...now, ...opened },
-              hit.workspace,
-              hit.chat.id,
-              tab.id,
-            )
-    change({ ...opened, ...shown })
-    const liveChat = `${data.liveMachine ?? ''}/${hit.chat.id}`
+    change({ ...open.change, newChatOpen: false, newChatStart: null, newChatBeside: null })
+    const { liveChat, needsYou } = open
     const message = attempt.message
     if (needsYou) {
       showNotice(liveChat, { line: needsYouLine, retry: false })
@@ -237,7 +200,7 @@ export function useNewChat(enabled: boolean, deps: NewChatDeps): NewChatStarter 
         change({ newChatStart: { line: 'Could not start the chat' } })
         return
       }
-      const known = new Set(listed(data).flatMap(({ chat }) => (chat.pane === undefined ? [] : [chat.pane])))
+      const known = new Set(listedChats(data).flatMap(({ chat }) => (chat.pane === undefined ? [] : [chat.pane])))
       const attempt = { request: request.data, workspace: values.workspace, message: values.message.trim(), known }
       attemptRef.current = attempt
       followRef.current = undefined

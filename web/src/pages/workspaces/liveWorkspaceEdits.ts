@@ -13,6 +13,12 @@
 // the chat's pane to a new tab of that workspace: 200 with `{ chat, pane,
 // sourceClosed }`, the chat ID unchanged; the list read after it shows the
 // chat in its new workspace and, when `sourceClosed`, the old one gone.
+// `POST /api/chats/:chat/fork` (backend #443) takes only a new create ID, so
+// the server names the copy "<name>-fork" and splits it beside the chat to
+// the right; it answers 201 (or 200 for a create ID it has seen) with the
+// contract's `StartChatResponse`, as a start does, and the page follows that
+// pane (useForkedChat.ts). The server waits up to 30 s for the chat, so the
+// page waits `forkWaitMs`, as New chat does.
 //
 // What a miss means to the page:
 // - 409 `workspace-not-ready` `orderStale`: the order does not name the list
@@ -31,6 +37,12 @@
 // - 409 `chat-not-ready` for a move, one plain line by state: `sameWorkspace`
 //   ("It is already in {workspace}", the target's name filled in by the
 //   hook), `working`, `needsYou` and `holdsServer`.
+// - 409 `chat-not-ready` for a fork, one plain line by state: `noSession`
+//   (a Claude chat with no saved turn yet, such as a fresh fork, backend
+//   #446; a Codex chat and a shell, which the server refuses so too, have
+//   no Fork on the page), `nameTaken` (past "<name>-fork-9") and
+//   `folderNotAllowed`. A fork with no answer may have started, so its line
+//   says the list shows it if it did.
 // - Anything else is one quiet line by kind ("Not renamed —
 //   herdr-unavailable"). report() gets a WorkspaceEditMissError for a 5xx and
 //   for an answer the page does not expect, with the action, the kind and
@@ -40,10 +52,12 @@
 import {
   CloseWorkspaceRequest,
   ErrorBody,
+  ForkChatRequest,
   MoveToWorkspaceRequest,
   MoveToWorkspaceResponse,
   RenameChatRequest,
   RenameWorkspaceRequest,
+  StartChatResponse,
   WorkspaceOrderRequest,
 } from '@bridge/contract'
 import { report } from '../../errors/reporter.ts'
@@ -51,7 +65,7 @@ import { api } from '../../lib/api.ts'
 import { liveReadTimeoutMs, readJson } from './liveWorkspaces.ts'
 
 /** An edit the page sends. */
-export type WorkspaceEdit = 'renameWorkspace' | 'renameChat' | 'order' | 'close' | 'moveChat'
+export type WorkspaceEdit = 'renameWorkspace' | 'renameChat' | 'order' | 'close' | 'moveChat' | 'forkChat'
 
 /** What the page does after an edit answered. */
 export type EditAnswer =
@@ -60,6 +74,12 @@ export type EditAnswer =
   | { readonly kind: 'gone'; readonly line: string }
   | { readonly kind: 'again'; readonly line: string }
   | { readonly kind: 'miss'; readonly line: string }
+
+/** A fork's answer: the new chat's pane, its chat ID once Claude has a session, and its state; or why not. */
+export type ForkAnswer = EditAnswer | { readonly kind: 'forked'; readonly started: StartChatResponse }
+
+/** How long the page waits for a fork's answer: the server waits 30 s for the chat, and herdr may take longer. */
+const forkWaitMs = 75_000
 
 /** An edit that missed, for report(): the action, the kind and the status, and nothing else. */
 class WorkspaceEditMissError extends Error {
@@ -79,6 +99,7 @@ export const editLead: Record<WorkspaceEdit, string> = {
   order: 'Not reordered',
   close: 'Not closed',
   moveChat: 'Not moved',
+  forkChat: 'Not forked',
 }
 
 /** The line of each state a move can meet (409 `chat-not-ready`); "{workspace}" is the target's name. */
@@ -87,6 +108,13 @@ const moveLines: Partial<Record<string, string>> = {
   working: 'It is working — stop it first',
   needsYou: 'It needs you — answer it first',
   holdsServer: 'This chat runs the Bridge server, so it can’t move',
+}
+
+/** The line of each state a fork can meet (409 `chat-not-ready`). */
+const forkLines: Partial<Record<string, string>> = {
+  noSession: 'Not forked — the chat has no saved turn yet; send it a message first',
+  nameTaken: 'Not forked — another chat has the fork’s name',
+  folderNotAllowed: 'Not forked — the chat’s folder is not allowed for new chats',
 }
 
 /** The line of each state a close can meet (409 `workspace-not-ready`), as the owner reads it. */
@@ -131,7 +159,11 @@ async function missOf(action: WorkspaceEdit, res: Response): Promise<EditAnswer>
       return {
         kind: 'gone',
         line: `${editLead[action]} — that ${
-          action === 'renameChat' ? 'chat' : action === 'moveChat' ? 'chat or workspace' : 'workspace'
+          action === 'renameChat' || action === 'forkChat'
+            ? 'chat'
+            : action === 'moveChat'
+              ? 'chat or workspace'
+              : 'workspace'
         } is gone`,
       }
     case 'invalid-input':
@@ -147,7 +179,8 @@ async function missOf(action: WorkspaceEdit, res: Response): Promise<EditAnswer>
     case 'forbidden':
       return missLine(action, error.kind)
     case 'chat-not-ready': {
-      const line = action === 'moveChat' ? moveLines[error.state] : undefined
+      const line =
+        action === 'moveChat' ? moveLines[error.state] : action === 'forkChat' ? forkLines[error.state] : undefined
       return line === undefined ? reported(action, `${error.kind} ${error.state}`, res.status) : { kind: 'miss', line }
     }
     case 'too-large':
@@ -159,32 +192,52 @@ async function missOf(action: WorkspaceEdit, res: Response): Promise<EditAnswer>
   }
 }
 
-/** Posts with `call` and gives what its answer means. */
-async function post(action: WorkspaceEdit, call: (signal: AbortSignal) => Promise<Response>): Promise<EditAnswer> {
-  const signal = AbortSignal.timeout(liveReadTimeoutMs)
+/** The line of an edit that got no answer: a fork may have started all the same. */
+const noAnswer = (action: WorkspaceEdit, signal: AbortSignal): EditAnswer =>
+  action === 'forkChat'
+    ? { kind: 'miss', line: 'Fork sent, no answer — the list shows the chat if it started' }
+    : missLine(action, signal.aborted ? 'timeout' : 'unreachable')
+
+/** Posts with `call` and gives what its answer means, waiting `waitMs` for it. */
+async function send(
+  action: WorkspaceEdit,
+  call: (signal: AbortSignal) => Promise<Response>,
+  waitMs = liveReadTimeoutMs,
+): Promise<ForkAnswer> {
+  const signal = AbortSignal.timeout(waitMs)
   let res: Response
   try {
     res = await call(signal)
   } catch {
     // fetch rejects when no answer comes in time, or when the server or the tailnet cannot be reached.
-    return missLine(action, signal.aborted ? 'timeout' : 'unreachable')
+    return noAnswer(action, signal)
   }
   if (res.status === 204) return { kind: 'done' }
-  // A move answers 200 with the moved chat; any other body is an answer the page does not expect.
-  if (action === 'moveChat' && res.status === 200) {
+  // A move answers 200 with the moved chat, a fork 201 (200 for a create ID the server has seen) with the new chat; any
+  // other body is an answer the page does not expect.
+  const ok =
+    action === 'moveChat' ? res.status === 200 : action === 'forkChat' && (res.status === 200 || res.status === 201)
+  if (ok) {
+    let body: unknown
     try {
-      if (MoveToWorkspaceResponse.safeParse(readJson(await res.text())).success) return { kind: 'done' }
+      body = readJson(await res.text())
     } catch {
-      return missLine(action, signal.aborted ? 'timeout' : 'unreachable')
+      return noAnswer(action, signal)
     }
+    if (action === 'moveChat' && MoveToWorkspaceResponse.safeParse(body).success) return { kind: 'done' }
+    const started = StartChatResponse.safeParse(body)
+    if (action === 'forkChat' && started.success) return { kind: 'forked', started: started.data }
     return reported(action, 'bad-reply', res.status)
   }
   try {
     return await missOf(action, res)
   } catch {
-    return missLine(action, signal.aborted ? 'timeout' : 'unreachable')
+    return noAnswer(action, signal)
   }
 }
+/** Posts an edit that is not a fork: its answer is never a new chat. */
+const post = (action: WorkspaceEdit, call: (signal: AbortSignal) => Promise<Response>): Promise<EditAnswer> =>
+  send(action, call).then((answer) => (answer.kind === 'forked' ? reported(action, 'bad-reply', 201) : answer))
 
 /** Gives `workspace` (its server ID) the label `name`, as the contract's `Label` takes it. */
 export function renameWorkspace(workspace: string, name: string): Promise<EditAnswer> {
@@ -227,5 +280,19 @@ export function moveToWorkspace(chat: string, workspace: string): Promise<EditAn
   const json = MoveToWorkspaceRequest.parse({ workspace })
   return post('moveChat', (signal) =>
     api.api.chats[':chat'].workspace.$post({ param: { chat: encodeURIComponent(chat) }, json }, { init: { signal } }),
+  )
+}
+
+/**
+ * Forks the Claude chat `chat` (its server ID) beside it, with `createId` and nothing else, so the server names the
+ * copy and splits it to the right.
+ */
+export function forkChat(chat: string, createId: string): Promise<ForkAnswer> {
+  const json = ForkChatRequest.parse({ createId })
+  return send(
+    'forkChat',
+    (signal) =>
+      api.api.chats[':chat'].fork.$post({ param: { chat: encodeURIComponent(chat) }, json }, { init: { signal } }),
+    forkWaitMs,
   )
 }

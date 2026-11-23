@@ -67,6 +67,15 @@
 // duplicateCreate, as the server keeps it pending. `starts` records each
 // body.
 //
+// Backend #443, #446: `POST /api/chats/:chat/fork` takes the contract's
+// `ForkChatRequest` and starts as a start beside the chat does (`row` unless
+// set), named the first free of "<title>-fork" and "-fork-2" to "-fork-9"
+// unless the body names it (past them 409 nameTaken), listed with the chat
+// as its `fork` parent. A Codex chat, a shell and a chat with no saved turn
+// (each chat this fake starts or forks, until `saveSession`) are 409
+// noSession, and an unknown chat 404. `forks` records each body, and `answerForks` answers each
+// next fork with a test's error.
+//
 // W10 (backend #382, #384): `POST /api/chats/:chat/effort` takes the
 // contract's `SetEffortRequest` (`max` and any other body are 400). An
 // unknown chat is 404, a working one 409 working and one that needs the owner
@@ -114,6 +123,7 @@ import {
   CloseWorkspaceRequest,
   type ErrorBody,
   FocusChatRequest,
+  ForkChatRequest,
   MoveToWorkspaceRequest,
   MoveToWorkspaceResponse,
   chatsOf,
@@ -225,6 +235,11 @@ export function fakeWorkspacesServer(
   let started = 0
   const created = new Map<string, unknown>()
   let nextStart: { readonly answer: () => Response; readonly made: boolean } | undefined
+  /** Backend #443: each fork's chat and body, and an answer in place of the next ones'. */
+  const forks: { chat: string; body: unknown }[] = []
+  let forkAnswer: (() => Response) | undefined
+  /** Backend #446: the chats whose session has no saved turn yet (each chat this fake starts or forks); no fork. */
+  const unsaved = new Set<string>()
   /** W10: each effort change's chat and body, and an answer in place of the next ones'. */
   const efforts: { chat: string; body: unknown }[] = []
   let effortAnswer: (() => Response) | undefined
@@ -517,6 +532,20 @@ export function fakeWorkspacesServer(
         400,
       )
     const { name, place, createId } = parsed.data
+    return startIn(place, createId, name, null)
+  }
+
+  /**
+   * Lists a new Claude chat in `place` for a start or a fork: the create ID, the name (or `title` when it has none), the
+   * new chat listed with `parent`, then 201 and the events.
+   */
+  const startIn = (
+    place: StartChatRequest['place'],
+    createId: string | undefined,
+    name: string | undefined,
+    parent: ChatSummary['parent'],
+    title?: string,
+  ): Response => {
     const kept = createId === undefined ? undefined : created.get(createId)
     if (kept === 'pending') return notReady('duplicateCreate')
     if (kept !== undefined) return json(kept)
@@ -526,7 +555,8 @@ export function fakeWorkspacesServer(
     const workspace = place.in === 'split' ? beside?.workspace : place.workspace
     if (workspace === undefined || !response.workspaces.some((w) => w.id === workspace)) return gone()
     const listed = response.workspaces.flatMap((w) => w.chats)
-    if (name !== undefined && listed.some((c) => c.title === name)) return notReady('nameTaken')
+    const named = name ?? title
+    if (named !== undefined && listed.some((c) => c.title === named)) return notReady('nameTaken')
     const answer = nextStart
     nextStart = undefined
     if (answer !== undefined && !answer.made) return answer.answer()
@@ -546,13 +576,13 @@ export function fakeWorkspacesServer(
                 {
                   id: chat,
                   kind: 'claude',
-                  title: name ?? `chat-${String(started)}`,
+                  title: named ?? `chat-${String(started)}`,
                   model: 'claude-opus-5-5',
                   modelId: 'opus',
                   effort: null,
                   contextUsed: null,
                   status: state === 'ready' ? 'idle' : state === 'needsYou' ? 'needsYou' : 'unknown',
-                  parent: null,
+                  parent,
                   pane,
                 },
               ],
@@ -561,6 +591,7 @@ export function fakeWorkspacesServer(
       ),
     })
     transcripts.set(chat, [])
+    unsaved.add(chat)
     if (place.in === 'split' && beside !== undefined)
       beside.tab.root =
         beside.tab.root &&
@@ -583,6 +614,42 @@ export function fakeWorkspacesServer(
     layoutChanged(workspace)
     if (answer !== undefined) return answer.answer()
     return new Response(JSON.stringify(reply), { status: 201, headers: { 'content-type': 'application/json' } })
+  }
+
+  /**
+   * A fork (backend #443, #446): the contract's checks, the test's answer, then a Claude chat listed beside `chat` as
+   * the first free of "<title>-fork" to "-fork-9" (or the name given) with the chat as its `fork` parent, as a start
+   * beside it does. A chat with no saved turn, a Codex chat or a
+   * shell is 409 noSession, an unknown chat 404.
+   */
+  const fork = (chat: string, init: RequestInit | undefined): Response => {
+    const body = bodyOf(init)
+    forks.push({ chat, body })
+    const parsed = ForkChatRequest.safeParse(body)
+    if (new Headers(init?.headers).get('content-type') !== 'application/json' || !parsed.success)
+      return errorAnswer(
+        { kind: 'invalid-input', issues: ['the body'], message: 'Invalid input', requestId: 'r-400' },
+        400,
+      )
+    if (forkAnswer !== undefined) return forkAnswer()
+    const source = response.workspaces.flatMap((w) => w.chats).find((c) => c.id === chat)
+    if (source === undefined)
+      return errorAnswer(
+        { kind: 'not-found', path: `/api/chats/${chat}`, message: 'Not found', requestId: 'r-404' },
+        404,
+      )
+    if (source.kind !== 'claude' || unsaved.has(source.id)) return notReady('noSession')
+    const { name, direction, createId } = parsed.data
+    // Backend #446: the first free of "<title>-fork" and "-fork-2" to "-fork-9"; past them nameTaken.
+    const titles = new Set(response.workspaces.flatMap((w) => w.chats).map((c) => c.title))
+    const stems = [`${source.title}-fork`, ...[2, 3, 4, 5, 6, 7, 8, 9].map((n) => `${source.title}-fork-${String(n)}`)]
+    return startIn(
+      { in: 'split', beside: source.id, direction: direction ?? 'row' },
+      createId,
+      name,
+      { id: source.id, relation: 'fork' },
+      stems.find((t) => !titles.has(t)) ?? `${source.title}-fork`,
+    )
   }
 
   /** An effort change (W10): the contract's checks, the test's answer, then the chat's status, the list, 204. */
@@ -868,6 +935,16 @@ export function fakeWorkspacesServer(
     answerNextStart: (answer: () => Response, made = false) => {
       nextStart = { answer, made }
     },
+    /** Each fork the page posted (backend #443), with its chat as the server read it. */
+    forks,
+    /** Gives `chat` a saved turn, as its first turn does, so the server can fork it (backend #446). */
+    saveSession: (chat: string) => {
+      unsaved.delete(chat)
+    },
+    /** Answers each next fork with `answer` until it is set to undefined. */
+    answerForks: (answer: (() => Response) | undefined) => {
+      forkAnswer = answer
+    },
     /** Each effort change the page posted (W10), with its chat as the server read it. */
     efforts,
     /** Answers each next effort change with `answer` until it is set to undefined. */
@@ -933,6 +1010,8 @@ export function fakeWorkspacesServer(
           decodeURIComponent(renamed[2] ?? ''),
           init,
         )
+      const forkPath = /^\/api\/chats\/([^/]+)\/fork$/.exec(path)
+      if (forkPath !== null && init?.method === 'POST') return fork(decodeURIComponent(forkPath[1] ?? ''), init)
       const effortPath = /^\/api\/chats\/([^/]+)\/effort$/.exec(path)
       if (effortPath !== null && init?.method === 'POST') return effort(decodeURIComponent(effortPath[1] ?? ''), init)
       const modelPath = /^\/api\/chats\/([^/]+)\/model$/.exec(path)

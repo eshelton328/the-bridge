@@ -4,7 +4,8 @@
 // and each opens its dialog (ChatCommandDialog). They are on only while the
 // chat is idle or done, as the server refuses a command for any other status
 // (backend #317); a Codex chat, a shell and a sample chat have none, as the
-// server takes a command only for a Claude chat.
+// server takes a command only for a Claude chat. On the live page they also
+// have no Fork, which the server refuses for them (backend #443).
 import type { PaneAction, WorkbenchPane } from '../types.ts'
 
 /** A command a chat's actions can pick: what `ui.chatDialog` opens. */
@@ -14,14 +15,17 @@ export const isChatCommand = (value: string): value is ChatCommandValue => value
 
 /**
  * `actions` with `commands` after them when `pane` is a live Claude chat (`takesCommands` set), each off unless the
- * chat takes commands now (idle or done); `actions` as they are for any other pane.
+ * chat takes commands now (idle or done). On the live page (`commands` set) any other pane, a Codex chat or a shell,
+ * has no Fork, as the server forks only a Claude chat's session (backend #443, 409 noSession); a sample pane keeps
+ * `actions` as they are.
  */
 export function withCommands(
   actions: readonly PaneAction[],
   pane: WorkbenchPane | undefined,
   commands: readonly PaneAction[] | undefined,
 ): PaneAction[] {
-  if (commands === undefined || pane?.type !== 'chat' || pane.takesCommands === undefined) return [...actions]
+  if (commands === undefined) return [...actions]
+  if (pane?.type !== 'chat' || pane.takesCommands === undefined) return actions.filter((a) => a.value !== 'fork')
   const off = !pane.takesCommands
   return [...actions, ...commands.map((c) => (off ? { ...c, disabled: true } : c))]
 }

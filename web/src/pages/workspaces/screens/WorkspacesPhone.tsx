@@ -360,6 +360,11 @@ export function WorkspacesPhone({
       onUiChange({ renaming: true, messageFocus: false, refocusMessage: ui.messageFocus === true })
     if (action === 'sideChat' && data.sideChat !== undefined) onUiChange({ sideChatOpen: true })
     if (action === 'fork' && data.fork !== undefined) onUiChange({ chatDialog: 'fork' })
+    // A live Claude chat's Fork starts its copy beside it (backend #443); it opens once the list shows it.
+    if (action === 'fork' && edits !== undefined && chat !== undefined) {
+      onUiChange({ menuFor: null, moveOpen: false })
+      edits.forkChat(chat.id)
+    }
     if (action === 'subtask' && data.subtask !== undefined) onUiChange({ chatDialog: 'subtask' })
     if (action === 'subagents' && data.subagents !== undefined)
       onUiChange({ phoneView: 'subagents', menuFor: null, moveOpen: false })

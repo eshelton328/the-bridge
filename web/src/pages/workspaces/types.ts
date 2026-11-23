@@ -1182,6 +1182,8 @@ export type WorkspaceEdits = {
   readonly line: string | undefined
   /** Hides the line. */
   readonly dismiss: () => void
+  /** Shows `line` as the edits' line, such as a fork whose new chat did not start (useForkedChat.ts). */
+  readonly show: (line: string) => void
   /** Renames `workspace` to `name` (trimmed); nothing goes when it is empty or still `was`. */
   readonly renameWorkspace: (workspace: string, name: string, was: string) => void
   /** Gives the chat's pane the label `name` (trimmed); nothing goes when it is empty or still `was`. */
@@ -1195,4 +1197,9 @@ export type WorkspaceEdits = {
   readonly close: (workspace: string, panes: number, again: () => void) => void
   /** Moves `chat` to a new tab of `workspace`; the chat opens there with the list read that shows it moved. */
   readonly moveChat: (chat: string, workspace: string) => void
+  /**
+   * Forks the live Claude chat `chat` beside it (backend #443); the forked chat opens once the list shows it ready or
+   * needing the owner, as a new chat does.
+   */
+  readonly forkChat: (chat: string) => void
 }

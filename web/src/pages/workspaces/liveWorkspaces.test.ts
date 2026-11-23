@@ -439,11 +439,11 @@ describe('withLiveWorkspaces', () => {
     expect(state.data.lastChats).toBeUndefined()
     expect(state.data.chatMenu?.map((a) => a.value)).not.toContain('subagents')
     // Reviews R41, R42: only the actions a route backs (Rename since backend #423, Move to workspace since #435, with
-    // no New workspace row), and Edit with Done on the phone's list. The desktop workbench's pane menu has no rename
-    // field, so it has New chat and Move to workspace.
-    expect(state.data.chatMenu?.map((a) => a.value)).toEqual(['newChat', 'move', 'rename'])
-    expect(state.data.paneMenu.map((a) => a.value)).toEqual(['newChat', 'move'])
-    expect(state.data.phone?.chatMenu?.map((a) => a.value)).toEqual(['newChat', 'move', 'rename'])
+    // no New workspace row, Fork since #443), and Edit with Done on the phone's list. The desktop workbench's pane menu
+    // has no rename field, so it has New chat, Fork and Move to workspace.
+    expect(state.data.chatMenu?.map((a) => a.value)).toEqual(['newChat', 'fork', 'move', 'rename'])
+    expect(state.data.paneMenu.map((a) => a.value)).toEqual(['newChat', 'fork', 'move'])
+    expect(state.data.phone?.chatMenu?.map((a) => a.value)).toEqual(['newChat', 'fork', 'move', 'rename'])
     expect(state.data.newWorkspace).toBeUndefined()
     expect(state.data.phone?.edit).toBe('Edit')
     expect(state.data.phone?.done).toBe('Done')
