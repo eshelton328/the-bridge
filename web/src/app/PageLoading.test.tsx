@@ -46,4 +46,28 @@ describe('a page while it loads', () => {
       expect(document.querySelector(device.nav)).not.toBeNull()
     })
   }
+
+  for (const device of sizes.filter((s) => s.name !== 'the desktop')) {
+    it(`opens the More drawer and goes to Settings from it while Workspaces loads, on ${device.name}`, async () => {
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(() => new Promise<Response>(() => undefined)),
+      )
+      await setViewport(device.size[0], device.size[1])
+      const router = createRouter({
+        routeTree,
+        history: createMemoryHistory({ initialEntries: ['/workspaces'] }),
+        defaultErrorComponent: RouteError,
+        ...pendingTiming,
+      })
+      const view = await testRender(createElement(RouterProvider, { router }))
+      onTestFinished(view.unmount)
+      await expect.element(page.getByRole('status', { name: 'Loading Workspaces' })).toBeInTheDocument()
+      await page.getByRole('button', { name: /^More/ }).click()
+      const drawer = page.getByRole('dialog')
+      await expect.element(drawer).toBeInTheDocument()
+      await drawer.getByText('Settings', { exact: true }).click()
+      await expect.poll(() => router.state.location.pathname).toBe('/settings')
+    })
+  }
 })

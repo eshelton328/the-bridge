@@ -3,12 +3,14 @@
 // skeletons in a status that says what loads. A page with a skeleton of its own draws its screen with
 // `loading` instead (the Inbox). Props only.
 import { AppShell, Backdrop, DetailBodySkeleton, SkeletonGroup } from '@eshelton328/component-library-1701'
+import { useState } from 'react'
 import { css } from '../../styled-system/css/index.js'
 import { reportShellDiagnostic } from '../errors/shellDiagnostic.ts'
 import { type BarPage, navLayout } from '../lib/deviceSettings.ts'
 import type { Viewport } from '../lib/screenState.ts'
 import { AppRail } from './AppRail.tsx'
 import { AppTabBar } from './AppTabBar.tsx'
+import { MoreDrawer } from './MoreDrawer.tsx'
 import { ViewportFrame } from './ViewportFrame.tsx'
 
 const body = css({ p: '16', bg: 'surface.pane', flex: '1' })
@@ -22,13 +24,14 @@ export type LoadingShellProps = {
   navPages: readonly BarPage[]
   /** Draws the Settings gear in the rail (d-119), as every page entry does. */
   settings?: boolean | undefined
-  /** A tap on a rail item or a tab; the tab bar's More does nothing while the page loads. */
+  /** A tap on a rail item, a tab or a More drawer row. The tab bar's More opens the drawer, as on a loaded page. */
   onNavigate?: ((page: string) => void) | undefined
   /** The layout before the frame measures its width. */
   viewport: Viewport
 }
 
 export function LoadingShell({ selected, label, navPages, settings, onNavigate, viewport }: LoadingShellProps) {
+  const [moreOpen, setMoreOpen] = useState(false)
   return (
     <ViewportFrame initial={viewport}>
       {(layout) => {
@@ -61,7 +64,8 @@ export function LoadingShell({ selected, label, navPages, settings, onNavigate, 
                     device={layout === 'tablet' ? 'tablet' : 'phone'}
                     inboxBadge={0}
                     onSelect={(next) => {
-                      if (next !== 'more') onNavigate?.(next)
+                      if (next === 'more') setMoreOpen(true)
+                      else onNavigate?.(next)
                     }}
                   />
                 )
@@ -74,6 +78,16 @@ export function LoadingShell({ selected, label, navPages, settings, onNavigate, 
                 </div>
               }
             />
+            {desktop ? null : (
+              <MoreDrawer
+                settings={settings}
+                open={moreOpen}
+                onOpenChange={setMoreOpen}
+                pages={nav.more}
+                selected={selected}
+                onNavigate={onNavigate}
+              />
+            )}
           </Backdrop>
         )
       }}
