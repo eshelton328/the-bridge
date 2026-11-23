@@ -84,16 +84,13 @@ the New chat form (`Dialog size="lg"`, 540) open over it.
   cyan border of a focused field; the dialog moves the focus there when it
   opens (`initialFocus`), but the screenshot may show it without focus.
 
-## Notifications switch (d-118)
+## Settings gear (d-119)
 
-In the app, the rail has a Notifications switch at its end, which this
-frame does not draw. Erik asked on 2026-11-21: "Can we get lush
-notifications on the phone for this app?" ("lush" is a typo for "push"),
-and decision d-118 adds Web Push with this switch to turn it on. It is a
-frame exception that the app owns (`web/src/blocks/AppRail.tsx`,
-`web/src/blocks/NotificationsSwitch.tsx`). The screen draws the switch
-only when the page entry passes `push`; this frame's state and story pass
-none, so the checks above are unchanged.
+In the app, the rail has a Settings gear before More, which this frame
+does not draw: Settings has no Figma page, and decision d-119 puts its
+entry in the rail (`web/src/blocks/AppRail.tsx`). The Notifications
+switch that d-118 put at the rail's end moved to the Settings page, so
+the rail no longer draws it.
 
 - **The live form (W3, frame exception).** Erik's priority is
   "Workspaces on real herdr chats", so the live page's New chat starts a

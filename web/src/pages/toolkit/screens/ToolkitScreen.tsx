@@ -1,7 +1,7 @@
 // The Toolkit page as one props-only screen, laid out by the width it gets
 // (ViewportFrame): on the desktop the rail and the list beside it; on a
-// tablet or phone the list full width over the tab bar, which opens
-// Toolkit from More (d-105). The list (Figma D1 425:9) is the header, the
+// tablet or phone the list full width over the tab bar, whose More opens
+// the More drawer with Toolkit in it (d-105, d-119). The list (Figma D1 425:9) is the header, the
 // kind chips, the search row and a group of cards per kind, narrowed by
 // the chip and the search (`listView`). The Map view (D2) shows the map
 // (`ToolkitMap`) under the same rows in place of the groups; on a tablet
@@ -34,7 +34,7 @@ import { AppRail } from '../../../blocks/AppRail.tsx'
 import { AppTabBar } from '../../../blocks/AppTabBar.tsx'
 import { MoreDrawer } from '../../../blocks/MoreDrawer.tsx'
 import { ViewportFrame } from '../../../blocks/ViewportFrame.tsx'
-import { defaultVisiblePages, type NavPage, navLayout, tabletMorePage } from '../../../lib/deviceSettings.ts'
+import { defaultVisiblePages, type NavPage, navLayout } from '../../../lib/deviceSettings.ts'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { ToolkitGroup } from '../blocks/ToolkitGroup.tsx'
 import { ToolkitHeader } from '../blocks/ToolkitHeader.tsx'
@@ -66,7 +66,6 @@ import {
   toggleDiscuss,
   withDiscussReset,
 } from './discussView.ts'
-import type { PushSwitch } from '../../../lib/pushSwitch.ts'
 
 // D1 425:9: on the desktop the page is the library's `Container size="page"`: the list starts 32 in from the rail and
 // 24 down, 1448 wide with 1384 of content in the 1512 px frame, and from `shell.detailWideFrom` at most 1448 wide in the
@@ -88,8 +87,6 @@ export type ToolkitScreenProps = {
   /** The layout before the screen measures its width; after that the width picks it. */
   viewport: Viewport
   onNavigate?: ((page: string) => void) | undefined
-  /** The Notifications switch (d-118) at the rail's end and in the phone's More drawer; none in the Figma states. */
-  push?: PushSwitch | undefined
   /** The shown nav pages in the owner's order (d-038, d-119); the default order without it, as the Figma states draw. */
   navPages?: readonly NavPage[] | undefined
   /** Reports what the owner changes: the view, the kind chip, the search or a group opened or closed. */
@@ -114,7 +111,6 @@ function ToolkitLayout({
   ui,
   layout,
   onNavigate,
-  push,
   navPages = defaultVisiblePages,
   onUiChange: report,
   onCopyPath,
@@ -456,13 +452,7 @@ function ToolkitLayout({
         view="detail"
         rail={
           desktop ? (
-            <AppRail
-              selected="toolkit"
-              pages={nav.rail}
-              inboxBadge={data.railBadge}
-              onSelect={onNavigate}
-              push={push}
-            />
+            <AppRail selected="toolkit" pages={nav.rail} inboxBadge={data.railBadge} onSelect={onNavigate} />
           ) : undefined
         }
         tabBarOverlay
@@ -476,10 +466,9 @@ function ToolkitLayout({
               device={layout === 'tablet' ? 'tablet' : 'phone'}
               inboxBadge={data.railBadge}
               onSelect={(next) => {
-                // On the phone More opens the drawer; the tablet's More opens the first page past its tabs,
-                // Toolkit in the default order (d-105).
-                if (next === 'more' && layout === 'phone') onUiChange({ moreOpen: true })
-                else onNavigate?.(next === 'more' ? tabletMorePage(nav.more) : next)
+                // The phone's and the tablet's More open the drawer (d-119).
+                if (next === 'more') onUiChange({ moreOpen: true })
+                else onNavigate?.(next)
               }}
             />
           )
@@ -535,17 +524,17 @@ function ToolkitLayout({
           )
         }
       />
-      {/* Only the phone's More opens it; a state with `moreOpen` (M4) shows it at any width, as a story renders it. */}
+      {/* The phone's and the tablet's More open it (d-119); a state with `moreOpen` (M4) shows it at any width, as a
+          story renders it. */}
       <MoreDrawer
         open={ui.moreOpen === true}
         onOpenChange={(open) => {
           onUiChange({ moreOpen: open })
         }}
-        pages={navLayout(navPages, 'phone').more}
+        pages={navLayout(navPages, layout === 'tablet' ? 'tablet' : 'phone').more}
         selected="toolkit"
         counts={{ artifacts: data.artifactsCount, toolkit: data.count }}
         onNavigate={onNavigate}
-        push={push}
       />
     </Backdrop>
   )

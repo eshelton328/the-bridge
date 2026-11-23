@@ -1,7 +1,7 @@
 // The Notifications switch's client state (d-118): where Web Push stands in
 // this browser, whether a turn on or off runs, and whether the last turn-on
-// missed. The page entries read it with usePushSwitch() and pass it to the
-// screen, which draws it in the More drawer and the rail. The browser and
+// missed. The Settings page entry reads it with usePushSwitch() and passes it
+// to the screen, which draws it in the Notifications section (d-119). The browser and
 // server work is in lib/pushSwitch.ts.
 import { useEffect } from 'react'
 import { pushBrowser } from '../lib/pushBrowser.ts'

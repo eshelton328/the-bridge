@@ -148,13 +148,10 @@ closed in each of them, and no `AppTabBar` or `AppRail` item changed.
   Figma's and the titles about 7 % narrower (gap: More drawer item
   titles).
 
-## Notifications switch (d-118)
+## Settings row (d-119)
 
-In the app, the More drawer has a Notifications switch below its pages, which this
-frame does not draw. Erik asked on 2026-11-21: "Can we get lush
-notifications on the phone for this app?" ("lush" is a typo for "push"),
-and decision d-118 adds Web Push with this switch to turn it on. It is a
-frame exception that the app owns (`web/src/blocks/MoreDrawer.tsx`,
-`web/src/blocks/NotificationsSwitch.tsx`). The screen draws the switch
-only when the page entry passes `push`; this frame's state and story pass
-none, so the checks above are unchanged.
+In the app, the More drawer has a Settings row after its pages, which this
+frame does not draw: Settings has no Figma page, and decision d-119 puts
+its entry in the drawer (`web/src/blocks/MoreDrawer.tsx`). The
+Notifications switch that d-118 put below the drawer's pages moved to the
+Settings page, so the drawer no longer draws it.

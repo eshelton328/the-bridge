@@ -45,7 +45,7 @@ export const layerPaths = {
 export const pageLayers = ['page', 'pageScreens', 'pageBlocks', 'pageStates'] as const satisfies readonly Layer[]
 
 /** The pages of the app, in nav order. Only the pages listed here may have a folder. */
-export const pages = ['home', 'inbox', 'workspaces', 'projects', 'artifacts', 'toolkit'] as const
+export const pages = ['home', 'inbox', 'workspaces', 'projects', 'artifacts', 'toolkit', 'settings'] as const
 
 /** Layers that take data as props and report through callbacks: no stores, router, fetch or storage. */
 export const propsOnlyLayers = ['pageScreens', 'pageBlocks', 'pageStates', 'blocks'] as const satisfies readonly Layer[]

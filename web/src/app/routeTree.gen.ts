@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './../routes/__root'
 import { Route as IndexRouteImport } from './../routes/index'
 import { Route as ArtifactsRouteImport } from './../routes/artifacts'
 import { Route as InboxRouteImport } from './../routes/inbox'
+import { Route as SettingsRouteImport } from './../routes/settings'
 import { Route as ToolkitRouteImport } from './../routes/toolkit'
 import { Route as WorkspacesRouteImport } from './../routes/workspaces'
 
@@ -30,6 +31,11 @@ const InboxRoute = InboxRouteImport.update({
   path: '/inbox',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ToolkitRoute = ToolkitRouteImport.update({
   id: '/toolkit',
   path: '/toolkit',
@@ -45,6 +51,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/artifacts': typeof ArtifactsRoute
   '/inbox': typeof InboxRoute
+  '/settings': typeof SettingsRoute
   '/toolkit': typeof ToolkitRoute
   '/workspaces': typeof WorkspacesRoute
 }
@@ -52,6 +59,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/artifacts': typeof ArtifactsRoute
   '/inbox': typeof InboxRoute
+  '/settings': typeof SettingsRoute
   '/toolkit': typeof ToolkitRoute
   '/workspaces': typeof WorkspacesRoute
 }
@@ -60,21 +68,31 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/artifacts': typeof ArtifactsRoute
   '/inbox': typeof InboxRoute
+  '/settings': typeof SettingsRoute
   '/toolkit': typeof ToolkitRoute
   '/workspaces': typeof WorkspacesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/artifacts' | '/inbox' | '/toolkit' | '/workspaces'
+  fullPaths:
+    '/' | '/artifacts' | '/inbox' | '/settings' | '/toolkit' | '/workspaces'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/artifacts' | '/inbox' | '/toolkit' | '/workspaces'
-  id: '__root__' | '/' | '/artifacts' | '/inbox' | '/toolkit' | '/workspaces'
+  to: '/' | '/artifacts' | '/inbox' | '/settings' | '/toolkit' | '/workspaces'
+  id:
+    | '__root__'
+    | '/'
+    | '/artifacts'
+    | '/inbox'
+    | '/settings'
+    | '/toolkit'
+    | '/workspaces'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ArtifactsRoute: typeof ArtifactsRoute
   InboxRoute: typeof InboxRoute
+  SettingsRoute: typeof SettingsRoute
   ToolkitRoute: typeof ToolkitRoute
   WorkspacesRoute: typeof WorkspacesRoute
 }
@@ -102,6 +120,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InboxRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/toolkit': {
       id: '/toolkit'
       path: '/toolkit'
@@ -123,6 +148,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ArtifactsRoute: ArtifactsRoute,
   InboxRoute: InboxRoute,
+  SettingsRoute: SettingsRoute,
   ToolkitRoute: ToolkitRoute,
   WorkspacesRoute: WorkspacesRoute,
 }

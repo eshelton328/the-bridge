@@ -10,7 +10,7 @@ import { copyText } from '../../lib/copyText.ts'
 import { useInboxBadge } from '../../lib/inboxFeed.ts'
 import { ToolkitScreen } from './screens/ToolkitScreen.tsx'
 import type { ToolkitUi } from './types.ts'
-import { usePushSwitch } from '../../state/pushStore.ts'
+import { navRoute } from '../../lib/navRoutes.ts'
 import { useVisibleNavPages } from '../../state/settingsStore.ts'
 
 const route = getRouteApi('/toolkit')
@@ -30,22 +30,20 @@ export function ToolkitPage() {
     state.data.railBadge,
     import.meta.env.DEV && search.state === undefined && search.source === undefined,
   )
-  const push = usePushSwitch()
   const navPages = useVisibleNavPages()
   const navigate = route.useNavigate()
   const [changed, setChanged] = useState<Changed>({ of: state.ui, ui: {} })
   const own = changed.of === state.ui ? changed.ui : {}
   return (
     <ToolkitScreen
-      push={push}
       navPages={navPages}
       data={{ ...state.data, railBadge }}
       ui={{ ...state.ui, ...own }}
       viewport="desktop"
       onNavigate={(page) => {
         // Only the pages that have a route go somewhere; the others wait for theirs.
-        if (page === 'inbox' || page === 'workspaces' || page === 'artifacts' || page === 'toolkit')
-          void navigate({ to: `/${page}` })
+        const to = navRoute(page)
+        if (to !== undefined) void navigate({ to })
       }}
       onUiChange={(change) => {
         setChanged({ of: state.ui, ui: { ...own, ...change } })

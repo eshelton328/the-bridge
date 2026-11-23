@@ -111,13 +111,10 @@ the nearest library part until it lands: the applied line in `bodySm`
 `ProposalBlock`. The median line and its label are the library's
 `Thumbnail reference` (beta.63); no value is picked for them here.
 
-## Notifications switch (d-118)
+## Settings gear (d-119)
 
-In the app, the rail has a Notifications switch at its end, which this
-frame does not draw. Erik asked on 2026-11-21: "Can we get lush
-notifications on the phone for this app?" ("lush" is a typo for "push"),
-and decision d-118 adds Web Push with this switch to turn it on. It is a
-frame exception that the app owns (`web/src/blocks/AppRail.tsx`,
-`web/src/blocks/NotificationsSwitch.tsx`). The screen draws the switch
-only when the page entry passes `push`; this frame's state and story pass
-none, so the checks above are unchanged.
+In the app, the rail has a Settings gear before More, which this frame
+does not draw: Settings has no Figma page, and decision d-119 puts its
+entry in the rail (`web/src/blocks/AppRail.tsx`). The Notifications
+switch that d-118 put at the rail's end moved to the Settings page, so
+the rail no longer draws it.

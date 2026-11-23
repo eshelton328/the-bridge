@@ -1,34 +1,37 @@
 // The desktop nav rail of every page: the logo and the shown pages in the
 // owner's order (d-038, d-119; `pages`, from navLayout's `rail`), with the
-// needs-you count on Inbox (d-047: More comes last). The default order puts
-// Artifacts and Toolkit before More, as the Toolkit page's D1 draws them
-// (d-105).
+// needs-you count on Inbox, then the Settings gear and More (d-047: More
+// comes last; d-119: the gear is the last item before More). The default
+// order puts Artifacts and Toolkit before More, as the Toolkit page's D1
+// draws them (d-105).
 // Each item carries its Figma layer name (`rail · Inbox`) for the fidelity
-// check. With `push`, the Notifications switch sits at the rail's end
-// (d-118; Figma has none, so each desktop frame records it as a deviation).
+// check. The Notifications switch is on the Settings page (d-118, d-119).
 // Props only; the page entry does the navigation.
 import { Logo, MoreIcon, NavRail } from '@eshelton328/component-library-1701'
 import type { NavPage } from '../lib/deviceSettings.ts'
-import type { PushSwitch } from '../lib/pushSwitch.ts'
-import { navPageItems } from './navPages.ts'
-import { NotificationsSwitch } from './NotificationsSwitch.tsx'
+import { navPageItems, settingsItem } from './navPages.ts'
 
 export type AppRailProps = {
-  /** The page on screen; a page the rail does not show selects More. */
-  selected: NavPage | 'more'
+  /** The page on screen; a nav page the rail does not show selects More. */
+  selected: NavPage | 'settings' | 'more'
   /** The pages the rail shows, in order: navLayout's `rail`. */
   pages: readonly NavPage[]
   /** The number of Inbox items that need the owner. */
   inboxBadge: number
   onSelect?: ((page: string) => void) | undefined
-  /** The Notifications switch (d-118); the rail has none when not set, as in the Figma states. */
-  push?: PushSwitch | undefined
 }
 
-export function AppRail({ selected, pages, inboxBadge, onSelect, push }: AppRailProps) {
+/** The item the rail marks: the page on screen, or More for a page it does not show. */
+function railSelected(selected: AppRailProps['selected'], pages: readonly NavPage[]): string {
+  if (selected === 'settings' || selected === 'more') return selected
+  return pages.includes(selected) ? selected : 'more'
+}
+
+export function AppRail({ selected, pages, inboxBadge, onSelect }: AppRailProps) {
+  const { label: settingsLabel, Icon: SettingsIcon } = settingsItem
   return (
     <NavRail
-      selected={selected !== 'more' && pages.includes(selected) ? selected : 'more'}
+      selected={railSelected(selected, pages)}
       onSelect={onSelect}
       logo={
         <a href="/" aria-label="Home">
@@ -46,9 +49,9 @@ export function AppRail({ selected, pages, inboxBadge, onSelect, push }: AppRail
             ...(page === 'inbox' ? { badge: inboxBadge } : {}),
           }
         }),
+        { value: 'settings', label: settingsLabel, figma: 'rail · Settings', icon: <SettingsIcon /> },
         { value: 'more', label: 'More', figma: 'rail · More', icon: <MoreIcon /> },
       ]}
-      footer={push === undefined ? undefined : <NotificationsSwitch push={push} layout="stacked" />}
     />
   )
 }

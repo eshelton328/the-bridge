@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, fn } from 'storybook/test'
-import type { PushSwitch } from '../lib/pushSwitch.ts'
+import type { PushSwitch } from '../../../lib/pushSwitch.ts'
 import { NotificationsSwitch } from './NotificationsSwitch.tsx'
 
-// The Notifications switch of d-118 in each state, inline as the phone's More drawer draws it and stacked as the
-// desktop rail does. Figma has no such switch; each frame with the drawer or the rail records it as a deviation.
+// The Notifications switch of d-118 in each state, inline as the Settings page draws it (d-119) and stacked, as it
+// fits a 64 px rail. Figma has no such switch.
 
 const push = (change: Partial<PushSwitch>): PushSwitch => ({
   state: 'off',
@@ -15,7 +15,7 @@ const push = (change: Partial<PushSwitch>): PushSwitch => ({
 })
 
 const meta = {
-  title: 'Blocks/Notifications switch',
+  title: 'Pages/Settings/Blocks/Notifications switch',
   component: NotificationsSwitch,
   args: { push: push({}), layout: 'inline' },
 } satisfies Meta<typeof NotificationsSwitch>

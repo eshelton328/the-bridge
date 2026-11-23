@@ -118,13 +118,10 @@ The blind second review of round 3 (`reports/fidelity/inbox/D14.sideBySide.png`,
 - Change, Reset, Edit and Start in the-bridge larger: recorded. Figma sets these labels in Geist Medium 12 (Start in SemiBold 13). `Button` draws its label in `label` (14) at every size, so `size="sm"` changes only the height. LIBRARY_GAPS.md, row "Button label size". Fixed by beta.7: Change, Reset and Edit take `Button textSize="xs"` (`labelXs`, Medium 12/16) and Start `textSize="smStrong"` (`labelSmStrong`, SemiBold 13/16), as Figma's.
 - Rail items: library #115 (beta.14) closed the gap. `NavRail` items are 50 px high and 56 px apart, as Figma's.
 
-## Notifications switch (d-118)
+## Settings gear (d-119)
 
-In the app, the rail has a Notifications switch at its end, which this
-frame does not draw. Erik asked on 2026-11-21: "Can we get lush
-notifications on the phone for this app?" ("lush" is a typo for "push"),
-and decision d-118 adds Web Push with this switch to turn it on. It is a
-frame exception that the app owns (`web/src/blocks/AppRail.tsx`,
-`web/src/blocks/NotificationsSwitch.tsx`). The screen draws the switch
-only when the page entry passes `push`; this frame's state and story pass
-none, so the checks above are unchanged.
+In the app, the rail has a Settings gear before More, which this frame
+does not draw: Settings has no Figma page, and decision d-119 puts its
+entry in the rail (`web/src/blocks/AppRail.tsx`). The Notifications
+switch that d-118 put at the rail's end moved to the Settings page, so
+the rail no longer draws it.

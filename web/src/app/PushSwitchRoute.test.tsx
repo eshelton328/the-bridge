@@ -9,11 +9,12 @@ import { testRender, unmountRendered } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
 
-// d-118: the Notifications switch, through the real route, on the owner's path: on the phone he opens the tab bar's
-// More and finds it under the drawer's pages; on the desktop it sits at the rail's end. On subscribes and saves, off
-// ends the subscription and deletes it, a denied permission says so and stays off, Safari outside the home-screen app
-// says to add it there, and a save that misses shows a line and stays off. A fake browser and server (lib/fakePush.ts)
-// stand in for the permission prompt, the push service and the-bridge server.
+// d-118, d-119: the Notifications switch, through the real route, on the owner's path: on the phone and the tablet he
+// opens the tab bar's More, then Settings in the drawer; on the desktop he taps the rail's Settings gear. The switch is
+// in the Settings page's Notifications section, its one place. On subscribes and saves, off ends the subscription and
+// deletes it, a denied permission says so and stays off, Safari outside the home-screen app says to add it there, and
+// a save that misses shows a line and stays off. A fake browser and server (lib/fakePush.ts) stand in for the
+// permission prompt, the push service and the-bridge server.
 document.documentElement.classList.add('dark')
 document.documentElement.dataset.pandaTheme = 'viewscreen'
 
@@ -25,16 +26,24 @@ afterEach(async () => {
   await page.viewport(1512, 982)
 })
 
+/** More in the tab bar, then Settings in the More drawer. */
+async function openFromMore() {
+  await userEvent.click(page.getByRole('button', { name: 'More' }))
+  const drawer = page.getByRole('dialog', { name: 'More' })
+  await expect.element(drawer).toBeVisible()
+  await userEvent.click(drawer.getByRole('button', { name: /Settings/ }))
+}
+
 const layouts = [
+  { name: 'the phone, from More', size: [390, 844] as const, open: openFromMore },
+  { name: 'the tablet, from More', size: [744, 1133] as const, open: openFromMore },
   {
-    name: 'the phone More drawer',
-    size: [390, 844] as const,
+    name: 'the desktop, from the rail',
+    size: [1512, 982] as const,
     open: async () => {
-      await userEvent.click(page.getByRole('button', { name: 'More' }))
-      await expect.element(page.getByRole('dialog')).toBeVisible()
+      await userEvent.click(page.getByRole('button', { name: 'Settings' }))
     },
   },
-  { name: 'the desktop rail', size: [1512, 982] as const, open: () => Promise.resolve() },
 ]
 
 async function show(layout: (typeof layouts)[number], options: FakePushOptions) {
@@ -46,12 +55,14 @@ async function show(layout: (typeof layouts)[number], options: FakePushOptions) 
   })
   await testRender(<RouterProvider router={router} />)
   await layout.open()
-  // The switch's input is hidden, as Ark draws it; the owner taps its row, which is the input's label.
-  return {
-    push,
-    toggle: page.getByRole('switch', { name: 'Notifications' }),
-    row: page.getByText('Notifications', { exact: true }),
-  }
+  await expect.poll(() => router.state.location.pathname).toBe('/settings')
+  const toggle = page.getByRole('switch', { name: 'Notifications' })
+  await expect.element(toggle).toBeInTheDocument()
+  // The switch's input is hidden, as Ark draws it; the owner taps its row, which is the input's label. The section's
+  // title says Notifications too, so the row is the switch's own label, not a text match.
+  const row = toggle.element().closest('label')
+  if (row === null) throw new Error('the Notifications switch has no label row')
+  return { push, toggle, row }
 }
 
 describe.each(layouts)('the Notifications switch in $name', (layout) => {
@@ -66,8 +77,6 @@ describe.each(layouts)('the Notifications switch in $name', (layout) => {
       'GET /api/push/key',
       'POST /api/push/subscriptions',
     ])
-    // The drawer stays open: the switch is a setting, not a page.
-    if (layout.size[0] < 500) await expect.element(page.getByRole('dialog')).toBeVisible()
   })
 
   it('turns off: ends the subscription and deletes it on the server', async () => {

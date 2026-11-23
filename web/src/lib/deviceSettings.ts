@@ -13,18 +13,18 @@ import { z } from 'zod'
 export const settingsKey = 'bridge/settings'
 
 /** The pages the rail, the tab bar and the More drawer can show, in the default order. Settings is not one. */
-const navPages = ['home', 'inbox', 'workspaces', 'projects', 'artifacts', 'toolkit'] as const
+export const navPages = ['home', 'inbox', 'workspaces', 'projects', 'artifacts', 'toolkit'] as const
 export type NavPage = (typeof navPages)[number]
 
-const modes = ['light', 'dark', 'system'] as const
+export const modes = ['light', 'dark', 'system'] as const
 export type Mode = (typeof modes)[number]
 
-const textSizes = ['small', 'default', 'large'] as const
+export const textSizes = ['small', 'default', 'large'] as const
 export type TextSize = (typeof textSizes)[number]
 
-const chatModels = ['fable', 'opus', 'sonnet', 'haiku'] as const
-const chatEfforts = ['low', 'medium', 'high', 'xhigh', 'max'] as const
-const chatPermissions = ['default', 'auto', 'plan'] as const
+export const chatModels = ['fable', 'opus', 'sonnet', 'haiku'] as const
+export const chatEfforts = ['low', 'medium', 'high', 'xhigh', 'max'] as const
+export const chatPermissions = ['default', 'auto', 'plan'] as const
 
 const navEntry = z.strictObject({ page: z.enum(navPages), visible: z.boolean() })
 export type NavEntry = z.infer<typeof navEntry>
@@ -160,15 +160,6 @@ export function navLayout(visible: readonly NavPage[], device: 'desktop' | 'tabl
     tabs: visible.slice(0, count),
     more: visible.slice(count),
   }
-}
-
-/**
- * The page the tablet's More opens: the first shown page past the tab bar,
- * as the tablet has no More drawer. With none, More stays More, which the
- * page entries open as Toolkit.
- */
-export function tabletMorePage(more: readonly NavPage[]): NavPage | 'more' {
-  return more[0] ?? 'more'
 }
 
 /** The shown pages of the default settings: what every story and Figma frame draws. */

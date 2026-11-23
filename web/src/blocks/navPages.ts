@@ -7,6 +7,7 @@ import {
   HomeIcon,
   InboxIcon,
   ProjectsIcon,
+  SettingsIcon,
   ToolkitIcon,
   WorkspacesIcon,
 } from '@eshelton328/component-library-1701'
@@ -20,6 +21,17 @@ export type NavPageItem = {
   readonly description: string
   /** The Figma layer of its icon in the More drawer, where Figma draws the page there (Toolkit M4). */
   readonly drawerIconLayer?: string
+}
+
+/**
+ * Settings (d-119): the rail's gear item before More and the More drawer's
+ * row after the shown pages. It is not a nav page: the owner cannot hide or
+ * move it, so it is always reachable.
+ */
+export const settingsItem: NavPageItem = {
+  label: 'Settings',
+  Icon: SettingsIcon,
+  description: 'Appearance, navigation and chat defaults',
 }
 
 export const navPageItems: Readonly<Record<NavPage, NavPageItem>> = {

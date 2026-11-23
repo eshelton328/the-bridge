@@ -25,7 +25,7 @@ import {
 import { inboxSources } from './loadInboxState.ts'
 import { InboxScreen } from './screens/InboxScreen.tsx'
 import { withNewBoxes } from './screens/listView.ts'
-import { usePushSwitch } from '../../state/pushStore.ts'
+import { navRoute } from '../../lib/navRoutes.ts'
 import { useVisibleNavPages } from '../../state/settingsStore.ts'
 import { useLiveItem } from './useLiveItem.ts'
 import { watchLiveInbox } from './liveInbox.ts'
@@ -38,7 +38,6 @@ const route = getRouteApi('/inbox')
 
 export function InboxPage() {
   const state = route.useLoaderData()
-  const push = usePushSwitch()
   const navPages = useVisibleNavPages()
   const search = route.useSearch()
   const navigate = route.useNavigate()
@@ -102,7 +101,6 @@ export function InboxPage() {
       : { ...state.data, live: { ...liveData, line: liveItem.listLine } }
   return (
     <InboxScreen
-      push={push}
       navPages={navPages}
       data={data}
       liveOpen={liveItem.open}
@@ -125,10 +123,10 @@ export function InboxPage() {
         },
       }}
       onNavigate={(page) => {
-        // The tablet's More (the phone opens its drawer) goes to Toolkit, the one page behind More with a route
-        // (d-105), as the tablet has no rail. Only the pages that have a route go somewhere; the others wait for theirs.
-        if (page === 'more') void navigate({ to: '/toolkit' })
-        else if (page === 'workspaces' || page === 'artifacts' || page === 'toolkit') void navigate({ to: `/${page}` })
+        // The desktop rail's More goes to Toolkit (d-105); the tablet's and the phone's open the drawer (d-119).
+        // Only the pages that have a route go somewhere; the others wait for theirs.
+        const to = page === 'more' ? '/toolkit' : navRoute(page)
+        if (to !== undefined && to !== '/inbox') void navigate({ to })
       }}
       ui={ui}
       viewport="desktop"
