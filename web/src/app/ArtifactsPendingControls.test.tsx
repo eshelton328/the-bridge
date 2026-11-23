@@ -41,6 +41,15 @@ describe('the Artifacts loading screen', () => {
       await expect.element(page.getByRole('button', { name: /Add a link/ })).toBeDisabled()
     })
 
+  it("opens the phone's More drawer with no Artifacts count before the library is read", async () => {
+    await openLoading(devices[1])
+    await page.getByRole('button', { name: /^More/ }).click()
+    const drawer = page.getByRole('dialog')
+    await expect.element(drawer.getByText('Artifacts', { exact: true })).toBeVisible()
+    // The home's sample count (home.ts) is 24.
+    await expect.element(drawer.getByText('24', { exact: true })).not.toBeInTheDocument()
+  })
+
   it("sends the desktop rail's More to Toolkit, as the old loading screen did", async () => {
     const router = await openLoading(devices[0])
     await page.getByRole('button', { name: /^More/ }).click()

@@ -341,7 +341,8 @@ export function ArtifactsScreen({
               }}
               pages={navLayout(navPages, layout === 'tablet' ? 'tablet' : 'phone').more}
               selected="artifacts"
-              counts={{ artifacts: data.count }}
+              // While the library loads (R58) the drawer has no count: the page has not read one.
+              counts={loading === true ? undefined : { artifacts: data.count }}
               onNavigate={onNavigate}
             />
           </Backdrop>
