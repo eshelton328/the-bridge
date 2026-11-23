@@ -430,12 +430,26 @@ describe('watchTranscript', () => {
     const stop = watch(server)
     await expect.poll(ids).toEqual(['u1'])
     stop()
-    // The read view stays, with no line, so the chat opened again shows it at once (bridge-coord, 2026-11-23).
-    expect(ids()).toEqual(['u1'])
-    expect(view()?.problem).toBeUndefined()
+    expect(view()).toBeUndefined()
     watch(server)
     await expect.poll(() => server.reads.length).toBe(2)
     await expect.poll(ids).toEqual(['u1'])
+  })
+
+  it('keeps a closed chat out of the shown views, and shows its last transcript at once when it opens again', async () => {
+    const server = fakeTranscriptServer()
+    server.set(chat, [user('u1', 'go')])
+    const stop = watch(server)
+    await expect.poll(ids).toEqual(['u1'])
+    stop()
+    // keptSends.ts and livePending.ts read the shown views: a closed chat is not one, so opening it again is news.
+    expect(transcriptViews().has(chat)).toBe(false)
+    server.set(chat, [user('u1', 'go'), reply('a1', 'done')])
+    watch(server, 200)
+    // At once, before the read answers: the kept view, with no skeleton.
+    expect(ids()).toEqual(['u1'])
+    expect(view()?.loaded).toBe(true)
+    await expect.poll(ids).toEqual(['u1', 'a1'])
   })
 
   it('shows a missed read with its kind, reports it once for the outage, and Retry reads again', async () => {

@@ -168,6 +168,23 @@ const emptyView: TranscriptView = { loaded: false, entries: [], earlier: false, 
 
 /** Each watched chat's view, by chat ID; a new map on each change, for useSyncExternalStore. */
 let views: ReadonlyMap<string, TranscriptView> = new Map()
+
+/**
+ * The last loaded view of each chat that no pane shows now, for the `keptViews` chats closed last, the oldest first:
+ * a chat opened again starts from it. Kept apart from `views`, which holds only the chats a pane shows, as
+ * keptSends.ts and livePending.ts read it.
+ */
+const kept = new Map<string, TranscriptView>()
+
+/** Keeps `view` for `chat`, closed now, and drops the oldest kept view past `keptViews`. */
+function keepView(chat: string, view: TranscriptView): void {
+  kept.delete(chat)
+  kept.set(chat, view)
+  for (const old of kept.keys()) {
+    if (kept.size <= keptViews) break
+    kept.delete(old)
+  }
+}
 const listeners = new Set<() => void>()
 
 /** The views of the watched chats, by chat ID. */
@@ -306,7 +323,8 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
   }
   // The pane shows the kept view of a chat opened again at once, with no skeleton, and the read updates it in place;
   // a chat with none shows the skeleton until the first read answers.
-  setView(chat, views.get(chat) ?? emptyView)
+  setView(chat, kept.get(chat) ?? emptyView)
+  kept.delete(chat)
   /** The limit of the skeleton: with no read answered in `loadLimitMs`, the stalled line with Retry takes its place. */
   let stall: ReturnType<typeof setTimeout> | undefined
   const armStall = () => {
@@ -549,38 +567,18 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
   }
 }
 
-/** The chats in the order they were last opened, the newest last: the views of the oldest that no pane shows go. */
-let opened: string[] = []
-
-/** Drops the views of the chats that no pane shows, but the `keptViews` opened last. */
-function forgetOldViews(): void {
-  const idle = opened.filter((c) => !sessions.has(c) && views.has(c))
-  const drop = new Set(idle.slice(0, Math.max(0, idle.length - keptViews)))
-  opened = opened.filter((c) => !drop.has(c) && (sessions.has(c) || views.has(c)))
-  if (drop.size === 0) return
-  const next = new Map(views)
-  for (const c of drop) next.delete(c)
-  views = next
-  for (const listener of listeners) listener()
-}
-
-// A test or a story starts with no kept view (state/resetStores.ts); a chat that a pane shows keeps its own.
+// A test or a story starts with no kept view (state/resetStores.ts).
 registerReset(() => {
-  const next = new Map([...views].filter(([c]) => sessions.has(c)))
-  opened = opened.filter((c) => sessions.has(c))
-  if (next.size === views.size) return
-  views = next
-  for (const listener of listeners) listener()
+  kept.clear()
 })
 
 /**
  * Reads `chat`'s transcript into its view (`transcriptViews`) until the result is called: one session for each chat,
- * however many panes watch it. The last stop closes the stream and keeps the read view, with no line, for the
- * `keptViews` chats opened last (bridge-coord, 2026-11-23), so the chat opened again shows it at once and reads the
- * transcript again; a view that no read filled goes.
+ * however many panes watch it. The last stop closes the stream and takes the view out of `transcriptViews`; a read view
+ * is kept apart, with no line, for the `keptViews` chats closed last (bridge-coord, 2026-11-23), so the chat opened
+ * again shows it at once and reads the transcript again.
  */
 export function watchTranscript(chat: string, deps: TranscriptDeps = {}): () => void {
-  opened = [...opened.filter((c) => c !== chat), chat]
   let session = sessions.get(chat)
   if (session === undefined) {
     session = startSession(ChatId.parse(chat), deps)
@@ -596,9 +594,9 @@ export function watchTranscript(chat: string, deps: TranscriptDeps = {}): () => 
     if (watched.watchers > 0) return
     watched.stop()
     if (sessions.get(chat) === watched) sessions.delete(chat)
-    const kept = views.get(chat)
-    setView(chat, kept?.loaded === true ? { ...kept, problem: undefined } : undefined)
-    forgetOldViews()
+    const shown = views.get(chat)
+    if (shown?.loaded === true) keepView(chat, { ...shown, problem: undefined })
+    setView(chat, undefined)
     // The chat no longer shows: a miss when it opens again is reported again.
     outages.delete(chat)
   }
