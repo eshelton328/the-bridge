@@ -62,6 +62,28 @@ function trace(cap = 20000) {
 
 const ofType = (samples: KeyboardTraceSample[], type: string) => samples.filter((s) => s.type === type)
 
+/**
+ * What AppShell does at the start of a keyboard dock move: it sends the dock event to its root, then, in the same
+ * task, starts the move's clock there (an animation with no keyframes) dated `startedAgo` ms back.
+ */
+function shellMove(
+  host: HTMLElement,
+  inset: number,
+  { duration, startedAgo = 0 }: { duration: number; startedAgo?: number },
+) {
+  host.dispatchEvent(new CustomEvent(appShellDockEvent, { detail: { inset } }))
+  const clock = host.animate([], { duration })
+  clock.startTime = performance.now() - startedAgo
+  return clock
+}
+
+/** An animation's start time, which the test has set. */
+function startOf(animation: Animation): number {
+  const { startTime } = animation
+  if (typeof startTime !== 'number') throw new Error('no start time')
+  return startTime
+}
+
 describe('keyboard trace sampler', () => {
   it('reads the document scroll, the app root top and the composer top, so a page that iOS moves shows (R27)', () => {
     const own = document.getElementById('root')
@@ -255,6 +277,74 @@ describe('keyboard trace sampler', () => {
     host.dispatchEvent(new CustomEvent(appShellDockEvent, { detail: { inset: 0 } }))
     window.dispatchEvent(new Event('resize'))
     expect(ofType(running.trace().samples, 'resize').at(-1)?.dockInset).toBe(0)
+  })
+
+  it('records one dock-start per dock move, with the event time, the move clock start and its duration', async () => {
+    const host = mountShell()
+    const running = trace()
+    await expect.poll(() => ofType(running.trace().samples, 'raf').length).toBeGreaterThan(0)
+    const clock = shellMove(host, 336, { duration: 400, startedAgo: 30 })
+    const moveStart = Math.round(startOf(clock) * 10) / 10
+    await expect.poll(() => ofType(running.trace().samples, 'dock-start').length).toBe(1)
+    const start = ofType(running.trace().samples, 'dock-start')[0]
+    expect(start).toMatchObject({ dockInset: 336, dockMoveStart: moveStart, dockDuration: 400 })
+    expect(start?.dockEventAt).toBeGreaterThan(0)
+    expect(start?.dockEventAt).toBeGreaterThanOrEqual(moveStart)
+    expect(start?.dockEventAt).toBeLessThanOrEqual(start?.t ?? 0)
+    // A dock sample has only numbers and the sample's own fields: no text of the page.
+    expect(Object.keys(start ?? {}).sort()).toEqual([...FIELDS, 'dockDuration', 'dockEventAt', 'dockMoveStart'].sort())
+  })
+
+  it("records dock-end when the move's clock finishes, at its start plus its duration", async () => {
+    const host = mountShell()
+    const running = trace()
+    await expect.poll(() => ofType(running.trace().samples, 'raf').length).toBeGreaterThan(0)
+    const clock = shellMove(host, 336, { duration: 150, startedAgo: 30 })
+    const moveEnd = startOf(clock) + 150
+    await expect.poll(() => ofType(running.trace().samples, 'dock-start').length).toBe(1)
+    expect(ofType(running.trace().samples, 'dock-end')).toEqual([])
+    await expect.poll(() => ofType(running.trace().samples, 'dock-end').length, { timeout: 2000 }).toBe(1)
+    const end = ofType(running.trace().samples, 'dock-end')[0]
+    expect(end?.dockMoveStart).toBe(ofType(running.trace().samples, 'dock-start')[0]?.dockMoveStart)
+    // The clock finishes on the first frame at or after its end.
+    expect(end?.t).toBeGreaterThanOrEqual(moveEnd - 1)
+    expect(end?.t).toBeLessThan(moveEnd + 200)
+    expect(end?.dockInset).toBe(336)
+  })
+
+  it('records dock-cancel when a new move replaces a running one, and dock-end at once for a jump', async () => {
+    const host = mountShell()
+    const running = trace()
+    await expect.poll(() => ofType(running.trace().samples, 'raf').length).toBeGreaterThan(0)
+    const first = shellMove(host, 336, { duration: 5000 })
+    await expect.poll(() => ofType(running.trace().samples, 'dock-start').length).toBe(1)
+    // The shell cancels the running move's clock before it sends the next event.
+    first.cancel()
+    shellMove(host, 0, { duration: 5000 })
+    await expect.poll(() => ofType(running.trace().samples, 'dock-start').length).toBe(2)
+    expect(ofType(running.trace().samples, 'dock-cancel')).toHaveLength(1)
+    expect(ofType(running.trace().samples, 'dock-end')).toEqual([])
+    // A jump: the shell stops the move and lays the inset out at once, with no clock.
+    host.getAnimations().forEach((animation) => {
+      animation.cancel()
+    })
+    host.dispatchEvent(new CustomEvent(appShellDockEvent, { detail: { inset: 336 } }))
+    await expect.poll(() => ofType(running.trace().samples, 'dock-start').length).toBe(3)
+    expect(ofType(running.trace().samples, 'dock-start')[2]).toMatchObject({ dockMoveStart: null, dockDuration: null })
+    expect(ofType(running.trace().samples, 'dock-end')).toHaveLength(1)
+    expect(ofType(running.trace().samples, 'dock-end')[0]?.dockMoveStart).toBeNull()
+  })
+
+  it('records no dock sample once stopped, even when a move it saw start ends later', async () => {
+    const host = mountShell()
+    const running = trace()
+    shellMove(host, 336, { duration: 250 })
+    await expect.poll(() => ofType(running.trace().samples, 'dock-start').length).toBe(1)
+    running.stop()
+    shellMove(host, 0, { duration: 50 })
+    await new Promise((done) => setTimeout(done, 600))
+    const types = running.trace().samples.map((s) => s.type)
+    expect(types.filter((type) => type.startsWith('dock-'))).toEqual(['dock-start'])
   })
 
   it('records the build in the header: the commit and the component library version the dev server defined', async () => {

@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
 import { testRender, unmountRendered } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
+import { recordKeyboardTrace } from './keyboardTrace.ts'
 import { routeTree } from './routeTree.gen.ts'
 
 // Screen review R20: library beta.61 docks a ScrollFrame's footer on the keyboard only when the frame is the AppShell
@@ -159,4 +160,40 @@ describe('the Workspaces composer on the keyboard (R20)', () => {
       expect(box(header).top).toBe(before.header)
       expect(box(frame).height).toBe(before.frame)
     })
+})
+
+// The keyboard trace times each dock move from the library's AppShell itself (keyboardTrace.ts): `dock-start` once
+// the shell has started the move, with its clock's start and duration, and `dock-end` when that clock finishes.
+describe('the keyboard trace times the real dock move', () => {
+  it('records dock-start with the move clock, then dock-end at its start plus its duration, on the phone chat', async () => {
+    await page.viewport(390, 844)
+    const viewport = new FakeViewport()
+    replaceVisualViewport(viewport)
+    const view = await renderWorkspaces('phoneChatFull')
+    onTestFinished(view.unmount)
+    const root = await appRoot()
+    await expect.poll(() => root.querySelector('.app-shell__detail .scroll-frame__footer textarea')).not.toBeNull()
+    const field = root.querySelector<HTMLElement>('.app-shell__detail .scroll-frame__footer textarea')
+    if (!field) throw new Error('no composer')
+    const recording = recordKeyboardTrace({ overlay: false, post: () => Promise.resolve(undefined) })
+    onTestFinished(() => {
+      recording.stop()
+    })
+    const ofType = (type: string) => recording.trace().samples.filter((s) => s.type === type)
+    await userEvent.click(field)
+    viewport.move({ height: 544 })
+    await expect.poll(() => ofType('dock-start').length).toBeGreaterThan(0)
+    const start = ofType('dock-start')[0]
+    expect(start?.dockInset).toBe(300)
+    expect(start?.dockDuration).toBeGreaterThan(0)
+    expect(start?.dockMoveStart).toEqual(expect.any(Number))
+    // The last move ends, at its clock's start plus its duration (on the first frame after).
+    await expect.poll(() => ofType('dock-end').length, { timeout: 3000 }).toBeGreaterThan(0)
+    const last = ofType('dock-start').at(-1)
+    const end = ofType('dock-end').at(-1)
+    expect(end?.dockMoveStart).toBe(last?.dockMoveStart)
+    const due = (last?.dockMoveStart ?? 0) + (last?.dockDuration ?? 0)
+    expect(end?.t).toBeGreaterThanOrEqual(due - 1)
+    expect(end?.t).toBeLessThan(due + 200)
+  })
 })
