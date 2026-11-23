@@ -62,7 +62,7 @@ import {
   switchModelDialogOf,
 } from './claudeInput.ts'
 import { readCodeMode, sideRecord } from './claudeSide.ts'
-import { readClaudeTranscript } from './claudeTranscript.ts'
+import { readClaudeTranscript, readClaudeTranscriptPage } from './claudeTranscript.ts'
 import { readClaudeSkills } from './claudeSkills.ts'
 import { readCompactWindows } from './claudeSettings.ts'
 import { claudeProjectFolder, modelAliasOf, readClaudeSession } from './sessionFile.ts'
@@ -1697,6 +1697,14 @@ export function createHerdrAgents({
       const { path, working, cwd } = located.value
       if (path === undefined) return ok({ entries: [], earlier: false })
       return ok(await readClaudeTranscript(path, { working, cwd, home, uploads }))
+    },
+    async readTranscriptPage(chat, page) {
+      const located = await locate(chat)
+      if (!located.ok) return located
+      if (located.value === null) return ok(null)
+      const { path, working, cwd } = located.value
+      if (path === undefined) return ok(page.before === undefined ? { entries: [], earlier: false } : 'entryNotFound')
+      return ok(await readClaudeTranscriptPage(path, { working, cwd, home, uploads }, page))
     },
     async turnEnd(chat) {
       const located = await locate(chat)

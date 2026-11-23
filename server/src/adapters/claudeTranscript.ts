@@ -20,7 +20,7 @@ import {
   type TranscriptEntry,
 } from '@bridge/contract'
 import { z } from 'zod'
-import type { TranscriptRead } from '../services/agentPort.ts'
+import type { TranscriptPage, TranscriptRead } from '../services/agentPort.ts'
 import { attachedLine } from '../services/uploads.ts'
 import { type TargetContext, toolTarget } from './toolTarget.ts'
 import { toolLabel } from './toolLabel.ts'
@@ -335,7 +335,25 @@ function markDrafts(entries: TranscriptEntry[]): TranscriptEntry[] {
 
 /** The last entries of the session file at `path`; no entries when the file is missing or cannot be read. */
 export async function readClaudeTranscript(path: string, options: TranscriptOptions): Promise<TranscriptRead> {
+  const read = await readClaudeTranscriptPage(path, options, { limit: maxTranscriptEntries })
+  return read === 'entryNotFound' ? { entries: [], earlier: false } : read
+}
+
+/**
+ * One page of the session file at `path`: its last `page.limit` entries, or the last ones before the entry
+ * `page.before`, read from the end of the file to that entry and on until the page is full. `entryNotFound` when the
+ * file or its last 64 MiB has no such entry; no entries when the file is missing or cannot be read.
+ */
+export async function readClaudeTranscriptPage(
+  path: string,
+  options: TranscriptOptions,
+  page: TranscriptPage,
+): Promise<TranscriptRead | 'entryNotFound'> {
+  const { limit, before } = page
   const found: TranscriptEntry[] = [] // newest first
+  // How many of `found` come at or after the `before` entry: they are not on the page. Undefined until it is found.
+  let skip = before === undefined ? 0 : undefined
+  const full = () => skip !== undefined && found.length - skip > limit
   const seen = new Set<string>()
   const results = new Set<string>()
   let handle
@@ -349,7 +367,7 @@ export async function readClaudeTranscript(path: string, options: TranscriptOpti
     let end = size
     let carry = Buffer.alloc(0)
     const stopAt = Math.max(0, size - maxReadBytes)
-    while (end > stopAt && found.length <= maxTranscriptEntries) {
+    while (end > stopAt && !full()) {
       const start = Math.max(stopAt, end - partBytes)
       const part = Buffer.alloc(end - start)
       await handle.read(part, 0, part.length, start)
@@ -379,13 +397,15 @@ export async function readClaudeTranscript(path: string, options: TranscriptOpti
           if (seen.has(entry.id)) continue
           seen.add(entry.id)
           found.push(entry)
+          if (entry.id === before) skip = found.length
         }
-        if (found.length > maxTranscriptEntries) break
+        if (full()) break
       }
       end = start
     }
-    const earlier = found.length > maxTranscriptEntries || stopAt > 0
-    return { entries: markDrafts(found.slice(0, maxTranscriptEntries).reverse()), earlier }
+    if (skip === undefined) return 'entryNotFound'
+    const earlier = found.length - skip > limit || stopAt > 0
+    return { entries: markDrafts(found.slice(skip, skip + limit).reverse()), earlier }
   } catch {
     return { entries: [], earlier: false }
   } finally {

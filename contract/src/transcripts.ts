@@ -150,7 +150,27 @@ const Entries = z.array(TranscriptEntry).check((ctx) => {
   })
 })
 
-/** The answer of `GET /api/chats/:chat/transcript`: the last entries, and whether older entries exist. */
+/**
+ * The query of `GET /api/chats/:chat/transcript`, both optional: `limit` entries at most (1 to
+ * `maxTranscriptEntries`; all of those when absent), the last ones before the entry `before` when it is given, else
+ * the last ones of the chat. Other keys are dropped.
+ */
+export const TranscriptQuery = z.object({
+  limit: z
+    .string()
+    .regex(/^[1-9][0-9]{0,2}$/)
+    .transform(Number)
+    .pipe(z.number().int().min(1).max(maxTranscriptEntries))
+    .optional(),
+  before: EntryId.optional(),
+})
+export type TranscriptQuery = z.infer<typeof TranscriptQuery>
+
+/**
+ * The answer of `GET /api/chats/:chat/transcript`: the entries in transcript order, and whether older entries exist
+ * before the first one. The server reads at most the last 64 MiB of a session file, so a page with fewer entries than
+ * its limit can still say `earlier`; a page with no entries is the last the server can send.
+ */
 export const TranscriptResponse = z.object({
   chat: ChatId,
   entries: Entries.max(maxTranscriptEntries),

@@ -7,6 +7,7 @@ import {
   maxTranscriptEntries,
   TranscriptChangedEvent,
   TranscriptEntry,
+  TranscriptQuery,
   TranscriptResponse,
   UserEntry,
   maxNoteFrom,
@@ -102,5 +103,22 @@ describe('transcripts', () => {
   it('takes the ID of the reply that replaced a draft that a Stop hook sent back (R62)', () => {
     expect(TranscriptEntry.parse({ ...assistant, replacedBy: 'a2' })).toEqual({ ...assistant, replacedBy: 'a2' })
     expect(TranscriptEntry.safeParse({ ...assistant, replacedBy: '' }).success).toBe(false)
+  })
+})
+
+describe('TranscriptQuery', () => {
+  it('takes no key, a limit of 1 to maxTranscriptEntries, an entry ID, or both, and drops other keys', () => {
+    expect(TranscriptQuery.parse({})).toEqual({})
+    expect(TranscriptQuery.parse({ limit: '100' })).toEqual({ limit: 100 })
+    expect(TranscriptQuery.parse({ limit: String(maxTranscriptEntries) })).toEqual({ limit: maxTranscriptEntries })
+    expect(TranscriptQuery.parse({ before: 'u1:0' })).toEqual({ before: 'u1:0' })
+    expect(TranscriptQuery.parse({ limit: '1', before: 'toolu_1', t: '5150' })).toEqual({ limit: 1, before: 'toolu_1' })
+  })
+
+  it('refuses a limit that is not a whole number in range, and an empty or long entry ID', () => {
+    for (const limit of ['0', String(maxTranscriptEntries + 1), '-1', '1.5', '01', 'ten', '', '1e2'])
+      expect(TranscriptQuery.safeParse({ limit }).success).toBe(false)
+    expect(TranscriptQuery.safeParse({ before: '' }).success).toBe(false)
+    expect(TranscriptQuery.safeParse({ before: 'x'.repeat(201) }).success).toBe(false)
   })
 })

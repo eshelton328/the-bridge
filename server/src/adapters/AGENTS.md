@@ -40,7 +40,10 @@ client of a socket or a file sits beside them.
   can learn the new session after the file is there. Writes to a known
   file read nothing (`herdrAgents.test.ts`).
 - A Claude chat's transcript comes from its own session file only, read
-  from the end (`claudeTranscript.ts`): prompts, reply text and each
+  from the end (`claudeTranscript.ts`); a page reads back to its
+  `before` entry and on until it is full, in the last 64 MiB of the
+  file, and an entry it does not find there is `entryNotFound`
+  (`agentPortContract.ts`): prompts, reply text and each
   tool call's name and target, never thinking, a tool's arguments or
   its result. A shell tool's target is its program names, a file tool's
   its path from the chat's folder or with "~", a web tool's its host

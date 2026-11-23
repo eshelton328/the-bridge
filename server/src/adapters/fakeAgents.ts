@@ -394,6 +394,18 @@ export function createFakeAgents(
       const found = transcriptOf(chat)
       return Promise.resolve(ok(found === undefined ? null : structuredClone(found)))
     },
+    readTranscriptPage(chat, { limit, before }) {
+      if ('error' in answer) return Promise.resolve(err(answer.error))
+      transcriptReads.push(chat)
+      const found = transcriptOf(chat)
+      if (found === undefined) return Promise.resolve(ok(null))
+      const end = before === undefined ? found.entries.length : found.entries.findIndex((e) => e.id === before)
+      if (end === -1) return Promise.resolve(ok('entryNotFound'))
+      const start = Math.max(0, end - limit)
+      return Promise.resolve(
+        ok({ entries: structuredClone(found.entries.slice(start, end)), earlier: start > 0 || found.earlier }),
+      )
+    },
     turnEnd(chat) {
       if ('error' in answer) return Promise.resolve(err(answer.error))
       const found = (data ?? []).flatMap((w) => w.chats).find((c) => c.id === chat)

@@ -50,6 +50,7 @@ import {
   SetEffortRequest,
   SwapChatsRequest,
   TranscriptChangedEvent,
+  TranscriptQuery,
   TranscriptResponse,
   ZoomChatRequest,
   SendId,
@@ -81,13 +82,13 @@ import type {
   SwapOutcome,
   ZoomOutcome,
 } from '../services/agentPort.ts'
-import { clearInput, readSkills, readTranscript, sendCommand, setEffort, stopChat } from '../services/chats.ts'
+import { clearInput, readSkills, readTranscriptPage, sendCommand, setEffort, stopChat } from '../services/chats.ts'
 import type { UploadStore } from '../services/uploadStore.ts'
 import { createSendResults, resultOf, type SendResults } from '../services/sendResults.ts'
 import { createNewChats, type NewChats, type StartAnswer } from '../services/newChats.ts'
 import { createRestarts, type Restarts } from '../services/restarts.ts'
 import { type FilePromptOutcome, sendPromptWithFiles, startUpload } from '../services/uploads.ts'
-import { jsonBody, jsonOnly, smallJson } from './jsonBody.ts'
+import { jsonBody, jsonOnly, queryOf, smallJson } from './jsonBody.ts'
 import { ssePingMs } from './sse.ts'
 import { storeFailed } from './uploads.ts'
 import { connectTranscript } from '../services/transcriptEvents.ts'
@@ -494,12 +495,17 @@ export function chatsRoutes(
       const cleared = await clearInput(agents, id.data)
       return cleared.ok ? answer(c, cleared.value) : failed(c, cleared.error)
     })
-    .get('/:chat/transcript', async (c) => {
+    .get('/:chat/transcript', queryOf(TranscriptQuery), async (c) => {
       const id = chatOf(c)
       if (!id.success) return invalid(c)
-      const read = await readTranscript(agents, id.data)
+      const read = await readTranscriptPage(agents, id.data, c.req.valid('query'))
       if (!read.ok) return failed(c, read.error)
       if (read.value === null) return notFound(c)
+      if (read.value === 'entryNotFound')
+        return errorJson(c, 'chat-not-ready', {
+          state: 'entryNotFound',
+          message: 'the chat has no entry with this ID; read the newest page again',
+        })
       return c.json(TranscriptResponse.parse(read.value), 200)
     })
     .get('/:chat/sends/:send', (c) => {

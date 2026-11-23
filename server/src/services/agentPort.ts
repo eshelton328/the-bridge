@@ -157,6 +157,9 @@ export type CancelOutcome = Exclude<SendOutcome, 'needsYou' | 'inputNotEmpty' | 
 /** The last entries of a chat's transcript, and whether older entries exist. */
 export type TranscriptRead = { readonly entries: TranscriptEntry[]; readonly earlier: boolean }
 
+/** A page of a transcript: at most `limit` entries, the last ones before the entry `before` when it is given. */
+export type TranscriptPage = { readonly limit: number; readonly before?: string }
+
 export type AgentSubscription = {
   /** Resolves when the port listens, so a change after it is told; or when the subscription ended first. */
   readonly ready: Promise<void>
@@ -186,6 +189,14 @@ export type AgentPort = {
    * session, and only when called.
    */
   readTranscript(chat: ChatId): Promise<Result<TranscriptRead | null, AgentPortError>>
+  /**
+   * One page of a chat's transcript, as `readTranscript` reads it: `entryNotFound` when `page.before` names no
+   * entry that the adapter finds in the chat, `null` when this machine has no such chat.
+   */
+  readTranscriptPage(
+    chat: ChatId,
+    page: TranscriptPage,
+  ): Promise<Result<TranscriptRead | 'entryNotFound' | null, AgentPortError>>
   /**
    * The "/" list of one chat: for a Claude chat the built-in commands the page sends, then its skills and commands
    * by name; none for a Codex chat or a shell; `null` when this machine has no such chat. It reads only when called.

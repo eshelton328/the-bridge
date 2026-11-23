@@ -1,6 +1,13 @@
 // The chats service: what the server reads of one chat, its stop and its
 // input clear and its commands. A prompt goes through sendPromptWithFiles in uploads.ts.
-import type { ChatId, ChatSkillsResponse, KeyEffort, TranscriptResponse } from '@bridge/contract'
+import {
+  type ChatId,
+  type ChatSkillsResponse,
+  type KeyEffort,
+  maxTranscriptEntries,
+  type TranscriptQuery,
+  type TranscriptResponse,
+} from '@bridge/contract'
 import { ok, type Result } from '@bridge/shared'
 import type {
   AgentPort,
@@ -12,13 +19,15 @@ import type {
   EffortOutcome,
 } from './agentPort.ts'
 
-/** The last entries of `chat`'s transcript; `null` when this machine has no such chat. */
-export async function readTranscript(
+/** One page of `chat`'s transcript (see `TranscriptQuery`); `null` when this machine has no such chat. */
+export async function readTranscriptPage(
   agents: AgentPort,
   chat: ChatId,
-): Promise<Result<TranscriptResponse | null, AgentPortError>> {
-  const read = await agents.readTranscript(chat)
-  if (!read.ok || read.value === null) return read.ok ? ok(null) : read
+  { limit = maxTranscriptEntries, before }: TranscriptQuery,
+): Promise<Result<TranscriptResponse | 'entryNotFound' | null, AgentPortError>> {
+  const read = await agents.readTranscriptPage(chat, before === undefined ? { limit } : { limit, before })
+  if (!read.ok) return read
+  if (read.value === null || read.value === 'entryNotFound') return ok(read.value)
   return ok({ chat, entries: read.value.entries, earlier: read.value.earlier })
 }
 

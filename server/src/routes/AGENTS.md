@@ -29,7 +29,11 @@ Thin Hono sub-apps, one file for each area, named after the area
   (`app.test.ts`).
 - `GET /api/chats/:chat/transcript` takes the chat ID URL-encoded; an
   ID with no machine is 400 `invalid-input` and an unknown chat 404
-  `not-found`. Transcript text goes only into the 200 body, never into
+  `not-found`. Its optional query (`TranscriptQuery`) pages it: `limit`
+  (1 to 500, else 400) entries at most, the last ones before the entry
+  `before` when given; an entry the chat does not have is 409
+  `chat-not-ready` `entryNotFound`, so the page reads the newest page
+  again. Transcript text goes only into the 200 body, never into
   a log line or an `ErrorBody` (`app.test.ts`).
 - `GET /api/chats/:chat/skills` (R34) gives the chat's "/" list, built-in
   commands first; none for a Codex chat or a shell; 400 and 404 as the
