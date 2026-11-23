@@ -14,7 +14,9 @@
 // the screen draws with the live notice in every layout. A closed workspace
 // leaves the page with the list read after the 204, never before; a close
 // whose count the server does not match reads the list again and calls
-// `again`, so the dialog asks with the new list.
+// `again` once that read changed the list (or after 2.5 s), so the dialog
+// asks with the new list and its count, never the old one (Codex review
+// of #432).
 import { Label, maxLabel } from '@bridge/contract'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { report } from '../../errors/reporter.ts'
@@ -65,6 +67,15 @@ export function useWorkspaceEdits(live: boolean, data: WorkspacesData): Workspac
   const dataRef = useRef(data)
   const pendingRef = useRef<Pending>(undefined)
   const aliveRef = useRef(true)
+  /** A close to ask about again: the list when the server refused it, and the wait for the read after it. */
+  const againRef = useRef<{ seen: string; run: () => void; timer: ReturnType<typeof setTimeout> }>(undefined)
+  const askAgain = useCallback(() => {
+    const entry = againRef.current
+    if (entry === undefined) return
+    clearTimeout(entry.timer)
+    againRef.current = undefined
+    entry.run()
+  }, [])
   const done = useCallback((entry: Pending) => {
     if (pendingRef.current !== entry) return
     clearTimeout(entry.timer)
@@ -76,6 +87,7 @@ export function useWorkspaceEdits(live: boolean, data: WorkspacesData): Workspac
     return () => {
       aliveRef.current = false
       clearTimeout(pendingRef.current?.timer)
+      clearTimeout(againRef.current?.timer)
     }
   }, [])
   // A list read that changed the list ends the wait of an edit the server took.
@@ -83,6 +95,8 @@ export function useWorkspaceEdits(live: boolean, data: WorkspacesData): Workspac
     dataRef.current = data
     const p = pendingRef.current
     if (p?.timer !== undefined && listJson(data) !== p.seen) done(p)
+    // A refused close asks again only with the list read after it.
+    if (againRef.current !== undefined && listJson(data) !== againRef.current.seen) askAgain()
   })
 
   /** Sends one edit; `false` when another one is pending, and nothing goes. */
@@ -118,11 +132,15 @@ export function useWorkspaceEdits(live: boolean, data: WorkspacesData): Workspac
         done(entry)
         if (answer.kind === 'stale' || answer.kind === 'gone' || answer.kind === 'again') readList()
         setLine(answer.line)
-        if (answer.kind === 'again') again?.()
+        if (answer.kind === 'again' && again !== undefined) {
+          clearTimeout(againRef.current?.timer)
+          againRef.current = { seen: entry.seen, run: again, timer: setTimeout(askAgain, listEventWaitMs) }
+          if (listJson(dataRef.current) !== entry.seen) askAgain()
+        }
       })
       return true
     },
-    [done],
+    [done, askAgain],
   )
   /** The name to send, or a line: trimmed, never empty, as the contract's `Label` takes it. */
   const named = useCallback((action: WorkspaceEdit, name: string, was: string) => {

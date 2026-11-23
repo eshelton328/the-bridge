@@ -134,6 +134,28 @@ const listedChats = () =>
     .elements()
     .map((e) => e.textContent)
 
+/** Holds each request that `match` takes for `ms` before the stubbed server answers it. */
+function slow(match: (path: string, init?: RequestInit) => boolean, ms: number) {
+  const inner = globalThis.fetch
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
+      if (match(new URL(url, window.location.origin).pathname, init)) await new Promise((r) => setTimeout(r, ms))
+      return inner(input, init)
+    }),
+  )
+}
+
+/** Has the server count a chat that opened in orchard after the page read the list, once: 409 panesChanged. */
+const chatOpensAsTheServerCounts = (fakes: Fakes) => {
+  fakes.list.answerEdits(() => {
+    fakes.list.answerEdits(undefined)
+    fakes.list.putChat(orchard, summary('test-box/c4', 'water the trees'), true)
+    return notReady('panesChanged')()
+  })
+}
+
 const orchardShown = () => page.getByRole('button', { name: 'Move orchard' }).elements().length
 
 describe("the live list's × (R41, backend #427)", () => {
@@ -192,6 +214,20 @@ describe("the live list's × (R41, backend #427)", () => {
       ])
     })
   }
+
+  it('asks again only with the list read after the refusal, so the count is the new one', async () => {
+    const fakes = withChats()
+    await tapWorkspaces(phone)
+    await tapEdit()
+    const dialog = await askOrchard()
+    chatOpensAsTheServerCounts(fakes)
+    // The list read after the refusal takes a while to answer.
+    slow((path, init) => path === '/api/workspaces' && (init?.method ?? 'GET') === 'GET', 800)
+    await userEvent.click(dialog.getByRole('button', { name: 'Close', exact: true }))
+    await expect.poll(() => page.getByRole('alertdialog').elements().length, { interval: 20 }).toBe(1)
+    // The first sight of the dialog already lists the new chat.
+    expect(listedChats()).toEqual(['sketch the plan', 'tidy the notes', 'water the trees'])
+  })
 
   const states = [
     ['working', 'A chat in it is working — stop it first'],
