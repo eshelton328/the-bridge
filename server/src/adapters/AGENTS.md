@@ -246,7 +246,15 @@ client of a socket or a file sits beside them.
   free of `<name>-fork`, `-fork-2` to `-fork-9`. A side question finds the
   session as a fork does (`noSession` likewise, also for a chat with no
   folder) and gives the session, the folder and the question to the
-  `runSide` option; with none it is `unreachable`. The fake answers
+  `runSide` option; with none it is `unreachable`. `main.ts` gives
+  `claudeSideRunner` (`claudeSide.ts`): `claude -p --resume <session>
+  --fork-session --no-session-persistence` with the model `sonnet`, the
+  tools `Read,Grep,Glob` only, stream-json output and an empty MCP
+  config (`--strict-mcp-config`), in the chat's folder with an argument
+  list, never a shell. The question goes on stdin. The answer is the
+  text of each top-level assistant message; an error result, an exit
+  with no result or a command that does not start is `failed`, and an
+  abort ends the process (`claudeSide.test.ts`, a fake `claude`). The fake answers
   from `setSideAnswer`, and `hang` waits for the stop. The contract suite has no start or fork (a real Claude).
 - An effort change (slice W10) goes to an idle Claude chat with an
   empty box only, as Claude Code's effort keys (`shift+up` and
