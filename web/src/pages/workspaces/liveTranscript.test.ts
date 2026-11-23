@@ -612,13 +612,6 @@ describe('a harness note (R46)', () => {
       label: transcriptText.note.task,
       text: 'Background task finished: tests pass',
     })
-    expect(chatEntryOf({ type: 'note', id: 'n2', kind: 'peer', text: 'Message from bridge-coord' }, 'claude')).toEqual({
-      type: 'note',
-      id: 'n2',
-      kind: 'peer',
-      label: transcriptText.note.peer,
-      text: 'Message from bridge-coord',
-    })
     expect(chatEntryOf({ type: 'note', id: 'n3', kind: 'hook', text: 'Stop hook: reply rewritten' }, 'claude')).toEqual(
       {
         type: 'note',
@@ -628,6 +621,38 @@ describe('a harness note (R46)', () => {
         text: 'Stop hook: reply rewritten',
       },
     )
+  })
+})
+
+describe('a message from another chat (R55)', () => {
+  it("draws a peer note as a peer entry with its sender and text, never as the owner's message", () => {
+    const note = { type: 'note', id: 'n2', kind: 'peer', text: 'Message from sample-lab' } as const
+    expect(
+      chatEntryOf(
+        { ...note, message: { from: 'sample-lab', via: 'message', text: 'Port **5191** is free.', cut: false } },
+        'claude',
+      ),
+    ).toEqual({ type: 'peer', id: 'n2', name: 'sample-lab', text: 'Port **5191** is free.' })
+    // A prompt typed in an `<agent-prompt>` wrapper draws the same way.
+    expect(
+      chatEntryOf(
+        { ...note, message: { from: 'sample-lab', via: 'prompt', text: 'Build the page.', cut: true } },
+        'claude',
+      ),
+    ).toEqual({ type: 'peer', id: 'n2', name: 'sample-lab', text: 'Build the page.', cut: transcriptText.cut })
+    // A line that names no sender: "another chat".
+    expect(
+      chatEntryOf(
+        {
+          ...note,
+          text: 'Message from another chat',
+          message: { from: null, via: 'message', text: 'Done.', cut: false },
+        },
+        'claude',
+      ),
+    ).toEqual({ type: 'peer', id: 'n2', name: transcriptText.anotherChat, text: 'Done.' })
+    // A peer note with no message: its sender from the note's own text, and no text.
+    expect(chatEntryOf(note, 'claude')).toEqual({ type: 'peer', id: 'n2', name: 'sample-lab' })
   })
 })
 

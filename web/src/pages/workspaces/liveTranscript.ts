@@ -93,7 +93,9 @@ export const transcriptText = {
   /** The author line of each draft behind that note. */
   draft: 'Draft',
   /** The label of a harness note (R46), by its kind: never the owner's bubble. */
-  note: { task: 'Task', peer: 'Message', hook: 'Hook' },
+  note: { task: 'Task', hook: 'Hook' },
+  /** The sender of a message from another chat (R55) whose line names none. */
+  anotherChat: 'another chat',
   /** Under the entries while the stream is down and the page connects again. */
   dropped: 'Transcript updates lost — connecting again',
   /** The skeleton's label while the first read has not answered (bridge-coord, 2026-11-23). */
@@ -692,8 +694,32 @@ export function chatEntryOf(
     case 'error':
       return { type: 'event', id: entry.id, label: transcriptText.error, text: entry.text }
     case 'note':
-      // R46: a harness input is a muted note line with its kind's icon, never the owner's bubble.
+      // R55: a message from another chat draws in its own style with its text, never as the owner's bubble.
+      if (entry.kind === 'peer') return peerEntryOf(entry)
+      // R46: any other harness input is a muted note line with its kind's icon, never the owner's bubble.
       return { type: 'note', id: entry.id, kind: entry.kind, label: transcriptText.note[entry.kind], text: entry.text }
+  }
+}
+
+/** The note's own text for a peer, as the server writes it: "Message from <name>" (R46). */
+const peerNoteText = /^Message from (.+)$/
+
+/**
+ * A peer note as the page draws it (R55): the sender and the text of its `message`. A note from a server without
+ * the message has only its own text, "Message from <name>", so the sender comes from that.
+ */
+function peerEntryOf(entry: Extract<TranscriptEntry, { type: 'note' }>): ChatEntry {
+  const { message } = entry
+  if (message === undefined) {
+    const name = peerNoteText.exec(entry.text)?.[1] ?? transcriptText.anotherChat
+    return { type: 'peer', id: entry.id, name }
+  }
+  return {
+    type: 'peer',
+    id: entry.id,
+    name: message.from ?? transcriptText.anotherChat,
+    text: message.text,
+    ...(message.cut ? { cut: transcriptText.cut } : {}),
   }
 }
 

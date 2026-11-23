@@ -1,7 +1,7 @@
 // The Workspaces page's view models, display-ready, each from its Zod schema.
 // The Workbench (Figma page 89:2): workspace tabs over one to four split
 // panes, each a chat, a shell or an empty pane, and a status bar.
-import { ChatEffort, LayoutNode, ModelAlias, NoteKind, TabId, ToolKind } from '@bridge/contract'
+import { ChatEffort, LayoutNode, ModelAlias, TabId, ToolKind } from '@bridge/contract'
 import { z } from 'zod'
 
 export const AgentKind = z.enum(['claude', 'codex', 'shell'])
@@ -95,6 +95,10 @@ const RewrittenReply = z.object({
 })
 
 /** One entry of a chat's transcript, a union on `type`. */
+/** The kinds of note that draw as a muted line (R46); a peer's message draws as a `peer` entry (R55). */
+export const NoteNoticeKind = z.enum(['task', 'hook'])
+export type NoteNoticeKind = z.infer<typeof NoteNoticeKind>
+
 export const ChatEntry = z.discriminatedUnion('type', [
   /**
    * The owner's message; `cut` is the line under text the server cut, such as "Cut — full text not live yet".
@@ -144,10 +148,23 @@ export const ChatEntry = z.discriminatedUnion('type', [
    */
   z.object({ type: z.literal('event'), id: EntryKey, label: z.string(), text: z.string() }),
   /**
-   * A harness note the chat got, never a prompt of the owner's (R46): a background task's report, a peer's message
-   * or a Stop hook. It draws as a small muted line with its kind's icon and no bubble. `label` names the icon.
+   * A harness note the chat got, never a prompt of the owner's (R46): a background task's report or a Stop hook. It
+   * draws as a small muted line with its kind's icon and no bubble. `label` names the icon. A peer's message is a
+   * `peer` entry (R55).
    */
-  z.object({ type: z.literal('note'), id: EntryKey, kind: NoteKind, label: z.string(), text: z.string() }),
+  z.object({ type: z.literal('note'), id: EntryKey, kind: NoteNoticeKind, label: z.string(), text: z.string() }),
+  /**
+   * A message from another chat, never the owner's (R55): a SendMessage peer message or a prompt that another chat
+   * typed in an `<agent-prompt>` wrapper. It draws as the library's `Message from="peer"`: an amber bar and "From
+   * <name>". `text` is its Markdown, none when the server sent only the note; `cut` as for `user`.
+   */
+  z.object({
+    type: z.literal('peer'),
+    id: EntryKey,
+    name: z.string(),
+    text: z.string().optional(),
+    cut: z.string().optional(),
+  }),
   /** Lines of an agent's progress, in mono. */
   z.object({ type: z.literal('progress'), lines: z.array(z.string()) }),
   /** A command the agent asks to run. */

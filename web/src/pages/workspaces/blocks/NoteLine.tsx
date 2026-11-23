@@ -1,20 +1,20 @@
-// A harness note in a chat's transcript (R46): a background task's report, a
-// peer's message or a Stop hook. The owner saw these drawn as his own bubbles,
+// A harness note in a chat's transcript (R46): a background task's report or
+// a Stop hook. The owner saw these drawn as his own bubbles,
 // so a note never takes the owner's bubble or its colour: it is a small line in
 // `fg.muted` (which passes 4.5:1 on every surface) with its kind's library
-// icon and no bubble. A task draws the agent (a robot), a peer's message the
-// chat icon (a speech box) and a hook the toolkit's hook icon (an anchor). The
-// icon is named by the note's label (Task, Message, Hook). Figma draws no note,
+// icon and no bubble. A task draws the agent (a robot) and a hook the
+// toolkit's hook icon (an anchor). The icon is named by the note's label
+// (Task, Hook). A peer's message is not a note line: it draws as
+// `Message from="peer"` (R55, `ChatEntryView`). Figma draws no note,
 // so the line follows the tool row's quiet look; its text wraps, as a note says
 // what happened in a sentence. Props only.
-import type { NoteKind } from '@bridge/contract'
-import { AgentIcon, ChatIcon, HookIcon, type IconProps } from '@eshelton328/component-library-1701'
+import { AgentIcon, HookIcon, type IconProps } from '@eshelton328/component-library-1701'
 import { memo, type ComponentType } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
+import type { NoteNoticeKind } from '../types.ts'
 
-const icons: Record<NoteKind, ComponentType<IconProps>> = {
+const icons: Record<NoteNoticeKind, ComponentType<IconProps>> = {
   task: AgentIcon,
-  peer: ChatIcon,
   hook: HookIcon,
 }
 
@@ -31,7 +31,7 @@ const mark = css({ display: 'inline-flex', flexShrink: '0' })
 const text = css({ minW: '[0]', overflowWrap: 'anywhere' })
 
 export type NoteLineProps = {
-  kind: NoteKind
+  kind: NoteNoticeKind
   /** The note's kind as a word, such as "Task": the icon's name. */
   label: string
   text: string

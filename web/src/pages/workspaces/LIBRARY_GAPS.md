@@ -111,6 +111,21 @@ The Menu `touch` variant is in 1.0.0-beta.116.
   coarse pointer. `PhoneAddMenu` and `PaneMenu` take it
   (`app/WorkspacesMenuTouchRows.test.tsx`).
 
+## Closed by 1.0.0-beta.113
+
+Library #339 (97858f55) is in 1.0.0-beta.113.
+
+- **Peer message** (review R55, not a Figma state; the owner: "This
+  should maybe have a yellow background or text to show that it's not
+  from me"): a message from another chat, by SendMessage or a herdr
+  `<agent-prompt>` (server #454), drew as the owner's bubble or as a
+  muted note line with no text, and `Message` had only `user` and
+  `assistant`. `Message from="peer"` draws no bubble, a 2 px start bar
+  and "From <name>" with `ChatIcon`, in `status.needsYou.fg`, and its
+  time in `fg.muted`. `blocks/ChatEntryView.tsx` draws each `peer` entry
+  with it, its text in `EntryText` and the cut line under it; the page
+  builds nothing by hand (`app/WorkspacesNoteLines.test.tsx`, R55 cases).
+
 ## Closed by 1.0.0-beta.101
 
 Library #313 (2b8bcde8) is in 1.0.0-beta.101.

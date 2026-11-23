@@ -19,15 +19,18 @@ import { routeTree } from './routeTree.gen.ts'
 import { stubLiveServer } from './liveServerStub.ts'
 import { answerLateServerReads } from '../lib/lateServerReads.ts'
 
-// A harness note (`NoteEntry`, R46: a background task's report, a peer's
-// message, a Stop hook) never looks like the owner's own message. Each test
+// A harness note (`NoteEntry`, R46: a background task's report, a Stop hook)
+// and a message from another chat (a `peer` note, R55) never look like the
+// owner's own message. Each test
 // takes the owner's path: it opens the app with no URL parameters, taps
 // Workspaces and a live chat (the phone and the tablet) or shows the
 // workbench's pane (the desktop), with a stubbed server (`fetch`) whose
 // transcript routes are the contract-checked fake
-// (lib/fakeTranscriptServer.ts). The owner's prompt is his bubble; each note
-// is a muted line with its kind's icon and its text, with no bubble and not
-// the bubble's colour, its text readable on the pane (4.5:1).
+// (lib/fakeTranscriptServer.ts). The owner's prompt is his bubble; a task or
+// hook note is a muted line with its kind's icon and its text, with no bubble
+// and not the bubble's colour, its text readable on the pane (4.5:1). A peer
+// note is the library's peer message: an amber start bar and "From <name>",
+// its text readable, no bubble (R55).
 document.documentElement.classList.add('dark')
 document.documentElement.dataset.pandaTheme = 'viewscreen'
 
@@ -169,12 +172,10 @@ const prompt: TranscriptEntry = { type: 'user', id: 'u1', text: 'Check the build
 const reply: TranscriptEntry = { type: 'assistant', id: 'a1', text: 'Started the build check.', cut: false }
 const notes: TranscriptEntry[] = [
   { type: 'note', id: 'n1', kind: 'task', text: 'Background task finished: build check passed' },
-  { type: 'note', id: 'n2', kind: 'peer', text: 'Message from sample-coord' },
   { type: 'note', id: 'n3', kind: 'hook', text: 'Stop hook: reply rewritten' },
 ]
 const noteLines = [
   { kind: 'task', label: 'Task', text: 'Background task finished: build check passed' },
-  { kind: 'peer', label: 'Message', text: 'Message from sample-coord' },
   { kind: 'hook', label: 'Hook', text: 'Stop hook: reply rewritten' },
 ]
 
@@ -249,7 +250,7 @@ function expectNotesApart(scope: Element) {
   expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth)
 }
 
-describe('a harness note in a live transcript (R46)', () => {
+describe('a task or hook note in a live transcript (R46)', () => {
   for (const device of devices)
     it(`shows each note as a muted line with its icon and the prompt as the owner's bubble on ${device.name}`, async () => {
       withPlan([prompt, ...notes, reply])
@@ -258,7 +259,6 @@ describe('a harness note in a live transcript (R46)', () => {
       const chat = chatRegion('plan the slice')
       await expect.element(chat.getByText('Stop hook: reply rewritten')).toBeVisible()
       await expect.element(chat.getByRole('img', { name: 'Task' })).toBeVisible()
-      await expect.element(chat.getByRole('img', { name: 'Message' })).toBeVisible()
       await expect.element(chat.getByRole('img', { name: 'Hook' })).toBeVisible()
       expectNotesApart(chat.element())
       expect(getReports()).toEqual([])
@@ -274,4 +274,133 @@ describe('a harness note in a live transcript (R46)', () => {
     expectNotesApart(pane)
     expect(getReports()).toEqual([])
   })
+})
+
+// R55: made-up samples of the two ways another chat's message comes, as the server sends them (#454): a SendMessage
+// peer message and a prompt typed in an `<agent-prompt>` wrapper, both a `peer` note with its `message`, and a peer
+// note from a line with no text. The owner's typed text that only holds the tag stays his prompt: the server decides
+// that (`claudeTranscript.test.ts`, line w3), so here it is a user entry and must stay his bubble.
+const peerNotes: TranscriptEntry[] = [
+  {
+    type: 'note',
+    id: 'p1',
+    kind: 'peer',
+    text: 'Message from sample-lab',
+    message: {
+      from: 'sample-lab',
+      via: 'message',
+      text: 'Port question: **5190** is in use. I recommend 5191.',
+      cut: false,
+    },
+  },
+  {
+    type: 'note',
+    id: 'p2',
+    kind: 'peer',
+    text: 'Message from sample-coord',
+    message: { from: 'sample-coord', via: 'prompt', text: 'Build the three header options on port 5191.', cut: false },
+  },
+  { type: 'note', id: 'p3', kind: 'peer', text: 'Message from sample-inbox' },
+]
+const quoting: TranscriptEntry = {
+  type: 'user',
+  id: 'u2',
+  text: 'Why did <agent-prompt from="sample-coord">hi</agent-prompt> show up?',
+  cut: false,
+}
+const peers = [
+  { name: 'From sample-lab', text: 'Port question: 5190 is in use. I recommend 5191.' },
+  { name: 'From sample-coord', text: 'Build the three header options on port 5191.' },
+  { name: 'From sample-inbox', text: undefined },
+]
+
+/** Fails unless each peer note in `scope` is a peer message: amber bar and label, readable text, never a bubble. */
+function expectPeersApart(scope: Element) {
+  const owner = bubbles(scope).filter(
+    (b) => b.getAttribute('aria-labelledby') !== null && b.textContent.includes('Check the build, please'),
+  )
+  const [bubble] = owner
+  if (bubble === undefined) throw new Error('no bubble')
+  const bubbleFill = channels(getComputedStyle(bubble).backgroundColor)
+  for (const peer of peers) {
+    const article = [...scope.querySelectorAll('article')].find(
+      (a) => a.querySelector('.message__name')?.textContent === peer.name,
+    )
+    if (article === undefined) throw new Error(`no ${peer.name}`)
+    const style = getComputedStyle(article)
+    // No bubble: no fill of its own, and the owner's bubbles never hold its text.
+    expect(channels(style.backgroundColor)[3]).toBe(0)
+    expect(channels(style.backgroundColor)).not.toEqual(bubbleFill)
+    if (peer.text !== undefined)
+      expect(
+        bubbles(scope)
+          .filter((b) => b !== article)
+          .some((b) => b.textContent.includes(peer.text)),
+      ).toBe(false)
+    // The amber bar: 2 px, solid, on the start side, the label's colour; amber is red over green over blue.
+    expect([style.borderLeftWidth, style.borderLeftStyle, style.borderTopWidth]).toEqual(['2px', 'solid', '0px'])
+    const label = article.querySelector('.message__name')
+    if (label === null) throw new Error('no label')
+    const amber = getComputedStyle(label).color
+    expect(channels(style.borderLeftColor)).toEqual(channels(amber))
+    const [r, g, b] = channels(amber)
+    expect(r > g && g > b && r - b > 80).toBe(true)
+    // The chat icon before the label, in the label's colour.
+    const icon = article.querySelector('.message__author svg')
+    expect(icon).not.toBeNull()
+    if (icon !== null) expect(channels(getComputedStyle(icon).color)).toEqual(channels(amber))
+    // Readable: the label 4.5:1 and the bar 3:1 on what is behind the message.
+    const behind = backdrop(article)
+    expect(contrast(amber, behind)).toBeGreaterThanOrEqual(4.5)
+    expect(contrast(style.borderLeftColor, behind)).toBeGreaterThanOrEqual(3)
+    const body = article.querySelector('.message__body')
+    if (peer.text === undefined) {
+      // A peer note with no text shows its label only.
+      expect(body).toBeNull()
+    } else {
+      if (!(body instanceof HTMLElement)) throw new Error(`no text in ${peer.name}`)
+      expect(body.textContent).toBe(peer.text)
+      // The body's text is not muted and reads 4.5:1 on the pane.
+      const ink = getComputedStyle(body.querySelector('p') ?? body).color
+      expect(contrast(ink, behind)).toBeGreaterThanOrEqual(4.5)
+    }
+    // It stays inside the transcript.
+    expect(article.getBoundingClientRect().right).toBeLessThanOrEqual(scope.getBoundingClientRect().right + 0.5)
+  }
+  // Markdown in a peer's text draws as Markdown.
+  expect(scope.querySelector('strong')?.textContent).toBe('5190')
+  // The owner's text that only holds the tag stays his bubble, with the tag as text.
+  const quoted = bubbles(scope).filter((b) =>
+    b.textContent.includes('<agent-prompt from="sample-coord">hi</agent-prompt>'),
+  )
+  expect(quoted).toHaveLength(1)
+  expect(quoted[0]?.querySelector('.message__name')).toBeNull()
+  // No peer note is drawn as a muted note line.
+  expect([...scope.querySelectorAll('[data-note-kind]')].map((l) => l.getAttribute('data-note-kind'))).toEqual([
+    'task',
+    'hook',
+  ])
+  expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth)
+}
+
+describe('a message from another chat in a live transcript (R55)', () => {
+  for (const mode of ['dark', 'light'] as const)
+    for (const device of devices)
+      it(`shows each peer message in amber with its text, never as the owner's bubble, on ${device.name} in ${mode}`, async () => {
+        document.documentElement.classList.toggle('dark', mode === 'dark')
+        try {
+          withPlan([prompt, notes[0] ?? prompt, ...peerNotes, quoting, notes[1] ?? prompt, reply])
+          await tapWorkspaces(device.size)
+          await tapChat('plan the slice')
+          const chat = chatRegion('plan the slice')
+          await expect.element(chat.getByRole('article', { name: 'From sample-lab' })).toBeVisible()
+          await expect.element(chat.getByRole('article', { name: 'From sample-coord' })).toBeVisible()
+          await expect.element(chat.getByRole('article', { name: 'From sample-inbox' })).toBeVisible()
+          await expect.element(chat.getByText('Stop hook: reply rewritten')).toBeVisible()
+          expectPeersApart(chat.element())
+          expect(getReports()).toEqual([])
+        } finally {
+          document.documentElement.classList.add('dark')
+        }
+      })
 })
