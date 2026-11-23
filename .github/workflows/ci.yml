@@ -139,6 +139,7 @@ jobs:
       - run: pnpm check:cycles
       - run: pnpm check:structure
       - run: pnpm check:states
+      - run: pnpm check:reviews
       - run: pnpm check:ci
       - run: pnpm test:scripts
 

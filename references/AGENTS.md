@@ -37,7 +37,9 @@ original picture's file, size and sha256. `frame.png` is the original
 scaled to that size. A folder holds `frame.json` or `reference.json`,
 never both. On a PNG reference the fidelity tools run the rule check and
 need a `fidelity-reviewer` record with no P1 or P2 finding, and give the
-reviewer a pixel diff
+reviewer a pixel diff. A passing review is saved as the frame's
+`review.json` with a hash of its inputs, and `pnpm check:reviews` fails
+when it is missing, stale or edited
 ([../scripts/fidelity/README.md](../scripts/fidelity/README.md)).
 
 - `settings/` holds the lab screenshots the owner approved; each note names

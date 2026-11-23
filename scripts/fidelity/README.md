@@ -97,6 +97,31 @@ and a hand-written `reference.json`, with no `frame.json`. `pnpm fidelity
   reuse. The reviewer reads the side-by-side, labelled Reference, and may
   read the diff.
 
+A run that passes with `--review` saves the record as
+`references/<page>/<frameId>/review.json`, sealed with a hash of the
+review's inputs (`reviewSeal.ts`): the frame folder's files, the state
+file that lists the frame, the page's stories, Storybook's config in
+`web/.storybook/`, every repository file those import, transitively
+(relative imports and `@bridge/shared` and `@bridge/contract`, so the
+app frame, the rail, the tab bar and shared blocks count), and the
+library version pinned in `pnpm-workspace.yaml`. Generated and ignored
+files (`styled-system/`) and packages from `node_modules` are not
+hashed; the library version stands for them. Commit it with the page.
+
+`pnpm check:reviews` runs in `verify` and CI, which cannot run the
+reviewer agent. It fails when a state lists a PNG frame's code and the
+frame has no `review.json`, or when a `review.json`:
+
+- has an inputs hash that is not the current one (`stale`): a reference,
+  page or library change needs a new review and a new run;
+- holds a record whose hash is not the saved one (`edited`);
+- is for another frame, is not valid, or holds a P1 or P2 finding or an
+  `unreviewable` verdict.
+
+The hashes catch drift: a stale or hand-edited record. They are not a
+signature, and do not stop tampering: anyone who can commit can also
+recompute them.
+
 `fidelity:check-build` and the `fidelity-builder` agent still need a
 `frame.json`; they do not take a PNG frame.
 

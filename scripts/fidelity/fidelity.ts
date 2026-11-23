@@ -17,6 +17,10 @@
 // web/storybook-static; --tolerance <px> overrides frame.json;
 // --checks text,rules makes only those checks decide the result (CI runs
 // text and rules); the report still holds all three.
+// A PNG frame that passes with --review saves the reviewer's record as
+// references/<page>/<frameId>/review.json, sealed with the hash of its
+// inputs (reviewSeal.ts); commit it, as `pnpm check:reviews` (CI) fails a
+// built PNG frame without a current one.
 import { execFileSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
@@ -47,6 +51,7 @@ import {
 } from './references.ts'
 import { comparePngs } from './pixelDiff.ts'
 import { parseReview, pngLabel, pngReviewGate } from './pngReview.ts'
+import { inputsDigest, reviewFileName, reviewInputs, sealReview } from './reviewSeal.ts'
 import { composeSideBySide } from './sideBySide.ts'
 import { serveStatic, stateForFrame, storybookDir, storyForState, storyUrl } from './storyServer.ts'
 
@@ -231,8 +236,8 @@ async function runPngFrame(b: Browser, origin: string, frameId: string) {
   const renderPng = join(outDir, `${frameId}.render.png`)
   // The render the reviewer saw: the one the last run left, read before this run replaces it.
   const reviewed = reviewFile !== undefined && existsSync(renderPng) ? readFileSync(renderPng) : undefined
-  const review =
-    reviewFile === undefined ? undefined : parseReview(JSON.parse(readFileSync(reviewFile, 'utf8')), reviewFile)
+  const reviewData: unknown = reviewFile === undefined ? undefined : JSON.parse(readFileSync(reviewFile, 'utf8'))
+  const review = reviewFile === undefined ? undefined : parseReview(reviewData, reviewFile)
   const shown = await openStory(b, url, ref.w, ref.h, errors, ref.mode)
   const measured = await shown.tab.evaluate<PageMeasure>(collectPageScript('#storybook-root'))
   await shown.tab.screenshot({ path: renderPng })
@@ -250,6 +255,13 @@ async function runPngFrame(b: Browser, origin: string, frameId: string) {
   // checksForPng allows only the rule check, and the reviewer's gate always applies, so the gate is the frame's result.
   const ok = rules.ok && reviewGate.ok && errors.length === 0
   const gate = ok
+  // A passing review is committed beside the reference, sealed with the hash of what it saw.
+  const sealed = ok && reviewFile !== undefined ? join(frameDir(page, frameId), reviewFileName) : undefined
+  if (sealed !== undefined) {
+    const inputs = reviewInputs(repoRoot, page, frameId)
+    const seal = sealReview(frameId, inputsDigest(inputs.files, inputs.library), inputs.library, reviewData)
+    writeFileSync(sealed, `${JSON.stringify(seal, null, 2)}\n`)
+  }
   const report = {
     frameId,
     name: ref.name,
@@ -266,7 +278,7 @@ async function runPngFrame(b: Browser, origin: string, frameId: string) {
     gate,
     pageErrors: errors,
     rules,
-    review: { ...reviewGate, file: reviewFile ?? null },
+    review: { ...reviewGate, file: reviewFile ?? null, sealed: sealed ?? null },
     pixels,
     images: { reference: referencePng, render: renderPng, sideBySide, diff: diffPng },
     note: join(frameDir(page, frameId), 'note.txt'),
