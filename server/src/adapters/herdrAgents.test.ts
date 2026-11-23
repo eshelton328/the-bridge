@@ -303,6 +303,7 @@ const resumedTwice = {
   'agent.send_keys': results['agent.send_keys'],
   'agent.wait': results['agent.wait'],
   'pane.focus': results['pane.focus'],
+  'pane.move': results['pane.move'],
   'pane.read': paneRead('w17:p2', claudeScreen('')),
   'pane.list': {
     type: 'pane_list',
@@ -633,6 +634,46 @@ describe('herdr agents: input to a chat', () => {
       expect(await port().moveChat(chat, second, 'row')).toEqual({ ok: true, value: 'zoomedTab' })
       expect(sent('pane.move').at(-1)).toMatchObject({ destination: { split: 'right' } })
       socket.set('pane.move', results['pane.move'])
+    })
+
+    it('moves a pane to a new tab of another listed workspace, and none that works, waits or is there', async () => {
+      const w17 = WorkspaceId.parse(`${machine}/w17`)
+      const w18 = WorkspaceId.parse(`${machine}/w18`)
+      const before = sent('pane.move').length
+      expect(await port().moveToWorkspace(codex, w17)).toEqual({ ok: true, value: 'sameWorkspace' })
+      expect(await port().moveToWorkspace(chat, w18)).toEqual({ ok: true, value: 'needsYou' })
+      socket.once('agent.list', {
+        ...results['agent.list'],
+        agents: results['agent.list'].agents.map((a) =>
+          a.pane_id === 'w17:p2' ? { ...a, agent_status: 'working' } : a,
+        ),
+      })
+      expect(await port().moveToWorkspace(codex, w18)).toEqual({ ok: true, value: 'working' })
+      // herdr takes a workspace's number as its ID too; only a listed ID is a target.
+      expect(await port().moveToWorkspace(codex, WorkspaceId.parse(`${machine}/2`))).toEqual({
+        ok: true,
+        value: 'notFound',
+      })
+      expect(await port().moveToWorkspace(codex, WorkspaceId.parse('another-mac/w18'))).toEqual({
+        ok: true,
+        value: 'notFound',
+      })
+      expect(sent('pane.move')).toHaveLength(before)
+      socket.once('pane.move', {
+        type: 'pane_move',
+        move_result: { changed: true, pane: { pane_id: 'w18:p3', terminal_id: 'term_2', workspace_id: 'w18' } },
+      })
+      const moved = await port().moveToWorkspace(codex, w18)
+      if (!moved.ok || typeof moved.value !== 'object') throw new Error('the pane did not move')
+      expect(moved.value.from).toBe(moved.value.to)
+      const listed = await port().listWorkspaces()
+      const pane = listed.ok ? listed.value.flatMap((w) => w.chats).find((c) => c.id === codex)?.pane : undefined
+      expect(moved.value.from).toBe(pane)
+      expect(sent('pane.move').at(-1)).toEqual({
+        pane_id: 'w17:p2',
+        destination: { type: 'new_tab', workspace_id: 'w18' },
+        focus: false,
+      })
     })
 
     it("renames a workspace and a chat's pane, and lists the pane's label as the chat's title", async () => {

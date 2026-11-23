@@ -196,6 +196,14 @@ client of a socket or a file sits beside them.
   every workspace and no `before_workspace_id`, so herdr shows them in
   that order; an order that misses or repeats one is `stale`, with no
   call (`herdrAgents.test.ts`).
+- A move to another workspace calls `pane.move` with the destination
+  `{ type: 'new_tab', workspace_id }` and `focus: false`, only for a
+  workspace that `workspace.list` names and a chat that is `idle` or
+  `done` (a shell is idle). herdr gives the pane a new pane ID but keeps
+  its terminal, so the chat ID and the API's pane ID stay (probe in a
+  test herdr session, 2026-11-23); a workspace whose last pane leaves
+  closes. A pane of an agent the adapter does not drive (such as gemini)
+  lists as a shell, but no write finds it (`herdrAgents.test.ts`).
 - A workspace close (R41) reads the workspace, agent and pane lists and
   calls `workspace.close` with `close_group: false`, never herdr's
   group close (`group` when herdr asks for it). It refuses a workspace

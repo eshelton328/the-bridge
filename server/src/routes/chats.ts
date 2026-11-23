@@ -37,6 +37,8 @@ import {
   ErrorBody,
   FocusChatRequest,
   MoveChatRequest,
+  MoveToWorkspaceRequest,
+  MoveToWorkspaceResponse,
   maxCompactChars,
   maxPromptChars,
   SendPromptRequest,
@@ -88,7 +90,15 @@ import { jsonBody, jsonOnly, smallJson } from './jsonBody.ts'
 import { ssePingMs } from './sse.ts'
 import { storeFailed } from './uploads.ts'
 import { connectTranscript } from '../services/transcriptEvents.ts'
-import { closeChat, moveChat, focusChat, splitChat, swapChats, zoomChat } from '../services/layoutWrites.ts'
+import {
+  closeChat,
+  moveChat,
+  moveToWorkspace,
+  focusChat,
+  splitChat,
+  swapChats,
+  zoomChat,
+} from '../services/layoutWrites.ts'
 
 const retryMs = 5_000
 
@@ -416,6 +426,27 @@ export function chatsRoutes(
       if (!id.success) return invalid(c)
       const done = await moveChat(agents, id.data, c.req.valid('json'))
       return done.ok ? wrote(c, done.value) : failed(c, done.error)
+    })
+    .post('/:chat/workspace', smallJson, jsonOnly, jsonBody(MoveToWorkspaceRequest), async (c) => {
+      const id = chatOf(c)
+      if (!id.success) return invalid(c)
+      const moved = await moveToWorkspace(agents, id.data, c.req.valid('json'))
+      if (!moved.ok) return failed(c, moved.error)
+      switch (moved.value) {
+        case 'notFound':
+          return errorJson(c, 'not-found', { path: c.req.path, message: 'no such chat or workspace' })
+        case 'sameWorkspace':
+          return errorJson(c, 'chat-not-ready', { state: 'sameWorkspace', message: 'the chat is in this workspace' })
+        case 'working':
+          return errorJson(c, 'chat-not-ready', {
+            state: 'working',
+            message: 'the chat works now; move it when it is idle',
+          })
+        case 'needsYou':
+          return errorJson(c, 'chat-not-ready', { state: 'needsYou', message: 'the chat waits for your answer' })
+        default:
+          return c.json(MoveToWorkspaceResponse.parse({ chat: id.data, pane: moved.value }), 200)
+      }
     })
     .post('/:chat/split', smallJson, jsonOnly, jsonBody(SplitChatRequest), async (c) => {
       const id = chatOf(c)

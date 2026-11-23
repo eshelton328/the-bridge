@@ -10,6 +10,7 @@ import type {
   ChatId,
   ChatStatus,
   MachineId,
+  PaneId,
   SplitDirection,
   SplitSide,
   TabId,
@@ -96,6 +97,16 @@ export type SwapOutcome = PaneWriteOutcome | 'otherTab' | 'samePane'
 export type CloseOutcome = PaneWriteOutcome | 'working' | 'needsYou'
 /** What a move did: as a write, or `sameTab` or `zoomedTab` when the tab cannot take the pane, so nothing moved. */
 export type MoveOutcome = PaneWriteOutcome | 'sameTab' | 'zoomedTab'
+/**
+ * A move to another workspace: the chat's pane before and after (the same ID, as it comes from the pane's terminal,
+ * which the move keeps), or why it did not move.
+ */
+export type MoveToWorkspaceOutcome =
+  | 'notFound'
+  | 'working'
+  | 'needsYou'
+  | 'sameWorkspace'
+  | { readonly from: PaneId; readonly to: PaneId }
 /**
  * A workspace close: `panesChanged` when the workspace has another number of panes than the owner saw, `holdsServer`
  * when a pane runs the server or a process above it, `group` when herdr groups it with worktree workspaces.
@@ -230,6 +241,11 @@ export type AgentPort = {
    * the agent's own title, and the agent's herdr name does not change.
    */
   renameChat(chat: ChatId, label: string): Promise<Result<PaneWriteOutcome, AgentPortError>>
+  /**
+   * Moves the chat's pane to a new tab of `workspace`, with no focus change; its terminal and agent run on. A chat
+   * that works, waits for the owner or has a state herdr cannot tell does not move, so no turn breaks.
+   */
+  moveToWorkspace(chat: ChatId, workspace: WorkspaceId): Promise<Result<MoveToWorkspaceOutcome, AgentPortError>>
   /**
    * Closes a workspace and so each pane in it, when it has `panes` panes, none of them works or waits for the owner,
    * and none runs the server or a process above it. Never herdr's group close.

@@ -2,7 +2,15 @@
 // chat's pane, through the agent port. A close ends the pane's agent or shell and
 // cannot be undone, so it goes to the port only when the request's confirm
 // names this chat.
-import type { ChatId, MoveChatRequest, SplitDirection, SplitSide, TabId, WorkspaceId } from '@bridge/contract'
+import type {
+  ChatId,
+  MoveChatRequest,
+  MoveToWorkspaceRequest,
+  SplitDirection,
+  SplitSide,
+  TabId,
+  WorkspaceId,
+} from '@bridge/contract'
 import { splitId } from '@bridge/contract'
 import { ok, type Result } from '@bridge/shared'
 import type {
@@ -10,6 +18,7 @@ import type {
   AgentPortError,
   CloseOutcome,
   MoveOutcome,
+  MoveToWorkspaceOutcome,
   PaneWriteOutcome,
   SplitOutcome,
   SwapOutcome,
@@ -66,6 +75,15 @@ export function moveChat(
   request: MoveChatRequest,
 ): Promise<Result<MoveOutcome, AgentPortError>> {
   return agents.moveChat(chat, request.tab, request.direction, request.beside)
+}
+
+/** Moves the pane of `chat` to a new tab of another workspace; the chat ID stays. */
+export function moveToWorkspace(
+  agents: AgentPort,
+  chat: ChatId,
+  request: MoveToWorkspaceRequest,
+): Promise<Result<MoveToWorkspaceOutcome, AgentPortError>> {
+  return agents.moveToWorkspace(chat, request.workspace)
 }
 
 /** Swaps the places of the panes of `chat` and `other`, two chats of one tab. */

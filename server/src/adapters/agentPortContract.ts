@@ -243,6 +243,35 @@ export function describeAgentPort(name: string, setup: () => Promise<ContractSet
       expect(await port.orderWorkspaces([...ids, none])).toEqual({ ok: true, value: 'stale' })
     })
 
+    it('moves a shell to a new tab of another workspace with its chat ID, and no chat to its own workspace', async () => {
+      const { port, expected } = await setup()
+      const { chat } = await chatsToUse(port, expected)
+      const read = await port.listWorkspaces()
+      if (!read.ok) throw new Error(read.error.message)
+      const away = read.value.find((w) => w.label === expected.shell.workspace)
+      const home = read.value.find((w) => w.chats.some((c) => c.id === chat))
+      if (home === undefined || away === undefined) throw new Error('no workspace lists the chat or the shell')
+      // A pane of an agent that the port does not drive lists as a shell too, and no write reaches it (not found):
+      // take the first shell that the port finds, which a move to its own workspace shows.
+      let shell: ChatId | undefined
+      for (const candidate of away.chats.filter((c) => c.kind === 'shell')) {
+        const own = await port.moveToWorkspace(candidate.id, away.id)
+        if (own.ok && own.value === 'sameWorkspace') {
+          shell = candidate.id
+          break
+        }
+      }
+      if (shell === undefined) throw new Error('no shell of the expected workspace is in its workspace')
+      expect(await port.moveToWorkspace(shell, WorkspaceId.parse(`${port.machine}/no-such-workspace`))).toEqual({
+        ok: true,
+        value: 'notFound',
+      })
+      const moved = await port.moveToWorkspace(shell, home.id)
+      if (!moved.ok || typeof moved.value !== 'object') throw new Error('the shell did not move')
+      // The chat ID comes from the pane's terminal, which a move keeps.
+      expect(moved.value.to).toBe(moved.value.from)
+    })
+
     it('focuses the pane of a listed chat, and closes no chat whose agent works', async () => {
       const { port, expected, setStatus } = await setup()
       const { chat } = await chatsToUse(port, expected)

@@ -129,6 +129,10 @@ async function insideRoot(root: string | undefined, folder: string | undefined):
   }
 }
 /** herdr's reply to a move: whether the pane moved, and why not (`same_tab`, `zoomed_tab`). */
+/** A move to another workspace: herdr names the pane's terminal after the move (probe in a test herdr session, 2026-11-23). */
+const WorkspaceMoveReply = z.object({
+  move_result: z.object({ changed: z.boolean(), pane: z.object({ terminal_id: LocalIdPart }).optional() }),
+})
 const MoveReply = z.object({
   move_result: z.object({ changed: z.boolean(), reason: z.string().nullable().optional() }),
 })
@@ -675,6 +679,7 @@ export function createHerdrAgents({
     Result<
       {
         pane: string
+        terminal: string | undefined
         tab: string | undefined
         workspace: string | undefined
         cwd: string | undefined
@@ -698,6 +703,7 @@ export function createHerdrAgents({
     const listed = panes.value.panes.find((p) => p.pane_id === pane)
     return ok({
       pane,
+      terminal: listed?.terminal_id,
       tab: listed?.tab_id,
       workspace: listed?.workspace_id,
       cwd: listed?.cwd ?? undefined,
@@ -1318,6 +1324,33 @@ export function createHerdrAgents({
       const { reason } = written.value.move_result
       if (reason === 'same_tab') return ok('sameTab')
       return ok(reason === 'zoomed_tab' ? 'zoomedTab' : 'done')
+    },
+    async moveToWorkspace(chat, workspace) {
+      const { machine: on, local } = splitId(workspace)
+      if (on !== machine) return ok('notFound')
+      // herdr also takes a workspace's number ("1") as its ID, so only a listed ID is a target.
+      const [listed, found] = await Promise.all([call('workspace.list', WorkspaceList), paneOf(chat)])
+      if (!listed.ok) return listed
+      if (!found.ok) return found
+      if (found.value === null || !listed.value.workspaces.some((w) => w.workspace_id === local)) return ok('notFound')
+      const { pane, terminal, workspace: from, status } = found.value
+      if (from === local) return ok('sameWorkspace')
+      if (status === 'needsYou') return ok('needsYou')
+      // As for a close: a state herdr cannot tell may work.
+      if (status !== 'idle' && status !== 'done') return ok('working')
+      // A new tab of the target, so no pane there changes its size; a workspace whose last pane leaves closes.
+      const written = await paneWrite('pane.move', WorkspaceMoveReply, {
+        pane_id: pane,
+        destination: { type: 'new_tab', workspace_id: local },
+        focus: false,
+      })
+      if (!written.ok) return written
+      if (written.value === 'notFound') return ok('notFound')
+      const before = terminal ?? written.value.move_result.pane?.terminal_id
+      const after = written.value.move_result.pane?.terminal_id ?? terminal
+      if (before === undefined || after === undefined) return err(badReply('herdr pane.move: no terminal'))
+      for (const tellList of listTellers) tellList()
+      return ok({ from: paneIdOf(before), to: paneIdOf(after) })
     },
     async renameWorkspace(workspace, label) {
       const { machine: on, local } = splitId(workspace)

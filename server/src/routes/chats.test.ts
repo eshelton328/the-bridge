@@ -13,6 +13,7 @@ import {
   SendResultResponse,
   StartChatResponse,
   RestartModelResponse,
+  MoveToWorkspaceResponse,
 } from '@bridge/contract'
 import { ok, type Result } from '@bridge/shared'
 import { testClient } from 'hono/testing'
@@ -435,6 +436,27 @@ describe('POST /api/chats/:chat/focus, /zoom, /swap and /close (W2)', () => {
     ).toBe(404)
     for (const body of [{ tab: 'test-mac/omni-brain:t1' }, { tab: 'test-mac/omni-brain:t1', direction: 'row', at: 1 }])
       expect((await post(themes, 'move', body)).status).toBe(400)
+  })
+
+  it('moves a chat to another workspace with 200 and its chat ID; one that works or waits is 409', async () => {
+    const { agents, post } = setup()
+    const omni = 'test-mac/omni'
+    expect(await stateOf(await post(themes, 'workspace', { workspace: omni }))).toBe('working')
+    expect(await stateOf(await post(drift, 'workspace', { workspace: omni }))).toBe('needsYou')
+    expect(await stateOf(await post(shell, 'workspace', { workspace: omni }))).toBe('sameWorkspace')
+    expect((await post(shell, 'workspace', { workspace: 'test-mac/no-such-workspace' })).status).toBe(404)
+    expect((await post('test-mac/no-such-chat', 'workspace', { workspace: brain })).status).toBe(404)
+    for (const body of [{}, { workspace: 'no-machine' }, { workspace: brain, focus: true }])
+      expect((await post(shell, 'workspace', body)).status).toBe(400)
+    const res = await post(shell, 'workspace', { workspace: brain })
+    expect(res.status).toBe(200)
+    const body = MoveToWorkspaceResponse.parse(await res.json())
+    expect(body).toEqual({ chat: shell, pane: { from: body.pane.from, to: body.pane.from } })
+    const read = await agents.listWorkspaces()
+    // The shell was the last pane of its workspace, which closes as herdr's does.
+    expect(read.ok ? read.value.map((w) => [w.id, w.chats.map((c) => c.id)]) : []).toEqual([
+      [brain, [themes, drift, shell]],
+    ])
   })
 
   it('closes a pane only with a confirm that names its chat, and never one that works or waits', async () => {
