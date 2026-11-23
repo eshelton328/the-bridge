@@ -15,7 +15,11 @@ const sub = (n: number): StoredSubscription => ({
   savedAt: n,
 })
 
-function setup(stored: StoredSubscription[], answer: (s: PushSubscriptionRequest) => 'sent' | 'gone' = () => 'sent') {
+function setup(
+  stored: StoredSubscription[],
+  answer: (s: PushSubscriptionRequest) => 'sent' | 'gone' | 'fail' = () => 'sent',
+) {
+  const logged = memoryLogger()
   let list = [...stored]
   let time = 1_000_000
   const sent: { endpoint: string; payload: PushPayload }[] = []
@@ -31,17 +35,22 @@ function setup(stored: StoredSubscription[], answer: (s: PushSubscriptionRequest
   const sender: PushSender = {
     send: (subscription, payload) => {
       sent.push({ endpoint: subscription.endpoint, payload })
-      return Promise.resolve(ok(answer(subscription)))
+      const outcome = answer(subscription)
+      return Promise.resolve(outcome === 'fail' ? err({ code: '500' }) : ok(outcome))
     },
   }
   const agents = createFakeAgents(machine)
   let watches = 0
+  let reads = 0
   const counted = {
     ...agents,
     subscribe: (...args: Parameters<typeof agents.subscribe>) => ((watches += 1), agents.subscribe(...args)),
+    readTranscript: (...args: Parameters<typeof agents.readTranscript>) => (
+      (reads += 1), agents.readTranscript(...args)
+    ),
   }
   const seen = createPushSeen(() => time)
-  const notifier = createPushNotifier({ agents: counted, store, sender, seen, log: memoryLogger().log })
+  const notifier = createPushNotifier({ agents: counted, store, sender, seen, log: logged.log })
   const settle = () => new Promise((resolve) => setTimeout(resolve, 10))
   return {
     agents,
@@ -51,13 +60,15 @@ function setup(stored: StoredSubscription[], answer: (s: PushSubscriptionRequest
     settle,
     store,
     watches: () => watches,
+    reads: () => reads,
+    logText: logged.text,
     stored: () => list,
     later: (ms: number) => (time += ms),
   }
 }
 
 describe('the push notifier', () => {
-  it('sends needsYou and done to each subscription, with the chat name and no text', async () => {
+  it('sends needsYou and done to each subscription, with the chat and workspace names and the preview line', async () => {
     const t = setup([sub(1), sub(2)])
     await t.notifier.refresh()
     t.agents.setStatus(chat, 'needsYou')
@@ -65,17 +76,53 @@ describe('the push notifier', () => {
     t.agents.setStatus(chat, 'working')
     t.agents.setStatus(chat, 'done')
     await t.settle()
+    const named = { chat, name: 'bridge themes', workspace: 'omni-brain' }
+    // The fake's transcript ends with a running `pnpm` call after the reply "The theme now reads …".
+    const asks = { ...named, event: 'needsYou', body: 'Wants to run: pnpm' }
+    const ends = { ...named, event: 'done', body: 'The theme now reads prefers-color-scheme.' }
     expect(t.sent.map((s) => [s.endpoint, s.payload])).toEqual([
-      [sub(1).endpoint, { chat, name: 'bridge themes', event: 'needsYou' }],
-      [sub(2).endpoint, { chat, name: 'bridge themes', event: 'needsYou' }],
-      [sub(1).endpoint, { chat, name: 'bridge themes', event: 'done' }],
-      [sub(2).endpoint, { chat, name: 'bridge themes', event: 'done' }],
+      [sub(1).endpoint, asks],
+      [sub(2).endpoint, asks],
+      [sub(1).endpoint, ends],
+      [sub(2).endpoint, ends],
     ])
     // A done that no working came before, such as after idle, sends nothing.
     t.agents.setStatus(chat, 'idle')
     t.agents.setStatus(chat, 'done')
     await t.settle()
     expect(t.sent).toHaveLength(4)
+    t.notifier.close()
+  })
+
+  it('sends no preview line to a subscription that turned the preview off, and reads no transcript for it', async () => {
+    const t = setup([{ ...sub(1), preview: false }, sub(2)])
+    await t.notifier.refresh()
+    t.agents.setStatus(chat, 'needsYou')
+    await t.settle()
+    expect(t.sent.map((s) => [s.endpoint, s.payload.body])).toEqual([
+      [sub(1).endpoint, null],
+      [sub(2).endpoint, 'Wants to run: pnpm'],
+    ])
+    const only = setup([{ ...sub(1), preview: false }])
+    await only.notifier.refresh()
+    only.agents.setStatus(chat, 'needsYou')
+    await only.settle()
+    expect(only.sent.map((s) => s.payload.body)).toEqual([null])
+    expect(only.reads()).toBe(0)
+    t.notifier.close()
+    only.notifier.close()
+  })
+
+  it('writes no preview line or workspace name into a log line, also when a send fails', async () => {
+    const t = setup([sub(1)], () => 'fail')
+    await t.notifier.refresh()
+    t.agents.setStatus(chat, 'needsYou')
+    await t.settle()
+    expect(t.sent).toHaveLength(1)
+    expect(t.logText()).toContain('push failed')
+    expect(t.logText()).not.toContain('Wants to run')
+    expect(t.logText()).not.toContain('omni-brain')
+    expect(t.logText()).not.toContain('bridge themes')
     t.notifier.close()
   })
 

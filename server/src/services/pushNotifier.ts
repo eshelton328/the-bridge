@@ -3,11 +3,16 @@
 // subscription to the agents while at least one push subscription is
 // stored, so the owner hears of a chat with no page open; with none
 // stored, it holds none. No push goes while a page of the owner was
-// visible in the last 30 s. A push names the chat and the event only.
+// visible in the last 30 s. A push names the chat, its workspace and the
+// event; to a subscription that wants a preview (the default) it also holds
+// one line of what the chat did or waits on (pushPreview.ts). The chat's
+// transcript is read only when a stored subscription wants that line, and
+// the line never goes into a log.
 import { type ChatId, type ChatStatus, maxPushName, type PushEvent, PushPayload } from '@bridge/contract'
 import type { Logger } from '../logger.ts'
 import type { AgentPort, AgentSubscription } from './agentPort.ts'
 import type { PushSeen, PushSender, PushStore } from './push.ts'
+import { previewOf } from './pushPreview.ts'
 
 export type PushNotifier = {
   /** Reads the subscriptions again: opens the watch when there are some, closes it when there are none. */
@@ -55,11 +60,26 @@ export function createPushNotifier({ agents, store, sender, seen, log, retryMs =
       })
       return
     }
-    const title = list.ok ? (list.value.flatMap((w) => w.chats).find((c) => c.id === chat)?.title ?? '') : ''
-    const payload = PushPayload.parse({ chat, name: title.slice(0, maxPushName), event })
+    const workspace = list.ok ? list.value.find((w) => w.chats.some((c) => c.id === chat)) : undefined
+    const title = workspace?.chats.find((c) => c.id === chat)?.title ?? ''
+    const plain = PushPayload.parse({
+      chat,
+      name: Array.from(title).slice(0, maxPushName).join(''),
+      workspace: Array.from(workspace?.label ?? '')
+        .slice(0, maxPushName)
+        .join(''),
+      event,
+      body: null,
+    })
+    let body: string | null = null
+    if (subscriptions.value.some((s) => s.preview !== false)) {
+      const read = await agents.readTranscript(chat)
+      body = read.ok && read.value !== null ? previewOf(event, read.value.entries) : null
+    }
+    const rich = body === null ? plain : PushPayload.parse({ ...plain, body })
     const gone = await Promise.all(
       subscriptions.value.map(async (subscription) => {
-        const sent = await sender.send(subscription, payload, keys.value)
+        const sent = await sender.send(subscription, subscription.preview === false ? plain : rich, keys.value)
         if (!sent.ok) log.warn('push failed', { event, code: sent.error.code })
         if (!sent.ok || sent.value !== 'gone') return false
         await store.remove(subscription.endpoint)

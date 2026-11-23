@@ -1,4 +1,4 @@
-import { ChatId, maxPushName, PushPayload } from '@bridge/contract'
+import { ChatId, maxPushBody, maxPushName, PushPayload } from '@bridge/contract'
 import { describe, expect, it, vi } from 'vitest'
 
 // The service worker (public/sw.js, d-118), loaded as a module with a fake `self`: what each event does with the
@@ -7,7 +7,7 @@ import { describe, expect, it, vi } from 'vitest'
 type Listener = (event: unknown) => void
 
 /** A fake service worker global: its listeners, and the calls it saw. */
-function fakeWorker(windows: { url: string }[] = []) {
+function fakeWorker(windows: { url: string }[] = [], shown: { tag: string; close: () => void }[] = []) {
   const listeners = new Map<string, Listener[]>()
   const focused = windows.map(() => ({ postMessage: vi.fn() }))
   const clientList = windows.map((w, i) => ({
@@ -26,14 +26,17 @@ function fakeWorker(windows: { url: string }[] = []) {
       matchAll: vi.fn(() => Promise.resolve(clientList)),
       openWindow: vi.fn(() => Promise.resolve(null)),
     },
-    registration: { showNotification: vi.fn(() => Promise.resolve()) },
+    registration: {
+      showNotification: vi.fn(() => Promise.resolve()),
+      getNotifications: vi.fn((filter: { tag: string }) => Promise.resolve(shown.filter((n) => n.tag === filter.tag))),
+    },
   }
-  return { self, listeners, clientList, focused }
+  return { self, listeners, clientList, focused, shown }
 }
 
 /** Runs sw.js with `self` as its global. */
-async function load(windows: { url: string }[] = []) {
-  const worker = fakeWorker(windows)
+async function load(windows: { url: string }[] = [], shown: { tag: string; close: () => void }[] = []) {
+  const worker = fakeWorker(windows, shown)
   // The file as the app serves it from public/, at the path mountApp registers.
   const swSource = await (await fetch('/sw.js')).text()
   // A classic script, as a service worker runs it: the file inside a function of `self`, kept on the window for the test.
@@ -73,7 +76,13 @@ async function dispatch(worker: ReturnType<typeof fakeWorker>, type: string, eve
 }
 
 const pushOf = (text: string) => ({ data: { text: () => text } })
-const good = { chat: 'mac-mini/5af4ed88-2e47-4bbb-aafa-f5206af29daf', name: 'bridge themes', event: 'done' }
+const good = {
+  chat: 'mac-mini/5af4ed88-2e47-4bbb-aafa-f5206af29daf',
+  name: 'bridge themes',
+  workspace: 'the-bridge',
+  event: 'done',
+  body: null,
+}
 
 describe('the service worker', () => {
   it('listens for install, activate, push and notificationclick only: no fetch handler, so no cache', async () => {
@@ -89,14 +98,36 @@ describe('the service worker', () => {
     expect(worker.self.clients.claim).toHaveBeenCalledOnce()
   })
 
-  it('shows one notification per push: the chat name as the title, the event as the body, the chat as the tag', async () => {
+  it('shows one notification per push: "chat · workspace" as the title, the event line with no preview, the chat as the tag', async () => {
     const worker = await load()
     await dispatch(worker, 'push', pushOf(JSON.stringify(good)))
     await dispatch(worker, 'push', pushOf(JSON.stringify({ ...good, event: 'needsYou' })))
+    await dispatch(worker, 'push', pushOf(JSON.stringify({ ...good, name: '', workspace: '' })))
     expect(worker.self.registration.showNotification.mock.calls).toEqual([
-      ['bridge themes', { body: 'Done', tag: good.chat, data: { chat: good.chat } }],
-      ['bridge themes', { body: 'Needs you', tag: good.chat, data: { chat: good.chat } }],
+      ['bridge themes · the-bridge', { body: 'Done', tag: good.chat, data: { chat: good.chat } }],
+      ['bridge themes · the-bridge', { body: 'Needs you', tag: good.chat, data: { chat: good.chat } }],
+      ['The Bridge', { body: 'Done', tag: good.chat, data: { chat: good.chat } }],
     ])
+  })
+
+  it('shows the preview line as the body when the push has one', async () => {
+    const worker = await load()
+    await dispatch(worker, 'push', pushOf(JSON.stringify({ ...good, event: 'needsYou', body: 'Wants to run: pnpm' })))
+    expect(worker.self.registration.showNotification.mock.calls).toEqual([
+      ['bridge themes · the-bridge', { body: 'Wants to run: pnpm', tag: good.chat, data: { chat: good.chat } }],
+    ])
+  })
+
+  it("closes the chat's notification that shows before it shows the new one, and leaves other chats'", async () => {
+    const old = { tag: good.chat, close: vi.fn() }
+    const other = { tag: 'mac-mini/other', close: vi.fn() }
+    const worker = await load([], [old, other])
+    await dispatch(worker, 'push', pushOf(JSON.stringify(good)))
+    expect(old.close).toHaveBeenCalledOnce()
+    expect(other.close).not.toHaveBeenCalled()
+    expect(old.close.mock.invocationCallOrder[0]).toBeLessThan(
+      worker.self.registration.showNotification.mock.invocationCallOrder[0] ?? 0,
+    )
   })
 
   it.each([
@@ -112,6 +143,17 @@ describe('the service worker', () => {
     ['an unknown event', JSON.stringify({ ...good, event: 'started' })],
     ['an extra key', JSON.stringify({ ...good, url: 'https://evil.example/' })],
     ['a missing key', JSON.stringify({ chat: good.chat, name: good.name })],
+    [
+      'a push of the old shape, with no workspace or body',
+      JSON.stringify({ chat: good.chat, name: 'x', event: 'done' }),
+    ],
+    ['an empty preview line', JSON.stringify({ ...good, body: '' })],
+    ["a preview line over the contract's longest", JSON.stringify({ ...good, body: 'x'.repeat(maxPushBody + 1) })],
+    ['a preview line that is not a string', JSON.stringify({ ...good, body: 7 })],
+    [
+      "a workspace name over the contract's longest",
+      JSON.stringify({ ...good, workspace: 'x'.repeat(maxPushName + 1) }),
+    ],
   ])('shows nothing for a push with %s', async (_, text) => {
     const worker = await load()
     await dispatch(worker, 'push', text === null ? { data: null } : pushOf(text))
@@ -160,6 +202,12 @@ describe('the service worker', () => {
       { ...good, extra: 1 },
       { chat: good.chat, name: good.name },
       { ...good, name: 7 },
+      { ...good, body: 'Merged.' },
+      { ...good, body: '😀'.repeat(maxPushBody) },
+      { ...good, body: '😀'.repeat(maxPushBody + 1) },
+      { ...good, body: '' },
+      { ...good, workspace: '😀'.repeat(maxPushName) },
+      { ...good, workspace: 'x'.repeat(maxPushName + 1) },
       [good],
       null,
     ]

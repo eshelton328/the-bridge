@@ -66,9 +66,13 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
   server gives, at most `maxUploadBytes` (1 GiB) a file, and the name
   never goes into a log line or an error body (`uploads.test.ts`).
 - Web Push (d-118, `push.ts`): a subscription is the browser's
-  `toJSON()` (a strict object, an https endpoint, base64url keys); a
-  push payload holds the chat ID, its name and the event (`needsYou`
-  or `done`), never message text (`push.test.ts`).
+  `toJSON()` (a strict object, an https endpoint, base64url keys) and
+  an optional `preview` (absent is true); a push payload holds the chat
+  ID, its name, its workspace's name, the event (`needsYou` or `done`)
+  and `body`: null, or one preview line of at most `maxPushBody` (140)
+  code points that the server makes from the last reply or the tool the
+  chat waits on, never a code block, a file's text or a tool result. The
+  largest payload stays under the 4 KB Web Push record (`push.test.ts`).
 - The Artifacts library (R26, R27, `artifacts.ts`): an artifact is
   named by its `ArtifactId` (16 hex characters of its link's sha256),
   so a link never goes in a URL. A found artifact (`foundBy:

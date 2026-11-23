@@ -16,8 +16,10 @@ context, in a build that reads the live server.
   `/workspaces?chat=<id>` (`pages/workspaces/useChatLink.ts`). Only a
   chat ID of the contract's shape gets through.
 - `sw.test.ts` loads `sw.js` with a fake `self` and tests each event:
-  a push of another shape shows nothing, and a tap builds the URL only
-  from the worker's origin and the encoded chat ID.
+  a push of another shape shows nothing, the title is "chat · workspace"
+  and the body the preview line or the event's line, a new push of a
+  chat closes the one it shows first, and a tap builds the URL only from
+  the worker's origin and the encoded chat ID.
 
 The switch itself is `state/pushStore.ts` (its state), `lib/pushSwitch.ts`
 (turn on and off), `lib/pushBrowser.ts` (the browser's push API, which

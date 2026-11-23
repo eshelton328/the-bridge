@@ -35,7 +35,15 @@ from the outside world.
   `working` to `done` or `idle` (herdr gives `idle` in the pane
   that its own screen shows), unless a page was seen in the last 30 s; a
   subscription the push service no longer knows (404 or 410) is
-  dropped. It watches the agents only while a subscription is stored,
+  dropped. A push names the chat's workspace too, and to a subscription
+  whose `preview` is not false it adds one line (`pushPreview.ts`): the
+  first sentence of the last reply for `done`, the tool the chat waits
+  on ("Wants to run: pnpm") or its last question for `needsYou`, as
+  plain text cut at a word to 140 code points; no line when the text
+  looks like a secret (`looksSecret`, the server's one list of secret
+  text shapes) or is empty. The transcript is read only when a stored
+  subscription wants the line, and the line and the workspace name never
+  go into a log. It watches the agents only while a subscription is stored,
   and opens the watch again 5 s after the agents stop answering
   (`pushNotifier.test.ts`).
 - `sendResults.ts` keeps the result of each prompt send that carries

@@ -107,6 +107,7 @@ export {
   StartUploadResponse,
 } from './uploads.ts'
 export {
+  maxPushBody,
   maxPushName,
   maxPushSubscriptions,
   PushEvent,
