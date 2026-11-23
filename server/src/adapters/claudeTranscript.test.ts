@@ -96,7 +96,7 @@ describe('Claude transcript', () => {
     expect(JSON.stringify(read.entries.slice(0, 3))).not.toMatch(/pasted_content|\/home\/dev/)
   })
 
-  it('shows a prompt sent while the chat worked, at its place, and no queued peer message or task report', async () => {
+  it('shows a prompt sent while the chat worked, at its place, and a queued peer message as a note', async () => {
     // The shape of a queued_command line that Claude Code 2.1 writes (an owner's prompt: origin "human", humanTurn);
     // the text is an example.
     const queued = (uuid: string, attachment: object) => ({
@@ -125,7 +125,11 @@ describe('Claude transcript', () => {
           origin: { kind: 'human' },
           humanTurn: true,
         }),
-        queued('q3', { prompt: 'a peer message', origin: { kind: 'peer', from: 'uds:/tmp/x.sock' }, isMeta: true }),
+        queued('q3', {
+          prompt: 'a peer message',
+          origin: { kind: 'peer', name: 'bridge-coord', from: 'uds:/tmp/x.sock' },
+          isMeta: true,
+        }),
         queued('q4', { prompt: 'a task report', origin: { kind: 'task' }, runId: 'r1' }),
         queued('q5', { prompt: 'a side chain prompt', origin: { kind: 'human' }, humanTurn: true }),
         queued('q6', { prompt: 'not a human turn', origin: { kind: 'human' }, humanTurn: false }),
@@ -138,8 +142,56 @@ describe('Claude transcript', () => {
       { type: 'assistant', id: 'a1:0', text: 'Running.', cut: false },
       { type: 'user', id: 'q1', text: 'Also check the lint', cut: false },
       { type: 'user', id: 'q2', text: 'See this screen', cut: false, files: ['screen.png'] },
+      { type: 'note', id: 'q3', kind: 'peer', text: 'Message from bridge-coord' },
       { type: 'assistant', id: 'a2:0', text: 'Lint is clean.', cut: false },
     ])
+  })
+
+  it('shows only what the owner typed as a prompt, harness inputs as notes, by origin and isMeta (R46)', async () => {
+    // Example lines in the shapes that Claude Code writes; the text is made up.
+    const task = [
+      '<task-notification>',
+      '<task-id>b1</task-id>',
+      '<status>completed</status>',
+      '<summary>Agent "Check the PR text"\n finished</summary>',
+      '</task-notification>',
+    ].join('\n')
+    const path = file([
+      user('h1', 'we can resume now', { origin: { kind: 'human' } }),
+      user('o1', 'an older prompt with no origin'),
+      user('t1', task, { origin: { kind: 'task-notification', producer: 'session-task', runId: 'r1' } }),
+      user('t2', 'no wrapper here', { origin: { kind: 'task-notification' } }),
+      user(
+        'p1',
+        'Another Claude session sent a message: <cross-session-message from="uds:/tmp/x.sock">hi</cross-session-message>',
+        { isMeta: true, origin: { kind: 'peer', name: 'bridge-\x07coord', from: 'uds:/tmp/x.sock', msg_id: 'm1' } },
+      ),
+      user('s1', 'Stop hook feedback:\nYour last reply does not follow the rule.', { isMeta: true }),
+      user('i1', '[Cross-session idle notice] the other chat is idle', { isMeta: true }),
+      user('k1', [text('the body of a skill')], { isMeta: true, sourceToolUseID: 't9' }),
+      user('x1', 'from a channel', { origin: { kind: 'channel' } }),
+      // The owner's own text that holds the wrapper's words stays the owner's.
+      user('h2', '<task-notification> is what I saw, and Stop hook feedback: too', { origin: { kind: 'human' } }),
+      user('h3', 'Stop hook feedback: typed by me'),
+      assistant('m1', [text('a meta reply')], { isMeta: true }),
+    ])
+    const read = await readClaudeTranscript(path, options)
+    expect(read.entries).toEqual([
+      { type: 'user', id: 'h1', text: 'we can resume now', cut: false },
+      { type: 'user', id: 'o1', text: 'an older prompt with no origin', cut: false },
+      { type: 'note', id: 't1', kind: 'task', text: 'Background task finished: Agent "Check the PR text" finished' },
+      { type: 'note', id: 't2', kind: 'task', text: 'Background task finished' },
+      { type: 'note', id: 'p1', kind: 'peer', text: 'Message from bridge- coord' },
+      { type: 'note', id: 's1', kind: 'hook', text: 'Stop hook: reply rewritten' },
+      {
+        type: 'user',
+        id: 'h2',
+        text: '<task-notification> is what I saw, and Stop hook feedback: too',
+        cut: false,
+      },
+      { type: 'user', id: 'h3', text: 'Stop hook feedback: typed by me', cut: false },
+    ])
+    for (const entry of read.entries) TranscriptEntry.parse(entry)
   })
 
   it('shows the text of a queued prompt with a pasted image, which Claude Code stores as blocks', async () => {

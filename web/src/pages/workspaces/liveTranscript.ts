@@ -86,6 +86,8 @@ export const transcriptText = {
   empty: 'No messages yet',
   /** The label of a slash command's error output, such as a /compact that failed. */
   error: 'Error',
+  /** The label of a harness note (R46), by its kind: never the owner's bubble. */
+  note: { task: 'Task', peer: 'Message', hook: 'Hook' },
   /** Under the entries while the stream is down and the page connects again. */
   dropped: 'Transcript updates lost — connecting again',
 } as const
@@ -574,6 +576,9 @@ export function chatEntryOf(entry: TranscriptEntry, kind: AgentKind): ChatEntry 
       }
     case 'error':
       return { type: 'event', label: transcriptText.error, text: entry.text }
+    case 'note':
+      // R46: a harness input shows as an event line; bridge-workbench draws its muted look.
+      return { type: 'event', label: transcriptText.note[entry.kind], text: entry.text }
   }
 }
 

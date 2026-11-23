@@ -9,6 +9,7 @@ import {
   TranscriptEntry,
   TranscriptResponse,
   UserEntry,
+  maxNoteText,
 } from './transcripts.ts'
 
 const user = { type: 'user', id: 'u1', text: 'Fix the build', cut: false }
@@ -71,5 +72,13 @@ describe('transcripts', () => {
     expect(TranscriptEntry.safeParse({ ...user, type: 'progress' }).success).toBe(false)
     expect(TranscriptResponse.safeParse({ ...response, chat: 'session-a' }).success).toBe(false)
     expect(TranscriptEntry.safeParse({ ...user, id: '' }).success).toBe(false)
+  })
+
+  it('takes a note entry of a known kind with a short text, and no other kind (R46)', () => {
+    const note = { type: 'note', id: 'n1', kind: 'task', text: 'Background task finished: tests pass' }
+    expect(TranscriptEntry.parse(note)).toEqual(note)
+    expect(TranscriptEntry.safeParse({ ...note, kind: 'owner' }).success).toBe(false)
+    expect(TranscriptEntry.safeParse({ ...note, text: '' }).success).toBe(false)
+    expect(TranscriptEntry.safeParse({ ...note, text: 'x'.repeat(maxNoteText + 1) }).success).toBe(false)
   })
 })
