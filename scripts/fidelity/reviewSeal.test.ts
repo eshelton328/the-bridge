@@ -50,6 +50,7 @@ function scratch(t: { after: (fn: () => void) => void }) {
   write('web/src/blocks/Unused.tsx', 'export const Unused = 1\n')
   write('shared/src/index.ts', 'export const shared = 1\n')
   write('web/.storybook/preview.ts', 'export default {}\n')
+  write('web/panda.config.ts', "export default { designSystem: 'library' }\n")
   execFileSync('git', ['init', '-q'], { cwd: root })
   /** Seals `rec` against the inputs as they are now and saves it as review.json. */
   const seal = (rec: unknown) => {
@@ -100,6 +101,9 @@ void test('an input change with a stale record fails', (t) => {
     },
     (s: ReturnType<typeof scratch>) => {
       s.write('web/.storybook/preview.ts', 'export default { tags: [] }\n')
+    },
+    (s: ReturnType<typeof scratch>) => {
+      s.write('web/panda.config.ts', "export default { designSystem: 'library', preflight: false }\n")
     },
     (s: ReturnType<typeof scratch>) => {
       s.write('references/settings/D01/note.txt', 'another note\n')

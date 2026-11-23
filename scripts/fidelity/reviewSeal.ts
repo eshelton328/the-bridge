@@ -97,7 +97,7 @@ export function resolveImport(from: string, spec: string, known: ReadonlySet<str
  * The inputs of a PNG frame's review in `root`: the frame's reference
  * files (not the sealed record itself); the state file that lists the
  * frame, the page's stories, Storybook's own config (its preview draws
- * every story) and every repository file they import, transitively
+ * every story), Panda's config (it makes the CSS every story uses) and every repository file they import, transitively
  * (web/src, shared, contract; not generated or ignored files); and the
  * library version.
  */
@@ -118,7 +118,9 @@ export function reviewInputs(root: string, page: string, frameId: string): { fil
       (p.startsWith(frameFolder) && p !== own) ||
       p === `${pageFolder}states/${state ?? ''}.ts` ||
       (p.startsWith(pageFolder) && p.endsWith('.stories.tsx')) ||
-      /^web\/\.storybook\/[^/]+\.tsx?$/.test(p),
+      /^web\/\.storybook\/[^/]+\.tsx?$/.test(p) ||
+      // Panda's config decides the generated CSS (styled-system/, not hashed) that every story draws with.
+      p === 'web/panda.config.ts',
   )
   const seen = new Set<string>()
   const queue = [...roots]

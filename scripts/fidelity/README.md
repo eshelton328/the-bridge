@@ -101,7 +101,7 @@ A run that passes with `--review` saves the record as
 `references/<page>/<frameId>/review.json`, sealed with a hash of the
 review's inputs (`reviewSeal.ts`): the frame folder's files, the state
 file that lists the frame, the page's stories, Storybook's config in
-`web/.storybook/`, every repository file those import, transitively
+`web/.storybook/`, `web/panda.config.ts` (it makes the generated CSS), every repository file those import, transitively
 (relative imports and `@bridge/shared` and `@bridge/contract`, so the
 app frame, the rail, the tab bar and shared blocks count), and the
 library version pinned in `pnpm-workspace.yaml`. Generated and ignored
