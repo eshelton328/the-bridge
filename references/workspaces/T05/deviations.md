@@ -102,3 +102,13 @@ which covers them whole, and Figma leaves them out.
 - **Erik's message is larger (Message text).** Figma draws it in Geist
   13 on a 19 px line; `Message from="user"` draws `body` (14/20), so it
   is about 7% wider (review T06 F1).
+
+## Second row under the kind mark (d-121)
+
+The owner chose the chat header's option E (decision d-121, 2026-11-23): the
+second row starts at the left edge of the kind mark, not at the back
+button's. The whole row moves 28 px right, with the folders chip (128:520)
+in it, so the position check finds that chip 20 px (28 px more than on main) from Figma's x. The
+header's height and the first row do not change. It is a frame exception
+that the owner's decision sets (`blocks/ChatHead.tsx`,
+`app/WorkspacesChatHeadRows.test.tsx`).

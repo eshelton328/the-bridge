@@ -89,3 +89,13 @@ search has the focus with its caret after "~/the-".
   picker's × closes the picker and Add folder opens it again, and the
   sheet's ×, the scrim and Escape close the sheet, which the chip opens
   again.
+
+## Second row under the kind mark (d-121)
+
+The owner chose the chat header's option E (decision d-121, 2026-11-23): the
+second row starts at the left edge of the kind mark, not at the back
+button's. The whole row moves 28 px right, with the folders chip (128:695)
+in it, so the position check finds that chip 30.8 px from Figma's x. The
+header's height and the first row do not change. It is a frame exception
+that the owner's decision sets (`blocks/ChatHead.tsx`,
+`app/WorkspacesChatHeadRows.test.tsx`).
