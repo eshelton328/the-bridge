@@ -196,8 +196,9 @@ describe('Move to workspace on a live chat (backend #435)', () => {
       await expect
         .poll(() => moves(fakes))
         .toEqual([{ action: 'moveChat', target: sketch, body: { workspace: meadow } }])
-      // The same chat, open: on the phone and the tablet its view, on the desktop its pane or its view.
-      if (name === 'workbench') await expect.poll(drawn).toContain('sketch the plan')
+      // The same chat, open: on the phone and the tablet its view, on the desktop its pane or its view. herdr put it in
+      // a new tab of meadow, which the workbench shows, as it does after a Move to tab.
+      if (name === 'workbench') await expect.poll(drawn).toEqual(['sketch the plan'])
       else await expect.element(page.getByRole('heading', { name: 'sketch the plan' })).toBeVisible()
       // Its list is the new workspace's: meadow is its own now, so the list offers orchard and barn.
       // The list read after the move has come.
@@ -226,7 +227,7 @@ describe('Move to workspace on a live chat (backend #435)', () => {
         .toEqual([{ action: 'moveChat', target: pond, body: { workspace: orchard } }])
       expect(fakes.list.workspaces().map((w) => w.label)).toEqual(['orchard', 'barn'])
       await expect.poll(() => page.getByText('meadow', { exact: true }).elements().length).toBe(0)
-      if (name === 'workbench') await expect.poll(drawn).toContain('survey the pond')
+      if (name === 'workbench') await expect.poll(drawn).toEqual(['survey the pond'])
       else await expect.element(page.getByRole('heading', { name: 'survey the pond' })).toBeVisible()
     })
   }

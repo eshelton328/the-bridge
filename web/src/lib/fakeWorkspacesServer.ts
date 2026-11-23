@@ -103,7 +103,8 @@
 // gives the other 409 states. Backend #435: `POST /api/chats/:chat/workspace`
 // takes `MoveToWorkspaceRequest`; an unknown chat or workspace is 404 and its
 // own workspace 409 chat-not-ready sameWorkspace; else the chat (same ID)
-// goes last in that workspace, its old workspace leaves when it is empty,
+// goes last in that workspace, in a new tab that is not the active one, its
+// old workspace leaves when it is empty,
 // which sends `workspaces.changed`, and the answer is 200 with the contract's
 // `MoveToWorkspaceResponse`. `answerEdits` gives the other 409 states.
 import {
@@ -762,6 +763,14 @@ export function fakeWorkspacesServer(
         409,
       )
     const sourceClosed = from.chats.length === 1
+    // As herdr does, the chat's pane goes to a new tab of that workspace, after its others; the active tab stays.
+    const tabs = tabsOf(to.id)
+    tabs.push({
+      ...{ id: tabId(to.id, tabs.length), label: `tab ${String(tabs.length + 1)}` },
+      root: leaf(ChatId.parse(target)),
+      focused: undefined,
+      zoomed: false,
+    })
     response = WorkspacesResponse.parse({
       ...response,
       workspaces: response.workspaces.flatMap((w) =>
