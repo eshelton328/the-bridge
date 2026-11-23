@@ -162,6 +162,11 @@ export type TranscriptView = {
   readonly earlier: boolean
   /** The quiet line under the entries, with Retry; none when not set. */
   readonly problem: string | undefined
+  /**
+   * The view kept from the chat's last visit (`keptViews`), shown until this visit's first read answers: what the
+   * chat held then, not now. None once a read answered.
+   */
+  readonly stale?: true | undefined
 }
 
 const emptyView: TranscriptView = { loaded: false, entries: [], earlier: false, problem: undefined }
@@ -595,7 +600,7 @@ export function watchTranscript(chat: string, deps: TranscriptDeps = {}): () => 
     watched.stop()
     if (sessions.get(chat) === watched) sessions.delete(chat)
     const shown = views.get(chat)
-    if (shown?.loaded === true) keepView(chat, { ...shown, problem: undefined })
+    if (shown?.loaded === true) keepView(chat, { ...shown, problem: undefined, stale: true })
     setView(chat, undefined)
     // The chat no longer shows: a miss when it opens again is reported again.
     outages.delete(chat)
