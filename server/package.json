@@ -14,7 +14,8 @@
     "codegen": "tsc -p tsconfig.client.json",
     "typecheck": "tsc -p tsconfig.json",
     "start": "node src/main.ts",
-    "logs": "node src/logsCli.ts"
+    "logs": "node src/logsCli.ts",
+    "probe:side": "node src/probeSideCli.ts"
   },
   "dependencies": {
     "@bridge/contract": "workspace:*",

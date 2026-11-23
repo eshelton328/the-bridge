@@ -275,7 +275,9 @@ client of a socket or a file sits beside them.
   gets on stdin the chat's record before the question: its newest whole
   entries in at most 64 KB (a tool with its name and target only), in a
   fence of tildes longer than any in the record, marked as the chat's
-  record and as data. The question goes on stdin. The answer is the
+  record and as data. A resume that Claude Code refuses for Code Mode,
+  before any answer text, runs once more so and logs `side run
+  retried`. The question goes on stdin. The answer is the
   text of each top-level assistant message; an error result, an exit
   with no result, a command that does not start or a run past its 120 s
   limit is `failed` and logs `side run failed` with the exit, the

@@ -8,7 +8,13 @@ The server's source in three layers: `routes/` call `services/`, and
   auth check, then one sub-app for each area, and exports `AppType`. A new route is mounted here.
 - `main.ts` is the only file that reads `process.env` (through
   `config.ts`) and the only one that picks the real adapters;
-  `logsCli.ts`, the `pnpm logs` command, reads only `BRIDGE_LOG_DIR`.
+  `logsCli.ts`, the `pnpm logs` command, reads only `BRIDGE_LOG_DIR`,
+  and `probeSideCli.ts`, `pnpm probe:side --real`, only the variables
+  that a side run gets. The probe (`probeSide.ts`, d-123) runs a real,
+  billed `claude` side question of a Code Mode and a plain session in a
+  new folder under `~/ncc-1701` and prints pass or the failures. The
+  server logs `claude version` at start: run the probe when it shows a
+  new version.
 - `logger.ts`: the one logger (d-115). A message is a constant
   `LogMessage` and the data goes in fields; redaction reads only fields
   (`logger.test.ts`). No `console` in the server.

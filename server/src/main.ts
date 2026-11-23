@@ -6,7 +6,7 @@ import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { serve } from '@hono/node-server'
 import { createClaudeArtifactFinder } from './adapters/claudeArtifacts.ts'
-import { claudeSideRunner } from './adapters/claudeSide.ts'
+import { claudeSideRunner, claudeVersion } from './adapters/claudeSide.ts'
 import { createDiskArtifactStore } from './adapters/diskArtifacts.ts'
 import { createBrainRequests, createDiskInboxMarks, watchBrainInbox } from './adapters/diskInbox.ts'
 import { createDiskPushStore } from './adapters/diskPush.ts'
@@ -100,6 +100,10 @@ const server = serve(
   },
   (info) => {
     log.info('server started', { port: info.port })
+    // Claude Code updates itself, and a new version can change what a side run may do (d-123).
+    void claudeVersion().then((version) => {
+      log.info('claude version', { version })
+    })
   },
 )
 server.on('error', (err) => {

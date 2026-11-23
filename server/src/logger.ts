@@ -12,6 +12,8 @@ const Entry = z.record(z.string(), z.unknown())
 
 const logMessages = [
   'side run failed',
+  'side run retried',
+  'claude version',
   'request',
   'server started',
   'server error',
