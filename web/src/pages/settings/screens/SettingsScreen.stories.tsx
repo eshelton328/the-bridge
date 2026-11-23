@@ -34,7 +34,7 @@ export const SettingsDesktop: Story = {
   play: async ({ canvas }) => {
     await expectSections(canvas)
     await expect(canvas.getByRole('radio', { name: 'Dark' })).toBeChecked()
-    await expect(canvas.getByRole('button', { name: /Settings/ })).toHaveAttribute('aria-current', 'page')
+    await expect(canvas.getByRole('button', { name: 'Settings' })).toHaveAttribute('aria-current', 'page')
   },
 }
 
@@ -48,7 +48,7 @@ export const SettingsDesktopLight: Story = {
   play: async ({ canvas }) => {
     await expectSections(canvas)
     await expect(canvas.getByRole('radio', { name: 'Light' })).toBeChecked()
-    await expect(canvas.getByRole('button', { name: /Settings/ })).toHaveAttribute('aria-current', 'page')
+    await expect(canvas.getByRole('button', { name: 'Settings' })).toHaveAttribute('aria-current', 'page')
   },
 }
 
