@@ -4,6 +4,7 @@ import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { memoryLogger } from '../logger.ts'
 import type { SideChunk } from '../services/agentPort.ts'
 import { claudeSideRunner, sideArgs } from './claudeSide.ts'
 
@@ -21,7 +22,14 @@ process.stdin.on('end', () => {
   if (question === 'hang') return setInterval(() => undefined, 1000)
   out({ type: 'system', subtype: 'init' })
   process.stdout.write('not json\\n')
-  if (question === 'crash') process.exit(3)
+  if (question === 'crash') {
+    process.stderr.write('boom from the fake')
+    process.exit(3)
+  }
+  if (question === 'stubborn') {
+    process.on('SIGTERM', () => undefined)
+    return setInterval(() => undefined, 1000)
+  }
   say('First part.')
   out({ type: 'assistant', parent_tool_use_id: null, message: { content: [{ type: 'tool_use', name: 'Read' }] } })
   say('From a subagent.', 'toolu_1')
@@ -39,9 +47,17 @@ afterEach(async () => {
   await rm(dir, { recursive: true, force: true })
 })
 
-async function ask(question: string, signal = new AbortController().signal) {
+let logged = memoryLogger()
+async function ask(
+  question: string,
+  signal = new AbortController().signal,
+  limits: { timeoutMs?: number; killAfterMs?: number } = {},
+) {
+  logged = memoryLogger()
   const run = claudeSideRunner({
     model: 'sonnet',
+    log: logged.log,
+    ...limits,
     env: {
       PATH: '/usr/bin',
       SIDE_MARKER: 'marker-5150',
@@ -74,13 +90,26 @@ describe('claude side runner', () => {
     expect(sideArgs('s', 'm')).toEqual(
       expect.arrayContaining(['--fork-session', '--no-session-persistence', '--strict-mcp-config']),
     )
+    // No owner settings file (hooks, allow rules), and the file tools stay in the folder.
+    expect(sideArgs('s', 'm')).toContain('--restricted')
     expect(sideArgs('s', 'm')).not.toContain('--dangerously-skip-permissions')
+    expect(logged.lines()).toEqual([])
   })
 
   it('ends as failed on an error result, an exit with no result, or a command that does not start', async () => {
     expect((await ask('fail')).at(-1)).toEqual({ end: 'failed' })
     expect(await ask('crash')).toEqual([{ end: 'failed' }])
-    const run = claudeSideRunner({ model: 'sonnet', env: {}, command: [join(dir, 'no-such-claude')] })
+    // A failed run logs its exit and the end of its stderr, never the question.
+    expect(logged.lines()).toEqual([
+      expect.objectContaining({ msg: 'side run failed', exitCode: 3, stderr: 'boom from the fake' }),
+    ])
+    expect(JSON.stringify(logged.lines())).not.toContain('crash')
+    const run = claudeSideRunner({
+      model: 'sonnet',
+      env: {},
+      log: memoryLogger().log,
+      command: [join(dir, 'no-such-claude')],
+    })
     const chunks: SideChunk[] = []
     for await (const chunk of run({ session: 's', folder: dir, question: 'q', signal: new AbortController().signal }))
       chunks.push(chunk)
@@ -94,5 +123,12 @@ describe('claude side runner', () => {
       stop.abort()
     }, 300)
     expect(await chunks).toEqual([])
+  })
+
+  it('ends a run with no end of its own as failed at its time limit, with SIGKILL for one that stays', async () => {
+    expect(await ask('hang', undefined, { timeoutMs: 200 })).toEqual([{ end: 'failed' }])
+    expect(logged.lines()).toEqual([expect.objectContaining({ msg: 'side run failed', timedOut: true })])
+    expect(await ask('stubborn', undefined, { timeoutMs: 200, killAfterMs: 200 })).toEqual([{ end: 'failed' }])
+    expect(logged.lines()).toEqual([expect.objectContaining({ signal: 'SIGKILL', timedOut: true })])
   })
 })

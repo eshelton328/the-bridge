@@ -5,7 +5,11 @@
 import { spawn } from 'node:child_process'
 import { createInterface } from 'node:readline'
 import { z } from 'zod'
+import type { Logger } from '../logger.ts'
 import type { SideChunk, SideRunner } from '../services/agentPort.ts'
+
+/** The most stderr a failed run logs: its last part. */
+const maxStderr = 4096
 
 /** The arguments of a side run: each one fixed but the session and the model. */
 export function sideArgs(session: string, model: string): string[] {
@@ -26,6 +30,9 @@ export function sideArgs(session: string, model: string): string[] {
     '--mcp-config',
     '{"mcpServers":{}}',
     '--strict-mcp-config',
+    // No user, project or local settings file: none of the owner's hooks, allow rules or plugins, and the file tools
+    // stay in the chat's folder. It also drops the code-running tools that --tools leaves out.
+    '--restricted',
   ]
 }
 
@@ -71,11 +78,19 @@ function sideEnv(env: Readonly<Record<string, string | undefined>>): Record<stri
 export function claudeSideRunner({
   model,
   env,
+  log,
   command = ['claude'],
+  timeoutMs = 120_000,
+  killAfterMs = 5_000,
 }: {
   readonly model: string
   readonly env: Readonly<Record<string, string | undefined>>
+  readonly log: Logger
   readonly command?: readonly [string, ...string[]]
+  /** A run that has not ended by then gets SIGTERM and ends `failed`, also when the caller sets no limit. */
+  readonly timeoutMs?: number
+  /** A process still there this long after SIGTERM gets SIGKILL. */
+  readonly killAfterMs?: number
 }): SideRunner {
   const childEnv = sideEnv(env)
   const [bin, ...pre] = command
@@ -84,7 +99,13 @@ export function claudeSideRunner({
     const child = spawn(bin, [...pre, ...sideArgs(session, model)], {
       cwd: folder,
       env: childEnv,
-      stdio: ['pipe', 'pipe', 'ignore'],
+      stdio: ['pipe', 'pipe', 'pipe'],
+    })
+    // The last part of stderr, logged only when the run fails; it never holds the question, which goes on stdin.
+    let stderr = ''
+    child.stderr.setEncoding('utf8')
+    child.stderr.on('data', (piece: string) => {
+      stderr = (stderr + piece).slice(-maxStderr)
     })
     const exited = new Promise<void>((resolve) => {
       child.once('close', () => {
@@ -94,24 +115,37 @@ export function claudeSideRunner({
         resolve()
       })
     })
-    // An object, so the check after the loop reads what the abort wrote.
-    const state = { stopped: false }
+    // An object, so the checks after the loop read what the abort and the timer wrote.
+    const state = { stopped: false, timedOut: false }
+    let killer: NodeJS.Timeout | undefined
+    const end = () => {
+      if (child.exitCode !== null || child.signalCode !== null) return
+      child.kill('SIGTERM')
+      killer ??= setTimeout(() => {
+        if (child.exitCode === null && child.signalCode === null) child.kill('SIGKILL')
+      }, killAfterMs)
+    }
     const stop = () => {
       state.stopped = true
-      child.kill('SIGTERM')
+      end()
     }
+    const timer = setTimeout(() => {
+      state.timedOut = true
+      end()
+    }, timeoutMs)
     signal.addEventListener('abort', stop, { once: true })
     // A process that does not start closes stdin at once; the write error ends the run as failed below.
     child.stdin.once('error', () => undefined)
     child.stdin.end(question)
     let wrote = false
-    let end: 'done' | 'failed' = 'failed'
+    let result: 'done' | 'failed' = 'failed'
     try {
       for await (const raw of createInterface({ input: child.stdout })) {
         const line = lineOf(raw)
         if (line === undefined) continue
         if (line.type === 'result') {
-          end = line.is_error === true || (line.subtype !== undefined && line.subtype !== 'success') ? 'failed' : 'done'
+          result =
+            line.is_error === true || (line.subtype !== undefined && line.subtype !== 'success') ? 'failed' : 'done'
           continue
         }
         if (typeof line.parent_tool_use_id === 'string') continue
@@ -126,12 +160,23 @@ export function claudeSideRunner({
       await exited
     } catch {
       // A read that fails ends the answer as failed.
-      end = 'failed'
+      result = 'failed'
     } finally {
+      clearTimeout(timer)
       signal.removeEventListener('abort', stop)
-      if (child.exitCode === null) child.kill('SIGTERM')
+      end()
+      await exited
+      if (killer !== undefined) clearTimeout(killer)
     }
     if (state.stopped) return
-    yield { end: child.exitCode === 0 ? end : 'failed' }
+    const outcome = child.exitCode === 0 && !state.timedOut ? result : 'failed'
+    if (outcome === 'failed')
+      log.warn('side run failed', {
+        exitCode: child.exitCode,
+        signal: child.signalCode,
+        timedOut: state.timedOut,
+        stderr,
+      })
+    yield { end: outcome }
   }
 }

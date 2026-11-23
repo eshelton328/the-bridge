@@ -250,13 +250,17 @@ client of a socket or a file sits beside them.
   `claudeSideRunner` (`claudeSide.ts`): `claude -p --resume <session>
   --fork-session --no-session-persistence` with the model `sonnet`, the
   tools `Read,Grep,Glob` only, stream-json output and an empty MCP
-  config (`--strict-mcp-config`), in the chat's folder with an argument
+  config (`--strict-mcp-config`), with `--restricted` (no user, project
+  or local settings file, so none of the owner's hooks, allow rules or
+  plugins, and the file tools stay in the working folder), in the chat's folder with an argument
   list, never a shell, with the server's environment less each `HERDR_`
   variable (in a herdr pane, Claude Code's herdr hook would report the
   side session as the server pane's). The question goes on stdin. The answer is the
   text of each top-level assistant message; an error result, an exit
-  with no result or a command that does not start is `failed`, and an
-  abort ends the process (`claudeSide.test.ts`, a fake `claude`). The fake answers
+  with no result, a command that does not start or a run past its 120 s
+  limit is `failed` and logs `side run failed` with the exit, the
+  signal and the last 4 KB of stderr (never the question), and an
+  abort ends the process (SIGTERM, then SIGKILL after 5 s) (`claudeSide.test.ts`, a fake `claude`). The fake answers
   from `setSideAnswer`, and `hang` waits for the stop. The contract suite has no start or fork (a real Claude).
 - An effort change (slice W10) goes to an idle Claude chat with an
   empty box only, as Claude Code's effort keys (`shift+up` and

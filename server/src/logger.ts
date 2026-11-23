@@ -11,6 +11,7 @@ import { z } from 'zod'
 const Entry = z.record(z.string(), z.unknown())
 
 const logMessages = [
+  'side run failed',
   'request',
   'server started',
   'server error',
