@@ -1,8 +1,8 @@
 {
   "frameId": "M01",
-  "inputs": "b397f9501a737973c1c15466b704520106b58232b364a69b62946e4c85e3914e",
+  "inputs": "315c99d4045162b927c587a7a28fb56e49d1e0bf543211b88596a74456b16c66",
   "library": "1.0.0-beta.108",
-  "recordSha256": "3b3e7fafd5496c19896905505b5856dd5a02093073965bfdb4586693a100e3c4",
+  "recordSha256": "ebf2d69da6316cf7a5edf51f213dc378f46a6e21ed8b45b848194fd7cbbf13ff",
   "record": {
     "verdict": "match",
     "viewport": "phone 390 x 844, Dark",
@@ -12,7 +12,7 @@
       "render": "reports/fidelity/settings/M01.sideBySide.png",
       "reference_side": "left"
     },
-    "summary": "Apart from the accepted deviations, the render matches the reference: the same title, Appearance controls, Navigation rows and tab bar, with Navigation moved down by the accepted Chat width row.",
+    "summary": "Apart from the accepted deviations, the render matches the reference: the header, the Mode and Theme rows, the Navigation text and rows, and the tab bar are the same.",
     "findings": [],
     "accepted_deviations": [
       {
@@ -20,47 +20,48 @@
         "as_given": "Text size: the control is disabled (muted labels) and its line under it says \"Coming soon\" in place of \"Scales the whole app: Small 87.5 %, Default 100 %, Large 112.5 %.\" (step D adds text size later). On a narrow screen the one-line note makes every section below it sit about one text line higher.",
         "status": "as-described",
         "finding": null,
-        "note": "Small and Large are muted, Default is still marked as selected, and the line reads \"Coming soon\" on one line."
+        "note": "Small and Large are muted, Default is selected, and the line under the control says \"Coming soon\"."
       },
       {
         "id": "A2",
         "as_given": "A new \"NOTIFICATIONS\" section with one \"Notifications\" switch (off) sits between the Navigation section and the New chat defaults section. So New chat defaults sits lower, or below the bottom edge.",
         "status": "not-seen",
         "finding": null,
-        "note": "Both sections are below the bottom edge of this frame."
+        "note": "This section is below the bottom edge of the frame."
       },
       {
         "id": "A3",
         "as_given": "The Notifications switch moved to that section: the desktop rail no longer has the \"Notifications / Blocked in Settings\" switch at its bottom, and the More drawer no longer has the \"Notifications / Blocked in Settings\" row at its end. So the drawer is shorter and its top edge sits lower.",
         "status": "not-seen",
         "finding": null,
-        "note": "This phone frame shows no desktop rail and no open More drawer."
+        "note": "This frame shows no rail and no open More drawer."
       },
       {
         "id": "A4",
         "as_given": "The Navigation list has a new last row, \"Settings\", with the line \"Always shown: in the bar or under More.\" under it and up and down buttons but no switch (the owner's decision: Settings is an entry of the bar order that cannot be hidden). So Toolkit's down button is now enabled, the Navigation card is taller, and every section below it sits lower or below the bottom edge.",
         "status": "not-seen",
         "finding": null,
-        "note": "The end of the Navigation list is below the bottom edge; only Home and Inbox are visible in the render."
+        "note": "The end of the Navigation list is below the bottom edge of the frame."
       },
       {
         "id": "A5",
         "as_given": "On the phone and the tablet only: a thin rule line with the text \"Under More on this device\" under it sits after the last page that the tab bar shows (Projects on the phone, Artifacts on the tablet), so the rows after it sit lower by about 40 px.",
         "status": "not-seen",
         "finding": null,
-        "note": "The Projects row and the rows after it are below the bottom edge of the render."
+        "note": "The Projects row is behind the tab bar in the render, so the rule line after it is not in the frame."
       },
       {
         "id": "A6",
         "as_given": "Appearance has a new last row, \"Chat width\", under Text size: a three-way control \"Full\", \"Wide\", \"Narrow\" with Full selected, and a line under it. On the desktop and the tablet the control is enabled and the line says \"The messages and the message box of a Workspaces chat, centred.\"; on the phone the control is disabled (muted labels) and the line says \"Phone: always full\". So the Appearance card is taller, and every section below it sits lower (about one row) or below the bottom edge.",
         "status": "as-described",
         "finding": null,
-        "note": "Chat width shows Full selected, Wide and Narrow muted, and the line \"Phone: always full\". The Navigation card starts at about y=565 in the render and about y=481 in the reference, which matches A1 and A6 together."
+        "note": "The Chat width row has Full selected, Wide and Narrow muted, and the line \"Phone: always full\". The Navigation card starts about 84 px lower, and the Workspaces and Projects rows are now behind the tab bar."
       }
     ],
     "limits": [
-      "The frame ends at about y=795 above the tab bar, so the Navigation rows after Inbox, the Notifications section, the Settings row, the \"Under More on this device\" rule and New chat defaults could not be checked.",
-      "Each half is about 390 px wide at 1x, so differences under 1 px could not be checked."
+      "The frame ends at the tab bar, so the Navigation rows after Inbox and all sections below Navigation could not be compared.",
+      "At this scale I could not tell if the up button of the Home row has the same enabled or disabled tone in both images. It looks muted in the render and unclear in the reference.",
+      "The pixel diff marks almost all text in red, also where the side-by-side shows no offset. I took this to be antialiasing noise and did not report it."
     ]
   }
 }

@@ -1,8 +1,8 @@
 {
   "frameId": "M03",
-  "inputs": "bef34b4d9a71278ac686ee9b84870759ee4b2f01033be2350ebd21b4d6226d88",
+  "inputs": "e7cb705260dd55a913a35e5ff067954ad46a785bb6762910d068e19ce368c0cb",
   "library": "1.0.0-beta.108",
-  "recordSha256": "7047cf4124fa8bd6237d06aebd39e8559fda7a4445f6dddb0338a001d04a26cd",
+  "recordSha256": "4bfd07b5b767ae8de48bcc3503d008ae7a371ecd9f36979ad007c0611a8e9f5b",
   "record": {
     "verdict": "match",
     "viewport": "phone 390 x 844, Dark, the More drawer open",
@@ -12,7 +12,7 @@
       "render": "reports/fidelity/settings/M03.sideBySide.png",
       "reference_side": "left"
     },
-    "summary": "The render matches the reference apart from the accepted deviations: the drawer has no Notifications row, so it is about 64 px shorter and its top edge sits lower, and the disabled Text size control shows above it.",
+    "summary": "The render matches the reference except for the accepted deviations. The More drawer is shorter and starts about 64 px lower because the Notifications row was removed, and the disabled Text size control shows above the drawer.",
     "findings": [],
     "accepted_deviations": [
       {
@@ -20,21 +20,21 @@
         "as_given": "Text size: the control is disabled (muted labels) and its line under it says \"Coming soon\" in place of \"Scales the whole app: Small 87.5 %, Default 100 %, Large 112.5 %.\" (step D adds text size later). On a narrow screen the one-line note makes every section below it sit about one text line higher.",
         "status": "as-described",
         "finding": null,
-        "note": "The Text size label and its muted Small / Default / Large control show above the drawer's top edge. The drawer covers the line under the control, so the \"Coming soon\" text is not visible."
+        "note": "The drawer sits lower, so the Text size label and control show above it. Small and Large are muted and Default is selected. The line under the control is hidden behind the drawer."
       },
       {
         "id": "A2",
         "as_given": "A new \"NOTIFICATIONS\" section with one \"Notifications\" switch (off) sits between the Navigation section and the New chat defaults section. So New chat defaults sits lower, or below the bottom edge.",
         "status": "not-seen",
         "finding": null,
-        "note": "The drawer covers the page below the Appearance card."
+        "note": "The drawer covers the page below Appearance in both pictures."
       },
       {
         "id": "A3",
         "as_given": "The Notifications switch moved to that section: the desktop rail no longer has the \"Notifications / Blocked in Settings\" switch at its bottom, and the More drawer no longer has the \"Notifications / Blocked in Settings\" row at its end. So the drawer is shorter and its top edge sits lower.",
         "status": "as-described",
         "finding": null,
-        "note": "The drawer ends after Workflows. Its top edge is at about y 407 in the render and about y 343 in the reference. All the drawer rows keep their content, order and spacing."
+        "note": "The drawer has no Notifications row. Its top edge moves from about y=343 to about y=407, and every drawer row moves down by the same 64 px."
       },
       {
         "id": "A4",
@@ -48,18 +48,19 @@
         "as_given": "On the phone and the tablet only: a thin rule line with the text \"Under More on this device\" under it sits after the last page that the tab bar shows (Projects on the phone, Artifacts on the tablet), so the rows after it sit lower by about 40 px.",
         "status": "not-seen",
         "finding": null,
-        "note": "The drawer covers the Navigation section."
+        "note": "The drawer covers the Navigation list."
       },
       {
         "id": "A6",
         "as_given": "Appearance has a new last row, \"Chat width\", under Text size: a three-way control \"Full\", \"Wide\", \"Narrow\" with Full selected, and a line under it. On the desktop and the tablet the control is enabled and the line says \"The messages and the message box of a Workspaces chat, centred.\"; on the phone the control is disabled (muted labels) and the line says \"Phone: always full\". So the Appearance card is taller, and every section below it sits lower (about one row) or below the bottom edge.",
         "status": "not-seen",
         "finding": null,
-        "note": "The drawer covers the Chat width row, which sits under Text size."
+        "note": "The drawer covers the Chat width row."
       }
     ],
     "limits": [
-      "The More drawer covers most of the Settings page, so I could not check the page content under it: Text size's note line, Chat width, Navigation, Notifications and New chat defaults."
+      "The drawer covers the page below about y=407 in the render and below about y=343 in the reference. Content behind the drawer could not be compared.",
+      "I read the side-by-side image at its own size. I did not open the pixel diff, so differences under about 2 px could not be checked."
     ]
   }
 }
