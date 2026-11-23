@@ -17,8 +17,9 @@
 // `again` once that read changed the list (or after 2.5 s), so the dialog
 // asks with the new list and its count, never the old one (Codex review
 // of #432). A chat moved to another workspace (backend #435) opens there
-// with the list read that shows it moved (`onMoved`); a workspace it left
-// empty leaves with that read.
+// with the list read that shows it in that workspace (`onMoved`), however
+// late that read comes, and never with a read that shows another change
+// (Codex review of #438); a workspace it left empty leaves with that read.
 import { Label, maxLabel } from '@bridge/contract'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { report } from '../../errors/reporter.ts'
@@ -36,8 +37,6 @@ type Pending = {
   seen: string
   order?: readonly string[]
   timer?: ReturnType<typeof setTimeout>
-  /** What the page does with the list read that shows the edit, such as open a moved chat. */
-  after?: (data: WorkspacesData) => void
 }
 
 const lead: Record<WorkspaceEdit, string> = {
@@ -72,6 +71,8 @@ export function useWorkspaceEdits(
   onMoved?: (chat: string, data: WorkspacesData) => void,
 ): WorkspaceEdits | undefined {
   const onMovedRef = useRef(onMoved)
+  /** The chat a move took, and its workspace, until a list read shows it there. */
+  const movedRef = useRef<{ readonly chat: string; readonly workspace: string } | undefined>(undefined)
   useLayoutEffect(() => {
     onMovedRef.current = onMoved
   })
@@ -107,9 +108,15 @@ export function useWorkspaceEdits(
   useLayoutEffect(() => {
     dataRef.current = data
     const p = pendingRef.current
-    if (p?.timer !== undefined && listJson(data) !== p.seen) {
-      done(p)
-      p.after?.(data)
+    if (p?.timer !== undefined && listJson(data) !== p.seen) done(p)
+    // A moved chat opens with the first list read that shows it in the workspace it went to.
+    const moved = movedRef.current
+    if (
+      moved !== undefined &&
+      data.workspaces.find((w) => w.id === moved.workspace)?.chats?.some((c) => c.id === moved.chat) === true
+    ) {
+      movedRef.current = undefined
+      onMovedRef.current?.(moved.chat, data)
     }
     // A refused close asks again only with the list read after it.
     if (againRef.current !== undefined && listJson(data) !== againRef.current.seen) askAgain()
@@ -122,7 +129,6 @@ export function useWorkspaceEdits(
       run: (live: Live, machine: string) => Promise<EditAnswer>,
       order?: readonly string[],
       again?: () => void,
-      after?: (data: WorkspacesData) => void,
     ) => {
       const machine = dataRef.current.liveMachine
       if (machine === undefined) return false
@@ -130,12 +136,7 @@ export function useWorkspaceEdits(
         setLine(`${lead[action]} — wait for the last change`)
         return false
       }
-      const entry: Pending = {
-        action,
-        seen: listJson(dataRef.current),
-        ...(order === undefined ? {} : { order }),
-        ...(after === undefined ? {} : { after }),
-      }
+      const entry: Pending = { action, seen: listJson(dataRef.current), ...(order === undefined ? {} : { order }) }
       pendingRef.current = entry
       setPending(entry)
       setLine(undefined)
@@ -143,10 +144,8 @@ export function useWorkspaceEdits(
         if (!aliveRef.current || pendingRef.current !== entry) return
         if (answer.kind === 'done') {
           // The event may have come before the 204: a list that changed since the edit started is its answer.
-          if (listJson(dataRef.current) !== entry.seen) {
-            done(entry)
-            entry.after?.(dataRef.current)
-          } else
+          if (listJson(dataRef.current) !== entry.seen) done(entry)
+          else
             entry.timer = setTimeout(() => {
               readList()
               done(entry)
@@ -205,17 +204,12 @@ export function useWorkspaceEdits(
       },
       moveChat: (chat, workspace) => {
         const label = dataRef.current.workspaces.find((w) => w.id === workspace)?.label ?? workspace
-        start(
-          'moveChat',
-          (m, machine) =>
-            m
-              .moveToWorkspace(`${machine}/${chat}`, `${machine}/${workspace}`)
-              .then((answer) =>
-                answer.kind === 'done' ? answer : { ...answer, line: answer.line.replaceAll('{workspace}', label) },
-              ),
-          undefined,
-          undefined,
-          (next) => onMovedRef.current?.(chat, next),
+        start('moveChat', (m, machine) =>
+          m.moveToWorkspace(`${machine}/${chat}`, `${machine}/${workspace}`).then((answer) => {
+            if (answer.kind !== 'done') return { ...answer, line: answer.line.replaceAll('{workspace}', label) }
+            movedRef.current = { chat, workspace }
+            return answer
+          }),
         )
       },
     }),

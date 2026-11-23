@@ -173,6 +173,19 @@ const urlOf = (input: RequestInfo | URL) =>
 /** The number of list reads the page made. */
 const listReads = () =>
   vi.mocked(globalThis.fetch).mock.calls.filter(([input]) => urlOf(input).endsWith('/api/workspaces')).length
+/** Holds each request that `match` takes for `ms` before the stubbed server answers it. */
+function slow(match: (path: string, init?: RequestInit) => boolean, ms: number) {
+  const inner = globalThis.fetch
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      if (match(new URL(urlOf(input), window.location.origin).pathname, init))
+        await new Promise((resolve) => setTimeout(resolve, ms))
+      return inner(input, init)
+    }),
+  )
+}
+
 const line = (text: string) => page.getByText(text, { exact: true })
 const moves = (fakes: Fakes) => fakes.list.edits.filter((e) => e.action === 'moveChat')
 const notReady = (state: 'sameWorkspace' | 'working' | 'needsYou' | 'holdsServer') => () =>
@@ -237,6 +250,42 @@ describe('Move to workspace on a live chat (backend #435)', () => {
       }
     })
   }
+
+  it('opens the moved chat with a list read that comes after the 2.5 s wait', async () => {
+    const fakes = withChats()
+    await openChat('workbench', 'sketch the plan')
+    // From the move on, each list read answers 3 s late: after the page's own read at 2.5 s gave up waiting.
+    let moved = false
+    slow((path, init) => {
+      if (path.endsWith('/workspace') && init?.method === 'POST') moved = true
+      return moved && path === '/api/workspaces'
+    }, 3000)
+    await openMoveList('workbench', 'sketch the plan')
+    await pick('workbench', 'meadow')
+    await expect.poll(() => moves(fakes)).toHaveLength(1)
+    await expect.poll(drawn, { timeout: 9000 }).toEqual(['sketch the plan'])
+    await expect.element(page.getByRole('tab', { name: /meadow/, selected: true })).toBeVisible()
+  })
+
+  it('opens the moved chat only with the list read that shows it moved, not with another change', async () => {
+    const fakes = withChats()
+    await openChat('workbench', 'sketch the plan')
+    // A chat opens in barn while the move is on its way: the list read for it changes the list, but not the move.
+    let opened = false
+    slow((path, init) => {
+      if (!(path.endsWith('/workspace') && init?.method === 'POST')) return false
+      if (!opened) {
+        opened = true
+        fakes.list.putChat(barn, summary('test-box/c5', 'feed the hens'))
+      }
+      return true
+    }, 1000)
+    await openMoveList('workbench', 'sketch the plan')
+    await pick('workbench', 'meadow')
+    await expect.poll(() => moves(fakes), { timeout: 3000 }).toHaveLength(1)
+    await expect.poll(drawn, { timeout: 6000 }).toEqual(['sketch the plan'])
+    await expect.element(page.getByRole('tab', { name: /meadow/, selected: true })).toBeVisible()
+  })
 
   it('offers no Move to workspace with no other workspace', async () => {
     withChats({ machine: 'test-box', workspaces: [list.workspaces[0] ?? { id: orchard, label: 'orchard', chats: [] }] })
