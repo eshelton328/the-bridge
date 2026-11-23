@@ -185,12 +185,25 @@ describe("the live list's Edit (R41)", () => {
       const fakes = withChats()
       await tapWorkspaces(size)
       await tapEdit()
-      // Herdr made a workspace the page has not read: the server refuses an order that leaves it out.
+      // Herdr makes a workspace as the server takes the order, with no event yet: the server refuses the order, which
+      // leaves it out. Made in the answer, so no list read of the page can see it before the order goes.
       fakes.chats.set('test-box/c4', [])
-      fakes.list.putWorkspace(
-        { id: 'test-box/w-hedge', label: 'hedge', chats: [summary('test-box/c4', 'trim the hedge')] },
-        true,
-      )
+      fakes.list.answerEdits(() => {
+        fakes.list.answerEdits(undefined)
+        fakes.list.putWorkspace(
+          { id: 'test-box/w-hedge', label: 'hedge', chats: [summary('test-box/c4', 'trim the hedge')] },
+          true,
+        )
+        return errorAnswer(
+          {
+            kind: 'workspace-not-ready',
+            state: 'orderStale',
+            message: 'the order does not name each workspace of the list once',
+            requestId: 'r-409',
+          },
+          409,
+        )
+      })
       // The keyboard's way: the focused handle moves one place up.
       const handle = page.getByRole('button', { name: 'Move meadow' }).element()
       if (handle instanceof HTMLElement) handle.focus()
