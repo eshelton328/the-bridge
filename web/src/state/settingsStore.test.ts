@@ -33,8 +33,8 @@ afterEach(() => {
 
 describe('settingsStore', () => {
   it('starts at the defaults, Dark', () => {
-    const { mode, textSize, nav, chat } = settingsStore.getState()
-    expect({ mode, textSize, nav, chat }).toEqual(defaultSettings)
+    const { mode, textSize, chatWidth, nav, chat } = settingsStore.getState()
+    expect({ mode, textSize, chatWidth, nav, chat }).toEqual(defaultSettings)
   })
 
   it('sets the mode, the text size and the chat defaults and keeps the actions object', () => {
@@ -69,6 +69,11 @@ describe('settingsStore', () => {
     ).toEqual(['home', 'toolkit', 'settings'])
   })
 
+  it('sets the chat width', () => {
+    settingsStore.getState().actions.setChatWidth('wide')
+    expect(settingsStore.getState().chatWidth).toBe('wide')
+  })
+
   it('goes back to the defaults on reset', () => {
     const { actions } = settingsStore.getState()
     actions.setMode('light')
@@ -88,6 +93,12 @@ describe('startSettingsStorage', () => {
     settingsStore.getState().actions.setMode('system')
     expect(JSON.parse(fake.data.get(settingsKey) ?? '{}')).toEqual({ ...defaultSettings, mode: 'system' })
     expect(onChange).toHaveBeenLastCalledWith({ ...defaultSettings, mode: 'system' })
+    settingsStore.getState().actions.setChatWidth('narrow')
+    expect(JSON.parse(fake.data.get(settingsKey) ?? '{}')).toEqual({
+      ...defaultSettings,
+      mode: 'system',
+      chatWidth: 'narrow',
+    })
     expect(new Set(fake.keys)).toEqual(new Set([settingsKey]))
     expect(report).not.toHaveBeenCalled()
   })

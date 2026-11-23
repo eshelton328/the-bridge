@@ -15,6 +15,7 @@
 // The chat is one ScrollFrame, the header its header, straight in the
 // AppShell detail, which docks the composer on the keyboard (R20). Props only.
 import { Button, ChevronLeftIcon, MoreIcon } from '@eshelton328/component-library-1701'
+import type { ChatWidth } from '../../../lib/deviceSettings.ts'
 import type { ReactElement, ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { SidebarLayers, WorkbenchPane } from '../types.ts'
@@ -86,6 +87,8 @@ export type PhoneChatProps = {
   pending?: ChatPending | undefined
   /** Reads each live chat's transcript while its pane shows (ChatPane); fixtures have none. */
   transcripts?: TranscriptWatch | undefined
+  /** How wide the chat draws on the tablet and the desktop (Settings → Appearance); full when not set. */
+  chatWidth?: ChatWidth | undefined
   /** A reply's Copy: the page writes the clipboard, and the button shows the result (audit P-4). */
   onCopy?: CopyReply | undefined
   /** The live-unavailable notice (LiveNotice), drawn at the top of the content; none when not set. */
@@ -117,6 +120,7 @@ export function PhoneChat(props: PhoneChatProps) {
     effort,
     pending,
     transcripts,
+    chatWidth,
     onCopy,
     notice,
   } = props
@@ -181,6 +185,7 @@ export function PhoneChat(props: PhoneChatProps) {
       notLive={pane.notLive}
       liveChat={pane.liveChat}
       transcripts={transcripts}
+      chatWidth={chatWidth}
       onCopy={onCopy}
       earlier={pane.earlier}
       empty={pane.empty}

@@ -15,6 +15,7 @@ import {
   useSettingsChatDefaults,
   useSettingsMode,
   useSettingsNav,
+  useSettingsChatWidth,
   useSettingsTextSize,
 } from '../../state/settingsStore.ts'
 import { SettingsScreen } from './screens/SettingsScreen.tsx'
@@ -32,6 +33,7 @@ export function SettingsPage() {
   const own = !import.meta.env.DEV || search.state === undefined
   const mode = useSettingsMode()
   const textSize = useSettingsTextSize()
+  const chatWidth = useSettingsChatWidth()
   const nav = useSettingsNav()
   const chat = useSettingsChatDefaults()
   const actions = useSettingsActions()
@@ -40,7 +42,7 @@ export function SettingsPage() {
   const railBadge = useInboxBadge(state.data.railBadge, import.meta.env.DEV && own && search.source === undefined)
   const [changed, setChanged] = useState<Changed>({ of: search.state, ui: {} })
   const ui = { ...state.ui, ...(changed.of === search.state ? changed.ui : {}) }
-  const settings = own ? { mode, textSize, nav: [...nav], chat } : state.data.settings
+  const settings = own ? { mode, textSize, chatWidth, nav: [...nav], chat } : state.data.settings
   return (
     <SettingsScreen
       data={{ ...state.data, railBadge, settings }}
@@ -56,7 +58,8 @@ export function SettingsPage() {
         setChanged((c) => ({ of: search.state, ui: { ...(c.of === search.state ? c.ui : {}), ...change } }))
       }}
       onModeChange={actions.setMode}
-      // Settings is not a nav page, so no page on screen can be hidden here; only the last-page rule can refuse.
+      onChatWidthChange={actions.setChatWidth}
+      // Settings has no switch, so no page on screen can be hidden here; only the last-page rule can refuse.
       onNavVisibleChange={(page, visible) => actions.setNavPageVisible(page, visible, undefined) === undefined}
       onNavMove={actions.moveNavPage}
       onChatDefaultsChange={actions.setChatDefaults}

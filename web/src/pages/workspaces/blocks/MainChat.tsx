@@ -6,6 +6,7 @@
 // A tap on its header sends a live chat's focus to herdr (`onHeaderTap`, W2).
 import type { MouseEvent, ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
+import type { ChatWidth } from '../../../lib/deviceSettings.ts'
 import type { SidebarLayers, WorkbenchPane } from '../types.ts'
 import type { ChatSkills } from './useSkillRows.ts'
 import { ChatHead } from './ChatHead.tsx'
@@ -58,6 +59,8 @@ export type MainChatProps = {
   pending?: ChatPending | undefined
   /** Reads each live chat's transcript while its pane shows (ChatPane); fixtures have none. */
   transcripts?: TranscriptWatch | undefined
+  /** How wide the chat draws on the tablet and the desktop (Settings → Appearance); full when not set. */
+  chatWidth?: ChatWidth | undefined
   /** A reply's Copy: the page writes the clipboard, and the button shows the result (audit P-4). */
   onCopy?: CopyReply | undefined
   /** A tap or click on the header itself, not on a button in it (W2): the page focuses the chat in herdr. */
@@ -84,6 +87,7 @@ export function MainChat(props: MainChatProps) {
     effort,
     pending,
     transcripts,
+    chatWidth,
     onCopy,
     onHeaderTap,
   } = props
@@ -122,6 +126,7 @@ export function MainChat(props: MainChatProps) {
         notLive={pane.notLive}
         liveChat={pane.liveChat}
         transcripts={transcripts}
+        chatWidth={chatWidth}
         onCopy={onCopy}
         earlier={pane.earlier}
         empty={pane.empty}

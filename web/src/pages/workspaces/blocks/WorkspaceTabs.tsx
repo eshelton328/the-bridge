@@ -9,6 +9,7 @@
 // of a live split sends its ratio when the drag ends (W2c, useRatioDrag.ts).
 // Props only.
 import { Button, PanelIcon, PlusIcon, Workbench } from '@eshelton328/component-library-1701'
+import type { ChatWidth } from '../../../lib/deviceSettings.ts'
 import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { WorkspacesData, WorkspacesUi } from '../types.ts'
@@ -40,6 +41,8 @@ export type WorkspaceTabsProps = {
   pendingOf?: ((chat: string) => ChatPending | undefined) | undefined
   /** Reads each live chat's transcript while its pane shows (ChatPane); fixtures have none. */
   transcripts?: TranscriptWatch | undefined
+  /** How wide the chat draws on the tablet and the desktop (Settings → Appearance); full when not set. */
+  chatWidth?: ChatWidth | undefined
   /** Reads each live Claude chat's "/" list each time it opens (review R34); fixtures have none. */
   skillLists?: SkillLists | undefined
   /** A reply's Copy: the page writes the clipboard, and the button shows the result (audit P-4). */
@@ -74,6 +77,7 @@ export function WorkspaceTabs({
   filesOf,
   pendingOf,
   transcripts,
+  chatWidth,
   skillLists,
   onCopy,
   notice,
@@ -105,6 +109,7 @@ export function WorkspaceTabs({
         filesOf={filesOf}
         pendingOf={pendingOf}
         transcripts={transcripts}
+        chatWidth={chatWidth}
         skillLists={skillLists}
         onCopy={onCopy}
         layout={layout}

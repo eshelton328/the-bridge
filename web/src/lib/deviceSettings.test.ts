@@ -30,6 +30,13 @@ describe('parseStoredSettings', () => {
     expect(settings.nav).toEqual(defaultSettings.nav)
   })
 
+  it('reads the chat width, Full by default and for a value it does not know', () => {
+    expect(defaultSettings.chatWidth).toBe('full')
+    expect(parseSettings({ chatWidth: 'narrow' }).chatWidth).toBe('narrow')
+    expect(parseSettings({ chatWidth: 'wide' }).chatWidth).toBe('wide')
+    expect(parseSettings({ chatWidth: 'huge' }).chatWidth).toBe('full')
+  })
+
   it('keeps the default nav for a stored nav that breaks the rules', () => {
     const navs: unknown[] = [
       [

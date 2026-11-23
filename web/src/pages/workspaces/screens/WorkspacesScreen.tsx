@@ -46,7 +46,7 @@ import { reportShellDiagnostic } from '../../../errors/shellDiagnostic.ts'
 import { AppRail } from '../../../blocks/AppRail.tsx'
 import { ViewportFrame } from '../../../blocks/ViewportFrame.tsx'
 import { SlotBoundary } from '../../../errors/SlotBoundary.tsx'
-import { defaultVisiblePages, type BarPage, navLayout } from '../../../lib/deviceSettings.ts'
+import { type ChatWidth, defaultVisiblePages, type BarPage, navLayout } from '../../../lib/deviceSettings.ts'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { css } from '../../../../styled-system/css/index.js'
 import { LiveNotice } from '../blocks/LiveNotice.tsx'
@@ -113,6 +113,8 @@ export type WorkspacesScreenProps = {
   onRetry?: (() => void) | undefined
   /** Reads each live chat's transcript while its pane shows (ChatPane); fixtures have none. */
   transcripts?: TranscriptWatch | undefined
+  /** How wide the chat draws on the tablet and the desktop (Settings → Appearance); full when not set. */
+  chatWidth?: ChatWidth | undefined
   /** Reads each live Claude chat's "/" list each time it opens (review R34); fixtures have none. */
   skillLists?: SkillLists | undefined
   /** A reply's Copy, sample or live: the page writes the clipboard, and the button shows the result (audit P-4). */
@@ -146,6 +148,7 @@ export function WorkspacesScreen({
   onCommand,
   onRetry,
   transcripts,
+  chatWidth,
   skillLists,
   onCopy,
   drafts: pageDrafts,
@@ -299,6 +302,7 @@ export function WorkspacesScreen({
             pendingOf={pendingOf}
             effortOf={effortOf}
             transcripts={transcripts}
+            chatWidth={chatWidth}
             skillLists={skillLists}
             onCopy={onCopy}
             change={change}
@@ -376,6 +380,7 @@ function WorkspacesLayout({
   pendingOf,
   effortOf,
   transcripts,
+  chatWidth,
   skillLists,
   onCopy,
   change,
@@ -427,6 +432,7 @@ function WorkspacesLayout({
         pendingOf={pendingOf}
         effortOf={effortOf}
         transcripts={transcripts}
+        chatWidth={chatWidth}
         skillLists={skillLists}
         onCopy={onCopy}
         notice={notice}
@@ -647,6 +653,7 @@ function WorkspacesLayout({
                   filesOf={filesOf}
                   pendingOf={pendingOf}
                   transcripts={transcripts}
+                  chatWidth={chatWidth}
                   skillLists={skillLists}
                   onCopy={onCopy}
                   layout={layoutWrites}
@@ -701,6 +708,7 @@ function WorkspacesLayout({
                   pending={pendingOf?.(chat.id)}
                   effort={effortOf?.(chat.id)}
                   transcripts={transcripts}
+                  chatWidth={chatWidth}
                   onCopy={onCopy}
                   onHeaderTap={
                     layoutWrites === undefined
@@ -760,6 +768,7 @@ function WorkspacesLayout({
               filesOf={filesOf}
               pendingOf={pendingOf}
               transcripts={transcripts}
+              chatWidth={chatWidth}
               skillLists={skillLists}
               onCopy={onCopy}
               notice={notice}

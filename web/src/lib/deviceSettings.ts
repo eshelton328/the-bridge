@@ -1,4 +1,4 @@
-// The owner's settings on this device (d-119): mode, text size, the nav
+// The owner's settings on this device (d-119): mode, text size, chat width, the nav
 // pages' order and visibility (d-038) and the new chat defaults. They live
 // in this browser's localStorage under one key and are never sent to the
 // server; each device keeps its own on purpose. This file holds the shape,
@@ -30,6 +30,10 @@ export type Mode = (typeof modes)[number]
 export const textSizes = ['small', 'default', 'large'] as const
 export type TextSize = (typeof textSizes)[number]
 
+/** How wide the Workspaces chats draw on the tablet and the desktop (bridge-coord, 2026-11-23); the phone is always full. */
+export const chatWidths = ['full', 'wide', 'narrow'] as const
+export type ChatWidth = (typeof chatWidths)[number]
+
 export const chatModels = ['fable', 'opus', 'sonnet', 'haiku'] as const
 export const chatEfforts = ['low', 'medium', 'high', 'xhigh', 'max'] as const
 export const chatPermissions = ['default', 'auto', 'plan'] as const
@@ -47,14 +51,16 @@ export type ChatDefaults = z.infer<typeof chatDefaults>
 export type DeviceSettings = {
   readonly mode: Mode
   readonly textSize: TextSize
+  readonly chatWidth: ChatWidth
   readonly nav: readonly NavEntry[]
   readonly chat: ChatDefaults
 }
 
-/** Today's look: Dark, default text, every page shown in the default order, Settings last. */
+/** Today's look: Dark, default text, full-width chats, every page shown in the default order, Settings last. */
 export const defaultSettings: DeviceSettings = {
   mode: 'dark',
   textSize: 'default',
+  chatWidth: 'full',
   nav: barPages.map((page) => ({ page, visible: true })),
   chat: { model: 'opus', effort: 'high', permission: 'default' },
 }
@@ -88,6 +94,7 @@ export function checkNav(nav: readonly NavEntry[]): Result<readonly NavEntry[], 
 const stored = z.object({
   mode: z.unknown(),
   textSize: z.unknown(),
+  chatWidth: z.unknown(),
   nav: z.unknown(),
   chat: z.unknown(),
 })
@@ -102,12 +109,14 @@ export function parseSettings(value: unknown): DeviceSettings {
   const { data } = fields
   const mode = z.enum(modes).safeParse(data.mode)
   const textSize = z.enum(textSizes).safeParse(data.textSize)
+  const chatWidth = z.enum(chatWidths).safeParse(data.chatWidth)
   const nav = z.array(navEntry).safeParse(data.nav)
   const checked = nav.success ? checkNav(nav.data) : undefined
   const chat = chatDefaults.safeParse(data.chat)
   return {
     mode: mode.success ? mode.data : defaultSettings.mode,
     textSize: textSize.success ? textSize.data : defaultSettings.textSize,
+    chatWidth: chatWidth.success ? chatWidth.data : defaultSettings.chatWidth,
     nav: checked?.ok === true ? checked.value : defaultSettings.nav,
     chat: chat.success ? chat.data : defaultSettings.chat,
   }
