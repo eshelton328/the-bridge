@@ -26,9 +26,10 @@
 // #427). The chats have no handle or field. The name, the order and a
 // closed workspace's leaving show from the next list read, and a pending
 // order holds its place on the page until then; when the server counts
-// other chats the dialog asks again with the new list. Props only.
+// other chats the dialog asks again with the new list, unless the owner
+// opened another one meanwhile (Codex review of #432). Props only.
 import { Button, Container, MoreIcon, PageHeader } from '@eshelton328/component-library-1701'
-import type { MouseEvent, ReactNode, Ref } from 'react'
+import { type MouseEvent, type ReactNode, type Ref, useLayoutEffect, useRef } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { PhoneText, SidebarChat, SidebarLayers, Workspace, WorkspaceEdits, WorkspacesUi } from '../types.ts'
 import { CloseWorkspaceDialog } from './CloseWorkspaceDialog.tsx'
@@ -153,6 +154,11 @@ export function PhoneWorkspaceList({
   const shown = edits === undefined ? workspaces : reorder.order.flatMap((id) => workspaces.filter((w) => w.id === id))
   const closed = ui.closedWorkspaces ?? []
   const closing = workspaces.find((w) => w.id === ui.closing)
+  // The dialog open now, for a close the server refused while the owner asked about another workspace.
+  const closingRef = useRef(ui.closing)
+  useLayoutEffect(() => {
+    closingRef.current = ui.closing
+  })
   const closeText = text.closeWorkspace
   const setOpen = (id: string, open: boolean) =>
     onUiChange?.({ collapsed: open ? collapsed.filter((c) => c !== id) : [...collapsed, id] })
@@ -295,7 +301,9 @@ export function PhoneWorkspaceList({
             }
             // Live, the workspace leaves with the next list read; when the server counts other chats, ask again.
             onUiChange?.({ closing: null })
-            edits.close(id, panes, () => onUiChange?.({ closing: id }))
+            edits.close(id, panes, () => {
+              if (closingRef.current === null || closingRef.current === undefined) onUiChange?.({ closing: id })
+            })
           }}
           layers={layers?.closeDialog}
         />

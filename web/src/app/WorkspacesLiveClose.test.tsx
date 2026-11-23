@@ -229,6 +229,22 @@ describe("the live list's × (R41, backend #427)", () => {
     expect(listedChats()).toEqual(['sketch the plan', 'tidy the notes', 'water the trees'])
   })
 
+  it('keeps the dialog the owner opened while a refused close was on its way', async () => {
+    const fakes = withChats()
+    await tapWorkspaces(phone)
+    await tapEdit()
+    const dialog = await askOrchard()
+    chatOpensAsTheServerCounts(fakes)
+    slow((path, init) => path.endsWith('/close') && init?.method === 'POST', 600)
+    await userEvent.click(dialog.getByRole('button', { name: 'Close', exact: true }))
+    await userEvent.click(page.getByRole('button', { name: 'Close meadow' }))
+    await expect.element(page.getByRole('alertdialog', { name: 'Close meadow?' })).toBeVisible()
+    await expect.element(line('Not closed — the chats in it changed; here they are again')).toBeInTheDocument()
+    await new Promise((r) => setTimeout(r, 3000))
+    expect(page.getByRole('alertdialog').elements()).toHaveLength(1)
+    await expect.element(page.getByRole('alertdialog', { name: 'Close meadow?' })).toBeVisible()
+  })
+
   const states = [
     ['working', 'A chat in it is working — stop it first'],
     ['needsYou', 'A chat in it needs you'],
