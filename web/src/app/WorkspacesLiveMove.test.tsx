@@ -229,6 +229,12 @@ describe('Move to workspace on a live chat (backend #435)', () => {
       await expect.poll(() => page.getByText('meadow', { exact: true }).elements().length).toBe(0)
       if (name === 'workbench') await expect.poll(drawn).toEqual(['survey the pond'])
       else await expect.element(page.getByRole('heading', { name: 'survey the pond' })).toBeVisible()
+      // The workbench shows orchard, the chat's workspace now, never the closed meadow.
+      if (name === 'workbench' || name === 'desktop') {
+        if (name === 'desktop') await userEvent.click(page.getByRole('button', { name: 'Hide the workspace sidebar' }))
+        await expect.element(page.getByRole('tab', { name: /orchard/, selected: true })).toBeVisible()
+        await expect.poll(drawn).toContain('survey the pond')
+      }
     })
   }
 

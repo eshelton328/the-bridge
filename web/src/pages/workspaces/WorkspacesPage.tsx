@@ -42,7 +42,8 @@ import { readsLive } from '../../lib/dataSource.ts'
 import { useInboxBadge, useInboxStreamHost } from '../../lib/inboxFeed.ts'
 import { workspacesSources } from './loadWorkspacesState.ts'
 import { createDraftBook } from './blocks/draftBook.ts'
-import { layoutsSeenOf, openChat, withLoadedLayouts } from './blocks/workspaceLayout.ts'
+import { openMoved } from './blocks/moveToWorkspace.ts'
+import { layoutsSeenOf, withLoadedLayouts } from './blocks/workspaceLayout.ts'
 import { followTab, withShownTabs } from './shownTabs.ts'
 import { dropRestored, dropSend, keepSend, loadDrafts, markRestored, newSendId, saveDrafts } from './draftStorage.ts'
 import { chatPanesOf, paneMoves, withMovedChats } from './paneFollow.ts'
@@ -193,7 +194,7 @@ export function WorkspacesPage() {
   const workspaceEdits = useWorkspaceEdits(import.meta.env.DEV && live, data, (chat, next) => {
     const owner = next.workspaces.find((w) => w.chats?.some((c) => c.id === chat))?.id
     movedRef.current = owner === undefined ? undefined : { chat, workspace: owner }
-    changeUi(openChat(next, uiRef.current, chat))
+    changeUi(openMoved(next, uiRef.current, chat))
   })
   useEffect(() => {
     const moved = movedRef.current
