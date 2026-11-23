@@ -2753,10 +2753,11 @@ describe('herdr agents: project workspaces (R49)', () => {
     return found.ok ? Object.fromEntries(found.value) : found
   }
 
-  it('maps a project to the first workspace whose first pane is in its folder, and gives no path', async () => {
+  it('maps a project to the first workspace with a pane in its folder, and gives no path', async () => {
     const alpha = join(root, 'projects', 'alpha', 'repo')
     expect(await read({ 'w17:p1': alpha, 'w18:p1': outside })).toEqual({ alpha: 'test-mac/w17' })
-    expect(await read({ 'w17:p1': outside, 'w17:p2': alpha, 'w18:p1': alpha })).toEqual({ alpha: 'test-mac/w18' })
+    expect(await read({ 'w17:p1': outside, 'w17:p2': alpha, 'w18:p1': alpha })).toEqual({ alpha: 'test-mac/w17' })
+    expect(await read({ 'w17:p1': outside, 'w17:p2': outside, 'w18:p1': alpha })).toEqual({ alpha: 'test-mac/w18' })
     expect(await read({ 'w17:p1': join(root, 'projects') })).toEqual({})
     expect(await read({ 'w17:p1': alpha }, null)).toEqual({})
   })

@@ -146,7 +146,7 @@ export type AgentPort = {
   listWorkspaces(): Promise<Result<WorkspaceSummary[], AgentPortError>>
   /**
    * For each project (a folder under the chat root's `projects/`, by its name), the first workspace in the
-   * machine's order whose first pane is in that project's folder. No path leaves the adapter. It reads only when
+   * machine's order with a pane in that project's folder. No path leaves the adapter. It reads only when
    * called.
    */
   projectWorkspaces(): Promise<Result<ReadonlyMap<string, WorkspaceId>, AgentPortError>>

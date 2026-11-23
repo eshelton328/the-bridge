@@ -119,7 +119,7 @@ export function fakeWorkspaces(machine: MachineId): WorkspaceSummary[] {
 }
 
 export type FakeAgents = AgentPort & {
-  /** Maps a project to a workspace, as a workspace whose first pane is in that project's folder. */
+  /** Maps a project to a workspace, as a workspace with a pane in that project's folder. */
   readonly setProjectWorkspace: (project: string, workspace: WorkspaceId) => void
   /** The chats that a caller forked, in order. */
   readonly forks: () => ChatId[]
