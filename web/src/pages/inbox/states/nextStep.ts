@@ -350,7 +350,15 @@ export const nextStep = {
   ui: {
     filter: 'all',
     selectedId: selected,
-    groupsOpen: { needsYou: true, nextSteps: true, snoozed: false, running: false, today: false, yesterday: false },
+    groupsOpen: {
+      needsYou: true,
+      toReview: true,
+      nextSteps: true,
+      snoozed: false,
+      running: false,
+      today: false,
+      yesterday: false,
+    },
     filterOpen: false,
     editingPrompt: false,
     pickerOpen: false,

@@ -54,7 +54,7 @@ export const InboxRowView = z.object({
 })
 export type InboxRowView = z.infer<typeof InboxRowView>
 
-export const InboxGroupId = z.enum(['needsYou', 'nextSteps', 'snoozed', 'running', 'today', 'yesterday'])
+export const InboxGroupId = z.enum(['needsYou', 'toReview', 'nextSteps', 'snoozed', 'running', 'today', 'yesterday'])
 export type InboxGroupId = z.infer<typeof InboxGroupId>
 
 export const InboxGroupView = z.object({

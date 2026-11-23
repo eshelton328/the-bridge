@@ -45,10 +45,11 @@ describe('liveList', () => {
   it('puts a waiting item in Needs you and a snoozed one in Snoozed, with the server badge', () => {
     expect(data.groups.map((g) => [g.id, g.rows.map((r) => r.title)])).toEqual([
       ['needsYou', ['Sample question']],
+      ['toReview', []],
       ['snoozed', ['Sample request']],
     ])
     expect(data.railBadge).toBe(1)
-    expect(data.count).toBe(1)
+    expect(data.count).toBe(2)
     expect(data.detail).toBeNull()
     expect(data.discussion).toBeUndefined()
     expect(ui.selectedId).toBeNull()
@@ -83,6 +84,39 @@ describe('liveList', () => {
 
   it('shows the time each snooze ends in the Snooze menu', () => {
     expect(data.snoozeMenu.times.map((t) => t.time)).toEqual(['11:00', '20:00', 'Fri 9:00'])
+  })
+
+  it("puts a finished chat's turn in To review, and counts the groups, chips and header as the server does", () => {
+    const review = {
+      ...response.items[0],
+      id: 'c000000000000003',
+      kind: 'review',
+      title: 'Sample review',
+      needsYou: false,
+    }
+    const open = {
+      ...response.items[1],
+      id: 'b000000000000004',
+      title: 'Open request',
+      needsYou: true,
+      snoozedUntil: null,
+    }
+    const read = InboxResponse.parse({ items: [...response.items, review, open], counts: { needsYou: 2, total: 4 } })
+    const live = liveList(inboxHome, read, { now }).data
+    expect(live.groups.map((g) => [g.label, g.count, g.rows.map((r) => r.title)])).toEqual([
+      ['Needs you', 2, ['Sample question', 'Open request']],
+      ['To review', 1, ['Sample review']],
+      ['Snoozed', 1, ['Sample request']],
+    ])
+    expect([live.count, live.railBadge]).toEqual([4, 2])
+    expect(live.filters.map((f) => [f.label, f.count])).toEqual([
+      ['All', 4],
+      ['Needs you', 2],
+      ['To review', 1],
+      ['Next steps', 0],
+      ['Running', 0],
+      ['Done', 0],
+    ])
   })
 
   it('keeps the line of a list that missed', () => {

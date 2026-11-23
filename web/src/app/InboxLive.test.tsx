@@ -69,9 +69,10 @@ describe('the live Inbox list', () => {
     it(`lists the server's items, newest first, with no sample one, on ${device.name}`, async () => {
       const server = withServer()
       await openInbox(device)
+      // Needs you, then To review (R48).
       await expect
         .poll(shown)
-        .toEqual(['Sample question from a chat', 'Sample chat turn to review', 'Sample request in the brain'])
+        .toEqual(['Sample question from a chat', 'Sample request in the brain', 'Sample chat turn to review'])
       await expect.element(page.getByText(sampleTask)).not.toBeInTheDocument()
       // No Allow or Deny in v1.
       await expect.element(page.getByRole('button', { name: 'Allow once' })).not.toBeInTheDocument()
@@ -85,7 +86,7 @@ describe('the live Inbox list', () => {
       await openInbox(device)
       await expect
         .poll(shown)
-        .toEqual(['Sample question from a chat', 'Sample chat turn to review', 'Sample request in the brain'])
+        .toEqual(['Sample question from a chat', 'Sample request in the brain', 'Sample chat turn to review'])
       await expect.element(page.getByRole('button', { name: /Snoozed/ })).toBeVisible()
       await expect.poll(() => badge(device)).toBe(2)
     })

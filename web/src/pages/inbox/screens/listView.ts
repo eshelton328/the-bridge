@@ -34,9 +34,17 @@ export type ListView = {
   results: number
 }
 
-/** The groups the header and the filter chips count; Snoozed and the Done days are not tasks to do. */
-const counted: readonly InboxGroupId[] = ['needsYou', 'nextSteps', 'running']
-const chipGroups: Partial<Record<string, InboxGroupId>> = { needs: 'needsYou', next: 'nextSteps', running: 'running' }
+/**
+ * The groups the header and the filter chips count; Snoozed and the Done days are not tasks to do. To review (the live
+ * Inbox's finished chat turns, liveList.ts) has its own chip.
+ */
+const counted: readonly InboxGroupId[] = ['needsYou', 'toReview', 'nextSteps', 'running']
+const chipGroups: Partial<Record<string, InboxGroupId>> = {
+  needs: 'needsYou',
+  review: 'toReview',
+  next: 'nextSteps',
+  running: 'running',
+}
 
 /** A row's project: the first part of its meta line ("ncc-1701 · f-005" is in ncc-1701). */
 const projectOf = (row: InboxRowView): string => row.meta.split(' · ')[0] ?? ''
