@@ -54,6 +54,8 @@ import { startView } from './startView.ts'
 const livePane = css({ display: 'flex', flexDirection: 'column', flex: '1', minH: '[0]' })
 
 export type InboxScreenProps = {
+  /** The page waits for its first read: the list draws its skeleton (`InboxListPane` `loading`). */
+  loading?: boolean | undefined
   /** Draws the Settings gear in the rail and the Settings row in the More drawer (d-119): the page entry passes it; a Figma state does not. */
   settingsEntry?: boolean | undefined
   data: InboxData
@@ -226,6 +228,7 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
   const selectedId = live ? ui.rowOpen : desktop ? (data.detail?.id ?? null) : ui.selectedId
   const list = (
     <InboxListPane
+      loading={props.loading}
       data={data}
       ui={ui}
       selectedId={selectedId}
