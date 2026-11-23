@@ -46,6 +46,17 @@ library default for a menu trigger.
   menu is 6 px taller and New chat's icon 5.5 px higher and 4 px right
   of Figma's (within the tolerance across); New workspace's icon is
   within 4 px. The labels are Regular 15, as Figma's.
+- **The menu will differ from M15 on purpose (review R59, Menu touch
+  rows).** Erik (review R59, 2026-11-23, on his phone): "on mobile this
+  new chat button is kind of huge". bridge-coord's decision: the + menu
+  takes the standard menu rows of the ⋯ chat menus (label 14, 16 px
+  icons), with a touch target of at least 44 pt, at every size, in place
+  of M15's 42 px rows with Regular 15 labels and 18 px icons. The library
+  has no such row yet: a size md `Menu` row is 32 high with no touch area
+  (gap "Menu touch rows" in `web/src/pages/workspaces/LIBRARY_GAPS.md`).
+  Until the library adds the touch variant, the menu keeps `size="lg"`
+  as above; after it, the menu's height, its icons and its labels differ
+  from M15 by this decision, not by error.
 - **Lower workspaces start higher (Sidebar group header), `208:434` to
   `208:500` y -6 to -8.** As in M01 and M14: `GroupHeader
   variant="sidebar"` is 30 high against Figma's 28 and its rows start
