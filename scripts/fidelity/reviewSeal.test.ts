@@ -159,6 +159,16 @@ void test('importSpecifiers and resolveImport follow every import form to a repo
   assert.equal(resolveImport('web/src/x/y.tsx', '../../styled-system/css/index.js', known), undefined)
 })
 
+void test('resolveImport follows each workspace subpath to its file and throws on an unknown one', () => {
+  const known = new Set(['contract/src/index.ts', 'contract/src/push.ts', 'server/src/client.ts'])
+  assert.equal(resolveImport('web/src/lib/pushServer.ts', '@bridge/contract/push', known), 'contract/src/push.ts')
+  assert.equal(resolveImport('web/src/lib/api.ts', '@bridge/server/client', known), 'server/src/client.ts')
+  assert.throws(
+    () => resolveImport('web/src/lib/x.ts', '@bridge/contract/inbox', known),
+    /web\/src\/lib\/x\.ts imports @bridge\/contract\/inbox/,
+  )
+})
+
 void test('a planted edit to the record or its hashes fails', (t) => {
   const s = scratch(t)
   const sealed = s.seal(record())
