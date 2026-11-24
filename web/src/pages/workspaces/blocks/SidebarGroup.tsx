@@ -126,6 +126,7 @@ export function SidebarGroup(props: SidebarGroupProps) {
     <div>
       <div
         data-figma={(layers?.headers ?? headerLayers)[workspace.id]}
+        data-fit="group"
         className={drop === undefined ? undefined : dropTarget}
       >
         <GroupHeader
@@ -174,7 +175,7 @@ export function SidebarGroup(props: SidebarGroupProps) {
         </div>
       )}
       {open ? (
-        <Stack id={rowsId} gap="4">
+        <Stack id={rowsId} gap="4" data-fit="items">
           {(workspace.chats ?? []).map((chat) => (
             <SidebarChatRow
               key={chat.id}

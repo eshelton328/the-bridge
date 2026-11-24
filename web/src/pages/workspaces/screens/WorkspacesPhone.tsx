@@ -131,6 +131,11 @@ export type WorkspacesPhoneProps = {
   newChat?: NewChatStarter | undefined
   /** The live list's edits (R41, R42): renames and the order go to the server; none on a fixture. */
   edits?: WorkspaceEdits | undefined
+  /**
+   * The page waits for its first workspace list (R58): the list draws its real header with its controls off, and
+   * workspaces that load in place of the groups. Only the phone's and the tablet's list draw it.
+   */
+  loading?: boolean | undefined
 }
 
 export function WorkspacesPhone({
@@ -156,6 +161,7 @@ export function WorkspacesPhone({
   layoutWrites,
   newChat,
   edits,
+  loading,
 }: WorkspacesPhoneProps) {
   // The tab bar's More opens the More drawer over it (Toolkit M4); picking a page navigates.
   const [moreOpen, setMoreOpen] = useState(false)
@@ -674,6 +680,7 @@ export function WorkspacesPhone({
               heldRow={heldRowRef}
               notice={notice}
               edits={edits}
+              loading={loading}
             />
           </SlotBoundary>
         }

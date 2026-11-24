@@ -112,7 +112,7 @@ export function LibraryPhone({
               }
             />
           )}
-          <div className={chipRow} data-figma="filter · chips" data-fit="chips">
+          <div className={chipRow} data-figma="filter · chips" data-fit="chips" data-fit-width="content">
             <FilterChips
               label="Filter by source"
               items={loading ? data.chips.map((chip) => ({ ...chip, count: undefined })) : data.chips}
@@ -170,7 +170,7 @@ export function LibraryPhone({
       </Stack>
       {query === '' ? (
         <>
-          <div className={chips} data-fit="found">
+          <div className={chips} data-fit="found" data-fit-width="content">
             <FoundStatus text={data.found} className={statusRow} />
           </div>
           {/* 406:196: Earlier's header is 34 high, 2 under Found's last row (499 to 501), its label centred at
