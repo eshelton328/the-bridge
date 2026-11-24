@@ -24,6 +24,12 @@
 // HTTP status only: never the question, the answer, the chat ID or the
 // server's message. The requests put the chat ID in the path URL-encoded
 // once.
+//
+// The side composer's Stop posts `POST /api/chats/:chat/side/:side/stop`
+// with an empty body (backend #465): 204, also for an answer that already
+// ended, and the stream then ends with the state `stopped`. A stop that
+// misses is a quiet line with the lead "Not stopped" and no report(): the
+// answer still ends on its own or at the server's limit.
 import {
   ErrorBody,
   type SideAnswer,
@@ -31,6 +37,7 @@ import {
   type SideId,
   SideQuestionRequest,
   SideStarted,
+  StopChatRequest,
 } from '@bridge/contract'
 import { report } from '../../errors/reporter.ts'
 import { api } from '../../lib/api.ts'
@@ -105,6 +112,28 @@ export async function askSide(chat: string, question: string): Promise<SideAsked
     report(new SideMissError('ask', 'bad-reply', res.status), 'live')
     return missed('the server answered with something the page does not read', false)
   }
+}
+
+/** What a stop gives the side composer: `true` once the server took it, else its quiet line and whether Retry helps. */
+export type SideStopped = true | { readonly line: string; readonly retry: boolean }
+
+/** Stops the answer `side` of the live chat `chat`; the answer's stream then ends with `stopped`. */
+export async function stopSide(chat: string, side: SideId): Promise<SideStopped> {
+  const missedStop = (line: string, retry: boolean) => ({ line: `Not stopped — ${line}`, retry })
+  let status: number
+  try {
+    const res = await api.api.chats[':chat'].side[':side'].stop.$post(
+      { param: { chat: encodeURIComponent(chat), side }, json: StopChatRequest.parse({}) },
+      { init: { signal: AbortSignal.timeout(liveReadTimeoutMs) } },
+    )
+    status = res.status
+  } catch {
+    // No answer came, or none within the time.
+    return missedStop('the server did not answer', true)
+  }
+  if (status === 204) return true
+  if (status === 404) return missedStop('this answer is gone', false)
+  return missedStop(`the server answered ${String(status)}`, status >= 500 || status === 429)
 }
 
 /** How an answer's stream ended for good: the answer's last state came, the server no longer has it, or no answer came. */

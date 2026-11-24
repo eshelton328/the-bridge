@@ -396,6 +396,16 @@ export function WorkspacesPage() {
                   : Promise.resolve(false)
               }
         }
+        onSideStop={
+          sides === undefined
+            ? undefined
+            : (chat) => {
+                const pane = data.panes.find((p) => p.id === chat)
+                return pane?.type === 'chat' && pane.liveChat !== undefined
+                  ? sides.stop(pane.liveChat)
+                  : Promise.resolve(false)
+              }
+        }
         filesOf={(chat) => files.filesOf(chat, liveChatOf(chat))}
         pendingOf={(chat) => pendings.pendingOf(liveChatOf(chat))}
         effortOf={(chat) => {

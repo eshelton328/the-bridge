@@ -147,8 +147,12 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   429 or no answer. report() gets only a 5xx, a lost stream or an answer
   the page does not expect, with the step, kind and status, never the
   question, the answer or a chat ID. The composer has no paperclip and
-  the pane no "Open as its own pane", as no route takes them; there is
-  no Stop until the server has a cancel route. A Codex chat and a shell
+  the pane no "Open as its own pane", as no route takes them. While a
+  question waits (`waiting`), the composer draws Stop, which posts
+  `POST /api/chats/:chat/side/:side/stop` (backend #465): the stream ends
+  `stopped` ("Stopped — the answer ends here") with the text so far, and
+  a stop that misses is a quiet "Not stopped — …" line with no report().
+  A Codex chat and a shell
   have no Side chat (`withCommands`), as the server answers them 409
   `noSession` (`app/WorkspacesLiveSide.test.tsx`; the fake is
   `lib/fakeSideServer.ts`).

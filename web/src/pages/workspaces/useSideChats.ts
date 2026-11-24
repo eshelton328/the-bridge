@@ -7,7 +7,10 @@
 // before it, as a new copy of the chat's session answers each one. One
 // question of a chat answers at a time; a second waits with a line, as the
 // server would refuse it (409 sideBusy). A question over `maxSideQuestion`
-// is not sent. The fixtures have none and keep their Figma side chats.
+// is not sent. While a question waits, the composer draws Stop (backend
+// #465): it stops the answer on the server, whose stream then ends with
+// `stopped`; the text so far stays. The fixtures have none and keep their
+// Figma side chats.
 import { maxSideQuestion, type SideAnswer, type SideId } from '@bridge/contract'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { report } from '../../errors/reporter.ts'
@@ -30,6 +33,8 @@ export type SideChats = {
   readonly sideChatOf: (pane: string, liveChat: string, title: string) => SideChat
   /** Asks `question` about the live chat `liveChat`: `true` once the server took it, else the composer's line. */
   readonly ask: (liveChat: string, question: string) => Promise<ComposerAnswer>
+  /** Stops the answer the live chat `liveChat` waits for: `true` once the server took it, else the composer's line. */
+  readonly stop: (liveChat: string) => Promise<ComposerAnswer>
 }
 
 /** The entries of a chat with no side question yet: one array, so its transcript keeps its memo. */
@@ -41,6 +46,7 @@ const endLines = {
   gone: 'This answer is gone — the server restarted',
   lost: 'Answer not live — the server did not answer',
 }
+const stoppedLine = 'Stopped — the answer ends here'
 
 /** A turn still waits for its answer: asked, or answering with its stream open. */
 const waiting = (turn: Turn) =>
@@ -59,7 +65,8 @@ function entriesOf(turn: Turn): ChatEntry[] {
       copy: 'Copy',
       ...(answer.cut ? { cut: cutLine } : {}),
     })
-  if (answer?.state === 'failed' || answer?.state === 'timedOut')
+  if (answer?.state === 'stopped') entries.push({ type: 'event', label: 'Stopped', text: stoppedLine })
+  else if (answer?.state === 'failed' || answer?.state === 'timedOut')
     entries.push({ type: 'event', label: 'Error', text: endLines[answer.state] })
   else if (turn.end === 'gone' || turn.end === 'lost')
     entries.push({ type: 'event', label: 'Error', text: endLines[turn.end] })
@@ -99,6 +106,11 @@ export function useSideChats(on: boolean): SideChats | undefined {
   // The entries of each chat, made again only when its turns change, so the transcript keeps its memo (review R28).
   const entries = useMemo(
     () => new Map([...turns].map(([chat, list]) => [chat, list.flatMap(entriesOf)] as const)),
+    [turns],
+  )
+  // The chats with a question that waits: their composers draw Stop.
+  const busy = useMemo(
+    () => new Set([...turns].filter(([, list]) => list.some(waiting)).map(([chat]) => chat)),
     [turns],
   )
   const ask = useCallback(
@@ -150,11 +162,22 @@ export function useSideChats(on: boolean): SideChats | undefined {
     },
     [update],
   )
+  const stop = useCallback(async (chat: string): Promise<ComposerAnswer> => {
+    const turn = (turnsRef.current.get(chat) ?? []).find(waiting)
+    if (turn === undefined) return true
+    if (turn.side === undefined) return { line: 'Not stopped — the question is still being asked', retry: true }
+    const live = await import('./liveSide.ts').catch((error: unknown) => {
+      report(error, 'handler')
+      return undefined
+    })
+    return live === undefined ? false : live.stopSide(chat, turn.side)
+  }, [])
   return useMemo(
     () =>
       on
         ? {
             ask,
+            stop,
             sideChatOf: (pane, liveChat, title) => ({
               id: `side:${pane}`,
               title: 'Side chat',
@@ -166,13 +189,13 @@ export function useSideChats(on: boolean): SideChats | undefined {
                 placeholder: 'Ask a side question',
                 text: '',
                 attachments: [],
-                running: false,
+                running: busy.has(liveChat),
                 noAttach: true,
               },
               pane,
             }),
           }
         : undefined,
-    [on, ask, entries],
+    [on, ask, stop, entries, busy],
   )
 }

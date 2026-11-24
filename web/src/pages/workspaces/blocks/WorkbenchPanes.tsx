@@ -99,6 +99,8 @@ export type WorkbenchPanesProps = {
   onForkChat?: ((chat: string) => void) | undefined
   /** Asks a live Claude chat's side question (useSideChats.ts), by chat id; none on a fixture. */
   onSideAsk?: ((chat: string, question: string) => Promise<ComposerAnswer>) | undefined
+  /** Stops a live Claude chat's side answer (the side composer's Stop), by chat id; none on a fixture. */
+  onSideStop?: ((chat: string) => Promise<ComposerAnswer>) | undefined
 }
 
 export function WorkbenchPanes({
@@ -120,6 +122,7 @@ export function WorkbenchPanes({
   onMoveChat,
   onForkChat,
   onSideAsk,
+  onSideStop,
 }: WorkbenchPanesProps) {
   const targets = data.workspaces.filter((w) => w.id !== data.current)
   const panes = data.layers?.panes ?? paneLayers
@@ -330,6 +333,7 @@ export function WorkbenchPanes({
                   layers={data.layers}
                   onCopy={onCopy}
                   onSend={onSideAsk === undefined ? undefined : (text) => onSideAsk(pane.id, text)}
+                  onStop={onSideStop === undefined ? undefined : () => onSideStop(pane.id)}
                   onClose={() => onUiChange?.({ sideChatOpen: false })}
                 />
               ) : undefined

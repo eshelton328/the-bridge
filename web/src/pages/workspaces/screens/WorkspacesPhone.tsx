@@ -133,6 +133,8 @@ export type WorkspacesPhoneProps = {
   edits?: WorkspaceEdits | undefined
   /** Asks a live Claude chat's side question (useSideChats.ts), by chat id; none on a fixture. */
   onSideAsk?: ((chat: string, question: string) => Promise<ComposerAnswer>) | undefined
+  /** Stops a live Claude chat's side answer (the side composer's Stop), by chat id; none on a fixture. */
+  onSideStop?: ((chat: string) => Promise<ComposerAnswer>) | undefined
   /**
    * The page waits for its first workspace list (R58): the list draws its real header with its controls off, and
    * workspaces that load in place of the groups. Only the phone's and the tablet's list draw it.
@@ -164,6 +166,7 @@ export function WorkspacesPhone({
   newChat,
   edits,
   onSideAsk,
+  onSideStop,
   loading,
 }: WorkspacesPhoneProps) {
   // The tab bar's More opens the More drawer over it (Toolkit M4); picking a page navigates.
@@ -590,6 +593,7 @@ export function WorkspacesPhone({
             layers={data.layers}
             onCopy={onCopy}
             onSend={onSideAsk === undefined ? undefined : (text) => onSideAsk(ui.focusedPane, text)}
+            onStop={onSideStop === undefined ? undefined : () => onSideStop(ui.focusedPane)}
           />
         )}
         {data.fork === undefined || device !== 'phone' ? null : (

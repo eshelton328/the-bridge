@@ -22,7 +22,9 @@ import { routeTree } from './routeTree.gen.ts'
 // chat gets nothing. The composer has no paperclip and the pane has no "Open as its own pane", as no route takes them.
 // A Codex chat and a shell, which the server refuses (409 noSession), have no Side chat. Each miss is one line under
 // the composer with the question back in the box; a 5xx is reported with the step, the kind and the status only. An
-// answer that fails, stops at the server's 2 minutes, is cut or that the server no longer has says so. Each test takes
+// answer that fails, stops at the server's 2 minutes, is cut or that the server no longer has says so. While a
+// question waits, the composer's Stop posts `POST /api/chats/:chat/side/:side/stop` (backend #465): the answer ends
+// `stopped` with its text so far, and a stop that misses is a quiet line with no report. Each test takes
 // the owner's path: the app with no URL, then Workspaces, with the contract-checked fakes as the server; nothing reaches
 // a real server.
 document.documentElement.classList.add('dark')
@@ -315,6 +317,62 @@ describe('Side chat on a live Claude chat (backend #460)', () => {
       await expect.element(sideChat('desktop').getByText(text, { exact: true })).toBeVisible()
       if ('text' in next) await expect.element(sideChat('desktop').getByText(next.text, { exact: true })).toBeVisible()
       await expect.element(sideChat('desktop').getByText('Answering…', { exact: true })).not.toBeInTheDocument()
+    })
+
+  for (const size of ['phone', 'desktop'] as const)
+    it(`stops an answer mid-way with the composer's Stop and keeps its text, on the ${size}`, async () => {
+      const fakes = withChats()
+      await openChat(size, 'sketch the plan')
+      await openSide(size, 'sketch the plan')
+      const side = sideChat(size)
+      // No question waits: the composer draws no Stop.
+      expect(side.getByRole('button', { name: 'Stop', exact: true }).elements()).toHaveLength(0)
+      await ask(size, 'How long is it?')
+      await expect.poll(() => fakes.side.opens).toHaveLength(1)
+      const [id] = fakes.side.sides
+      if (id === undefined) throw new Error('no side answer')
+      fakes.side.change(id, { text: 'Half an answer' })
+      await expect.element(side.getByText('Half an answer', { exact: true })).toBeVisible()
+      await userEvent.click(side.getByRole('button', { name: 'Stop', exact: true }))
+      await expect.poll(() => fakes.side.stops).toEqual([id])
+      await expect.element(side.getByText('Stopped — the answer ends here', { exact: true })).toBeVisible()
+      await expect.element(side.getByText('Half an answer', { exact: true })).toBeVisible()
+      await expect.element(side.getByRole('button', { name: 'Stop', exact: true })).not.toBeInTheDocument()
+      // The main chat is neither prompted nor stopped.
+      expect(fakes.chats.prompts).toEqual([])
+      expect(fakes.chats.stops).toEqual([])
+      // The chat takes its next question.
+      await ask(size, 'And now?')
+      await expect.poll(() => fakes.side.asks).toHaveLength(2)
+    })
+
+  for (const size of ['phone', 'desktop'] as const)
+    it(`says a stop that missed in a quiet line and reports nothing, on the ${size}`, async () => {
+      clearReports()
+      onTestFinished(clearReports)
+      const fakes = withChats()
+      fakes.side.answerStops(() =>
+        errorAnswer(
+          { kind: 'herdr-unavailable', message: 'herdr does not answer marker-5150', requestId: 'r-503' },
+          503,
+        ),
+      )
+      await openChat(size, 'sketch the plan')
+      await openSide(size, 'sketch the plan')
+      const side = sideChat(size)
+      await ask(size, 'Why marker-5150?')
+      await expect.poll(() => fakes.side.opens).toHaveLength(1)
+      const [id] = fakes.side.sides
+      if (id === undefined) throw new Error('no side answer')
+      await userEvent.click(side.getByRole('button', { name: 'Stop', exact: true }))
+      await expect.element(side.getByText('Not stopped — the server answered 503', { exact: true })).toBeVisible()
+      expect(fakes.side.stops).toEqual([id])
+      // The answer still answers, and ends on its own.
+      await expect.element(side.getByRole('button', { name: 'Stop', exact: true })).toBeVisible()
+      fakes.side.change(id, { text: 'It ended.', state: 'done' })
+      await expect.element(side.getByText('It ended.', { exact: true })).toBeVisible()
+      expect(getReports()).toEqual([])
+      expect(fakes.chats.stops).toEqual([])
     })
 
   it('says the answer is gone when the server lost it in a restart', async () => {

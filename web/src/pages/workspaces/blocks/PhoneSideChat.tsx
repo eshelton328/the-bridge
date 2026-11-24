@@ -32,9 +32,20 @@ export type PhoneSideChatProps = {
   onCopy?: CopyReply | undefined
   /** Asks a live side question (SideChatPanel `onSend`); not set, as in a sample, the message counts as sent at once. */
   onSend?: ((text: string) => Promise<ComposerAnswer>) | undefined
+  /** Stops the live side answer: the answering composer's Stop (SideChatPanel `onStop`). */
+  onStop?: (() => Promise<ComposerAnswer>) | undefined
 }
 
-export function PhoneSideChat({ chat, open, onOpenChange, device, layers, onCopy, onSend }: PhoneSideChatProps) {
+export function PhoneSideChat({
+  chat,
+  open,
+  onOpenChange,
+  device,
+  layers,
+  onCopy,
+  onSend,
+  onStop,
+}: PhoneSideChatProps) {
   const ref = useRef<HTMLDivElement>(null)
   return (
     <BottomSheet
@@ -53,6 +64,7 @@ export function PhoneSideChat({ chat, open, onOpenChange, device, layers, onCopy
           layers={layers}
           onCopy={onCopy}
           onSend={onSend}
+          onStop={onStop}
           onClose={() => {
             onOpenChange?.(false)
           }}

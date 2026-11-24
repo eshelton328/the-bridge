@@ -97,6 +97,8 @@ export type SideChatPanelProps = {
   onCopy?: CopyReply | undefined
   /** Asks a live side question (ChatPane `onSend`); not set, as in a sample, the message counts as sent at once. */
   onSend?: ((text: string) => Promise<ComposerAnswer>) | undefined
+  /** Stops the live side answer: the answering composer's Stop (ChatPane `onStop`). */
+  onStop?: (() => Promise<ComposerAnswer>) | undefined
 }
 
 export function SideChatPanel({
@@ -107,6 +109,7 @@ export function SideChatPanel({
   layers,
   onCopy,
   onSend,
+  onStop,
 }: SideChatPanelProps) {
   const tablet = placement === 'sheet' && device === 'tablet'
   const openAsPane =
@@ -159,6 +162,7 @@ export function SideChatPanel({
         chatId={chat.id ?? `${chat.command} ${chat.title}`}
         onCopy={onCopy}
         onSend={onSend}
+        onStop={onStop}
         figma={{
           composer: layers?.sideComposer ?? '105:948',
           entries: layers?.sideEntries ?? ['105:933', '105:935'],

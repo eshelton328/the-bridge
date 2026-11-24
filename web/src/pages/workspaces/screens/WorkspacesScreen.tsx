@@ -133,6 +133,8 @@ export type WorkspacesScreenProps = {
   edits?: WorkspaceEdits | undefined
   /** Asks a live Claude chat's side question (useSideChats.ts), by chat id; none on a fixture. */
   onSideAsk?: ((chat: string, question: string) => Promise<ComposerAnswer>) | undefined
+  /** Stops a live Claude chat's side answer (the side composer's Stop), by chat id; none on a fixture. */
+  onSideStop?: ((chat: string) => Promise<ComposerAnswer>) | undefined
   /**
    * The page waits for its first workspace list (R58): the list draws its real header with its controls off, and
    * workspaces that load in place of the groups. Only the phone's and the tablet's list draw it.
@@ -164,6 +166,7 @@ export function WorkspacesScreen({
   newChat,
   edits,
   onSideAsk,
+  onSideStop,
   loading,
 }: WorkspacesScreenProps) {
   const [changed, setChanged] = useState<{ of: WorkspacesUi; ui: WorkspacesUi }>({ of: stateUi, ui: stateUi })
@@ -322,6 +325,7 @@ export function WorkspacesScreen({
             newChat={newChat}
             edits={edits}
             onSideAsk={onSideAsk}
+            onSideStop={onSideStop}
             loading={loading}
           />
           {phoneDeviceOf(layout, data) === undefined || data.phone === undefined ? (
@@ -402,6 +406,7 @@ function WorkspacesLayout({
   newChat,
   edits,
   onSideAsk,
+  onSideStop,
   loading,
 }: WorkspacesLayoutProps) {
   // The names the owner gave chats (D21) take the place of their titles: in the sidebar, in the header of the chat
@@ -454,6 +459,7 @@ function WorkspacesLayout({
         newChat={newChat}
         edits={edits}
         onSideAsk={onSideAsk}
+        onSideStop={onSideStop}
         loading={loading}
       />
     )
@@ -603,6 +609,7 @@ function WorkspacesLayout({
           layers={data.layers}
           onCopy={onCopy}
           onSend={onSideAsk === undefined || sideFor === undefined ? undefined : (text) => onSideAsk(sideFor, text)}
+          onStop={onSideStop === undefined || sideFor === undefined ? undefined : () => onSideStop(sideFor)}
           onClose={() => {
             change({ sideChatOpen: false })
           }}
@@ -696,6 +703,7 @@ function WorkspacesLayout({
                   onMoveChat={moveChat}
                   onForkChat={edits?.forkChat}
                   onSideAsk={onSideAsk}
+                  onSideStop={onSideStop}
                 />
               </SlotBoundary>
             ) : (
@@ -813,6 +821,7 @@ function WorkspacesLayout({
               onMoveChat={moveChat}
               onForkChat={edits?.forkChat}
               onSideAsk={onSideAsk}
+              onSideStop={onSideStop}
             />
           </SlotBoundary>
         }
