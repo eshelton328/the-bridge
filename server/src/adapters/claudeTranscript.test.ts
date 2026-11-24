@@ -200,6 +200,85 @@ describe('Claude transcript', () => {
     for (const entry of read.entries) TranscriptEntry.parse(entry)
   })
 
+  it('marks each reply that a Stop hook sent back with the reply that replaced it (R62)', async () => {
+    // Example lines in the shapes that Claude Code writes when its Stop hook rejects a reply; the text is made up.
+    const hook = (uuid: string) => user(uuid, 'Stop hook feedback:\nThe reply breaks a rule.', { isMeta: true })
+    const read = async (lines: object[]) =>
+      (await readClaudeTranscript(file(lines), options)).entries.flatMap((e) =>
+        // An entry's ID is its line's uuid and the block's place in the line ("a1:0").
+        e.type === 'assistant'
+          ? [{ id: e.id.replace(/:\d+$/, ''), replacedBy: e.replacedBy?.replace(/:\d+$/, '') }]
+          : [],
+      )
+    // One rewrite.
+    expect(
+      await read([
+        user('u1', 'Fix it'),
+        assistant('a1', [text('draft')]),
+        hook('s1'),
+        assistant('a2', [text('fixed')]),
+      ]),
+    ).toEqual([
+      { id: 'a1', replacedBy: 'a2' },
+      { id: 'a2', replacedBy: undefined },
+    ])
+    // Two rewrites in a row: each draft points to the next reply.
+    expect(
+      await read([
+        user('u1', 'Fix it'),
+        assistant('a1', [text('draft 1')]),
+        hook('s1'),
+        assistant('a2', [text('draft 2')]),
+        hook('s2'),
+        assistant('a3', [text('fixed')]),
+      ]),
+    ).toEqual([
+      { id: 'a1', replacedBy: 'a2' },
+      { id: 'a2', replacedBy: 'a3' },
+      { id: 'a3', replacedBy: undefined },
+    ])
+    // A rewrite with tool calls between: the last reply of the turn replaces the draft; text before the draft stays.
+    expect(
+      await read([
+        user('u1', 'Fix it'),
+        assistant('a0', [text('looking'), toolUse('t1', 'git status')]),
+        user('r1', [toolResult('t1', 'clean')]),
+        assistant('a1', [text('draft')]),
+        hook('s1'),
+        assistant('a2', [text('checking'), toolUse('t2', 'pnpm test')]),
+        user('r2', [toolResult('t2', 'ok')]),
+        assistant('a3', [text('fixed')]),
+        user('u2', 'Thanks'),
+        assistant('a4', [text('next turn')]),
+      ]),
+    ).toEqual([
+      { id: 'a0', replacedBy: undefined },
+      { id: 'a1', replacedBy: 'a3' },
+      { id: 'a2', replacedBy: undefined },
+      { id: 'a3', replacedBy: undefined },
+      { id: 'a4', replacedBy: undefined },
+    ])
+    // A peer's prompt after the rewrite starts a new turn: its reply does not take the draft's mark.
+    expect(
+      await read([
+        user('u1', 'Fix it'),
+        assistant('a1', [text('draft')]),
+        hook('s1'),
+        assistant('a2', [text('fixed')]),
+        user('p1', '<agent-prompt from="bridge-coord">status?</agent-prompt>'),
+        assistant('a3', [text('status reply')]),
+      ]),
+    ).toEqual([
+      { id: 'a1', replacedBy: 'a2' },
+      { id: 'a2', replacedBy: undefined },
+      { id: 'a3', replacedBy: undefined },
+    ])
+    // A stop after the hook's note: no reply replaced the draft, so it stays a reply.
+    expect(
+      await read([user('u1', 'Fix it'), assistant('a1', [text('draft')]), hook('s1'), user('u2', 'Stop there')]),
+    ).toEqual([{ id: 'a1', replacedBy: undefined }])
+  })
+
   it('shows the text of a queued prompt with a pasted image, which Claude Code stores as blocks', async () => {
     const path = file([
       {
