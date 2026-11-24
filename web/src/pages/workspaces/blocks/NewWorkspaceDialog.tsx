@@ -8,15 +8,19 @@
 // opens the workspace once the list shows it (useWorkspaceEdits.ts). A 400
 // shows the server's words as the field's error; herdr's 502 or 503 and an
 // unreachable server show a line with Retry, which posts the same name
-// again; any other miss shows its line alone. Cancel and Escape send
-// nothing. M15 draws New workspace as a workspace added with its name a
+// again; any other miss shows its line alone. A create that may have made
+// the workspace (no answer in time, a 201 the page cannot read) shows its
+// line and turns Create and Enter off, so the dialog sends nothing more
+// (PR #489 review). Cancel and Escape send
+// nothing more, and a create still running then answers no dialog: a
+// dialog opened again meanwhile keeps its name (PR #489 review). M15 draws New workspace as a workspace added with its name a
 // field in edit mode; the live page asks for the name first, in one dialog
 // at every size, as the desktop has no such field (bridge-coord, R59 part
 // 2). The library's `Dialog` with a `TextField`, the focus in the field, as
 // CompactDialog. Props only.
 import { defaultWorkspaceName, Label, maxLabel } from '@bridge/contract'
 import { Button, Dialog, DialogClose, TextField } from '@eshelton328/component-library-1701'
-import { useId, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import type { NewWorkspaceAnswer } from '../types.ts'
 import { TranscriptProblem } from './TranscriptProblem.tsx'
 
@@ -32,7 +36,7 @@ function errorOf(name: string): string | undefined {
   return `A name has 1 to ${String(maxLabel)} characters and no control character`
 }
 
-type Miss = { readonly line: string; readonly retry: boolean }
+type Miss = { readonly line: string; readonly retry: boolean; readonly sent: boolean }
 
 export function NewWorkspaceDialog({ onOpenChange, onCreate }: NewWorkspaceDialogProps) {
   const [name, setName] = useState('')
@@ -41,20 +45,29 @@ export function NewWorkspaceDialog({ onOpenChange, onCreate }: NewWorkspaceDialo
   const [pending, setPending] = useState(false)
   // A ref, not state: a second tap or Enter in the same frame must see the first one's post.
   const runningRef = useRef(false)
+  // Whether this dialog is still open: a create's answer after Cancel must not close or change a later one.
+  const openRef = useRef(true)
+  useEffect(() => {
+    openRef.current = true
+    return () => {
+      openRef.current = false
+    }
+  }, [])
   const formId = useId()
   const formRef = useRef<HTMLFormElement>(null)
   const error = errorOf(name) ?? nameError
   const submit = () => {
-    if (onCreate === undefined || runningRef.current || errorOf(name) !== undefined) return
+    if (onCreate === undefined || runningRef.current || miss?.sent === true || errorOf(name) !== undefined) return
     runningRef.current = true
     setPending(true)
     setMiss(undefined)
     setNameError(undefined)
     void onCreate(name)
       .then((answer) => {
+        if (!openRef.current) return
         if (answer.kind === 'created') onOpenChange(false)
         else if (answer.kind === 'name') setNameError(answer.line)
-        else setMiss({ line: answer.line, retry: answer.kind === 'retry' })
+        else setMiss({ line: answer.line, retry: answer.kind === 'retry', sent: answer.kind === 'unknown' })
       })
       .finally(() => {
         runningRef.current = false
@@ -81,7 +94,7 @@ export function NewWorkspaceDialog({ onOpenChange, onCreate }: NewWorkspaceDialo
             size="sm"
             textSize="smStrong"
             variant="primary"
-            disabled={onCreate === undefined || pending || errorOf(name) !== undefined}
+            disabled={onCreate === undefined || pending || miss?.sent === true || errorOf(name) !== undefined}
           >
             {pending ? 'Creating…' : 'Create'}
           </Button>

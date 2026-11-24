@@ -1247,11 +1247,13 @@ export type WorkspaceEdits = {
 
 /**
  * What the New workspace dialog shows after its Create (W4): `created` closes it, `name` is the name field's error
- * (the server's 400 or the `Label` rule), `retry` a line with Retry (herdr's 502 or 503, an unreachable server), and
- * `miss` a line with no Retry.
+ * (the server's 400 or the `Label` rule), `retry` a line with Retry (herdr's 502 or 503, an unreachable server),
+ * `miss` a line with no Retry, and `unknown` a line after which the dialog sends nothing more, as the workspace may
+ * have been made (no answer in time, a 201 the page cannot read).
  */
 export type NewWorkspaceAnswer =
   | { readonly kind: 'created' }
   | { readonly kind: 'name'; readonly line: string }
   | { readonly kind: 'retry'; readonly line: string }
   | { readonly kind: 'miss'; readonly line: string }
+  | { readonly kind: 'unknown'; readonly line: string }

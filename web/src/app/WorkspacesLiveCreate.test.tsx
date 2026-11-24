@@ -227,6 +227,54 @@ describe('New workspace on the live page (W4)', () => {
     await expectOpen('desktop', 'harbour')
   })
 
+  it('sends nothing more after a 201 it cannot read, and the list shows the workspace (PR #489 review)', async () => {
+    const server = withServer()
+    server.answerCreates(() => new Response('not json', { status: 201 }), true)
+    await tapWorkspaces([744, 1133])
+    await openNewWorkspace('tablet')
+    await userEvent.fill(nameField(), 'harbour')
+    await userEvent.click(dialog().getByRole('button', { name: 'Create' }))
+    await expect
+      .element(dialog().getByText('Sent, no answer — the list shows the workspace if it was made', { exact: true }))
+      .toBeVisible()
+    expect(dialog().getByRole('button', { name: 'Retry' }).elements()).toHaveLength(0)
+    await expect.element(dialog().getByRole('button', { name: 'Create' })).toBeDisabled()
+    await userEvent.click(nameField())
+    await userEvent.keyboard('{Enter}')
+    await expect.poll(() => page.getByText('harbour', { exact: true }).elements().length).toBeGreaterThan(0)
+    expect(server.creates).toEqual([{ name: 'harbour' }])
+  })
+
+  it('keeps a dialog opened again after Cancel when the first create answers (PR #489 review)', async () => {
+    const server = withServer()
+    const served = globalThis.fetch
+    let answer: () => void = () => undefined
+    const held = new Promise<void>((resolve) => {
+      answer = resolve
+    })
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
+        if (init?.method === 'POST' && url.endsWith('/api/workspaces')) await held
+        return served(input, init)
+      }),
+    )
+    await tapWorkspaces([390, 844])
+    await openNewWorkspace('phone')
+    await userEvent.fill(nameField(), 'harbour')
+    await userEvent.click(dialog().getByRole('button', { name: 'Create' }))
+    await expect.element(dialog().getByRole('button', { name: 'Creating…' })).toBeVisible()
+    await userEvent.click(dialog().getByRole('button', { name: 'Cancel' }))
+    await expect.element(dialog()).not.toBeInTheDocument()
+    await openNewWorkspace('phone')
+    await userEvent.fill(nameField(), 'second thought')
+    answer()
+    await expect.poll(() => server.creates).toEqual([{ name: 'harbour' }])
+    await expect.poll(() => page.getByText('harbour', { exact: true }).elements().length).toBeGreaterThan(0)
+    await expect.element(nameField()).toHaveValue('second thought')
+  })
+
   it('opens the workspace with the list read after the 201 when no event comes', async () => {
     const server = withServer()
     server.quietCreates(true)

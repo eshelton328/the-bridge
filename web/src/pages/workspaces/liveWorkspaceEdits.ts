@@ -24,8 +24,9 @@
 // (`CreateWorkspaceResponse`), one shell in it; its own answers are
 // `CreateAnswer`: 400 is the name's line, a 5xx (herdr's 502 and 503, or the
 // proxy's for a server that is down) and an unreachable server are lines
-// with Retry, and a create that got no answer in time may have made the
-// workspace, so its line says the list shows it and offers no Retry.
+// with Retry, and a create that got no answer in time, or a 201 the page
+// cannot read, may have made the workspace: `unknown`, whose line says the
+// list shows it, and the dialog sends nothing more (PR #489 review).
 //
 // What a miss means to the page:
 // - 409 `workspace-not-ready` `orderStale`: the order does not name the list
@@ -325,6 +326,10 @@ export type CreateAnswer =
   | { readonly kind: 'name'; readonly line: string }
   | { readonly kind: 'retry'; readonly line: string }
   | { readonly kind: 'miss'; readonly line: string }
+  | { readonly kind: 'unknown'; readonly line: string }
+
+/** The line of a create that may have made the workspace. */
+const unknownLine = 'Sent, no answer — the list shows the workspace if it was made'
 
 /** How long the page waits for a new workspace: herdr makes it and the server reads the list again before it answers. */
 const createWaitMs = 30_000
@@ -374,16 +379,17 @@ export async function createWorkspace(name: string | undefined): Promise<CreateA
   } catch {
     // With no answer in time herdr may have made it; an unreachable server made nothing, so a Retry is safe.
     return signal.aborted
-      ? { kind: 'miss', line: 'Sent, no answer — the list shows the workspace if it was made' }
+      ? { kind: 'unknown', line: unknownLine }
       : { kind: 'retry', line: `${editLead.createWorkspace} — unreachable` }
   }
   try {
     if (res.status !== 201) return await createMissOf(res)
     const made = CreateWorkspaceResponse.safeParse(readJson(await res.text()))
     if (made.success) return { kind: 'created', workspace: splitId(made.data.workspace.id).local }
+    // A 201 the page cannot read made the workspace all the same.
     report(new WorkspaceEditMissError('createWorkspace', 'bad-reply', res.status), 'live')
-    return { kind: 'miss', line: `${editLead.createWorkspace} — bad-reply` }
+    return { kind: 'unknown', line: unknownLine }
   } catch {
-    return { kind: 'miss', line: 'Sent, no answer — the list shows the workspace if it was made' }
+    return { kind: 'unknown', line: unknownLine }
   }
 }
