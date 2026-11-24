@@ -112,6 +112,8 @@ export type HeaderDump = {
   orientation: string | null
   /** `#root`'s top in the layout viewport: 0, or the R57 shift (headerShift.ts) while it is on. */
   rootTop: number | null
+  /** Whether index.html's launch screen, `#launch`, is still on the page (launchEnd.ts removes it after the mount). */
+  launch: boolean
   /**
    * Set on the first dump after the page comes back from the background (it was hidden, or a `pageshow` from the
    * back-forward cache): how long it was hidden, in ms (null when unknown), and the event that showed it. Else null.
@@ -212,6 +214,7 @@ export function readHeaderDump(title: Element, type: string, win: Window = windo
         : { scrollTop: body.scrollTop, scrollHeight: body.scrollHeight, clientHeight: body.clientHeight },
     orientation: typeof win.screen.orientation === 'object' ? win.screen.orientation.type : null,
     rootTop: root === null ? null : root.getBoundingClientRect().y,
+    launch: win.document.getElementById('launch') !== null,
     back: null,
     fonts: [...win.document.fonts]
       .filter((face) => face.family.replaceAll('"', '').startsWith('Geist'))

@@ -193,7 +193,8 @@ imports it dynamically with the trace, so a build has none of it.
   `scrollTop`, `scrollHeight` and `clientHeight` of the ScrollFrame body
   beside the title's header, or null), `orientation`
   (`screen.orientation.type`), `rootTop` (`#root`'s top: 0, or the shift
-  below), `back` (on the first dump after the page shows again from the
+  below), `launch` (whether `#launch`, the launch screen, is still on
+  the page), `back` (on the first dump after the page shows again from the
   background: `hiddenMs`, null when unknown, and `via`,
   `visibilitychange` or a `pageshow` from the back-forward cache; else
   null), `title` (its unrounded box, its offset

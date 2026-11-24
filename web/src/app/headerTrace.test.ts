@@ -157,6 +157,12 @@ describe('chat header dump', () => {
     expect(dump.scrollRoot).toEqual({ scrollTop: 120, scrollHeight: 400, clientHeight: 100 })
     expect(dump.orientation).toBe(screen.orientation.type)
     expect(dump.rootTop).toBe(40)
+    expect(dump.launch).toBe(false)
+    const launch = document.createElement('div')
+    launch.id = 'launch'
+    document.body.append(launch)
+    expect(readHeaderDump(title, 'tick').launch).toBe(true)
+    launch.remove()
     expect(dump.back).toBeNull()
     root.id = ''
     expect(readHeaderDump(title, 'tick').rootTop).toBeNull()
