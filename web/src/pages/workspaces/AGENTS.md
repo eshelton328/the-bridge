@@ -156,7 +156,8 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   ends `stopped` ("Stopped — the answer ends here") with the text so far, and
   a stop that misses is a quiet "Not stopped — …" line with no report().
   The side chat keeps its unsent question in the page's drafts by its own
-  id (`side:<pane>`). A Codex chat and a shell
+  id (`side:<pane>`), and its transcript follows the answer's end as a
+  live chat's does (ChatPane `follows`). A Codex chat and a shell
   have no Side chat (`withCommands`), as the server answers them 409
   `noSession` (`app/WorkspacesLiveSide.test.tsx`; the fake is
   `lib/fakeSideServer.ts`).

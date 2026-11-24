@@ -390,6 +390,30 @@ describe('Side chat on a live Claude chat (backend #460)', () => {
     expect(fakes.side.asks).toEqual([])
   })
 
+  it('follows a long answer to its end as it grows, on the phone', async () => {
+    const fakes = withChats()
+    await openChat('phone', 'sketch the plan')
+    await openSide('phone', 'sketch the plan')
+    await ask('phone', 'All the steps?')
+    await expect.poll(() => fakes.side.reads.length).toBeGreaterThan(0)
+    const [id] = fakes.side.sides
+    if (id === undefined) throw new Error('no side answer')
+    const steps = (n: number) => Array.from({ length: n }, (_, i) => `Step ${String(i + 1)} of the plan.`).join('\n\n')
+    const scroller = () => {
+      const body = sideChat('phone').element().querySelector('.scroll-frame__body')
+      if (!(body instanceof HTMLElement)) throw new Error('no side transcript scroller')
+      return body
+    }
+    const fromEnd = () => scroller().scrollHeight - scroller().scrollTop - scroller().clientHeight
+    fakes.side.change(id, { text: steps(40) })
+    await expect.element(sideChat('phone').getByText('Step 40 of the plan.', { exact: true })).toBeInTheDocument()
+    expect(scroller().scrollHeight).toBeGreaterThan(scroller().clientHeight)
+    await expect.poll(fromEnd).toBeLessThan(2)
+    fakes.side.change(id, { text: steps(60), state: 'done' })
+    await expect.element(sideChat('phone').getByText('Step 60 of the plan.', { exact: true })).toBeInTheDocument()
+    await expect.poll(fromEnd).toBeLessThan(2)
+  })
+
   it('says the answer is gone when the server lost it in a restart', async () => {
     const fakes = withChats()
     await openChat('desktop', 'sketch the plan')

@@ -11,7 +11,8 @@
 // server through `onSend` (useSideChats.ts); a sample's Send counts as sent at
 // once. A live side chat keeps its unsent question in the page's drafts
 // (`drafts`, by its own id, so a switch to another chat's side chat and back
-// keeps it). Props only.
+// keeps it) and follows its answer's end as a live chat does (ChatPane
+// `follows`). Props only.
 import { BubbleIcon, Button, CloseIcon, type IconSize, Inline, SplitIcon } from '@eshelton328/component-library-1701'
 import { css, cx } from '../../../../styled-system/css/index.js'
 import type { SideChat, SidebarLayers } from '../types.ts'
@@ -170,6 +171,7 @@ export function SideChatPanel({
         onSend={onSend}
         onStop={onStop}
         drafts={chat.id === undefined ? undefined : drafts}
+        follows={chat.id !== undefined}
         figma={{
           composer: layers?.sideComposer ?? '105:948',
           entries: layers?.sideEntries ?? ['105:933', '105:935'],
