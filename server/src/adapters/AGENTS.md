@@ -73,7 +73,8 @@ client of a socket or a file sits beside them.
   `isMeta` line with no origin that starts "Stop hook feedback:" is
   "Stop hook: reply rewritten". The last reply of the turn before that
   note is a draft: its `replacedBy` is the last reply after the note and
-  before the next prompt or hook note, and a draft with no such reply
+  before the next prompt or note (a peer's or a task's note starts a new
+  turn), and a draft with no such reply
   (a stop) has none (R62). A queued line of a task or a peer gives
   the same note. Any other meta line or origin (an idle notice, a skill
   body) shows nothing. A slash command's own line shows as
