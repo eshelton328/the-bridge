@@ -37,7 +37,9 @@ export const ErrorKind = z.discriminatedUnion('kind', [
    * move goes to the chat's own workspace (`sameWorkspace`) or leaves a workspace that holds the server or the
    * coordinator's chat (`holdsServer`), or a fork or a side question has no session to copy (`noSession`), or a side question waits for one of the chat's
    * own, or for one of the three that the server runs at a time (`sideBusy`), or a transcript page asks for the
-   * entries before an entry the server does not find in the chat (`entryNotFound`; read the newest page again).
+   * entries before an entry the server does not find in the chat (`entryNotFound`; read the newest page again), or
+   * the chat's screen no longer shows the dialog that an answer names, or not that option (`dialogChanged`; read the
+   * dialog again).
    */
   z.object({
     kind: z.literal('chat-not-ready'),
@@ -70,6 +72,7 @@ export const ErrorKind = z.discriminatedUnion('kind', [
       'holdsServer',
       'sideBusy',
       'entryNotFound',
+      'dialogChanged',
     ]),
     ...common,
   }),

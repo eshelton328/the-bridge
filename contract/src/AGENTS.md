@@ -137,5 +137,16 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
   `timedOut`, `stopped`). A
   chat that cannot take one is 409 `chat-not-ready` `noSession` or
   `sideBusy` (`sideAnswers.test.ts`).
+- A dialog on a chat's screen that its transcript does not hold (R69,
+  `paneDialogs.ts`): `GET /api/chats/:chat/dialog` gives a `PaneDialog`
+  or null. Its `id` is a hash of the read text, `options` (1 to 9, each
+  a number and a label) is there only when the server read the numbered
+  list for sure, and `raw` is the dialog's text, at most
+  `maxDialogChars`. This is the one place the contract carries a
+  screen's text (an exception to d-110 for R69): the owner must see the
+  dialog to answer it. An answer is `{ id, n }` only, never a key; the
+  server sends it only when the screen still shows that dialog and
+  option, else 409 `chat-not-ready` `dialogChanged`. Logs keep the ID
+  and the number, never the text (`paneDialogs.test.ts`).
 - A `ClientErrorReport` holds only its listed fields (a strict object),
   so a report carries no page text or app state (`clientErrors.test.ts`).
