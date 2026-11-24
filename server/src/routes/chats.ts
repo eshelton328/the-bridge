@@ -28,6 +28,8 @@
 // kept. While a restart runs, each POST to that chat is 409 `restarting`; while another POST to it is in progress, a
 // restart is 409 `working`.
 import {
+  AnswerDialogRequest,
+  PaneDialogResponse,
   ChatCommandRequest,
   ChatId,
   ChatSkillsResponse,
@@ -82,7 +84,16 @@ import type {
   SwapOutcome,
   ZoomOutcome,
 } from '../services/agentPort.ts'
-import { clearInput, readSkills, readTranscriptPage, sendCommand, setEffort, stopChat } from '../services/chats.ts'
+import {
+  answerDialog,
+  clearInput,
+  readDialog,
+  readSkills,
+  readTranscriptPage,
+  sendCommand,
+  setEffort,
+  stopChat,
+} from '../services/chats.ts'
 import type { UploadStore } from '../services/uploadStore.ts'
 import { createSendResults, resultOf, type SendResults } from '../services/sendResults.ts'
 import { createNewChats, type NewChats, type StartAnswer } from '../services/newChats.ts'
@@ -415,6 +426,29 @@ export function chatsRoutes(
       if (!id.success) return invalid(c)
       const set = await setEffort(agents, id.data, c.req.valid('json').effort)
       return set.ok ? answer(c, set.value) : failed(c, set.error)
+    })
+    .get('/:chat/dialog', async (c) => {
+      const id = chatOf(c)
+      if (!id.success) return invalid(c)
+      const read = await readDialog(agents, id.data)
+      if (!read.ok) return failed(c, read.error)
+      if (read.value === 'notFound' || read.value === 'shell' || read.value === 'noCommands')
+        return answer(c, read.value)
+      return c.json(PaneDialogResponse.parse({ dialog: read.value }), 200)
+    })
+    .post('/:chat/dialog', smallJson, jsonOnly, jsonBody(AnswerDialogRequest), async (c) => {
+      const id = chatOf(c)
+      if (!id.success) return invalid(c)
+      const { id: dialog, n } = c.req.valid('json')
+      const sent = await answerDialog(agents, id.data, { id: dialog, n })
+      if (!sent.ok) return failed(c, sent.error)
+      // The dialog's ID and the option's number only: never its text.
+      log.info('dialog answered', { requestId: c.get('requestId'), dialog, n, outcome: sent.value })
+      if (sent.value !== 'dialogChanged') return answer(c, sent.value)
+      return errorJson(c, 'chat-not-ready', {
+        state: 'dialogChanged',
+        message: 'the chat no longer shows that dialog or option, so nothing was sent; read the dialog again',
+      })
     })
     .post('/:chat/focus', smallJson, jsonOnly, jsonBody(FocusChatRequest), async (c) => {
       const id = chatOf(c)

@@ -30,6 +30,7 @@ const logMessages = [
   'upload failed',
   'session folder not watched',
   'prompt sent',
+  'dialog answered',
   'push store failed',
   'push failed',
   'push watch ended',

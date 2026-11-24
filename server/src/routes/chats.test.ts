@@ -16,6 +16,7 @@ import {
   MoveToWorkspaceResponse,
   SideAnswer,
   SideStarted,
+  PaneDialogResponse,
 } from '@bridge/contract'
 import { ok, type Result } from '@bridge/shared'
 import { testClient } from 'hono/testing'
@@ -649,6 +650,55 @@ describe('POST /api/chats/:chat/effort (slice W10)', () => {
     expect([busy.status, ErrorBody.parse(await busy.json()).error]).toMatchObject([409, { state: 'working' }])
     expect((await effort(app, 'test-mac/no-such-chat', { effort: 'low' })).status).toBe(404)
     expect((await effort(app, themes, { effort: 'max' })).status).toBe(400)
+  })
+})
+
+describe('GET and POST /api/chats/:chat/dialog (R69)', () => {
+  const dialog = {
+    id: 'a1b2c3d4e5f60718',
+    title: 'Colour',
+    options: [
+      { n: 1, label: 'Red' },
+      { n: 2, label: 'Green' },
+    ],
+    raw: 'Which colour for marker-5150?',
+  }
+  const path = (chat: string) => `/api/chats/${encodeURIComponent(chat)}/dialog`
+  const pick = (app: ReturnType<typeof createApp>, chat: string, body: unknown) =>
+    app.request(path(chat), {
+      method: 'POST',
+      headers: { ...local, 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+
+  it('gives the dialog of a chat that waits for the owner, and null for a working chat', async () => {
+    const agents = createFakeAgents(machine)
+    const app = createApp({ agents, owner, log: memoryLogger().log })
+    agents.showDialog(ChatId.parse(themes), dialog)
+    agents.setStatus(ChatId.parse(themes), 'needsYou')
+    const read = await app.request(path(themes), { headers: local })
+    expect([read.status, PaneDialogResponse.parse(await read.json())]).toEqual([200, { dialog }])
+    agents.setStatus(ChatId.parse(themes), 'working')
+    expect(PaneDialogResponse.parse(await (await app.request(path(themes), { headers: local })).json())).toEqual({
+      dialog: null,
+    })
+    expect((await app.request(path('test-mac/no-such-chat'), { headers: local })).status).toBe(404)
+  })
+
+  it('sends the tapped option once, logs only the ID and the number, and answers 409 dialogChanged after', async () => {
+    const agents = createFakeAgents(machine)
+    const logger = memoryLogger()
+    const app = createApp({ agents, owner, log: logger.log })
+    agents.showDialog(ChatId.parse(themes), dialog)
+    agents.setStatus(ChatId.parse(themes), 'needsYou')
+    expect((await pick(app, themes, { id: dialog.id, n: 3 })).status).toBe(409)
+    expect((await pick(app, themes, { id: dialog.id, n: 2 })).status).toBe(204)
+    expect(agents.dialogAnswers()).toEqual([{ chat: themes, id: dialog.id, n: 2 }])
+    const again = await pick(app, themes, { id: dialog.id, n: 2 })
+    expect([again.status, ErrorBody.parse(await again.json()).error]).toMatchObject([409, { state: 'dialogChanged' }])
+    expect(JSON.stringify(logger.lines())).not.toMatch(/Colour|Green|marker-5150/)
+    expect((await pick(app, themes, { id: 'not-hex', n: 1 })).status).toBe(400)
+    expect((await pick(app, themes, { id: dialog.id, n: 1, text: 'x' })).status).toBe(400)
   })
 })
 
