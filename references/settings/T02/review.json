@@ -1,8 +1,8 @@
 {
   "frameId": "T02",
-  "inputs": "8f950bcec017a94475a9aef75db8091dde6f86fb04132337e92cfa425fec86d2",
+  "inputs": "847e5f45d742ec599050320176300bc550182d4b4a156bdbd52de1f6942f9e78",
   "library": "1.0.0-beta.116",
-  "recordSha256": "463a81b0c56d5cd6b51086912c1675938eb86a93b6bd4910ab0b89f3f43eaff6",
+  "recordSha256": "137cc5647438221b5475bbf68b068d363098dc2566cda9dfd35433c93e36d1f3",
   "record": {
     "verdict": "match",
     "viewport": "820x1180 iPad portrait, Light",
@@ -12,7 +12,7 @@
       "render": "reports/fidelity/settings/T02.sideBySide.png",
       "reference_side": "left"
     },
-    "summary": "Apart from the accepted deviations, the render matches the reference: the header, Mode, Theme, the Navigation rows and the tab bar are the same.",
+    "summary": "The render matches the reference except for the accepted deviations. Each deviation that can be seen looks as described.",
     "findings": [],
     "accepted_deviations": [
       {
@@ -20,47 +20,47 @@
         "as_given": "Text size: the control is disabled (muted labels) and its line under it says \"Coming soon\" in place of \"Scales the whole app: Small 87.5 %, Default 100 %, Large 112.5 %.\" (step D adds text size later). On a narrow screen the one-line note makes every section below it sit about one text line higher.",
         "status": "as-described",
         "finding": null,
-        "note": "Small, Default and Large are muted and the line says \"Coming soon\". The reference note also fits on one line at this width, so nothing moves up."
+        "note": "Small, Default and Large are muted, Default stays selected, and the line says \"Coming soon\". On this tablet width the reference note is also one line, so nothing moves up."
       },
       {
         "id": "A2",
         "as_given": "A new \"NOTIFICATIONS\" section with one \"Notifications\" switch (off) sits between the Navigation section and the New chat defaults section. So New chat defaults sits lower, or below the bottom edge.",
         "status": "not-seen",
         "finding": null,
-        "note": "The top edge of a card shows just below the Navigation card, behind the tab bar (about y 1125). The Notifications section and New chat defaults are below the bottom edge, so the frame does not show them."
+        "note": "The section is below the bottom edge in this frame. Only the top edge of the next card shows above the tab bar (about y 1095 in the render crop). New chat defaults is not visible."
       },
       {
         "id": "A3",
         "as_given": "The Notifications switch moved to that section: the desktop rail no longer has the \"Notifications / Blocked in Settings\" switch at its bottom, and the More drawer no longer has the \"Notifications / Blocked in Settings\" row at its end. So the drawer is shorter and its top edge sits lower.",
         "status": "not-seen",
         "finding": null,
-        "note": "This iPad frame has no desktop rail and the More drawer is closed."
+        "note": "This frame has no desktop rail and no open More drawer, so the deviation is not visible here."
       },
       {
         "id": "A4",
         "as_given": "The Navigation list has a new last row, \"Settings\", with the line \"Always shown: in the bar or under More.\" under it and up and down buttons but no switch (the owner's decision: Settings is an entry of the bar order that cannot be hidden). So Toolkit's down button is now enabled, the Navigation card is taller, and every section below it sits lower or below the bottom edge.",
         "status": "as-described",
         "finding": null,
-        "note": "Settings is the last row, with its line and the up and down buttons but no switch. Its down button is muted, and Toolkit's down button is enabled."
+        "note": "The Settings row shows the line under it, an enabled up button and a muted down button, and no switch. Toolkit's down button is enabled. Home's up button is muted, as in the reference."
       },
       {
         "id": "A5",
         "as_given": "On the phone and the tablet only: a thin rule line with the text \"Under More on this device\" under it sits after the last page that the tab bar shows (Projects on the phone, Artifacts on the tablet), so the rows after it sit lower by about 40 px.",
         "status": "as-described",
         "finding": null,
-        "note": "The rule and \"Under More on this device\" are between Artifacts and Toolkit."
+        "note": "The rule and the text are after Artifacts. Toolkit is about 41 px lower than one normal row step: it is 101 px below Artifacts, where the normal step is 60 px."
       },
       {
         "id": "A6",
         "as_given": "Appearance has a new last row, \"Chat width\", under Text size: a three-way control \"Full\", \"Wide\", \"Narrow\" with Full selected, and a line under it. On the desktop and the tablet the control is enabled and the line says \"The messages and the message box of a Workspaces chat, centred.\"; on the phone the control is disabled (muted labels) and the line says \"Phone: always full\". So the Appearance card is taller, and every section below it sits lower (about one row) or below the bottom edge.",
         "status": "as-described",
         "finding": null,
-        "note": "Chat width is enabled with Full selected, and the tablet line is under it. The Navigation card moves down about 100 px."
+        "note": "On the tablet the control is enabled with Full selected, and the line under it is the tablet text. Navigation starts about 100 px lower."
       }
     ],
     "limits": [
-      "The side-by-side image was shown scaled down to about 1664x1210 for two 820 px halves, so differences of 1 to 2 px and slight tone changes in the small arrow buttons (for example, whether Home's up button is muted) could not be checked.",
-      "The Notifications section, New chat defaults, the desktop rail and the More drawer are not in this frame."
+      "The Notifications section and New chat defaults are below the bottom edge of the render, so I could not compare them.",
+      "Row labels in the reference crop look heavier than in the render. Their pixel boxes are the same in both, so I took this as a difference in font smoothing between the screenshots, not a weight change."
     ]
   }
 }

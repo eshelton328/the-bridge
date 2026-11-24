@@ -5,6 +5,7 @@ import {
   ChatId,
   type ChatStatus,
   chatsOf,
+  maxTranscriptEntries,
   splitId,
   TabId,
   TranscriptEntry,
@@ -392,6 +393,29 @@ export function describeAgentPort(name: string, setup: () => Promise<ContractSet
       const shell = shellWorkspace?.chats.find((c) => c.kind === 'shell')
       if (!shell) throw new Error('no shell chat')
       expect(await port.readTranscript(shell.id)).toEqual({ ok: true, value: { entries: [], earlier: false } })
+    })
+
+    it('reads a page of the transcript: the last entries, the ones before an entry, entryNotFound for an unknown ID', async () => {
+      const { port, expected } = await setup()
+      const list = await port.listWorkspaces()
+      if (!list.ok) throw new Error(list.error.message)
+      const chat = list.value.flatMap((w) => w.chats).find((c) => c.title === expected.chat)
+      if (!chat) throw new Error(`no chat ${expected.chat}`)
+      const all = await port.readTranscript(chat.id)
+      if (!all.ok || all.value === null) throw new Error('no transcript')
+      const allIds = all.value.entries.map((e) => e.id)
+      // The page before the last entry; with no entries, the ID of no entry.
+      const last = allIds.at(-1) ?? 'no-entry'
+      const idsOf = (read: Awaited<ReturnType<typeof port.readTranscriptPage>>) =>
+        read.ok && read.value !== null && read.value !== 'entryNotFound' ? read.value.entries.map((e) => e.id) : read
+      expect(idsOf(await port.readTranscriptPage(chat.id, { limit: 1 }))).toEqual(allIds.slice(-1))
+      expect(idsOf(await port.readTranscriptPage(chat.id, { limit: maxTranscriptEntries, before: last }))).toEqual(
+        allIds.length === 0 ? { ok: true, value: 'entryNotFound' } : allIds.slice(0, -1),
+      )
+      expect(await port.readTranscriptPage(chat.id, { limit: 5, before: 'no-such-entry' })).toEqual({
+        ok: true,
+        value: 'entryNotFound',
+      })
     })
 
     it("gives a Claude chat's turn end as an ISO time, and null for a shell", async () => {

@@ -244,6 +244,33 @@ describe('GET /api/chats/:chat/transcript', () => {
     })
   })
 
+  it('pages with limit and before, answers 409 entryNotFound for an unknown entry and 400 for a bad limit', async () => {
+    const agents = createFakeAgents(machine)
+    const app = createApp({ agents, owner, log })
+    const get = (query: string) => app.request(`${transcriptPath(themes)}?${query}`, { headers: local })
+    const all = fakeTranscript().entries.map((e) => e.id)
+    const page = async (query: string) => {
+      const res = await get(query)
+      expect(res.status).toBe(200)
+      const body = TranscriptResponse.parse(await res.json())
+      return { ids: body.entries.map((e) => e.id), earlier: body.earlier }
+    }
+    expect(await page('limit=2')).toEqual({ ids: all.slice(-2), earlier: true })
+    expect(await page(`before=${encodeURIComponent(all.at(-1) ?? '')}`)).toEqual({
+      ids: all.slice(0, -1),
+      earlier: false,
+    })
+    expect(await page(`limit=1&before=${encodeURIComponent(all.at(-1) ?? '')}`)).toEqual({
+      ids: all.slice(-2, -1),
+      earlier: all.length > 2,
+    })
+    const gone = await get('before=no-such-entry')
+    expect(gone.status).toBe(409)
+    expect(ErrorBody.parse(await gone.json()).error).toMatchObject({ kind: 'chat-not-ready', state: 'entryNotFound' })
+    for (const limit of ['0', '501', 'ten'])
+      expect(ErrorBody.parse(await (await get(`limit=${limit}`)).json()).error.kind).toBe('invalid-input')
+  })
+
   it('answers 404 not-found for a chat that the machine does not have', async () => {
     const res = await createApp({ agents: createFakeAgents(machine), owner, log }).request(
       transcriptPath(`${machine}/no-such-chat`),

@@ -39,6 +39,17 @@ export const jsonOnly = async (c: Context<AppEnv>, next: Next) => {
   return undefined
 }
 
+/** Checks the query with `schema`; an issue names the key and the rule only, never the value. */
+export const queryOf = <S extends z.ZodType>(schema: S) =>
+  validator('query', (value, c: Context<AppEnv>) => {
+    const parsed = schema.safeParse(value)
+    if (parsed.success) return parsed.data
+    return errorJson(c, 'invalid-input', {
+      message: 'the query does not match the contract',
+      issues: parsed.error.issues.map((i) => `${i.path.join('.') || 'query'}: ${i.code}`),
+    })
+  })
+
 /** Checks the body with `schema`; an issue names the field and the rule only, never the text. */
 export const jsonBody = <S extends z.ZodType>(schema: S) =>
   validator('json', (value, c: Context<AppEnv>) => {

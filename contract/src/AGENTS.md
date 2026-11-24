@@ -28,6 +28,11 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
   direction, and a ratio request a tab, the path of parts to its split
   and a ratio from `minSplitRatio` to `maxSplitRatio` (0.1 to 0.9, as
   herdr keeps them) (`layout.test.ts`).
+- A transcript read takes an optional `TranscriptQuery`: a `limit` of
+  1 to `maxTranscriptEntries` and a `before` entry ID; its answer is in
+  transcript order, and `earlier` says that older entries exist. An
+  unknown `before` is 409 `chat-not-ready` `entryNotFound`
+  (`transcripts.test.ts`).
 - A transcript entry has an ID that is stable in its chat; a change
   event replaces the entry with that ID or adds it at the end. A tool
   entry has a name and a short target, never its arguments or its

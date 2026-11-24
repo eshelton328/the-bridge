@@ -163,6 +163,7 @@ export {
   ToolKind,
   TranscriptChangedEvent,
   TranscriptEntry,
+  TranscriptQuery,
   TranscriptResponse,
   UserEntry,
   maxEntryFileName,

@@ -252,7 +252,11 @@ const openStream = (chat: ChatId, signal: AbortSignal) =>
 const readTranscript = (chat: ChatId, signal: AbortSignal) =>
   readChecked(
     (init) =>
-      api.api.chats[':chat'].transcript.$get({ param: { chat: encodeURIComponent(chat) } }, { init: { signal: init } }),
+      api.api.chats[':chat'].transcript.$get(
+        // No query: the newest page.
+        { param: { chat: encodeURIComponent(chat) }, query: {} },
+        { init: { signal: init } },
+      ),
     (body) => TranscriptResponse.parse(body),
     AbortSignal.any([signal, AbortSignal.timeout(liveReadTimeoutMs)]),
   )

@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { maxEntryText, maxTranscriptEntries, TranscriptEntry } from '@bridge/contract'
 import { describe, expect, it } from 'vitest'
 import { withAttachments } from '../services/uploads.ts'
-import { readClaudeTranscript } from './claudeTranscript.ts'
+import { readClaudeTranscript, readClaudeTranscriptPage } from './claudeTranscript.ts'
 
 const dir = mkdtempSync(join(tmpdir(), 'transcript-'))
 let files = 0
@@ -539,5 +539,49 @@ describe('Claude transcript', () => {
       },
     ])
     for (const entry of read.entries) TranscriptEntry.parse(entry)
+  })
+})
+
+describe('a transcript page', () => {
+  const ids = (read: Awaited<ReturnType<typeof readClaudeTranscriptPage>>) =>
+    read === 'entryNotFound' ? read : { ids: read.entries.map((e) => e.id), earlier: read.earlier }
+  const path = file(Array.from({ length: 10 }, (_, i) => user(`u${String(i)}`, `prompt ${String(i)}`)))
+
+  it('gives the last limit entries, or the last ones before an entry, in transcript order', async () => {
+    expect(ids(await readClaudeTranscriptPage(path, options, { limit: 3 }))).toEqual({
+      ids: ['u7', 'u8', 'u9'],
+      earlier: true,
+    })
+    expect(ids(await readClaudeTranscriptPage(path, options, { limit: 3, before: 'u7' }))).toEqual({
+      ids: ['u4', 'u5', 'u6'],
+      earlier: true,
+    })
+    expect(ids(await readClaudeTranscriptPage(path, options, { limit: 3, before: 'u2' }))).toEqual({
+      ids: ['u0', 'u1'],
+      earlier: false,
+    })
+    expect(ids(await readClaudeTranscriptPage(path, options, { limit: 3, before: 'u0' }))).toEqual({
+      ids: [],
+      earlier: false,
+    })
+    expect(ids(await readClaudeTranscriptPage(path, options, { limit: 10 }))).toEqual({
+      ids: Array.from({ length: 10 }, (_, i) => `u${String(i)}`),
+      earlier: false,
+    })
+  })
+
+  it('pages past the last maxTranscriptEntries, and answers entryNotFound for an ID the file does not have', async () => {
+    const long = file(Array.from({ length: 700 }, (_, i) => user(`u${String(i)}`, `prompt ${String(i)}`)))
+    expect(ids(await readClaudeTranscriptPage(long, options, { limit: 2, before: 'u150' }))).toEqual({
+      ids: ['u148', 'u149'],
+      earlier: true,
+    })
+    expect(await readClaudeTranscriptPage(long, options, { limit: 2, before: 'no-such-entry' })).toBe('entryNotFound')
+  })
+
+  it('answers entryNotFound for a page before an entry of a file that is gone, and no entries for the newest page', async () => {
+    const gone = join(dir, 'gone.jsonl')
+    expect(await readClaudeTranscriptPage(gone, options, { limit: 3, before: 'u7' })).toBe('entryNotFound')
+    expect(await readClaudeTranscriptPage(gone, options, { limit: 3 })).toEqual({ entries: [], earlier: false })
   })
 })
