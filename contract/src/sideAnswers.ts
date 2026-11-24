@@ -1,9 +1,8 @@
 // A side question about a Claude chat: a copy of the chat's session answers it, and the chat never sees the
 // question or the answer. `POST /api/chats/:chat/side` answers 202 with the side ID, `GET
-// /api/chats/:chat/side/:side` gives the answer so far, and `GET /api/chats/:chat/side/:side/events` streams it.
+// /api/chats/:chat/side/:side` gives the answer so far, and the page reads it again until its last state.
 // The server keeps the last answers in memory only.
 import { z } from 'zod'
-import { eventOf } from './events.ts'
 import { ChatId } from './ids.ts'
 import { maxEntryText } from './transcripts.ts'
 
@@ -38,10 +37,6 @@ export const SideAnswer = z.object({
 })
 export type SideAnswer = z.infer<typeof SideAnswer>
 
-/** The 202 answer of a side question: the ID to read and stream its answer by. */
+/** The 202 answer of a side question: the ID to read its answer by. */
 export const SideStarted = z.object({ side: SideId, chat: ChatId })
 export type SideStarted = z.infer<typeof SideStarted>
-
-/** The side answer as it is now: the stream sends it when it opens and at each change, and ends after its last state. */
-export const SideChangedEvent = eventOf('side.changed', SideAnswer)
-export type SideChangedEvent = z.infer<typeof SideChangedEvent>

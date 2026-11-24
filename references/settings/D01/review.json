@@ -1,8 +1,8 @@
 {
   "frameId": "D01",
-  "inputs": "f8a9f27664688dfa352f06e8b51d831df4a03f8984b7f339a58ad9aecec8fc92",
+  "inputs": "171b79d16ac655d77e2cb49c18878a1eaa8026523ecd6abeb8bdb43f32745ef6",
   "library": "1.0.0-beta.116",
-  "recordSha256": "9b96c066497cd990f66c3c361f7e2ec74ab89aef68b184f85507870cfcace14d",
+  "recordSha256": "f52978a965ccf090c33620547b02eb1e5f43280cc63f109477e612127ffa00b0",
   "record": {
     "verdict": "match",
     "viewport": "desktop 1512x982, Dark",
@@ -12,7 +12,7 @@
       "render": "reports/fidelity/settings/D01.sideBySide.png",
       "reference_side": "left"
     },
-    "summary": "Apart from the accepted deviations, the render matches the reference.",
+    "summary": "Apart from the accepted deviations, the render matches the reference: the header, the rail, the Mode and Theme rows, the Navigation text and the Home to Toolkit rows are the same.",
     "findings": [],
     "accepted_deviations": [
       {
@@ -20,40 +20,40 @@
         "as_given": "Text size: the control is disabled (muted labels) and its line under it says \"Coming soon\" in place of \"Scales the whole app: Small 87.5 %, Default 100 %, Large 112.5 %.\" (step D adds text size later). On a narrow screen the one-line note makes every section below it sit about one text line higher.",
         "status": "as-described",
         "finding": null,
-        "note": "Small, Default and Large are muted and the line says \"Coming soon\". The control is the same size and in the same place as in the reference."
+        "note": "The Small, Default and Large labels are muted and the line says \"Coming soon\". This is the desktop, so the narrow-screen shift does not apply."
       },
       {
         "id": "A2",
         "as_given": "A new \"NOTIFICATIONS\" section with one \"Notifications\" switch (off) sits between the Navigation section and the New chat defaults section. So New chat defaults sits lower, or below the bottom edge.",
-        "status": "as-described",
+        "status": "not-seen",
         "finding": null,
-        "note": "The Navigation card runs past the bottom edge. The Notifications section and New chat defaults are not in view, as the description allows. I could not see the switch itself."
+        "note": "The Navigation card runs past the bottom edge of the frame, so the Notifications section and New chat defaults are both out of view. The frame shows nothing that conflicts with the deviation."
       },
       {
         "id": "A3",
         "as_given": "The Notifications switch moved to that section: the desktop rail no longer has the \"Notifications / Blocked in Settings\" switch at its bottom, and the More drawer no longer has the \"Notifications / Blocked in Settings\" row at its end. So the drawer is shorter and its top edge sits lower.",
         "status": "as-described",
         "finding": null,
-        "note": "The bottom of the rail is empty in the render. The More drawer is closed in this frame, so I could not check that part."
+        "note": "The rail has no switch at its bottom. The More drawer is closed in both pictures, so its change cannot be seen."
       },
       {
         "id": "A4",
         "as_given": "The Navigation list has a new last row, \"Settings\", with the line \"Always shown: in the bar or under More.\" under it and up and down buttons but no switch (the owner's decision: Settings is an entry of the bar order that cannot be hidden). So Toolkit's down button is now enabled, the Navigation card is taller, and every section below it sits lower or below the bottom edge.",
         "status": "as-described",
         "finding": null,
-        "note": "Toolkit's down arrow is enabled in the render; it is muted in the reference. Home's up arrow is muted in both. The Settings row is below the bottom edge."
+        "note": "Toolkit's down button is enabled. The new Settings row is below the bottom edge of the frame and cannot be seen."
       },
       {
         "id": "A5",
         "as_given": "Appearance has a new last row, \"Chat width\", under Text size: a three-way control \"Full\", \"Wide\", \"Narrow\" with Full selected, and a line under it. On the desktop and the tablet the control is enabled and the line says \"The messages and the message box of a Workspaces chat, centred.\"; on the phone the control is disabled (muted labels) and the line says \"Phone: always full\". So the Appearance card is taller, and every section below it sits lower (about one row) or below the bottom edge.",
         "status": "as-described",
         "finding": null,
-        "note": "Chat width is enabled with Full selected, and the line says \"The messages and the message box of a Workspaces chat, centred.\" The Navigation card starts about 100 px lower."
+        "note": "The Chat width control is enabled with Full selected. Its line reads as given, and Navigation sits about 100 px lower."
       }
     ],
     "limits": [
-      "The Notifications section, the Navigation \"Settings\" row and New chat defaults are below the bottom edge of the render, so I could not compare them.",
-      "The More drawer is closed in this frame, so I could not check the drawer part of A3."
+      "The Notifications section, the new Settings row of Navigation and the New chat defaults section are below the bottom edge of the render, so I could not check them.",
+      "The More drawer is closed in both pictures, so I could not check the drawer change in A3."
     ]
   }
 }

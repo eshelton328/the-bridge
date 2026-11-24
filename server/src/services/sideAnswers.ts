@@ -1,5 +1,5 @@
 // Side questions about a Claude chat: the port asks a copy of the chat's session, and this service keeps each
-// answer in memory as it comes, for the page to read and stream. One question of a chat at a time, at most
+// answer in memory as it comes, for the page to read. One question of a chat at a time, at most
 // `maxRunning` in all, each stopped after `timeoutMs`; the last `keep` answers stay. Nothing here logs.
 import { randomBytes } from 'node:crypto'
 import { type ChatId, maxEntryText, type SideAnswer, SideId } from '@bridge/contract'
@@ -13,8 +13,6 @@ export type SideAnswers = {
   ask(chat: ChatId, question: string): Promise<Result<SideAsk, AgentPortError>>
   /** The answer as it is now; undefined when the server has no such answer of this chat. */
   get(chat: ChatId, side: SideId): SideAnswer | undefined
-  /** Calls `listener` at each change of the answer; returns the stop, or undefined for no such answer. */
-  watch(chat: ChatId, side: SideId, listener: (answer: SideAnswer) => void): (() => void) | undefined
   /** Stops an answer that is still answering as `stopped`; an answer that ended stays as it is. */
   stop(chat: ChatId, side: SideId): 'stopped' | 'ended' | 'notFound'
 }
@@ -32,12 +30,10 @@ export function createSideAnswers(
 ): SideAnswers {
   type Entry = {
     answer: SideAnswer
-    readonly listeners: Set<(answer: SideAnswer) => void>
     readonly controller: AbortController
   }
   const change = (entry: Entry, next: Partial<SideAnswer>) => {
     entry.answer = { ...entry.answer, ...next }
-    for (const listener of entry.listeners) listener(entry.answer)
   }
   // Insertion order is age order.
   const answers = new Map<SideId, Entry>()
@@ -93,7 +89,6 @@ export function createSideAnswers(
       if (typeof asked.value === 'string') return ok(asked.value)
       const entry: Entry = {
         answer: { side: SideId.parse(newId()), chat, state: 'answering', text: '', cut: false },
-        listeners: new Set(),
         controller,
       }
       answers.set(entry.answer.side, entry)
@@ -104,12 +99,6 @@ export function createSideAnswers(
     get(chat, side) {
       const entry = answers.get(side)
       return entry?.answer.chat === chat ? entry.answer : undefined
-    },
-    watch(chat, side, listener) {
-      const entry = answers.get(side)
-      if (entry?.answer.chat !== chat) return undefined
-      entry.listeners.add(listener)
-      return () => entry.listeners.delete(listener)
     },
     stop(chat, side) {
       const entry = answers.get(side)

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { maxEntryText } from './transcripts.ts'
-import { maxSideQuestion, SideAnswer, SideChangedEvent, SideId, SideQuestionRequest } from './sideAnswers.ts'
+import { maxSideQuestion, SideAnswer, SideId, SideQuestionRequest } from './sideAnswers.ts'
 
 const answer = { side: 'a1b2c3d4e5f60718', chat: 'test-mac/c1', state: 'answering', text: '', cut: false }
 
@@ -20,12 +20,10 @@ describe('side answers', () => {
     expect(SideId.safeParse('a1b2').success).toBe(false)
   })
 
-  it('takes an answer of a known state with text up to maxEntryText, in the event envelope', () => {
+  it('takes an answer of a known state with text up to maxEntryText', () => {
     expect(SideAnswer.parse(answer)).toEqual(answer)
     expect(SideAnswer.safeParse({ ...answer, state: 'stopped' }).success).toBe(true)
     expect(SideAnswer.safeParse({ ...answer, state: 'paused' }).success).toBe(false)
     expect(SideAnswer.safeParse({ ...answer, text: 'x'.repeat(maxEntryText + 1) }).success).toBe(false)
-    const event = { source: 'test-mac/side', seq: 0, type: 'side.changed', data: { ...answer, state: 'done' } }
-    expect(SideChangedEvent.parse(event)).toEqual(event)
   })
 })
