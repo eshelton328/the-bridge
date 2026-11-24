@@ -346,19 +346,26 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   not hold, such as a skill's numbered step, shows it as a card after the
   entries (`blocks/DialogCard.tsx`, an approval `ProposalBlock`): the
   title, the body with its line breaks and one button per option, "1 Send
-  structured". The pane reads `GET /api/chats/:chat/dialog` only while
-  the chat is "Needs you", its transcript has loaded and no
-  AskUserQuestion of it still runs (`blocks/chatDialog.ts`): at once,
-  every 3 s while the page shows and at once when it shows again, one read
-  at a time, stopped when the pane goes or the chat is no longer blocked
-  (`liveDialogs.ts`, `useLiveDialogs.ts`). `dialog: null` and a 404 draw
-  no card. A tap posts `{ id, n }` once and turns every option off until
-  the next dialog; a 409 shows "The terminal changed — showing the new
-  state" until the next read; another miss "Not sent — <kind>" with Retry
+  structured", 28 high with a mouse and 44 on a touch screen (`pointer:
+  coarse`, as the menus' touch rows, R59). The pane reads `GET
+  /api/chats/:chat/dialog` only while the chat is "Needs you", its
+  transcript has loaded and no AskUserQuestion of it still runs
+  (`blocks/chatDialog.ts`): at once, every 3 s while the page shows and
+  at once when it shows again, one read at a time, stopped when the pane
+  goes or the chat is no longer blocked (`liveDialogs.ts`,
+  `useLiveDialogs.ts`). Each reply is parsed with the contract's schemas;
+  `dialog: null`, a 404 and a reply the schema refuses draw no card (the
+  last is reported as `bad-reply`). A tap posts the contract's
+  `AnswerDialogRequest` `{ id, n }` once and turns every option off until
+  the next dialog; a 409 `dialogChanged` shows "The terminal changed —
+  showing the new state" until the next read; another 409 state "Not sent
+  — <state>" with no Retry; any other miss "Not sent — <kind>" with Retry
   for no answer, a 5xx or a 429. A dialog with no sure options shows its
   read text read-only, scrolling when long, with "Answer in the terminal".
-  report() gets only the step, the kind and the status, never the dialog's
-  text or a label (`app/WorkspacesTerminalDialog.test.tsx`; the fake is
+  The card is in the transcript, so the end pin keeps it over the docked
+  composer while the phone's keyboard is up. report() gets only the step,
+  the kind and the status, never the dialog's text or a label
+  (`app/WorkspacesTerminalDialog.test.tsx`; the fake is
   `lib/fakeWorkspacesServer.ts`; LIBRARY_GAPS.md: Terminal dialog card).
 - A send, a /compact or /clear and a clear of the terminal input whose
   chat input box the server cannot find on the screen (409

@@ -14,11 +14,15 @@
 // answers 404 (a server without the route, or a chat that left the list)
 // stops the reads until the next watch.
 //
-// An answer's 204 reads again at once; a 409 (`dialogChanged`, or the chat
-// is no longer ready) shows "The terminal changed — showing the new state"
-// and waits for the next read, which brings the new dialog. Any other miss
-// is a line by kind, "Not sent — <kind>", with Retry for no answer, a 5xx or
-// a 429. report() gets a DialogMissError for a 5xx and for an answer the page
+// An answer's 204 reads again at once; a 409 `dialogChanged` shows "The
+// terminal changed — showing the new state" and waits for the next read,
+// which brings the new dialog. Another 409 `chat-not-ready` shows "Not sent
+// — <state>" with no Retry, and the next read decides. Any other miss is a
+// line by kind, "Not sent — <kind>", with Retry for no answer, a 5xx or a
+// 429. Every reply is parsed with the contract's schemas (`PaneDialogResponse`,
+// `ErrorBody`), and the body is `AnswerDialogRequest`'s; a read the schema
+// refuses keeps the card as it was (none at first) and reports `bad-reply`.
+// The calls use `fetch` until the server's route is in the typed client. report() gets a DialogMissError for a 5xx and for an answer the page
 // does not expect, once a watch for a read, with the step, the kind and the
 // HTTP status only: never the dialog's text, an option's label or the chat
 // ID. The chat ID goes in the path URL-encoded once.
@@ -207,11 +211,17 @@ async function answer(chat: string, state: ChatState, n: number) {
     return
   }
   const body = ErrorBody.safeParse(readJson(await res.text().catch(() => '')))
-  const kind = body.success ? body.data.error.kind : undefined
-  if (res.status === 409 && kind === 'chat-not-ready') {
-    // The screen no longer shows that dialog, or the chat no longer waits: the next read shows what it shows now.
-    state.answered = { id, n, phase: 'changed' }
-    changed(state)
+  const error = body.success ? body.data.error : undefined
+  const kind = error?.kind
+  if (res.status === 409 && error?.kind === 'chat-not-ready') {
+    if (error.state === 'dialogChanged') {
+      // The screen no longer shows that dialog: the next read shows what it shows now.
+      state.answered = { id, n, phase: 'changed' }
+      changed(state)
+      return
+    }
+    // The chat cannot take an answer now (it works, it restarts…): its own line, and the next read decides.
+    failed(state, id, n, error.state, false)
     return
   }
   if (res.status === 404) {

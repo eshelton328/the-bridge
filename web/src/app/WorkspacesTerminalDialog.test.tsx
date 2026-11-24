@@ -4,7 +4,9 @@ import '../index.css'
 import type { TranscriptEntry } from '@bridge/contract'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest'
-import { page, userEvent } from 'vitest/browser'
+import { cdp, page, userEvent } from 'vitest/browser'
+// The Playwright provider's types give `cdp()` its `send`.
+import type {} from '@vitest/browser-playwright'
 import { createClientErrorSender, type PostReport } from '../errors/clientErrorSender.ts'
 import { ErrorTray } from '../errors/ErrorTray.tsx'
 import { addSink, clearReports, getReports } from '../errors/reporter.ts'
@@ -81,7 +83,12 @@ const rawOnly = {
   raw: Array.from({ length: 60 }, (_, i) => `line ${String(i + 1)} of a sample menu`).join('\n'),
 }
 
-type Server = { readonly workspaces: FakeWorkspacesServer; readonly gate: { hold: boolean; release: () => void } }
+type Server = {
+  readonly workspaces: FakeWorkspacesServer
+  readonly gate: { hold: boolean; release: () => void }
+  /** An answer in place of every dialog read's, while set: such as one the contract refuses. */
+  readonly reads: { answer: (() => Response) | undefined }
+}
 
 /** The stubbed server: the fakes' routes, with a gate that holds dialog answers while `hold`. */
 function withChats(entries: readonly TranscriptEntry[] = [user('u1', 'Tidy the notes')]): Server {
@@ -96,11 +103,14 @@ function withChats(entries: readonly TranscriptEntry[] = [user('u1', 'Tidy the n
       for (const go of held.splice(0)) go()
     },
   }
+  const reads: Server['reads'] = { answer: undefined }
   vi.stubGlobal(
     'fetch',
     vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
       const path = new URL(url, window.location.origin).pathname
+      if (reads.answer !== undefined && init?.method !== 'POST' && path.endsWith('/dialog'))
+        return Promise.resolve(reads.answer())
       const answer = () => chats.handle(path, init) ?? workspaces.handle(path, init)
       if (gate.hold && init?.method === 'POST' && path.endsWith('/dialog'))
         return new Promise<Response>((resolve, reject) => {
@@ -115,7 +125,7 @@ function withChats(entries: readonly TranscriptEntry[] = [user('u1', 'Tidy the n
       return Promise.reject(new TypeError(`no stub for ${url}`))
     }),
   )
-  return { workspaces, gate }
+  return { workspaces, gate, reads }
 }
 
 let view: { unmount: () => Promise<void> } | undefined
@@ -126,10 +136,15 @@ stubLiveServer()
 // A read that a page starts after its test ended gets no answer, not the real server (lib/lateServerReads.ts).
 answerLateServerReads()
 
+/** Turns Chromium's touch emulation on or off: on, `(pointer: coarse)` matches, as on a phone or a tablet. */
+const touchScreen = (enabled: boolean) =>
+  cdp().send('Emulation.setTouchEmulationEnabled', enabled ? { enabled, maxTouchPoints: 5 } : { enabled })
+
 afterEach(async () => {
   for (const cleanup of cleanups.splice(0)) cleanup()
   await view?.unmount()
   view = undefined
+  await touchScreen(false)
   vi.unstubAllGlobals()
   vi.restoreAllMocks()
   resetRetries()
@@ -203,6 +218,30 @@ async function openChat(size: readonly [number, number], asApp = false) {
     await userEvent.click(page.getByText(title, { exact: true }).first())
     await expect.element(page.getByRole('heading', { name: title })).toBeVisible()
   }
+}
+
+// A stand-in for window.visualViewport that the test moves as iOS Safari does when its keyboard opens: the layout keeps
+// its height, and only the visual viewport shrinks (as in WorkspacesKeyboardGap.test.tsx).
+class FakeViewport extends EventTarget {
+  height = document.documentElement.clientHeight
+  width = document.documentElement.clientWidth
+  offsetTop = 0
+  offsetLeft = 0
+  scale = 1
+  move(change: { height: number }) {
+    this.height = change.height
+    this.dispatchEvent(new Event('resize'))
+  }
+}
+
+/** Puts `value` in place of window.visualViewport until the test ends. */
+function replaceVisualViewport(value: FakeViewport) {
+  const own = Object.getOwnPropertyDescriptor(window, 'visualViewport')
+  Object.defineProperty(window, 'visualViewport', { configurable: true, value })
+  onTestFinished(() => {
+    if (own) Object.defineProperty(window, 'visualViewport', own)
+    else Reflect.deleteProperty(window, 'visualViewport')
+  })
 }
 
 const settle = () => new Promise((resolve) => setTimeout(resolve, 200))
@@ -352,5 +391,89 @@ describe("a chat's terminal dialog (R69)", () => {
     workspaces.showDialog(plan, sample)
     await expect.element(option('4 Chat about this')).toBeInViewport()
     await expect.poll(fromEnd).toBeLessThanOrEqual(2)
+  })
+
+  for (const device of [
+    { name: 'the phone', size: phone },
+    { name: 'the tablet', size: tablet },
+  ])
+    it(`draws each option 44 high on a touch screen, and 28 with a mouse, on ${device.name}`, async () => {
+      const { workspaces } = withChats()
+      workspaces.showDialog(plan, sample)
+      await openChat(device.size)
+      const height = () => option('1 Send structured').element().getBoundingClientRect().height
+      await expect.element(option('1 Send structured')).toBeVisible()
+      expect(height()).toBe(28)
+      await touchScreen(true)
+      await expect.poll(height).toBeGreaterThanOrEqual(44)
+      for (const o of sample.options)
+        expect(
+          option(`${String(o.n)} ${o.label}`)
+            .element()
+            .getBoundingClientRect().height,
+        ).toBeGreaterThanOrEqual(44)
+    })
+
+  it('shows no card for a read the contract refuses, and reports only its kind', async () => {
+    const { workspaces, reads } = withChats()
+    const posted = watchPosts()
+    // An option with no label, and a raw text: the contract's PaneDialogResponse refuses it.
+    reads.answer = () =>
+      new Response(JSON.stringify({ dialog: { ...sample, options: [{ n: 1, label: '' }] } }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      })
+    workspaces.showDialog(plan, sample)
+    await openChat(phone)
+    await expect.poll(() => getReports().length).toBe(1)
+    await settle()
+    expect(card().elements()).toHaveLength(0)
+    const reports = JSON.stringify([getReports().map((r) => [r.error.name, r.error.message]), posted])
+    expect(getReports().map((r) => r.error.message)).toEqual(['A chat dialog read missed: bad-reply (200)'])
+    expect(reports).not.toMatch(/Sample step|tidy the notes|Send structured|mac-mini/)
+  })
+
+  it('shows the 409 state of a chat that cannot take the answer, with no Retry, and the next read decides', async () => {
+    const { workspaces } = withChats()
+    const posted = watchPosts()
+    workspaces.showDialog(plan, sample)
+    await openChat(phone)
+    workspaces.answerDialogs(() =>
+      errorAnswer({ kind: 'chat-not-ready', state: 'restarting', message: 'Not ready', requestId: 'r-409' }, 409),
+    )
+    await userEvent.click(option('3 Type something'))
+    await expect.element(card().getByText('Not sent — restarting', { exact: true })).toBeVisible()
+    expect(card().getByText('The terminal changed — showing the new state').elements()).toHaveLength(0)
+    expect(card().getByRole('button', { name: 'Retry', exact: true }).elements()).toHaveLength(0)
+    await expect.element(option('3 Type something')).toBeEnabled()
+    // The next read finds the dialog gone: no card.
+    workspaces.answerDialogs(undefined)
+    workspaces.showDialog(plan, null)
+    await expect.element(card(), { timeout: 6000 }).not.toBeInTheDocument()
+    expect(getReports()).toEqual([])
+    expect(posted).toEqual([])
+  })
+
+  it('keeps the card at the end over the phone keyboard', async () => {
+    const many = Array.from({ length: 40 }, (_, i) => user(`u${String(i)}`, `Sample message ${String(i)}`))
+    const { workspaces } = withChats(many)
+    const viewport = new FakeViewport()
+    replaceVisualViewport(viewport)
+    workspaces.showDialog(plan, sample)
+    await openChat(phone, true)
+    await expect.element(option('4 Chat about this')).toBeInViewport()
+    const scroller = chat().element().querySelector('.scroll-frame__body')
+    const composer = chat().element().querySelector('.scroll-frame__footer .composer__root')
+    if (!(scroller instanceof HTMLElement) || !(composer instanceof HTMLElement)) throw new Error('no scroller')
+    // A tap on the message box, and the iPhone's keyboard opens over the screen's foot (M10: its top at 464).
+    await userEvent.click(chat().getByRole('textbox'))
+    viewport.move({ height: 464 })
+    await expect.poll(() => Math.round(composer.getBoundingClientRect().bottom)).toBeLessThanOrEqual(464)
+    const fromEnd = () => scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight
+    await expect.poll(fromEnd).toBeLessThanOrEqual(2)
+    // The card's last option sits above the docked composer, in view.
+    const last = option('4 Chat about this').element()
+    await expect.poll(() => last.getBoundingClientRect().bottom <= composer.getBoundingClientRect().top).toBe(true)
+    expect(last.getBoundingClientRect().top).toBeGreaterThanOrEqual(scroller.getBoundingClientRect().top)
   })
 })

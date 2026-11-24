@@ -2,12 +2,16 @@
 // entries while the chat needs the owner: as an approval in the transcript
 // (`ProposalBlock tone="approval"`, as a command waiting for approval draws),
 // the dialog's title, its body with its line breaks, and one button for each
-// option, "1 Send structured". A tap sends that option; while it goes every
-// option is off. A dialog the server could not read for sure (no `options`)
-// shows the text it read, read-only, in a recessed box that scrolls when long,
-// and the note "Answer in the terminal". A 409 shows a quiet note until the
-// next read; another miss shows a line with Retry. Props only.
-import { ProposalBlock, ProposalCommand } from '@eshelton328/component-library-1701'
+// option, "1 Send structured". The block's own actions are 28 px with no touch
+// size, so the options are the library's `Button` in the block's body, the
+// block's 28 px `sm` with a mouse and 44 (`control.xl`) on a touch screen
+// (`pointer: coarse`), as the menus' touch rows are (R59). A tap sends that
+// option; while it goes every option is off. A dialog the server could not
+// read for sure (no `options`) shows the text it read, read-only, in a
+// recessed box that scrolls when long, and the note "Answer in the terminal".
+// A 409 `dialogChanged` shows a quiet note until the next read; another miss
+// shows a line, with Retry when it may work later. Props only.
+import { Button, Inline, ProposalBlock, ProposalCommand } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { DialogView } from './chatDialog.ts'
 import { TranscriptProblem } from './TranscriptProblem.tsx'
@@ -30,6 +34,8 @@ const bodyText = css({
 // The read text of a dialog with no options scrolls inside its box past the skill list's height (LIBRARY_GAPS.md:
 // Terminal dialog card).
 const rawBox = css({ maxH: 'shell.pickerHeight', overflowY: 'auto' })
+// A finger's option: 44 high on a touch screen, as `Menu touch` rows are (R59); the block's 28 with a mouse.
+const touchOption = css({ '@media (pointer: coarse)': { h: 'control.xl' } })
 
 export type DialogCardProps = {
   view: DialogView
@@ -46,26 +52,32 @@ export function DialogCard({ view, onAnswer, onRetry }: DialogCardProps) {
   const note = phase === 'changed' ? dialogText.changed : options.length === 0 ? dialogText.answerThere : undefined
   return (
     <div data-pane-dialog="" aria-busy={phase === 'sending'}>
-      <ProposalBlock
-        tone="approval"
-        label={dialogText.label}
-        title={dialog.title}
-        note={note}
-        actions={options.map((o) => ({
-          label: `${String(o.n)} ${o.label}`,
-          variant: 'secondary',
-          disabled: off,
-          onClick: () => {
-            if (!off) onAnswer(o.n)
-          },
-        }))}
-      >
+      <ProposalBlock tone="approval" label={dialogText.label} title={dialog.title} note={note} actions={[]}>
         {options.length === 0 ? (
           <div className={rawBox} role="region" aria-label="Dialog text" tabIndex={0}>
             <ProposalCommand>{dialog.raw}</ProposalCommand>
           </div>
-        ) : dialog.body === undefined || dialog.body === '' ? null : (
-          <p className={bodyText}>{dialog.body}</p>
+        ) : (
+          <>
+            {dialog.body === undefined || dialog.body === '' ? null : <p className={bodyText}>{dialog.body}</p>}
+            <Inline gap="8" wrap>
+              {options.map((o) => (
+                <Button
+                  key={o.n}
+                  size="sm"
+                  textSize="xs"
+                  variant="secondary"
+                  className={touchOption}
+                  disabled={off}
+                  onClick={() => {
+                    if (!off) onAnswer(o.n)
+                  }}
+                >
+                  {`${String(o.n)} ${o.label}`}
+                </Button>
+              ))}
+            </Inline>
+          </>
         )}
         {phase === 'failed' && view.line !== undefined ? (
           <TranscriptProblem text={view.line} onRetry={view.retry === true ? onRetry : undefined} />
