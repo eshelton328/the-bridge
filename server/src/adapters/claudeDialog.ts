@@ -35,8 +35,15 @@ export function dialogOf(screen: string): ScreenDialog | null {
     .replace(sgr, '')
     .split(/\r?\n/)
     .map((line) => line.trimEnd())
-  const mark = lines.findIndex((line) => /^\s*❯\s+\d\./.test(line))
-  const top = lines.findLastIndex((line, at) => edge.test(line) && (mark < 0 || at < mark))
+  // The dialog is the last block on the screen: its "❯", its option 1 above that, and its top edge above option 1. An
+  // edge inside it (above "Chat about this") has an option under it; a block with any other edge below is not the
+  // dialog, as text above the dialog can quote "❯ 1." (review of #495).
+  const marked = lines.findLastIndex((line) => /^\s*❯\s+\d\./.test(line))
+  const first = lines.findLastIndex((line, at) => at <= marked && /^\s*(?:❯\s+)?1\.\s/.test(line))
+  const after = (at: number) => lines.slice(at + 1).find((line) => line.trim() !== '') ?? ''
+  const inner = lines.every((line, at) => at <= first || !edge.test(line) || option.test(after(at)))
+  const mark = marked >= 0 && first >= 0 && inner ? marked : -1
+  const top = lines.findLastIndex((line, at) => edge.test(line) && (mark < 0 || at < first))
   const part = trimmed(lines.slice(top + 1).filter((line) => !edge.test(line)))
   const text = part.join('\n')
   if (text === '') return null

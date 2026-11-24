@@ -21,6 +21,25 @@ describe('dialogOf', () => {
     expect(shown?.dialog.raw).toContain('Chat about this')
   })
 
+  it('keeps the question and the options when "Chat about this", under an edge, is marked', () => {
+    const shown = dialogOf(questionScreen(1).replace('❯ 1.', '  1.').replace('  5. Chat', '❯ 5. Chat'))
+    expect([shown?.picked, shown?.dialog.title, shown?.dialog.options?.length]).toEqual([5, 'Colour', 3])
+    if (shown !== null) expect(dialogKeys(shown, 1)).toEqual(['up', 'up', 'up', 'up', 'enter'])
+  })
+
+  it('takes the last "❯" on the screen, not one that earlier text quotes', () => {
+    const quoted = `❯ 1. Ship the plan\r\n  2. Wait\r\n${'─'.repeat(40)}\r\n${questionScreen(2)}`
+    const shown = dialogOf(quoted)
+    expect([shown?.picked, shown?.dialog.options?.length]).toEqual([2, 3])
+    expect(shown?.dialog.raw).not.toContain('Ship the plan')
+  })
+
+  it('gives options to no block that another edge follows, as it is not the last block', () => {
+    const quoted = `  Question?\r\n❯ 1. Yes\r\n  2. No\r\n${'─'.repeat(40)}\r\n  Press Enter to go on`
+    expect(dialogOf(quoted)?.dialog).toMatchObject({ raw: '  Press Enter to go on' })
+    expect(dialogOf(quoted)?.dialog.options).toBeUndefined()
+  })
+
   it('gives "Switch model?" its options', () => {
     expect(dialogOf(switchModelScreen())?.dialog).toMatchObject({
       title: 'Switch model?',
