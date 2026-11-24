@@ -75,6 +75,15 @@ function withHeldList() {
   return { release: () => release?.() }
 }
 
+/** The boxes of the header's buttons, Edit and +, in order. */
+function headerControls(): DOMRect[] {
+  const header = document.querySelector('[data-fit="header"]')
+  if (header === null) throw new Error('no list header')
+  const buttons = [...header.querySelectorAll('button')].map((button) => button.getBoundingClientRect())
+  expect(buttons.length).toBe(2)
+  return buttons
+}
+
 let view: { unmount: () => Promise<void> } | undefined
 
 stubLiveServer()
@@ -111,6 +120,7 @@ describe('the Workspaces skeleton (R58)', () => {
       await expect.element(page.getByRole('button', { name: 'Edit', exact: true })).toBeDisabled()
       await expect.element(page.getByText('the-bridge', { exact: true })).not.toBeInTheDocument()
       await afterRendering()
+      const controls = headerControls()
       const skeleton = fitRects()
       for (const block of ['header', 'group', 'items.0', 'items.1']) expect(skeleton.has(block)).toBe(true)
       server.release()
@@ -118,6 +128,12 @@ describe('the Workspaces skeleton (R58)', () => {
       await expect.element(page.getByRole('status', { name: 'Loading Workspaces' })).not.toBeInTheDocument()
       await afterRendering()
       expect(fitGaps(skeleton, fitRects())).toEqual([])
+      // Edit and + turn on in the same box: the header's controls do not move or change size.
+      await expect.element(page.getByRole('button', { name: 'Edit', exact: true })).toBeEnabled()
+      const now = headerControls()
+      for (const [i, was] of controls.entries())
+        for (const side of ['top', 'left', 'width', 'height'] as const)
+          expect(Math.abs((now[i]?.[side] ?? Number.NaN) - was[side])).toBeLessThanOrEqual(2)
       expect(getReports()).toEqual([])
     })
 })
