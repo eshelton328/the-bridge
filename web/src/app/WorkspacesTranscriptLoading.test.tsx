@@ -265,6 +265,32 @@ describe('a live chat while its transcript loads', () => {
       expect(getReports()).toEqual([])
     })
 
+  it('keeps a long chat at its end through the skeleton and through a send, on the phone (R61)', async () => {
+    const server = slowServer()
+    const long = Array.from({ length: 40 }, (_, i) =>
+      i % 2 === 0
+        ? user(`u${String(i)}`, `Step ${String(i)}`)
+        : reply(`a${String(i)}`, `Done with step ${String(i - 1)}.`),
+    )
+    server.transcripts.set(plan, long)
+    server.hold()
+    const phone = sizes[0]
+    await openChat(phone.size, phone.taps)
+    await expect.element(loading()).toBeInTheDocument()
+    const body = skeleton()?.parentElement ?? null
+    if (body === null) throw new Error('no skeleton')
+    const atEnd = () => body.scrollTop + body.clientHeight >= body.scrollHeight - 2
+    server.release()
+    await expect.element(page.getByText('Done with step 38.')).toBeVisible()
+    await expect.poll(atEnd).toBe(true)
+    // The owner's own send keeps the end in view, with no button to the newest message.
+    await userEvent.fill(messageBox(), 'One more step')
+    await userEvent.click(page.getByRole('button', { name: 'Send' }))
+    await expect.element(page.getByText('One more step')).toBeVisible()
+    await expect.poll(atEnd).toBe(true)
+    await expect.element(page.getByRole('button', { name: 'Scroll to the newest message' })).not.toBeInTheDocument()
+  })
+
   for (const device of sizes)
     it(`puts "Could not load this chat" with Retry in place of the skeleton after the limit, on ${device.name}`, async () => {
       const server = slowServer()
