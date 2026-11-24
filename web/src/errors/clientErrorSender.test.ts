@@ -1,6 +1,7 @@
 import { ClientErrorReport } from '@bridge/contract'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { z } from 'zod'
+import { OpaqueScriptError } from './appError.ts'
 import {
   createClientErrorSender,
   installClientErrorSender,
@@ -158,6 +159,15 @@ describe('toClientErrorReport', () => {
       requestId: 'r-5',
     })
     expect(JSON.stringify(toClientErrorReport(entry(live, 'query')))).not.toContain(secret)
+  })
+
+  it('sends an OpaqueScriptError with its visibility and time since load as the message', () => {
+    const body = toClientErrorReport(entry(new OpaqueScriptError('hidden', 4012.4), 'window'))
+    expect(body).toMatchObject({
+      source: 'windowError',
+      name: 'OpaqueScriptError',
+      message: 'hidden, 4012 ms since load',
+    })
   })
 
   it('sends no text that a SyntaxError or a ZodError quotes from what it read', () => {

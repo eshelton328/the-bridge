@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createQueryClient } from '../lib/queryClient.ts'
+import { OpaqueScriptError } from './appError.ts'
 import { installGlobalHandlers } from './globalHandlers.ts'
 import { clearReports, getReports } from './reporter.ts'
 
@@ -34,12 +35,30 @@ describe('installGlobalHandlers', () => {
     expect(getReports()).toEqual([])
   })
 
-  it('reports the message when the event has no error object', () => {
+  it('reports the message when the event has no error object but names its script', () => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    const remove = installGlobalHandlers(target)
+    target.dispatchEvent(
+      new ErrorEvent('error', { message: 'Out of memory', filename: 'http://127.0.0.1/src/main.ts', lineno: 3 }),
+    )
+    remove()
+    expect(getReports()[0]?.error.message).toBe('Out of memory')
+  })
+
+  it('reports a masked error of a script from another origin as an OpaqueScriptError, and a normal one as before', () => {
     vi.spyOn(console, 'error').mockImplementation(() => undefined)
     const remove = installGlobalHandlers(target)
     target.dispatchEvent(new ErrorEvent('error', { message: 'Script error.' }))
+    const error = new Error('from a timer')
+    target.dispatchEvent(
+      new ErrorEvent('error', { error, message: error.message, filename: 'http://127.0.0.1/a.ts', lineno: 9 }),
+    )
     remove()
-    expect(getReports()[0]?.error.message).toBe('Script error.')
+    const [opaque, normal] = getReports()
+    expect(opaque?.error).toBeInstanceOf(OpaqueScriptError)
+    expect(opaque?.error.message).toBe('')
+    expect(Reflect.get(opaque?.error ?? {}, 'miss')).toMatch(/^(visible|hidden), \d+ ms since load$/)
+    expect(normal?.error).toBe(error)
   })
 
   it('reports a query that fails for good until removed (audit W-7)', async () => {
