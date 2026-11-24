@@ -368,3 +368,107 @@ void test('the traces folder is KEYBOARD_TRACE_DIR, else under the first folder 
   assert.equal(findTraceDir({}, repo), join(root, 'engine', '_local', 'phone-review', 'traces'))
   assert.equal(findTraceDir({}, tempDir()), undefined)
 })
+
+/**
+ * Serves `handler` and records each error it passes to `next`. `replyFails` makes the reply throw it, as a reply to a
+ * gone socket can; `settled()` waits for the last request to close and the handler to settle.
+ */
+async function serveRecording(handler: TraceHandler, replyFails?: Error) {
+  const errors: unknown[] = []
+  const closes: Promise<void>[] = []
+  const server = createServer((req, res) => {
+    closes.push(new Promise((done) => req.on('close', done)))
+    if (replyFails !== undefined) {
+      res.end = () => {
+        throw replyFails
+      }
+      setTimeout(() => res.destroy(), 20)
+    }
+    handler(req, res, (error) => {
+      errors.push(error)
+      if (replyFails !== undefined) return
+      res.statusCode = 500
+      res.end(String(error))
+    })
+  })
+  servers.push(server)
+  await new Promise<void>((done) => server.listen(0, '127.0.0.1', done))
+  const address = server.address()
+  if (address === null || typeof address === 'string') throw new Error('the test server has no port')
+  return {
+    port: address.port,
+    errors,
+    async settled() {
+      await closes.at(-1)
+      await new Promise((done) => setTimeout(done, 50))
+    },
+  }
+}
+
+/** POSTs the first half of `body` with the whole length in its header, then drops the socket, as a suspended app does. */
+async function abortedPost(port: number, body: string): Promise<void> {
+  await new Promise<void>((done) => {
+    const req = request({
+      host: '127.0.0.1',
+      port,
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'content-length': String(Buffer.byteLength(body)) },
+    })
+    req.on('error', () => {
+      done()
+    })
+    req.on('close', () => {
+      done()
+    })
+    req.write(body.slice(0, body.length / 2), () => setTimeout(() => req.destroy(), 20))
+  })
+}
+
+void test('a POST the client drops mid-body ends quietly: no error to the dev server, no trace written', async () => {
+  const dir = tempDir()
+  const server = await serveRecording(createTraceHandler({ traceDir: () => dir, now: () => NOW }))
+  const url = `http://127.0.0.1:${String(server.port)}`
+  const first = trace()
+  assert.equal((await post(url, first)).status, 204)
+  await server.settled()
+  await abortedPost(server.port, trace({ samples: [{ t: 1 }, { t: 9, pad: 'x'.repeat(64 * 1024) }] }))
+  await server.settled()
+  assert.deepEqual(server.errors, [])
+  assert.deepEqual(readdirSync(dir), ['2026-11-19T09-58-12-345Z.json'])
+  assert.equal(readFileSync(join(dir, '2026-11-19T09-58-12-345Z.json'), 'utf8'), first)
+  // The endpoint still takes the next whole trace.
+  const later = trace({ samples: [{ t: 1 }, { t: 10 }] })
+  assert.equal((await post(url, later)).status, 204)
+  assert.equal(readFileSync(join(dir, '2026-11-19T09-58-12-345Z.json'), 'utf8'), later)
+})
+
+/** A switch GET whose reply throws `error`, as when the socket is gone; returns what reached `next`. */
+async function switchReplyFails(error: Error): Promise<unknown[]> {
+  const dir = tempDir()
+  const server = await serveRecording(createEnabledHandler({ traceDir: () => dir }), error)
+  await fetch(`http://127.0.0.1:${String(server.port)}`).catch(() => undefined)
+  await server.settled()
+  return server.errors
+}
+
+void test('a switch GET the client drops ends quietly, with no error to the dev server', async () => {
+  assert.deepEqual(await switchReplyFails(Object.assign(new Error('aborted'), { code: 'ECONNRESET' })), [])
+  assert.deepEqual(await switchReplyFails(new Error('aborted')), [])
+  assert.deepEqual(await switchReplyFails(Object.assign(new Error('socket hang up'), { code: 'ECONNRESET' })), [])
+})
+
+void test('an error that is not a client abort still goes to the dev server, from either handler', async () => {
+  const broken = new Error('disk gone')
+  assert.deepEqual(await switchReplyFails(broken), [broken])
+  const server = await serveRecording(
+    createTraceHandler({
+      traceDir: () => {
+        throw broken
+      },
+      now: () => NOW,
+    }),
+  )
+  const res = await post(`http://127.0.0.1:${String(server.port)}`, trace())
+  assert.equal(res.status, 500)
+  assert.deepEqual(server.errors, [broken])
+})

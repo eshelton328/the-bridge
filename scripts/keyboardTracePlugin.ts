@@ -117,8 +117,20 @@ function send(res: ServerResponse, status: number, message: string): void {
   res.end(message)
 }
 
-/** Reads the body up to `max` bytes; undefined when it is larger. */
-function readBody(req: IncomingMessage, max: number): Promise<string | undefined> {
+/**
+ * Whether `error` is the client going away mid-request, as when iOS suspends the app during a POST: Node's
+ * `Error('aborted')` with code `ECONNRESET`. There is no one left to answer, so it is no server error.
+ */
+function isClientAbort(error: unknown): boolean {
+  if (!(error instanceof Error)) return false
+  return ('code' in error && error.code === 'ECONNRESET') || error.message === 'aborted'
+}
+
+/**
+ * Reads the body up to `max` bytes; undefined when it is larger, null when the client went away before its end
+ * (`aborted`, or `close` before `end`).
+ */
+function readBody(req: IncomingMessage, max: number): Promise<string | undefined | null> {
   return new Promise((done, fail) => {
     const chunks: Buffer[] = []
     let size = 0
@@ -137,8 +149,27 @@ function readBody(req: IncomingMessage, max: number): Promise<string | undefined
     req.on('end', () => {
       if (!over) done(Buffer.concat(chunks).toString('utf8'))
     })
-    req.on('error', fail)
+    // A promise settles once, so these change nothing after `end` or the size cap.
+    req.on('aborted', () => {
+      done(null)
+    })
+    req.on('close', () => {
+      done(null)
+    })
+    req.on('error', (error) => {
+      if (isClientAbort(error)) done(null)
+      else fail(error)
+    })
   })
+}
+
+/** Runs `handle` as a connect middleware: a client abort ends quietly, every other error goes to `next`. */
+function middleware(handle: (req: IncomingMessage, res: ServerResponse) => Promise<void>): TraceHandler {
+  return (req, res, next) => {
+    handle(req, res).catch((error: unknown) => {
+      if (!isClientAbort(error)) next(error)
+    })
+  }
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -262,6 +293,8 @@ export function createTraceHandler({
       return
     }
     const body = await readBody(req, maxBytes)
+    // The client went away mid-body: no socket to answer and no whole trace to write.
+    if (body === null) return
     if (body === undefined) {
       send(res, 413, `keyboard-trace takes at most ${String(maxBytes)} bytes`)
       return
@@ -308,9 +341,7 @@ export function createTraceHandler({
     res.statusCode = 204
     res.end()
   }
-  return (req, res, next) => {
-    handle(req, res).catch(next)
-  }
+  return middleware(handle)
 }
 
 /**
@@ -345,9 +376,7 @@ export function createEnabledHandler({
     res.setHeader('x-content-type-options', 'nosniff')
     res.end(req.method === 'HEAD' ? undefined : body)
   }
-  return (req, res, next) => {
-    handle(req, res).catch(next)
-  }
+  return middleware(handle)
 }
 
 /** The structural part of Vite's dev server this plugin uses. */
