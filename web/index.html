@@ -43,8 +43,8 @@
        * The launch view (#launch below): what shows from the first paint until the app mounts, with no CSS file and
        * no request. It copies the library's tokens, which no CSS variable gives yet: bg.canvas, the Backdrop's glow
        * and star colours and its phone, tablet and desktop star fields, fg.accent and fg.default for the Logo,
-       * fg.muted and bodySm (its base text size) for the late line, kindTile.sm for the mark, spacing 16, and duration.shimmer and
-       * easing.shimmer for the glow's breath. The layout widths are viewport.ts's (shell.listPane 420,
+       * fg.muted and bodySm (its base text size) for the late line, kindTile.sm for the mark, spacing 16, duration.shimmer and
+       * easing.shimmer for the glow's breath, and duration.fade and easing.fade for the fade out. The layout widths are viewport.ts's (shell.listPane 420,
        * rail + listPane + detail 1232). app/LaunchView.test.tsx fails when a copy drifts from its token. The iOS
        * startup images (public/launch/) are renders of this view, so the hand-off from iOS to it does not move.
        */
@@ -316,6 +316,18 @@
       @keyframes launch-late {
         to {
           visibility: visible;
+        }
+      }
+      /* When the app draws, launchEnd.ts sets data-leaving: from that moment the view takes no tap, and it fades out
+       * with duration.fade and easing.fade before it goes from the DOM. With reduced motion it goes at once. */
+      #launch[data-leaving] {
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 250ms cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #launch[data-leaving] {
+          transition: none;
         }
       }
     </style>
