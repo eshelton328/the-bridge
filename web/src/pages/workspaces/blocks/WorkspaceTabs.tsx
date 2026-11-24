@@ -14,6 +14,7 @@ import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { WorkspacesData, WorkspacesUi } from '../types.ts'
 import type { CopyReply } from './ChatEntryView.tsx'
+import type { ChatDialog } from './chatDialog.ts'
 import type { ChatFiles, ChatPending, TranscriptWatch } from './ChatPane.tsx'
 import type { DraftBook } from './draftBook.ts'
 import type { LayoutWrites } from './layoutActions.ts'
@@ -39,6 +40,8 @@ export type WorkspaceTabsProps = {
   filesOf?: ((chat: string) => ChatFiles | undefined) | undefined
   /** A live Claude chat's pending send, by chat id; none for a sample chat, a Codex chat or a shell (ChatPane `pending`). */
   pendingOf?: ((chat: string) => ChatPending | undefined) | undefined
+  /** A live Claude chat's terminal dialog source, by chat id, read while the chat needs the owner (R69); none for a sample chat. */
+  dialogOf?: ((chat: string) => ChatDialog | undefined) | undefined
   /** Reads each live chat's transcript while its pane shows (ChatPane); fixtures have none. */
   transcripts?: TranscriptWatch | undefined
   /** How wide the chat draws on the tablet and the desktop (Settings → Appearance); full when not set. */
@@ -80,6 +83,7 @@ export function WorkspaceTabs({
   onStop,
   filesOf,
   pendingOf,
+  dialogOf,
   transcripts,
   chatWidth,
   skillLists,
@@ -114,6 +118,7 @@ export function WorkspaceTabs({
         onStop={onStop}
         filesOf={filesOf}
         pendingOf={pendingOf}
+        dialogOf={dialogOf}
         transcripts={transcripts}
         chatWidth={chatWidth}
         skillLists={skillLists}

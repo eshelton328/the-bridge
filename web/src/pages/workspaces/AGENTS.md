@@ -341,6 +341,25 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   stopped prompt back there) keeps the draft and says "Not sent — clear
   the text in the chat's terminal input, then send", with no Retry and no
   report.
+- A terminal dialog (R69, backend #493, the contract's `paneDialogs.ts`):
+  a live Claude chat that needs the owner on a dialog its transcript does
+  not hold, such as a skill's numbered step, shows it as a card after the
+  entries (`blocks/DialogCard.tsx`, an approval `ProposalBlock`): the
+  title, the body with its line breaks and one button per option, "1 Send
+  structured". The pane reads `GET /api/chats/:chat/dialog` only while
+  the chat is "Needs you", its transcript has loaded and no
+  AskUserQuestion of it still runs (`blocks/chatDialog.ts`): at once,
+  every 3 s while the page shows and at once when it shows again, one read
+  at a time, stopped when the pane goes or the chat is no longer blocked
+  (`liveDialogs.ts`, `useLiveDialogs.ts`). `dialog: null` and a 404 draw
+  no card. A tap posts `{ id, n }` once and turns every option off until
+  the next dialog; a 409 shows "The terminal changed — showing the new
+  state" until the next read; another miss "Not sent — <kind>" with Retry
+  for no answer, a 5xx or a 429. A dialog with no sure options shows its
+  read text read-only, scrolling when long, with "Answer in the terminal".
+  report() gets only the step, the kind and the status, never the dialog's
+  text or a label (`app/WorkspacesTerminalDialog.test.tsx`; the fake is
+  `lib/fakeWorkspacesServer.ts`; LIBRARY_GAPS.md: Terminal dialog card).
 - A send, a /compact or /clear and a clear of the terminal input whose
   chat input box the server cannot find on the screen (409
   inputUnreadable, backend #339: a dialog, or a box it does not know)

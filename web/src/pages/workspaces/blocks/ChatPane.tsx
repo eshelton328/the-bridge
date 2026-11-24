@@ -48,6 +48,10 @@
 // focus expands it, and a blur with the box empty collapses it again. A
 // draft, a file or a disabled box keeps it expanded; a running chat does
 // not, as the row draws Stop beside Send (review R45, library beta.103).
+// A live Claude chat that needs the owner (`dialog`, R69) reads the dialog on
+// its terminal while the pane shows and its transcript has no open question,
+// and draws it after the entries as a card whose options a tap sends
+// (DialogCard); with no dialog read, nothing changes.
 // Props only.
 import {
   appShellDockEvent,
@@ -75,7 +79,9 @@ import { KEYBOARD_PROXY_EVENT } from '../../../lib/keyboardProxyEvent.ts'
 import { dropSkillWord, pickSkill, skillQuery } from '../../../lib/skillQuery.ts'
 import type { ChatEntry, ComposerState } from '../types.ts'
 import type { CopyReply } from './ChatEntryView.tsx'
+import { type ChatDialog, hasOpenQuestion } from './chatDialog.ts'
 import { ComposerLine } from './ComposerLine.tsx'
+import { DialogCard } from './DialogCard.tsx'
 import { type DraftBook, restoredDraft, useDraft } from './draftBook.ts'
 import { NewestButton } from './NewestButton.tsx'
 import { NotLive } from './NotLive.tsx'
@@ -149,6 +155,13 @@ const noPendingView = () => noPending
 /** `pending`'s sends now; none without it. */
 function usePendingViews(pending: ChatPending | undefined): readonly PendingSendView[] {
   return useSyncExternalStore(pending?.subscribe ?? noSubscribe, pending?.view ?? noPendingView)
+}
+
+const noDialog = () => undefined
+
+/** The card `dialog` draws now; none without it. */
+function useDialogView(dialog: ChatDialog | undefined) {
+  return useSyncExternalStore(dialog?.subscribe ?? noSubscribe, dialog?.view ?? noDialog)
 }
 
 /** `pending`'s notice now, or none. */
@@ -319,6 +332,11 @@ type ChatPaneBase = {
   files?: ChatFiles | undefined
   /** A live Claude chat's pending send, drawn after the entries; a sample chat has none. */
   pending?: ChatPending | undefined
+  /**
+   * A live Claude chat's terminal dialog while the chat needs the owner (R69, `blockedDialog`): read while the pane
+   * shows and the transcript has no open question, and drawn after the entries. None for any other chat.
+   */
+  dialog?: ChatDialog | undefined
   /** The size of Send's arrow: `12` in the side chat in a pane (D5 158:549); the library's 16 when not set. */
   sendIconSize?: '12' | '16' | undefined
   /** The composer's layout: `inline` is one row, as the side chat in a pane draws it (D5 158:545); `stacked` when not set. */
@@ -399,6 +417,7 @@ export function ChatPane(props: ChatPaneProps) {
     folders,
     files,
     pending,
+    dialog,
     sendIconSize,
     layout,
     lead,
@@ -571,6 +590,13 @@ export function ChatPane(props: ChatPaneProps) {
   const keyboardFirst = useKeyboardFirst(attachLabel)
   const pendingViews = usePendingViews(pending)
   const notice = usePendingNotice(pending)
+  // R69: the terminal's dialog, read once the transcript has loaded and only while it does not show the question itself.
+  // A live transcript has loaded once it has entries, its empty line or its problem line.
+  const transcriptRead = entries.length > 0 || empty !== undefined || problem !== undefined
+  const dialogShown =
+    loading !== undefined || notLive !== undefined || !transcriptRead || hasOpenQuestion(entries) ? undefined : dialog
+  useEffect(() => dialogShown?.watch(), [dialogShown])
+  const dialogView = useDialogView(dialogShown)
   // The box is controlled, so the composer never empties it: a sent message empties it here.
   const actions = useComposerActions({
     text,
@@ -758,6 +784,9 @@ export function ChatPane(props: ChatPaneProps) {
         {pendingViews.map((view) => (
           <PendingEntry key={view.key} text={view.text} files={view.files} sending={view.sending} />
         ))}
+        {dialogView === undefined || dialogShown === undefined ? null : (
+          <DialogCard view={dialogView} onAnswer={dialogShown.answer} onRetry={dialogShown.retry} />
+        )}
         {problem === undefined ? null : (
           <TranscriptProblem
             text={problem}

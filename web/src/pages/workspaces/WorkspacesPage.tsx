@@ -60,6 +60,7 @@ import { useLiveSkills } from './useLiveSkills.ts'
 import { useLiveTranscripts } from './useLiveTranscripts.ts'
 import { useLayoutWrites } from './useLayoutWrites.ts'
 import { useWorkspaceEdits } from './useWorkspaceEdits.ts'
+import { useLiveDialogs } from './useLiveDialogs.ts'
 import { useLivePending } from './useLivePending.ts'
 import { useLiveUploads } from './useLiveUploads.ts'
 import { useChatLink } from './useChatLink.ts'
@@ -180,6 +181,8 @@ export function WorkspacesPage() {
   const { data, ui: shownUi } = useMemo(() => withShownTabs(liveData, ui), [liveData, ui])
   const files = useLiveUploads(import.meta.env.DEV && live)
   const pendings = useLivePending(import.meta.env.DEV && live, search.state, drafts)
+  // Each live Claude chat's terminal dialog while it needs the owner (R69).
+  const dialogs = useLiveDialogs(import.meta.env.DEV && live)
   // Each live Claude chat's "/" list, read from the server each time it opens (review R34).
   const skillLists = useLiveSkills(import.meta.env.DEV && live)
   // Each live Claude chat's effort (W10): a set level shows until the next list read.
@@ -413,6 +416,7 @@ export function WorkspacesPage() {
         }
         filesOf={(chat) => files.filesOf(chat, liveChatOf(chat))}
         pendingOf={(chat) => pendings.pendingOf(liveChatOf(chat))}
+        dialogOf={(chat) => dialogs(liveChatOf(chat))}
         effortOf={(chat) => {
           const pane = data.panes.find((p) => p.id === chat)
           const head = pane?.type === 'chat' ? pane.head : undefined
