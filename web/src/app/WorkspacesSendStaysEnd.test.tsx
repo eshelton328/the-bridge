@@ -107,6 +107,8 @@ describe("the end of a long live chat after the owner's own send (R61)", () => {
       await expect.poll(() => scroller.scrollHeight > scroller.clientHeight * 3).toBe(true)
       await expect.poll(() => fromEnd(scroller)).toBeLessThanOrEqual(2)
       await expect.poll(() => server.openStreams()).toContain(plan)
+      // This visit's own read answered: the send starts from it.
+      await expect.poll(() => server.reads).toContain(plan)
       if (sent.image) {
         const input = root.querySelector('input[type="file"]')
         if (!(input instanceof HTMLInputElement)) throw new Error('no file input')
@@ -134,10 +136,13 @@ describe("the end of a long live chat after the owner's own send (R61)", () => {
       scroller.scrollTop = Math.round(scroller.scrollTop / 4)
       await strayed
       // The stream brings the owner's entry, then the reply.
+      // The entry holds the text the server took, with an ID no earlier read or test held.
+      const took = server.prompts[0]?.text ?? ''
+      const id = `r61-sent-${sent.image ? 'image' : 'text'}`
       server.push(plan, [
         sent.image
-          ? { type: 'user', id: 'sent-1', text, cut: false, files: ['IMG_4898.png'] }
-          : { type: 'user', id: 'sent-1', text, cut: false },
+          ? { type: 'user', id, text: took, cut: false, files: ['IMG_4898.png'] }
+          : { type: 'user', id, text: took, cut: false },
       ] satisfies TranscriptEntry[])
       await expect.poll(() => root.querySelectorAll('[data-pending-send]').length).toBe(0)
       server.push(plan, [{ type: 'assistant', id: 'reply-1', text: replyText, cut: false }])
@@ -168,7 +173,7 @@ describe("the end of a long live chat after the owner's own send (R61)", () => {
     await expect.poll(() => server.prompts.length).toBe(1)
     // The stream brings the owner's entry, which takes the pending bubble's place: no change of the send is still to
     // come and move the transcript during the drag.
-    server.push(plan, [{ type: 'user', id: 'sent-1', text, cut: false }])
+    server.push(plan, [{ type: 'user', id: 'r61-sent-drag', text: server.prompts[0]?.text ?? '', cut: false }])
     await expect.poll(() => root.querySelectorAll('[data-pending-send]').length).toBe(0)
     await afterRendering()
     const paragraphs = scroller.querySelectorAll('.markdown-view p')
