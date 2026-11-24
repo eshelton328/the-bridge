@@ -204,6 +204,26 @@ describe('a long live chat reads its transcript a page at a time', () => {
     expect(server.readQueries).toHaveLength(2)
   })
 
+  it('puts an older page in 3 s after a finger came down when no touchend comes, on the phone', async () => {
+    const server = stubLongChats(count, true)
+    view = await openWorkspaces([390, 844])
+    await userEvent.click(page.getByText(title, { exact: true }).first())
+    await markdownShown(100)
+    const chat = page.getByRole('region', { name: title }).element()
+    const scroller = chat.querySelector('.scroll-frame__body')
+    if (!(scroller instanceof HTMLElement)) throw new Error('no transcript')
+    const shown = () => chat.querySelectorAll('.markdown-view').length
+    const down = performance.now()
+    scroller.dispatchEvent(new TouchEvent('touchstart', { bubbles: true }))
+    scroller.dispatchEvent(new TouchEvent('touchmove', { bubbles: true }))
+    scroller.scrollTop = 0
+    await expect.poll(() => server.readQueries.length).toBe(2)
+    await new Promise((resolve) => setTimeout(resolve, Math.max(0, down + 2500 - performance.now())))
+    expect(shown()).toBe(100)
+    await expect.poll(shown, { timeout: 1500, interval: 50 }).toBe(200)
+    expect(performance.now() - down).toBeLessThan(4000)
+  })
+
   it('loads the next older page after the chat closed under a resting finger, on the phone', async () => {
     const server = stubLongChats(count, true)
     view = await openWorkspaces([390, 844])

@@ -654,7 +654,8 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   only when the scroll rests (no scroll event for 150 ms, `usePinnedEnd`
   `idle`), as iOS drops the pin's write during its momentum scroll; a
   finger that rests on the transcript holds it too, until 150 ms after
-  the lift. A miss shows
+  the lift, for at most 3 s from the touch (WebKit can skip a touchend);
+  an unmount ends the hold (`blocks/PinnedEndIdle.test.tsx`). A miss shows
   "Earlier entries not loaded — <kind>" with Retry. A read again (a
   reconnect, Retry) takes as many entries as the view holds; a 409 reads the
   newest page again (`WorkspacesEntryRenders.test.tsx`).

@@ -93,6 +93,9 @@ const seekLimitMs = 1200
 export const newestSlot = 'data-newest-slot'
 
 const scrollIdleMs = 150
+
+/** The longest, in ms, an older page waits for a finger that rests: WebKit can skip a touchend when the touched node goes. */
+const touchHoldMs = 3000
 const fromEnd = (el: HTMLElement) => el.scrollHeight - el.scrollTop - el.clientHeight
 const atEnd = (el: HTMLElement) => fromEnd(el) <= endSlack
 const toEnd = (el: HTMLElement) => {
@@ -174,13 +177,17 @@ export function usePinnedEnd(
   // scroll write during its momentum scroll, and the reader would land a page away (the #491 Simulator run).
   const scrolledRef = useRef(Number.NEGATIVE_INFINITY)
   // A finger on the transcript: the page also waits while it is down, as a held finger moves nothing and gives no
-  // scroll event, but iOS would drop the pin's write when it moves again. Its lift starts the 150 ms again.
-  const touchDownRef = useRef(false)
+  // scroll event, but iOS would drop the pin's write when it moves again. Its lift starts the 150 ms again. The time
+  // it went down; null with no finger down.
+  const touchDownRef = useRef<number | null>(null)
   const idle = useCallback(
     () =>
       new Promise<void>((resolve) => {
         const check = () => {
-          const left = touchDownRef.current ? scrollIdleMs : scrolledRef.current + scrollIdleMs - performance.now()
+          const now = performance.now()
+          const down = touchDownRef.current
+          const held = down === null ? 0 : down + touchHoldMs - now
+          const left = held > 0 ? Math.min(held, scrollIdleMs) : scrolledRef.current + scrollIdleMs - now
           if (left <= 0) resolve()
           else setTimeout(check, left)
         }
@@ -200,7 +207,7 @@ export function usePinnedEnd(
   useLayoutEffect(() => {
     if (!enabled || scroller === null || footer === null) return undefined
     pinnedRef.current = true
-    touchDownRef.current = false
+    touchDownRef.current = null
     const view = scroller.ownerDocument.defaultView ?? window
     // The reader's input: a finger that moves on the transcript, a mouse button down in it, and the time of the
     // last wheel turn, scroll key, lifted finger or focus move into the transcript.
@@ -314,11 +321,11 @@ export function usePinnedEnd(
       reader.touching = true
     }
     const onTouchStart = () => {
-      touchDownRef.current = true
+      touchDownRef.current = performance.now()
     }
     const onTouchEnd = () => {
-      if (touchDownRef.current) {
-        touchDownRef.current = false
+      if (touchDownRef.current !== null) {
+        touchDownRef.current = null
         scrolledRef.current = performance.now()
       }
       if (!reader.touching) return
@@ -454,7 +461,7 @@ export function usePinnedEnd(
       newest.set(hidden)
       scroller.removeEventListener('scroll', onScroll)
       // A finger that rests as the transcript unmounts gives no touchend here: the wait must not outlive it.
-      touchDownRef.current = false
+      touchDownRef.current = null
       scroller.removeEventListener('touchstart', onTouchStart)
       scroller.removeEventListener('touchmove', onTouchMove)
       scroller.removeEventListener('wheel', onReader)
