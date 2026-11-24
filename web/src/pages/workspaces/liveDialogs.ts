@@ -22,12 +22,13 @@
 // 429. Every reply is parsed with the contract's schemas (`PaneDialogResponse`,
 // `ErrorBody`), and the body is `AnswerDialogRequest`'s; a read the schema
 // refuses keeps the card as it was (none at first) and reports `bad-reply`.
-// The calls use `fetch` until the server's route is in the typed client. report() gets a DialogMissError for a 5xx and for an answer the page
+// The calls go through the typed client (`api.api.chats[':chat'].dialog`). report() gets a DialogMissError for a 5xx and for an answer the page
 // does not expect, once a watch for a read, with the step, the kind and the
 // HTTP status only: never the dialog's text, an option's label or the chat
 // ID. The chat ID goes in the path URL-encoded once.
 import { AnswerDialogRequest, ErrorBody, type PaneDialog, PaneDialogResponse } from '@bridge/contract'
 import { report } from '../../errors/reporter.ts'
+import { api } from '../../lib/api.ts'
 import type { ChatDialog, DialogPhase, DialogView } from './blocks/chatDialog.ts'
 import { liveReadTimeoutMs, readJson } from './liveWorkspaces.ts'
 
@@ -107,7 +108,7 @@ function changed(state: ChatState) {
   for (const listener of [...state.listeners]) listener()
 }
 
-const pathOf = (chat: string) => `/api/chats/${encodeURIComponent(chat)}/dialog`
+const param = (chat: string) => ({ chat: encodeURIComponent(chat) })
 
 const hidden = () => typeof document !== 'undefined' && document.visibilityState === 'hidden'
 
@@ -124,10 +125,10 @@ function stopReads(state: ChatState) {
 /** The answer of a dialog read: its status and its body as text, or none when no answer came in time. */
 async function fetchDialog(chat: string, signal: AbortSignal): Promise<{ status: number; text: string } | undefined> {
   try {
-    const res = await fetch(pathOf(chat), {
-      headers: { accept: 'application/json' },
-      signal: AbortSignal.any([signal, AbortSignal.timeout(liveReadTimeoutMs)]),
-    })
+    const res = await api.api.chats[':chat'].dialog.$get(
+      { param: param(chat) },
+      { init: { signal: AbortSignal.any([signal, AbortSignal.timeout(liveReadTimeoutMs)]) } },
+    )
     return { status: res.status, text: res.status === 404 ? '' : await res.text() }
   } catch {
     // No answer, or none in time: the card keeps what it shows, and the next read tries again.
@@ -192,14 +193,12 @@ async function answer(chat: string, state: ChatState, n: number) {
   const id = dialog.id
   state.answered = { id, n, phase: 'sending' }
   changed(state)
-  let res: Response
+  let res: { readonly status: number; text: () => Promise<string> }
   try {
-    res = await fetch(pathOf(chat), {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', accept: 'application/json' },
-      body: JSON.stringify(AnswerDialogRequest.parse({ id, n })),
-      signal: AbortSignal.timeout(dialogAnswerTimeoutMs),
-    })
+    res = await api.api.chats[':chat'].dialog.$post(
+      { param: param(chat), json: AnswerDialogRequest.parse({ id, n }) },
+      { init: { signal: AbortSignal.timeout(dialogAnswerTimeoutMs) } },
+    )
   } catch (error) {
     failed(
       state,

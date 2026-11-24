@@ -353,9 +353,12 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   (`blocks/chatDialog.ts`): at once, every 3 s while the page shows and
   at once when it shows again, one read at a time, stopped when the pane
   goes or the chat is no longer blocked (`liveDialogs.ts`,
-  `useLiveDialogs.ts`). Each reply is parsed with the contract's schemas;
-  `dialog: null`, a 404 and a reply the schema refuses draw no card (the
-  last is reported as `bad-reply`). A tap posts the contract's
+  `useLiveDialogs.ts`), through the typed client. Each reply is parsed
+  with the contract's schemas; `dialog: null` and a 404 draw no card. A
+  reply the schema refuses is reported as `bad-reply`: on the first read
+  it draws no card, and on a later read the card keeps what it shows; a
+  tap on it still goes through the server's dialog-ID check (a 409
+  `dialogChanged` if the dialog changed). A tap posts the contract's
   `AnswerDialogRequest` `{ id, n }` once and turns every option off until
   the next dialog. The server lists only the options a tap answers (no
   free-text ones), so the options keep `n` as given, a long label wraps,
