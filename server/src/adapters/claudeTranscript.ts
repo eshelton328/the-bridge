@@ -360,7 +360,8 @@ export async function readClaudeTranscriptPage(
   try {
     handle = await open(path, 'r')
   } catch {
-    return { entries: [], earlier: false }
+    // A file gone between pages cannot hold the `before` entry: the page reads the newest page again.
+    return before === undefined ? { entries: [], earlier: false } : 'entryNotFound'
   }
   try {
     const { size } = await handle.stat()
@@ -407,7 +408,8 @@ export async function readClaudeTranscriptPage(
     const earlier = found.length - skip > limit || stopAt > 0
     return { entries: markDrafts(found.slice(skip, skip + limit).reverse()), earlier }
   } catch {
-    return { entries: [], earlier: false }
+    // A file gone between pages cannot hold the `before` entry: the page reads the newest page again.
+    return before === undefined ? { entries: [], earlier: false } : 'entryNotFound'
   } finally {
     await handle.close()
   }

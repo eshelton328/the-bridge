@@ -578,4 +578,10 @@ describe('a transcript page', () => {
     })
     expect(await readClaudeTranscriptPage(long, options, { limit: 2, before: 'no-such-entry' })).toBe('entryNotFound')
   })
+
+  it('answers entryNotFound for a page before an entry of a file that is gone, and no entries for the newest page', async () => {
+    const gone = join(dir, 'gone.jsonl')
+    expect(await readClaudeTranscriptPage(gone, options, { limit: 3, before: 'u7' })).toBe('entryNotFound')
+    expect(await readClaudeTranscriptPage(gone, options, { limit: 3 })).toEqual({ entries: [], earlier: false })
+  })
 })
