@@ -173,6 +173,13 @@ describe('the launch view (index.html)', () => {
     const doc = new DOMParser().parseFromString(indexHtml, 'text/html')
     const launch = doc.getElementById('launch')
     expect(launch?.querySelectorAll('img, link, script, image, use').length).toBe(0)
-    expect(launch?.getAttribute('aria-hidden')).toBe('true')
+  })
+
+  it('hides only the mark from screen readers; the late line is a status they read', () => {
+    const doc = new DOMParser().parseFromString(indexHtml, 'text/html')
+    expect(doc.getElementById('launch-mark')?.getAttribute('aria-hidden')).toBe('true')
+    const late = doc.getElementById('launch-late')
+    expect(late?.getAttribute('role')).toBe('status')
+    expect(late?.closest('[aria-hidden="true"]')).toBeNull()
   })
 })

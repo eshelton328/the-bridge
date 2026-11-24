@@ -321,14 +321,14 @@
     </style>
   </head>
   <body>
-    <div id="launch" aria-hidden="true">
-      <svg id="launch-mark" viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+    <div id="launch">
+      <svg id="launch-mark" aria-hidden="true" viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" focusable="false">
         <path d="M2.625 19.25C10.2083 8.75 17.7917 8.75 25.375 19.25" stroke-width="1.75" />
         <path d="M1.75 19.25H26.25" stroke-width="1.75" />
         <path d="M8.75 13.5625V19.25M14 11.375V19.25M19.25 13.5625V19.25" stroke-width="1.3125" />
         <path class="spark" d="M14 3.0625L14.7 4.9875L16.625 5.6875L14.7 6.3875L14 8.3125L13.3 6.3875L11.375 5.6875L13.3 4.9875L14 3.0625Z" stroke="none" />
       </svg>
-      <p id="launch-late">Still connecting…</p>
+      <p id="launch-late" role="status">Still connecting…</p>
     </div>
     <div id="root"></div>
     <script type="module" src="/src/app/main.ts"></script>
