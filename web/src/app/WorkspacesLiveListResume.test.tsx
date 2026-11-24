@@ -74,11 +74,14 @@ function withServer() {
   const workspaces = fakeWorkspacesServer(chats, list)
   let answer: ListAnswer | undefined
   let reads = 0
+  // The list reads when the page last opened its event stream: the watch's own first read comes after it.
+  let readsAtOpen: number | undefined
   vi.stubGlobal(
     'fetch',
     vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
       const path = new URL(url, window.location.origin).pathname
+      if (path === '/api/events') readsAtOpen = reads
       if (path === '/api/workspaces') {
         reads += 1
         if (answer !== undefined) return Promise.resolve().then(answer)
@@ -91,6 +94,8 @@ function withServer() {
   return {
     workspaces,
     reads: () => reads,
+    /** The event watch has read the list since it opened its stream. */
+    watched: () => readsAtOpen !== undefined && reads > readsAtOpen,
     answer: (next: ListAnswer | undefined) => {
       answer = next
     },
@@ -208,6 +213,8 @@ describe('the Workspaces list read back from the background', () => {
     it(`reads the list with no answer just after the page showed again at once, with no notice, and shows a second one, on ${device.name}`, async () => {
       const server = withServer()
       await tapWorkspaces(device.size)
+      // The count starts after the watch's own first read, which a slow runner sends later than any fixed wait.
+      await renderedUntil(server.watched)
       await quiet()
       const reads = server.reads()
       // iOS: the page cannot run in the background, so its read misses only once the page shows again.
@@ -220,8 +227,8 @@ describe('the Workspaces list read back from the background', () => {
       })
       const release = holdTimers()
       server.workspaces.listChanged()
-      // The event's settle time (100 ms) starts the load; nothing after it waits on the clock.
-      await vi.advanceTimersByTimeAsync(100)
+      // The event's settle time starts the load; nothing after it waits on the clock.
+      for (let at = 0; at < 10 && server.reads() < reads + 1; at += 1) await vi.advanceTimersByTimeAsync(100)
       await expect.poll(server.reads).toBe(reads + 2)
       release()
       await expect.element(page.getByText('renamed work').first()).toBeVisible()
@@ -232,7 +239,7 @@ describe('the Workspaces list read back from the background', () => {
       server.answer(noAnswer)
       const held = holdTimers()
       server.workspaces.listChanged()
-      await vi.advanceTimersByTimeAsync(100)
+      for (let at = 0; at < 10 && server.reads() < reads + 3; at += 1) await vi.advanceTimersByTimeAsync(100)
       await renderedUntil(() => server.reads() === reads + 3)
       expect(notice().query()).toBeNull()
       // The grace's end loads the page again (the event's settle time), and that read misses too.
