@@ -16,6 +16,7 @@ import {
   resolveImport,
   reviewInputs,
   reviewRunProblem,
+  sealedReviewGate,
   sealReview,
 } from './reviewSeal.ts'
 import { referencesDir } from './references.ts'
@@ -216,4 +217,22 @@ void test('a --review run names one frame and builds Storybook, so it never seal
   assert.match(reviewRunProblem(1, true) ?? '', /without --skip-build/)
   assert.match(reviewRunProblem(0, false) ?? '', /one frame id/)
   assert.match(reviewRunProblem(2, false) ?? '', /one frame id/)
+})
+
+void test('--sealed takes a current committed record as the reviewer gate', (t) => {
+  const s = scratch(t)
+  const gate = () => sealedReviewGate(s.root, 'settings', 'D01')
+  assert.deepEqual([gate().ok, gate().problem], [false, 'noReview'])
+  s.seal(record([{ priority: 'P3' }]))
+  assert.deepEqual([gate().ok, gate().problem], [true, null])
+  // A source change after the review makes the record stale.
+  s.write('web/src/app/rail.ts', 'export const rail = 2\n')
+  assert.deepEqual([gate().ok, gate().problem], [false, 'seal'])
+  assert.match(gate().detail, /^stale:/)
+  // A record with a P2 finding fails, also when it is current.
+  s.seal(record([{ priority: 'P2' }]))
+  assert.deepEqual([gate().ok, gate().problem], [false, 'seal'])
+  assert.match(gate().detail, /^gate:/)
+  s.write('references/settings/D01/review.json', '{')
+  assert.match(gate().detail, /^invalid:/)
 })

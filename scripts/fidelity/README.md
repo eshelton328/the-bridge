@@ -122,6 +122,13 @@ frame has no `review.json`, or when a `review.json`:
 - is for another frame, is not valid, or holds a P1 or P2 finding or an
   `unreviewable` verdict.
 
+`pnpm fidelity <page> --sealed` takes each PNG frame's committed
+`review.json` as the reviewer's gate, in place of `--review`: the frame
+passes when the rule check passes on this render and the record passes
+the checks above (`sealedReviewGate`). CI's fidelity job runs Settings
+this way (`--checks rules --sealed`), so a change that breaks a rule on
+a PNG frame fails CI, and not only the local run.
+
 The hashes catch drift: a stale or hand-edited record. They are not a
 signature, and do not stop tampering: anyone who can commit can also
 recompute them.

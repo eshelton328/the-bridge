@@ -28,7 +28,7 @@ type ReviewFinding = z.infer<typeof reviewRecord>['findings'][number]
 export type ReviewGate = {
   ok: boolean
   /** Why the frame fails; null when it passes. */
-  problem: 'noReview' | 'renderChanged' | 'unreviewable' | 'findings' | null
+  problem: 'noReview' | 'renderChanged' | 'unreviewable' | 'findings' | 'seal' | null
   /** The P1 and P2 findings, which fail the frame. */
   blocking: ReviewFinding[]
   detail: string

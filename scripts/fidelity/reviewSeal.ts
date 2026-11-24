@@ -13,7 +13,7 @@ import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join, posix } from 'node:path'
 import { z } from 'zod'
-import { parseReview, pngReviewGate } from './pngReview.ts'
+import { parseReview, pngReviewGate, type ReviewGate } from './pngReview.ts'
 import { frameKind, parsePngRef } from './references.ts'
 import { stateForFrame } from './storyServer.ts'
 
@@ -207,6 +207,40 @@ export function checkSeal(data: unknown, frameId: string, inputs: string): SealC
   return gate.ok
     ? { ok: true, problem: null, detail: gate.detail }
     : { ok: false, problem: 'gate', detail: gate.detail }
+}
+
+/**
+ * The reviewer's gate of a PNG frame from its committed review.json, for
+ * a run that cannot have the reviewer (`pnpm fidelity <page> --sealed`,
+ * CI). The sealed record must pass checkSeal against the hash of the
+ * frame's inputs now, so the render it saw is the one these inputs build;
+ * a missing, stale, edited or failing record fails the frame.
+ */
+export function sealedReviewGate(root: string, page: string, frameId: string): ReviewGate {
+  const file = join(root, 'references', page, frameId, reviewFileName)
+  if (!existsSync(file))
+    return {
+      ok: false,
+      problem: 'noReview',
+      blocking: [],
+      detail: `no ${reviewFileName}: seal a review with pnpm fidelity ${page} ${frameId} --review <file>`,
+    }
+  const inputs = reviewInputs(root, page, frameId)
+  let data: unknown
+  try {
+    data = JSON.parse(readFileSync(file, 'utf8'))
+  } catch (error) {
+    return {
+      ok: false,
+      problem: 'seal',
+      blocking: [],
+      detail: `invalid: ${error instanceof Error ? error.message : String(error)}`,
+    }
+  }
+  const seal = checkSeal(data, frameId, inputsDigest(inputs.files, inputs.library))
+  return seal.ok
+    ? { ok: true, problem: null, blocking: [], detail: `sealed review: ${seal.detail}` }
+    : { ok: false, problem: 'seal', blocking: [], detail: `${seal.problem ?? 'seal'}: ${seal.detail}` }
 }
 
 export type FrameSeal = SealCheck & { frame: string }
