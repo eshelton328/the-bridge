@@ -206,6 +206,27 @@ describe('New workspace on the live page (W4)', () => {
     })
   }
 
+  it('opens a workspace herdr made before a 503, on Retry, with no second post (PR #489 review)', async () => {
+    const server = withServer()
+    // herdr made it; the server's list read after the create missed, so it answered 503.
+    server.answerCreates(
+      () => errorAnswer({ kind: 'herdr-unavailable', message: 'herdr', requestId: 'r-6' }, 503),
+      true,
+    )
+    await tapWorkspaces([1512, 982])
+    await openNewWorkspace('desktop')
+    await userEvent.fill(nameField(), 'harbour')
+    await userEvent.click(dialog().getByRole('button', { name: 'Create' }))
+    await expect.element(dialog().getByText('Not made — herdr-unavailable', { exact: true })).toBeVisible()
+    await expect.poll(() => page.getByText('harbour', { exact: true }).elements().length).toBeGreaterThan(0)
+    server.answerCreates(undefined)
+    await userEvent.click(dialog().getByRole('button', { name: 'Retry' }))
+    await expect.element(dialog()).not.toBeInTheDocument()
+    expect(server.creates).toEqual([{ name: 'harbour' }])
+    expect(server.workspaces().map((w) => w.label)).toEqual(['orchard', 'harbour'])
+    await expectOpen('desktop', 'harbour')
+  })
+
   it('opens the workspace with the list read after the 201 when no event comes', async () => {
     const server = withServer()
     server.quietCreates(true)

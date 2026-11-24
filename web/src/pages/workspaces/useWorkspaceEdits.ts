@@ -26,8 +26,12 @@
 // workspace (W4, backend #471) is one too: `createWorkspace` gives its
 // answer to the dialog that asked (NewWorkspaceDialog), which shows a miss
 // itself, and the workspace goes to `onCreated` with the first list read
-// that shows it, however late.
-import { Label, maxLabel, type StartChatResponse } from '@bridge/contract'
+// that shows it, however late. herdr may have made the workspace when the
+// server answers 502 or 503 (its list read after the create can miss, PR
+// #489 review), so such a miss reads the list again, and its Retry opens a
+// workspace of that name that the list shows since the first try in place
+// of posting again.
+import { defaultWorkspaceName, Label, maxLabel, type StartChatResponse } from '@bridge/contract'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { report } from '../../errors/reporter.ts'
 import { newSendId } from './draftStorage.ts'
@@ -87,6 +91,8 @@ export function useWorkspaceEdits(
   const onCreatedRef = useRef(onCreated)
   /** The workspace a create made (its page ID), until a list read shows it. */
   const createdRef = useRef<string | undefined>(undefined)
+  /** A create whose answer was a miss with Retry: its name and the workspaces listed before its first try. */
+  const retryRef = useRef<{ readonly label: string; readonly before: ReadonlySet<string> } | undefined>(undefined)
   /** The chat a move took, and its workspace, until a list read shows it there. */
   const movedRef = useRef<{ readonly chat: string; readonly workspace: string } | undefined>(undefined)
   useLayoutEffect(() => {
@@ -201,6 +207,18 @@ export function useWorkspaceEdits(
           kind: 'name',
           line: `A name has 1 to ${String(maxLabel)} characters and no control character`,
         })
+      const label = trimmed === '' ? defaultWorkspaceName : trimmed
+      // A Retry of a create that herdr may have done: a workspace of that name listed since the first try is that one.
+      const before =
+        retryRef.current?.label === label
+          ? retryRef.current.before
+          : new Set(dataRef.current.workspaces.map((w) => w.id))
+      retryRef.current = undefined
+      const made = dataRef.current.workspaces.find((w) => !before.has(w.id) && w.label === label)
+      if (made !== undefined) {
+        onCreatedRef.current?.(made.id, dataRef.current)
+        return Promise.resolve({ kind: 'created' })
+      }
       const entry: Pending = { action: 'createWorkspace', seen: listJson(dataRef.current) }
       pendingRef.current = entry
       setPending(entry)
@@ -217,6 +235,10 @@ export function useWorkspaceEdits(
           return answer.kind === 'created' ? { kind: 'created' } : answer
         if (answer.kind !== 'created') {
           done(entry)
+          if (answer.kind === 'retry') {
+            retryRef.current = { label, before }
+            readList()
+          }
           return answer
         }
         createdRef.current = answer.workspace
