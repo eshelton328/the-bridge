@@ -176,6 +176,34 @@ describe('a long live chat reads its transcript a page at a time', () => {
     expect(server.readQueries).toHaveLength(2)
   })
 
+  it('holds an older page while a finger rests on the transcript, and puts it in 150 ms after the lift, on the phone', async () => {
+    const server = stubLongChats(count, true)
+    view = await openWorkspaces([390, 844])
+    await userEvent.click(page.getByText(title, { exact: true }).first())
+    await markdownShown(100)
+    const chat = page.getByRole('region', { name: title }).element()
+    const scroller = chat.querySelector('.scroll-frame__body')
+    const first = scroller?.querySelector('article')
+    if (!(scroller instanceof HTMLElement) || !(first instanceof HTMLElement)) throw new Error('no transcript')
+    const offset = () => first.getBoundingClientRect().top - scroller.getBoundingClientRect().top
+    // A slow drag up that ends with the finger held still: no scroll event while it rests.
+    scroller.dispatchEvent(new TouchEvent('touchstart', { bubbles: true }))
+    scroller.dispatchEvent(new TouchEvent('touchmove', { bubbles: true }))
+    scroller.scrollTop = 0
+    const top = offset()
+    const shown = () => chat.querySelectorAll('.markdown-view').length
+    await new Promise((resolve) => setTimeout(resolve, 600))
+    expect(server.readQueries).toEqual([{ limit: '100' }, { limit: '100', before: 'plan-u500' }])
+    expect(shown()).toBe(100)
+    scroller.dispatchEvent(new TouchEvent('touchend', { bubbles: true }))
+    await new Promise((resolve) => setTimeout(resolve, 60))
+    expect(shown()).toBe(100)
+    await markdownShown(200)
+    await afterRendering()
+    expect(Math.abs(offset() - top)).toBeLessThanOrEqual(1)
+    expect(server.readQueries).toHaveLength(2)
+  })
+
   it('stays at the end when a short chat at its end loads the older page by itself, on the phone', async () => {
     const server = stubLongChats(count, true)
     // 99 tool calls draw as one group row, so the newest page does not fill the screen and the earlier line is in view.

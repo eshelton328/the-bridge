@@ -173,11 +173,14 @@ export function usePinnedEnd(
   // The last scroll event: an older page waits for `idle` (no scroll for `scrollIdleMs`), as iOS drops the pin's
   // scroll write during its momentum scroll, and the reader would land a page away (the #491 Simulator run).
   const scrolledRef = useRef(Number.NEGATIVE_INFINITY)
+  // A finger on the transcript: the page also waits while it is down, as a held finger moves nothing and gives no
+  // scroll event, but iOS would drop the pin's write when it moves again. Its lift starts the 150 ms again.
+  const touchDownRef = useRef(false)
   const idle = useCallback(
     () =>
       new Promise<void>((resolve) => {
         const check = () => {
-          const left = scrolledRef.current + scrollIdleMs - performance.now()
+          const left = touchDownRef.current ? scrollIdleMs : scrolledRef.current + scrollIdleMs - performance.now()
           if (left <= 0) resolve()
           else setTimeout(check, left)
         }
@@ -309,7 +312,14 @@ export function usePinnedEnd(
     const onTouchMove = () => {
       reader.touching = true
     }
+    const onTouchStart = () => {
+      touchDownRef.current = true
+    }
     const onTouchEnd = () => {
+      if (touchDownRef.current) {
+        touchDownRef.current = false
+        scrolledRef.current = performance.now()
+      }
       if (!reader.touching) return
       reader.touching = false
       readerInput()
@@ -419,6 +429,7 @@ export function usePinnedEnd(
     mutation.observe(scroller, { childList: true, subtree: true, characterData: true })
     const passive = { passive: true } as const
     scroller.addEventListener('scroll', onScroll, passive)
+    scroller.addEventListener('touchstart', onTouchStart, passive)
     scroller.addEventListener('touchmove', onTouchMove, passive)
     scroller.addEventListener('wheel', onReader, passive)
     scroller.addEventListener('focusin', onFocusIn)
@@ -441,6 +452,7 @@ export function usePinnedEnd(
       cameRef.current = undefined
       newest.set(hidden)
       scroller.removeEventListener('scroll', onScroll)
+      scroller.removeEventListener('touchstart', onTouchStart)
       scroller.removeEventListener('touchmove', onTouchMove)
       scroller.removeEventListener('wheel', onReader)
       scroller.removeEventListener('focusin', onFocusIn)
