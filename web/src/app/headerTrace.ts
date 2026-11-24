@@ -112,6 +112,8 @@ export type HeaderDump = {
   orientation: string | null
   /** `#root`'s top in the layout viewport: 0, or the R57 shift (headerShift.ts) while it is on. */
   rootTop: number | null
+  /** The R57 shift in force (headerShift.ts): `#root`'s own `top` in CSS px, 0 while it is off. */
+  shiftTop: number
   /** Whether index.html's launch screen, `#launch`, is still on the page (launchEnd.ts removes it after the mount). */
   launch: boolean
   /**
@@ -214,6 +216,7 @@ export function readHeaderDump(title: Element, type: string, win: Window = windo
         : { scrollTop: body.scrollTop, scrollHeight: body.scrollHeight, clientHeight: body.clientHeight },
     orientation: typeof win.screen.orientation === 'object' ? win.screen.orientation.type : null,
     rootTop: root === null ? null : root.getBoundingClientRect().y,
+    shiftTop: root === null ? 0 : Number.parseFloat(root.style.top) || 0,
     launch: win.document.getElementById('launch') !== null,
     back: null,
     fonts: [...win.document.fonts]

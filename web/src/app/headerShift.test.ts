@@ -44,6 +44,17 @@ describe('R57 shift', () => {
     await expect.poll(() => root.style.top).toBe('')
   })
 
+  it('holds the shift for as long as the answer stays, and sets top only once', async () => {
+    const root = mountRoot()
+    const set = vi.spyOn(root.style, 'setProperty')
+    const { fetchShift } = run(() => json({ shiftTop: 40 }))
+    await expect.poll(() => root.style.top).toBe('40px')
+    const asked = fetchShift.mock.calls.length
+    await expect.poll(() => fetchShift.mock.calls.length, { timeout: 3000 }).toBeGreaterThan(asked + 10)
+    expect(root.style.top).toBe('40px')
+    expect(set).toHaveBeenCalledTimes(1)
+  })
+
   it('takes a failed, odd or out-of-range answer as 0', async () => {
     const root = mountRoot()
     const answers: (() => Promise<Response>)[] = [

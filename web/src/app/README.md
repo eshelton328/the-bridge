@@ -193,7 +193,8 @@ imports it dynamically with the trace, so a build has none of it.
   `scrollTop`, `scrollHeight` and `clientHeight` of the ScrollFrame body
   beside the title's header, or null), `orientation`
   (`screen.orientation.type`), `rootTop` (`#root`'s top: 0, or the shift
-  below), `launch` (whether `#launch`, the launch screen, is still on
+  below), `shiftTop` (the shift in force: `#root`'s own `top`, 0 while
+  off), `launch` (whether `#launch`, the launch screen, is still on
   the page), `back` (on the first dump after the page shows again from the
   background: `hiddenMs`, null when unknown, and `via`,
   `visibilitychange` or a `pageshow` from the back-forward cache; else
@@ -232,7 +233,9 @@ none of it. It asks the dev server's `GET /__keyboard-trace/shift`
 the `shiftTop` it answers, so the whole app moves down with no reload. It
 sets `top` only, never a transform, which would give the app a layer of
 its own. An answer of 0, a failed or odd answer, and the trace's stop put
-`#root` back. It is off until the traces folder has both `ENABLED` and
+`#root` back. The shift holds for as long as the answer stays, so
+`SHIFT_TOP` can stay in the folder for a set window, and each header dump
+in that window says the shift (`shiftTop`). It is off until the traces folder has both `ENABLED` and
 `SHIFT_TOP` (`headerShift.test.ts`, `keyboardTraceSwitch.test.ts`).
 
 ## Proxy focus

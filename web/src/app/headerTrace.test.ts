@@ -157,6 +157,8 @@ describe('chat header dump', () => {
     expect(dump.scrollRoot).toEqual({ scrollTop: 120, scrollHeight: 400, clientHeight: 100 })
     expect(dump.orientation).toBe(screen.orientation.type)
     expect(dump.rootTop).toBe(40)
+    // The shift reads #root's own top: 40 here, 0 with none.
+    expect(dump.shiftTop).toBe(40)
     expect(dump.launch).toBe(false)
     const launch = document.createElement('div')
     launch.id = 'launch'
@@ -164,8 +166,11 @@ describe('chat header dump', () => {
     expect(readHeaderDump(title, 'tick').launch).toBe(true)
     launch.remove()
     expect(dump.back).toBeNull()
+    root.style.removeProperty('top')
+    expect(readHeaderDump(title, 'tick').shiftTop).toBe(0)
     root.id = ''
     expect(readHeaderDump(title, 'tick').rootTop).toBeNull()
+    expect(readHeaderDump(title, 'tick').shiftTop).toBe(0)
   })
 
   it('marks the first dump after the page comes back from the background, with how long it was hidden', async () => {
