@@ -73,7 +73,7 @@ import {
 import { css, cx } from '../../../../styled-system/css/index.js'
 import { KEYBOARD_PROXY_EVENT } from '../../../lib/keyboardProxyEvent.ts'
 import { dropSkillWord, pickSkill, skillQuery } from '../../../lib/skillQuery.ts'
-import type { AgentKind, ChatEntry, ComposerState } from '../types.ts'
+import type { ChatEntry, ComposerState } from '../types.ts'
 import type { CopyReply } from './ChatEntryView.tsx'
 import { ComposerLine } from './ComposerLine.tsx'
 import { type DraftBook, restoredDraft, useDraft } from './draftBook.ts'
@@ -306,7 +306,7 @@ type ChatPaneBase = {
    * A live chat whose transcript has not loaded yet: the skeleton's label, such as "Loading this chat", and the chat's
    * kind; the skeleton fills the transcript in place of the entries (R64). None when not set.
    */
-  loading?: { readonly label: string; readonly kind: AgentKind } | undefined
+  loading?: { readonly label: string } | undefined
   composer: ComposerState
   /** The skills that "/" lists; a chat without them lists none. */
   skills?: ChatSkills | undefined
@@ -751,7 +751,7 @@ export function ChatPane(props: ChatPaneProps) {
             />
           </>
         ) : (
-          <TranscriptSkeleton label={loading.label} kind={loading.kind} gap={gaps[size].body} />
+          <TranscriptSkeleton label={loading.label} gap={gaps[size].body} />
         )}
         {pendingViews.map((view) => (
           <PendingEntry key={view.key} text={view.text} files={view.files} sending={view.sending} />
