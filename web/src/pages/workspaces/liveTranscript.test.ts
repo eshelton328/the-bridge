@@ -13,7 +13,6 @@ import { workbench } from './states/workbench.ts'
 import {
   chatEntryOf,
   loadEarlier,
-  maxLoadedEntries,
   mergeEntries,
   retryTranscript,
   transcriptText,
@@ -699,6 +698,7 @@ const chatPane = (data: ReturnType<typeof withTranscripts>) => {
 describe('paging', () => {
   const many = (count: number, tag = 'e') => Array.from({ length: count }, (_, i) => user(`${tag}${String(i)}`, 'go'))
   const loaded = (count: number) => expect.poll(() => view()?.entries.length).toBe(count)
+  const pane = () => chatPane(withTranscripts(liveData(), transcriptViews()))
 
   it('reads the newest page only, then each page before the first entry, until the first one', async () => {
     const server = fakeTranscriptServer()
@@ -710,7 +710,7 @@ describe('paging', () => {
     loadEarlier(chat)
     await loaded(200)
     expect(ids()?.slice(0, 2)).toEqual(['e50', 'e51'])
-    expect(view()).toMatchObject({ earlier: true, paged: true })
+    expect(view()?.earlier).toBe(true)
     loadEarlier(chat)
     await loaded(250)
     expect(view()?.earlier).toBe(false)
@@ -746,7 +746,6 @@ describe('paging', () => {
     loadEarlier(chat)
     await expect.poll(() => ids()?.[0]).toBe('n50')
     expect(view()?.entries).toHaveLength(100)
-    expect(view()?.paged).toBeUndefined()
     expect(getReports()).toEqual([])
   })
 
@@ -757,31 +756,30 @@ describe('paging', () => {
     await loaded(100)
     server.answerReads(herdrDown)
     loadEarlier(chat)
-    await expect
-      .poll(() => chatPane(withTranscripts(liveData(), transcriptViews())))
-      .toMatchObject({
-        earlier: 'Earlier entries not loaded — herdr-unavailable',
-        earlierLoad: 'missed',
-      })
+    const line = { earlier: 'Earlier entries not loaded — herdr-unavailable', earlierLoad: 'missed' }
+    await expect.poll(pane).toMatchObject(line)
     server.answerReads(undefined)
     loadEarlier(chat)
     await loaded(150)
     expect(view()?.earlier).toBe(false)
   })
 
-  it('keeps every loaded entry as live ones come, and drops the oldest only past maxLoadedEntries', async () => {
+  it('loads older pages up to the 500 cap only, and then live entries drop the oldest', async () => {
     const server = fakeTranscriptServer()
     server.set(chat, many(700))
     watch(server)
     await loaded(100)
-    for (let n = 200; n <= 600; n += 100) {
+    for (let n = 200; n <= 500; n += 100) {
       loadEarlier(chat)
       await loaded(n)
     }
+    expect(pane()).toMatchObject({ earlier: 'Earlier entries not live yet' })
+    loadEarlier(chat)
+    await settle()
+    expect(server.readQueries).toHaveLength(5)
     server.push(chat, [user('fresh', 'go')])
     await expect.poll(() => ids()?.at(-1)).toBe('fresh')
-    expect(view()?.entries).toHaveLength(601)
-    expect(ids()?.[0]).toBe('e100')
-    expect(mergeEntries(many(maxLoadedEntries), [user('x', 'go')], maxLoadedEntries).dropped).toBe(1)
+    expect(view()?.entries).toHaveLength(500)
+    expect(ids()?.[0]).toBe('e201')
   })
 })

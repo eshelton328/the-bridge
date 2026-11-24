@@ -114,9 +114,6 @@ export const loadLimitMs = 10_000
 /** How many entries a page holds: the first read's newest page, and each older page the reader scrolls up to. */
 export const pageEntries = 100
 
-/** The most entries a view holds once the reader loaded an older page; live entries drop the oldest past it (a proposal). */
-export const maxLoadedEntries = 1500
-
 /** How many chats that no pane shows keep their last view, so a chat opened again shows it at once. */
 export const keptViews = 5
 
@@ -156,7 +153,6 @@ class TranscriptMissError extends Error {
 export function mergeEntries(
   current: readonly TranscriptEntry[],
   changed: readonly TranscriptEntry[],
-  cap = maxTranscriptEntries,
 ): { entries: TranscriptEntry[]; dropped: number } {
   const next = [...current]
   const at = new Map(next.map((entry, i) => [entry.id, i]))
@@ -167,7 +163,7 @@ export function mergeEntries(
       next.push(entry)
     } else next[i] = entry
   }
-  const dropped = Math.max(0, next.length - cap)
+  const dropped = Math.max(0, next.length - maxTranscriptEntries)
   return { entries: dropped === 0 ? next : next.slice(dropped), dropped }
 }
 
@@ -185,8 +181,6 @@ export type TranscriptView = {
    * chat held then, not now. None once a read answered.
    */
   readonly stale?: true | undefined
-  /** The reader loaded an older page: live entries drop the oldest only past `maxLoadedEntries`. */
-  readonly paged?: true | undefined
   /** An older page's read: `end` after a page with no new entry (the server's last), or the line of one that missed. */
   readonly older?: 'end' | { readonly problem: string } | undefined
 }
@@ -309,7 +303,6 @@ export function withNewestPage(
     entries: [...view.entries.slice(0, at), ...page.entries],
     earlier: view.earlier,
     problem: undefined,
-    ...(view.paged === true ? { paged: true } : {}),
   }
 }
 
@@ -405,8 +398,7 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
       const held = new Set(view.entries.map((e) => e.id))
       const kept = added === undefined ? entries : entries.filter((e) => held.has(e.id) || added.includes(e.id))
       if (kept.length === 0) return view
-      const merged = mergeEntries(view.entries, kept, view.paged === true ? maxLoadedEntries : maxTranscriptEntries)
-
+      const merged = mergeEntries(view.entries, kept)
       return { ...view, entries: merged.entries, earlier: view.earlier || merged.dropped > 0 }
     })
   }
@@ -583,14 +575,13 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
     return 'again'
   }
 
-  /** An older page's read runs now: one at a time. */
   let olderRead = false
   // Puts the page before the first entry above the entries, one read at a time. A 409 (that entry is gone) reads the
   // newest page again in place of the view; any other miss shows its line with Retry.
   const older = async () => {
     const shown = views.get(chat)
     const first = shown?.entries[0]
-    const room = maxLoadedEntries - (shown?.entries.length ?? 0)
+    const room = maxTranscriptEntries - (shown?.entries.length ?? 0)
     if (closed() || olderRead || shown?.loaded !== true || !shown.earlier || shown.older === 'end') return
     if (first === undefined || room <= 0) return
     olderRead = true
@@ -608,10 +599,6 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
         return
       }
       const page = answer.value
-      if (page.chat !== chat) {
-        missed('bad-reply')
-        return
-      }
       update((view) => {
         // A newest read that replaced the view meanwhile: this page no longer joins it.
         if (view.entries[0]?.id !== first.id) return { ...view, older: undefined }
@@ -619,12 +606,12 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
         const before = page.entries.filter((e) => !held.has(e.id))
         // A page with no entry the view lacks is the last one: no read again, and no loop at the top.
         if (before.length === 0) return { ...view, older: 'end' }
-        return { ...view, entries: [...before, ...view.entries], earlier: page.earlier, older: undefined, paged: true }
+        return { ...view, entries: [...before, ...view.entries], earlier: page.earlier, older: undefined }
       })
     } catch (thrown) {
-      // A reply that is not JSON or that the contract refuses; a stop or a closed chat ends the read quietly.
       if (signal.aborted) return
       if (!(thrown instanceof Error)) throw thrown
+      // A reply that is not JSON or that the contract refuses.
       missed('bad-reply')
     } finally {
       olderRead = false
@@ -846,7 +833,7 @@ function drawnEntryOf(entry: TranscriptEntry, kind: AgentKind, drafts: FoldedEnt
 /** The line over a view's entries: none with no older entries; the loader while the view has room; else the old line. */
 function earlierOf(view: TranscriptView) {
   if (!view.earlier) return {}
-  if (view.entries.length >= maxLoadedEntries || view.older === 'end') return { earlier: transcriptText.earlier }
+  if (view.entries.length >= maxTranscriptEntries || view.older === 'end') return { earlier: transcriptText.earlier }
   if (typeof view.older === 'object') return { earlier: view.older.problem, earlierLoad: 'missed' as const }
   return { earlier: transcriptText.older, earlierLoad: 'more' as const }
 }

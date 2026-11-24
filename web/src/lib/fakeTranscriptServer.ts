@@ -343,10 +343,7 @@ export function fakeTranscriptServer({ streams: mode = 'open', uploads: uploadOp
     const before = query.get('before')
     const end = before === null ? all.length : all.findIndex((e) => e.id === before)
     if (end < 0)
-      return errorAnswer(
-        { kind: 'chat-not-ready', state: 'entryNotFound', message: 'no entry has this ID', requestId: 'r-409' },
-        409,
-      )
+      return errorAnswer({ kind: 'chat-not-ready', state: 'entryNotFound', message: 'gone', requestId: 'r' }, 409)
     const limit = Number(query.get('limit') ?? maxTranscriptEntries)
     const entries = all.slice(Math.max(0, end - limit), end)
     const body = TranscriptResponse.parse({

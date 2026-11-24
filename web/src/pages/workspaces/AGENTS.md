@@ -648,14 +648,12 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   The route tests' list fake is `lib/fakeWorkspacesServer.ts`; it takes
   the W2 layout writes too.
 - Paging (backend #469, `liveTranscript.ts`, `blocks/EarlierLine.tsx`): a
-  chat reads its newest 100 entries (`pageEntries`). While the server has
-  older ones, "Loading earlier entries" over the entries reads the 100 before
-  the first one each time it is in view, one read at a time, and the pin keeps
-  the reader's place (`earlierSlot`). A 409 reads the newest page again; a
-  miss shows "Earlier entries not loaded — <kind>" with Retry. Once a page is
-  loaded, live entries drop the oldest only past 1500 (`maxLoadedEntries`,
-  else the 500 cap); there, or after the server's last page, the line is
-  "Earlier entries not live yet" (`WorkspacesEntryRenders.test.tsx`).
+  chat reads its newest 100 entries (`pageEntries`); "Loading earlier entries"
+  in view reads the 100 before the first, one read at a time, up to the 500
+  cap, and the pin keeps the reader's place (`earlierSlot`). A miss shows
+  "Earlier entries not loaded — <kind>" with Retry. A 409, or a reconnect's
+  page with no entry in the view, replaces the view at its end
+  (`WorkspacesEntryRenders.test.tsx`).
 - A live chat opens at its newest entry and stays there as entries come
   in, unless the reader scrolled up; back at the end, it follows again
   (`blocks/usePinnedEnd.ts`, `app/WorkspacesTranscriptScroll.test.tsx`).

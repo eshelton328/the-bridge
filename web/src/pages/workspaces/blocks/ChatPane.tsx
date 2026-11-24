@@ -509,7 +509,6 @@ export function ChatPane(props: ChatPaneProps) {
     () => (liveChat === undefined || transcripts === undefined ? undefined : transcripts.watch(liveChat)),
     [liveChat, transcripts],
   )
-  // The earlier line in view, or its Retry, reads the page before the first entry.
   const older = transcripts?.older
   const onOlder = useCallback(() => {
     if (liveChat !== undefined) older?.(liveChat)

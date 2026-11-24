@@ -4,6 +4,7 @@ import { page, userEvent } from 'vitest/browser'
 import { clearReports, getReports } from '../errors/reporter.ts'
 import { resetRetries } from '../errors/retryGuard.ts'
 import { queryClient } from '../lib/queryClient.ts'
+import { toolCall } from '../lib/fakeTranscriptServer.ts'
 import { afterRendering, setViewport } from '../lib/rendering.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { markdownShown, openWorkspaces, stubLongChats } from './longLiveChat.ts'
@@ -140,6 +141,30 @@ describe('a long live chat reads its transcript a page at a time', () => {
     expect(first.isConnected).toBe(true)
     expect(Math.abs(offset() - top)).toBeLessThanOrEqual(1)
     expect(renderedAgain(before, entryProps(chat))).toEqual([])
+    expect(getReports()).toEqual([])
+  })
+
+  it('stays at the end when a short chat at its end loads the older page by itself, on the phone', async () => {
+    const server = stubLongChats(count, true)
+    // 99 tool calls draw as one group row, so the newest page does not fill the screen and the earlier line is in view.
+    const calls = Array.from({ length: 99 }, (_, i) =>
+      toolCall(`t${String(i)}`, 'Read', { kind: 'read', title: 'Read' }),
+    )
+    const older = Array.from(
+      { length: 50 },
+      (_, i): TranscriptEntry => ({ type: 'user', id: `q${String(i)}`, text: 'go', cut: false }),
+    )
+    server.set(plan, [...older, ...calls, { type: 'assistant', id: 'end', text: 'done', cut: false }])
+    view = await openWorkspaces([390, 844])
+    await userEvent.click(page.getByText(title, { exact: true }).first())
+    await expect.poll(() => server.readQueries).toEqual([{ limit: '100' }, { limit: '100', before: 't0' }])
+    await markdownShown(51)
+    await afterRendering()
+    const scroller = page.getByRole('region', { name: title }).element().querySelector('.scroll-frame__body')
+    if (!(scroller instanceof HTMLElement)) throw new Error('no transcript')
+    expect(scroller.scrollHeight).toBeGreaterThan(scroller.clientHeight * 2)
+    expect(scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight).toBeLessThanOrEqual(1)
+    expect(page.getByRole('button', { name: 'Scroll to the newest message' }).query()).toBeNull()
     expect(getReports()).toEqual([])
   })
 })
