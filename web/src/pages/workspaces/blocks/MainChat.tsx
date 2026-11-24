@@ -131,7 +131,7 @@ export function MainChat(props: MainChatProps) {
         earlier={pane.earlier}
         empty={pane.empty}
         problem={pane.problem}
-        loading={pane.loading === undefined ? undefined : { label: pane.loading, kind: pane.head.kind }}
+        loading={pane.loading === undefined ? undefined : { label: pane.loading }}
         composer={pane.composer}
         drafts={drafts}
         onSend={onSend}
