@@ -26,6 +26,23 @@ export class FixtureError extends AppError {
   }
 }
 
+/**
+ * A window error that the browser masked: a script from another origin
+ * threw, so the event has no error object, no file and line 0, and only the
+ * text "Script error.". It is not an app bug, but a rise in its count would
+ * show an app script that loads from another origin. It sends its kind only:
+ * the page's visibility and the time since load (`clientErrorSender.ts`).
+ */
+export class OpaqueScriptError extends Error {
+  readonly miss: string
+
+  constructor(visibility: DocumentVisibilityState, sinceLoadMs: number) {
+    super('')
+    this.name = 'OpaqueScriptError'
+    this.miss = `${visibility}, ${String(Math.round(sinceLoadMs))} ms since load`
+  }
+}
+
 /** Turns any thrown value into an Error, keeping the value as the cause. */
 export function toError(thrown: unknown): Error {
   if (thrown instanceof Error) return thrown

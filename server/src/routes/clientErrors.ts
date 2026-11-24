@@ -1,5 +1,7 @@
 // /api/client-errors: POST / takes one ClientErrorReport from the web app
-// and writes it to the log at error, then answers 204 (d-115). The JSON
+// and writes it to the log at error, then answers 204 (d-115). An
+// OpaqueScriptError (a masked error of a script from another origin, not
+// an app bug) goes to the log at info. The JSON
 // content type comes first, so a cross-site form cannot post or use up the
 // quota; then the rate limit, so a crash loop costs no parse and no log
 // line; then a 32 KB limit and the contract's schema.
@@ -41,7 +43,9 @@ export function clientErrorsRoutes(log: Logger, limit: RateLimit) {
           issues: report.error.issues.map((i) => `${i.path.join('.') || 'body'}: ${i.message}`),
         })
       const [route = ''] = report.data.route.split(/[?#]/)
-      log.error('client error', { requestId: c.get('requestId'), report: { ...report.data, route } })
+      const fields = { requestId: c.get('requestId'), report: { ...report.data, route } }
+      if (report.data.name === 'OpaqueScriptError') log.info('client error', fields)
+      else log.error('client error', fields)
       return c.body(null, 204)
     },
   )

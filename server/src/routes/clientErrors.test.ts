@@ -29,6 +29,20 @@ describe('POST /api/client-errors', () => {
     expect(lines[0]).toMatchObject({ level: 50, report: { ...report, route: '/workspaces' } })
   })
 
+  it('logs an OpaqueScriptError at info, not at error', async () => {
+    const { logger, post } = setup()
+    const opaque = {
+      ...report,
+      source: 'windowError',
+      name: 'OpaqueScriptError',
+      message: 'hidden, 4012 ms since load',
+    }
+    expect((await post(JSON.stringify(opaque))).status).toBe(204)
+    const lines = logger.lines().filter((e) => e.msg === 'client error')
+    expect(lines).toHaveLength(1)
+    expect(lines[0]).toMatchObject({ level: 30, report: { name: 'OpaqueScriptError' } })
+  })
+
   it('refuses a body that is not JSON content, a report outside the contract and a body over 32 KB, and logs no report', async () => {
     const { logger, post } = setup()
     const refused = [
