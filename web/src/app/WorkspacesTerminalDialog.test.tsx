@@ -529,6 +529,18 @@ describe("a chat's terminal dialog (R69)", () => {
     expect(posted).toEqual([])
   })
 
+  it('shows a 403 from another login as not sent, with no Retry, and reports only its kind and status', async () => {
+    const { workspaces } = withChats()
+    workspaces.showDialog(plan, sample)
+    await openChat(tablet)
+    workspaces.answerDialogs(() => errorAnswer({ kind: 'forbidden', message: 'Forbidden', requestId: 'r-403' }, 403))
+    await userEvent.click(option('2 Send original'))
+    await expect.element(card().getByText('Not sent — forbidden', { exact: true })).toBeVisible()
+    expect(card().getByRole('button', { name: 'Retry', exact: true }).elements()).toHaveLength(0)
+    expect(getReports().map((r) => r.error.message)).toEqual(['A chat dialog answer missed: forbidden (403)'])
+    expect(workspaces.dialogAnswers).toHaveLength(1)
+  })
+
   it('keeps the card at the end over the phone keyboard', async () => {
     const many = Array.from({ length: 40 }, (_, i) => user(`u${String(i)}`, `Sample message ${String(i)}`))
     const { workspaces } = withChats(many)
