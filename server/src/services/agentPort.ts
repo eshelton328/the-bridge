@@ -269,6 +269,11 @@ export type AgentPort = {
     direction: SplitDirection,
     beside?: ChatId,
   ): Promise<Result<MoveOutcome, AgentPortError>>
+  /**
+   * Makes a workspace with one shell, labelled `label`, in the chat root (else herdr's own folder), with no focus
+   * change, and gives it as the list does.
+   */
+  createWorkspace(label: string): Promise<Result<WorkspaceSummary, AgentPortError>>
   /** Gives a workspace a new label, as herdr shows it. */
   renameWorkspace(workspace: WorkspaceId, label: string): Promise<Result<PaneWriteOutcome, AgentPortError>>
   /**

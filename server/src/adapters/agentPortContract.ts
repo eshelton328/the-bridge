@@ -238,6 +238,14 @@ export function describeAgentPort(name: string, setup: () => Promise<ContractSet
       expect(await port.moveChat(none, otherMachine, 'row')).toEqual({ ok: true, value: 'notFound' })
     })
 
+    it('makes a workspace of this machine with the given label', async () => {
+      const { port } = await setup()
+      const made = await port.createWorkspace('new loops')
+      if (!made.ok) throw new Error(made.error.message)
+      expect(made.value.label).toBe('new loops')
+      expect(made.value.id.startsWith(`${port.machine}/`)).toBe(true)
+    })
+
     it('renames no workspace or chat that the machine does not have, and takes no order that misses one', async () => {
       const { port } = await setup()
       const none = WorkspaceId.parse(`${port.machine}/no-such-workspace`)

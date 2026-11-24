@@ -122,6 +122,9 @@ export {
 export {
   ChatOrderRequest,
   CloseWorkspaceRequest,
+  CreateWorkspaceRequest,
+  CreateWorkspaceResponse,
+  defaultWorkspaceName,
   ForkChatRequest,
   Label,
   maxLabel,

@@ -1,5 +1,6 @@
 // /api/workspaces: the workspaces sub-app. GET / returns the workspaces and
-// their chats; GET /:workspace/layout the tabs and panes of one workspace,
+// their chats, and POST / makes one with one shell (W4, 201, its name
+// else "untitled"); GET /:workspace/layout the tabs and panes of one workspace,
 // with its ID URL-encoded; POST /:workspace/layout/ratio sets the ratio of
 // one split of one of its tabs (slice W2, 204); POST /:workspace/rename
 // gives it a new label and POST /order puts the workspaces in the owner's
@@ -10,6 +11,8 @@
 // herdr-bad-reply (d-115).
 import {
   CloseWorkspaceRequest,
+  CreateWorkspaceRequest,
+  CreateWorkspaceResponse,
   RenameWorkspaceRequest,
   SetSplitRatioRequest,
   WorkspaceId,
@@ -22,7 +25,7 @@ import { Hono } from 'hono'
 import { type AppEnv, agentErrorJson, errorJson } from '../errors.ts'
 import type { Logger } from '../logger.ts'
 import type { AgentPort, AgentPortError } from '../services/agentPort.ts'
-import { closeWorkspace, listWorkspaces, orderWorkspaces, readLayout, renameWorkspace } from '../services/workspaces.ts'
+import { closeWorkspace, createWorkspace, listWorkspaces, orderWorkspaces, readLayout, renameWorkspace } from '../services/workspaces.ts'
 import { setSplitRatio } from '../services/layoutWrites.ts'
 import { jsonBody, jsonLimit, jsonOnly, smallJson } from './jsonBody.ts'
 
@@ -53,6 +56,11 @@ export function workspacesRoutes(agents: AgentPort, log: Logger) {
       if (read.value === null)
         return errorJson(c, 'not-found', { path: c.req.path, message: 'no workspace has this ID' })
       return c.json(WorkspaceLayout.parse(read.value), 200)
+    })
+    .post('/', smallJson, jsonOnly, jsonBody(CreateWorkspaceRequest), async (c) => {
+      const made = await createWorkspace(agents, c.req.valid('json').name)
+      if (!made.ok) return failed(c, made.error)
+      return c.json(CreateWorkspaceResponse.parse({ workspace: made.value }), 201)
     })
     .post('/order', jsonLimit(maxOrderBytes), jsonOnly, jsonBody(WorkspaceOrderRequest), async (c) => {
       const done = await orderWorkspaces(agents, c.req.valid('json').workspaces)

@@ -149,6 +149,8 @@ const results = {
   'pane.close': { type: 'ok' },
   // The edit writes; the adapter reads no field of their replies.
   'workspace.rename': { type: 'ok' },
+  // A new workspace that the list does not have yet; the adapter reads only its ID.
+  'workspace.create': { type: 'workspace_created', workspace: { workspace_id: 'w19', label: 'untitled' } },
   'pane.rename': { type: 'ok' },
   'workspace.move_block': { type: 'ok' },
   'workspace.close': { type: 'ok' },
@@ -304,6 +306,7 @@ const resumedTwice = {
   'agent.wait': results['agent.wait'],
   'pane.focus': results['pane.focus'],
   'pane.move': results['pane.move'],
+  'workspace.create': results['workspace.create'],
   'pane.read': paneRead('w17:p2', claudeScreen('')),
   'pane.list': {
     type: 'pane_list',
@@ -2440,6 +2443,7 @@ describe('herdr agents: a new chat (slice W3)', () => {
       'pane.list': withCwd({ 'w17:p1': repo, 'w17:p2': repo, 'w18:p1': join(root, 'link'), 'w18:p2': outside }),
       'pane.split': { type: 'pane_info', pane: newPane },
       'tab.create': { type: 'tab_created', tab: { tab_id: 'w17:t2' }, root_pane: newPane },
+      'workspace.create': { type: 'workspace_created', workspace: { workspace_id: 'w18' }, root_pane: newPane },
       'agent.start': { type: 'agent_started', agent: { pane_id: 'w17:p9', launch_pending: true } },
       'agent.wait': waited('idle'),
     })
@@ -2647,6 +2651,17 @@ describe('herdr agents: a new chat (slice W3)', () => {
     expect(
       sent('agent.start').map((s) => (typeof s === 'object' && s !== null && 'args' in s ? s.args : null)),
     ).toEqual([['-n', 'bridge-coord-fork-2', '--resume', 'session-a', '--fork-session']])
+  })
+
+  it('makes a workspace in the chat root with no focus, and gives it as the list does (W4)', async () => {
+    const { socket, adapter, sent } = await setup()
+    const made = await adapter.createWorkspace('loops').finally(() => socket.close())
+    expect(sent('workspace.create')).toEqual([{ label: 'loops', focus: false, cwd: root }])
+    expect(made.ok ? made.value.id : undefined).toBe(`${machine}/w18`)
+    expect(made.ok ? made.value.chats.length : 0).toBeGreaterThan(0)
+    const bare = await setup({ chatRoot: undefined })
+    await bare.adapter.createWorkspace('loops').finally(() => bare.socket.close())
+    expect(bare.sent('workspace.create')).toEqual([{ label: 'loops', focus: false }])
   })
 })
 

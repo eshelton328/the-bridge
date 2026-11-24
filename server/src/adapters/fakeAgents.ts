@@ -296,6 +296,8 @@ export function createFakeAgents(
   /** The workspace that holds a chat; the fake has one tab in each workspace. */
   const workspaceOf = (chat: ChatId) => (data ?? []).find((w) => w.chats.some((c) => c.id === chat))
   /** The focused chat of each workspace whose focus a caller changed, and the workspaces that are zoomed. */
+  /** How many workspaces `createWorkspace` made, for each new one's ID. */
+  let made = 0
   const focus = new Map<WorkspaceId, ChatId>()
   const zooms = new Set<WorkspaceId>()
   const serverHeld = new Set<WorkspaceId>()
@@ -583,6 +585,32 @@ export function createFakeAgents(
         )
       tell({ type: 'layoutChanged', workspace: workspace.id })
       return Promise.resolve(ok('done'))
+    },
+    createWorkspace(label) {
+      if ('error' in answer) return Promise.resolve(err(answer.error))
+      made += 1
+      const local = `new-${String(made)}`
+      const workspace: WorkspaceSummary = {
+        id: WorkspaceId.parse(`${machine}/${local}`),
+        label,
+        chats: [
+          {
+            id: ChatId.parse(`${machine}/${local}-shell`),
+            kind: 'shell',
+            title: 'zsh',
+            model: 'zsh',
+            modelId: null,
+            effort: null,
+            contextUsed: null,
+            status: 'idle',
+            parent: null,
+            pane: PaneId.parse(`${machine}/pane-${local}`),
+          },
+        ],
+      }
+      data?.push(workspace)
+      tell({ type: 'workspacesChanged' })
+      return Promise.resolve(ok(structuredClone(workspace)))
     },
     renameWorkspace(workspace, label) {
       if ('error' in answer) return Promise.resolve(err(answer.error))
