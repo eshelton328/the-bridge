@@ -103,6 +103,8 @@ afterEach(async () => {
 const devices = [
   { name: 'the phone', size: [390, 844] },
   { name: 'the tablet', size: [744, 1133] },
+  // The owner's iPad in full screen (R58 second sample, IMG_0041): 756 pt wide.
+  { name: "the owner's iPad", size: [756, 1158] },
 ] as const
 
 describe('the Workspaces skeleton (R58)', () => {
