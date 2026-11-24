@@ -1,8 +1,17 @@
 import assert from 'node:assert/strict'
-import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import {
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  realpathSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs'
 import { createServer, request, type Server } from 'node:http'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import { after, test } from 'node:test'
 import {
   createEnabledHandler,
@@ -359,12 +368,207 @@ void test('with no traces folder the endpoint answers 500 and says how to set on
   assert.match(await res.text(), /KEYBOARD_TRACE_DIR/)
 })
 
-void test('the traces folder is KEYBOARD_TRACE_DIR, else under the first folder above with engine/', () => {
-  assert.equal(findTraceDir({ KEYBOARD_TRACE_DIR: '/x/traces' }, '/'), '/x/traces')
-  const root = tempDir()
+/** An ncc-1701 root with `engine/`, the served clone's `web/` and a worktree's `web/`, as real paths. */
+function fakeNcc() {
+  const root = realpathSync(tempDir())
+  const served = join(root, 'projects', 'ncc-1701', 'the-bridge', 'web')
+  const worktree = join(root, 'projects', 'ncc-1701', 'the-bridge-worktrees', 'probe', 'web')
   mkdirSync(join(root, 'engine'))
-  const repo = join(root, 'projects', 'p', 'repo')
-  mkdirSync(repo, { recursive: true })
-  assert.equal(findTraceDir({}, repo), join(root, 'engine', '_local', 'phone-review', 'traces'))
+  mkdirSync(served, { recursive: true })
+  mkdirSync(worktree, { recursive: true })
+  return { root, served, worktree, brain: join(root, 'engine', '_local', 'phone-review', 'traces') }
+}
+
+void test('the traces folder is KEYBOARD_TRACE_DIR, else the brain folder only for the served clone', () => {
+  const ncc = fakeNcc()
+  assert.equal(findTraceDir({ KEYBOARD_TRACE_DIR: '/x/traces' }, ncc.worktree), '/x/traces')
+  assert.equal(findTraceDir({}, ncc.served), ncc.brain)
+  // Compared as real paths: a link to the served root is the served root.
+  const link = join(tempDir(), 'served-link')
+  symlinkSync(ncc.served, link)
+  assert.equal(findTraceDir({}, link), ncc.brain)
+  // A worktree, the repository root of the served clone, and a folder with no engine/ above it get none.
+  assert.equal(findTraceDir({}, ncc.worktree), undefined)
+  assert.equal(findTraceDir({}, dirname(ncc.served)), undefined)
   assert.equal(findTraceDir({}, tempDir()), undefined)
+})
+
+/** The plugin on a dev server whose root is `root`, with `env` set while it runs; serves its two routes. */
+async function servePlugin(root: string, env: Record<string, string | undefined> = {}) {
+  const routes: [string, TraceHandler][] = []
+  const plugin = keyboardTracePlugin({ now: () => NOW, build: () => ({ commit: null, libraryVersion: null }) })
+  plugin.configResolved({ root })
+  plugin.configureServer({ middlewares: { use: (path, handler) => routes.push([path, handler]) } })
+  const url = await serve((req, res, next) => {
+    const path = req.url ?? '/'
+    const route = routes.find(([prefix]) => path === prefix || path.startsWith(`${prefix}/`))
+    if (route === undefined) {
+      next(new Error(`no route for ${path}`))
+      return
+    }
+    req.url = path.slice(route[0].length) || '/'
+    route[1](req, res, next)
+  })
+  const withEnv = async <T>(run: () => Promise<T>): Promise<T> => {
+    const saved = Object.fromEntries(Object.keys(env).map((key) => [key, process.env[key]]))
+    const set = (values: Record<string, string | undefined>) => {
+      for (const [key, value] of Object.entries(values)) {
+        if (value === undefined) Reflect.deleteProperty(process.env, key)
+        else process.env[key] = value
+      }
+    }
+    set(env)
+    try {
+      return await run()
+    } finally {
+      set(saved)
+    }
+  }
+  return {
+    post: (body: string) => withEnv(() => post(`${url}${KEYBOARD_TRACE_PATH}`, body)),
+    enabled: () =>
+      withEnv(async () => {
+        const body: unknown = await (await fetch(`${url}${KEYBOARD_TRACE_ENABLED_PATH}`)).json()
+        return body
+      }),
+  }
+}
+
+const TRACE_FILE = '2026-11-19T09-58-12-345Z.json'
+
+void test('a dev server on the served clone writes to the brain traces folder', async () => {
+  const ncc = fakeNcc()
+  mkdirSync(ncc.brain, { recursive: true })
+  writeFileSync(join(ncc.brain, 'ENABLED'), '')
+  const plugin = await servePlugin(ncc.served, { KEYBOARD_TRACE_DIR: undefined })
+  assert.deepEqual(await plugin.enabled(), { enabled: true })
+  assert.equal((await plugin.post(trace())).status, 204)
+  assert.deepEqual(readdirSync(ncc.brain).sort(), [TRACE_FILE, 'ENABLED'])
+})
+
+void test('a dev server in a worktree with no KEYBOARD_TRACE_DIR records nothing, and its switch is off', async () => {
+  const ncc = fakeNcc()
+  mkdirSync(ncc.brain, { recursive: true })
+  writeFileSync(join(ncc.brain, 'ENABLED'), '')
+  const plugin = await servePlugin(ncc.worktree, { KEYBOARD_TRACE_DIR: undefined })
+  assert.deepEqual(await plugin.enabled(), { enabled: false })
+  assert.equal((await plugin.post(trace())).status, 500)
+  assert.deepEqual(readdirSync(ncc.brain), ['ENABLED'])
+})
+
+void test('a dev server in a worktree with KEYBOARD_TRACE_DIR writes there, never to the brain', async () => {
+  const ncc = fakeNcc()
+  mkdirSync(ncc.brain, { recursive: true })
+  const own = tempDir()
+  const plugin = await servePlugin(ncc.worktree, { KEYBOARD_TRACE_DIR: own })
+  assert.deepEqual(await plugin.enabled(), { enabled: false })
+  writeFileSync(join(own, 'ENABLED'), '')
+  assert.deepEqual(await plugin.enabled(), { enabled: true })
+  assert.equal((await plugin.post(trace())).status, 204)
+  assert.deepEqual(readdirSync(own).sort(), [TRACE_FILE, 'ENABLED'])
+  assert.deepEqual(readdirSync(ncc.brain), [])
+})
+
+/**
+ * Serves `handler` and records each error it passes to `next`. `replyFails` makes the reply throw it, as a reply to a
+ * gone socket can; `settled()` waits for the last request to close and the handler to settle.
+ */
+async function serveRecording(handler: TraceHandler, replyFails?: Error) {
+  const errors: unknown[] = []
+  const closes: Promise<void>[] = []
+  const server = createServer((req, res) => {
+    closes.push(new Promise((done) => req.on('close', done)))
+    if (replyFails !== undefined) {
+      res.end = () => {
+        throw replyFails
+      }
+      setTimeout(() => res.destroy(), 20)
+    }
+    handler(req, res, (error) => {
+      errors.push(error)
+      if (replyFails !== undefined) return
+      res.statusCode = 500
+      res.end(String(error))
+    })
+  })
+  servers.push(server)
+  await new Promise<void>((done) => server.listen(0, '127.0.0.1', done))
+  const address = server.address()
+  if (address === null || typeof address === 'string') throw new Error('the test server has no port')
+  return {
+    port: address.port,
+    errors,
+    async settled() {
+      await closes.at(-1)
+      await new Promise((done) => setTimeout(done, 50))
+    },
+  }
+}
+
+/** POSTs the first half of `body` with the whole length in its header, then drops the socket, as a suspended app does. */
+async function abortedPost(port: number, body: string): Promise<void> {
+  await new Promise<void>((done) => {
+    const req = request({
+      host: '127.0.0.1',
+      port,
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'content-length': String(Buffer.byteLength(body)) },
+    })
+    req.on('error', () => {
+      done()
+    })
+    req.on('close', () => {
+      done()
+    })
+    req.write(body.slice(0, body.length / 2), () => setTimeout(() => req.destroy(), 20))
+  })
+}
+
+void test('a POST the client drops mid-body ends quietly: no error to the dev server, no trace written', async () => {
+  const dir = tempDir()
+  const server = await serveRecording(createTraceHandler({ traceDir: () => dir, now: () => NOW }))
+  const url = `http://127.0.0.1:${String(server.port)}`
+  const first = trace()
+  assert.equal((await post(url, first)).status, 204)
+  await server.settled()
+  await abortedPost(server.port, trace({ samples: [{ t: 1 }, { t: 9, pad: 'x'.repeat(64 * 1024) }] }))
+  await server.settled()
+  assert.deepEqual(server.errors, [])
+  assert.deepEqual(readdirSync(dir), ['2026-11-19T09-58-12-345Z.json'])
+  assert.equal(readFileSync(join(dir, '2026-11-19T09-58-12-345Z.json'), 'utf8'), first)
+  // The endpoint still takes the next whole trace.
+  const later = trace({ samples: [{ t: 1 }, { t: 10 }] })
+  assert.equal((await post(url, later)).status, 204)
+  assert.equal(readFileSync(join(dir, '2026-11-19T09-58-12-345Z.json'), 'utf8'), later)
+})
+
+/** A switch GET whose reply throws `error`, as when the socket is gone; returns what reached `next`. */
+async function switchReplyFails(error: Error): Promise<unknown[]> {
+  const dir = tempDir()
+  const server = await serveRecording(createEnabledHandler({ traceDir: () => dir }), error)
+  await fetch(`http://127.0.0.1:${String(server.port)}`).catch(() => undefined)
+  await server.settled()
+  return server.errors
+}
+
+void test('a switch GET the client drops ends quietly, with no error to the dev server', async () => {
+  assert.deepEqual(await switchReplyFails(Object.assign(new Error('aborted'), { code: 'ECONNRESET' })), [])
+  assert.deepEqual(await switchReplyFails(new Error('aborted')), [])
+  assert.deepEqual(await switchReplyFails(Object.assign(new Error('socket hang up'), { code: 'ECONNRESET' })), [])
+})
+
+void test('an error that is not a client abort still goes to the dev server, from either handler', async () => {
+  const broken = new Error('disk gone')
+  assert.deepEqual(await switchReplyFails(broken), [broken])
+  const server = await serveRecording(
+    createTraceHandler({
+      traceDir: () => {
+        throw broken
+      },
+      now: () => NOW,
+    }),
+  )
+  const res = await post(`http://127.0.0.1:${String(server.port)}`, trace())
+  assert.equal(res.status, 500)
+  assert.deepEqual(server.errors, [broken])
 })
