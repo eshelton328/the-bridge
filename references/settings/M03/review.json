@@ -1,8 +1,8 @@
 {
   "frameId": "M03",
-  "inputs": "fd160fcf7fd64e23f27bb2cd9c43bda11ffefcb4a2f737b72248c8d725d94b6b",
+  "inputs": "3d02425463f9f8d81d96f02bf3dfa90ce1a3f9a96bb015fe67b02f9df6ed73f6",
   "library": "1.0.0-beta.111",
-  "recordSha256": "05a943775d91905c65f62b7bca6c997fb7051f8aed60b1437e8e446aa4d3da83",
+  "recordSha256": "1d969d6cc4b27ce680caa6416b0e1eaa62627efa4de80abb0f74242955a896ea",
   "record": {
     "verdict": "match",
     "viewport": "phone 390 x 844, Dark, the More drawer open",
@@ -12,7 +12,7 @@
       "render": "reports/fidelity/settings/M03.sideBySide.png",
       "reference_side": "left"
     },
-    "summary": "Apart from the accepted deviations, the render matches the reference: the More drawer has the same title, rows, Settings highlight and LATER group. Because the Notifications row is gone, the drawer is shorter and its top edge sits about 63 px lower, so the disabled Text size control shows above it.",
+    "summary": "The render matches the reference apart from the accepted deviations: the drawer has no Notifications row, so it is about 64 px shorter and starts lower, which shows the disabled Text size control behind it.",
     "findings": [],
     "accepted_deviations": [
       {
@@ -20,21 +20,21 @@
         "as_given": "Text size: the control is disabled (muted labels) and its line under it says \"Coming soon\" in place of \"Scales the whole app: Small 87.5 %, Default 100 %, Large 112.5 %.\" (step D adds text size later). On a narrow screen the one-line note makes every section below it sit about one text line higher.",
         "status": "as-described",
         "finding": null,
-        "note": "Text size with muted Small / Default / Large labels shows above the drawer at about y 345-400. The drawer covers the line under it."
+        "note": "The Text size row shows behind the backdrop above the drawer, with muted Small / Default / Large labels. The drawer covers the line under it."
       },
       {
         "id": "A2",
         "as_given": "A new \"NOTIFICATIONS\" section with one \"Notifications\" switch (off) sits between the Navigation section and the New chat defaults section. So New chat defaults sits lower, or below the bottom edge.",
         "status": "not-seen",
         "finding": null,
-        "note": "The drawer covers the page area where this section would be."
+        "note": "The drawer covers this part of the page."
       },
       {
         "id": "A3",
         "as_given": "The Notifications switch moved to that section: the desktop rail no longer has the \"Notifications / Blocked in Settings\" switch at its bottom, and the More drawer no longer has the \"Notifications / Blocked in Settings\" row at its end. So the drawer is shorter and its top edge sits lower.",
         "status": "as-described",
         "finding": null,
-        "note": "The drawer ends after Workflows and has no Notifications row. Its top edge moved from about y 344 to about y 407."
+        "note": "The drawer ends after Workflows. Its top edge is at about y 407 in the render and about y 343 in the reference, and all drawer rows move down by the same 64 px."
       },
       {
         "id": "A4",
@@ -55,12 +55,12 @@
         "as_given": "Appearance has a new last row, \"Chat width\", under Text size: a three-way control \"Full\", \"Wide\", \"Narrow\" with Full selected, and a line under it. On the desktop and the tablet the control is enabled and the line says \"The messages and the message box of a Workspaces chat, centred.\"; on the phone the control is disabled (muted labels) and the line says \"Phone: always full\". So the Appearance card is taller, and every section below it sits lower (about one row) or below the bottom edge.",
         "status": "not-seen",
         "finding": null,
-        "note": "Chat width would be under Text size, where the drawer covers the page."
+        "note": "The drawer covers the part of the page below Text size."
       }
     ],
     "limits": [
-      "The open drawer covers most of the page behind it, so I could not check the Text size note, Chat width, Navigation, Notifications or New chat defaults sections.",
-      "I checked the side-by-side image (804 x 872, about 1x per half) by eye and did not open the pixel diff, so differences under about 2 px may be missed."
+      "The page behind the drawer is visible only above the drawer's top edge, so I could not check the Settings content that the drawer covers.",
+      "The background page is dimmed by the backdrop, so small colour differences there could not be checked."
     ]
   }
 }
