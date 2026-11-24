@@ -141,6 +141,9 @@ describe('New workspace on the live page (W4)', () => {
       const server = withServer()
       await tapWorkspaces(viewport)
       await openNewWorkspace(size)
+      // A person presses Enter once the caret shows in the field: the dialog's focus moves there after it opens, and an
+      // Enter before that goes to the + button and sends nothing (the-bridge #496 CI, the dialog still open).
+      await expect.element(nameField()).toHaveFocus()
       await userEvent.keyboard('{Enter}')
       await expect.element(dialog()).not.toBeInTheDocument()
       expect(server.creates).toEqual([{}])
