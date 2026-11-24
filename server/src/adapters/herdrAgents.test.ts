@@ -2890,6 +2890,18 @@ describe('herdr agents: a dialog on a chat that waits (R69)', () => {
     expect(keys().length).toBe(sent)
   })
 
+  it('answers a dialog once when two answers to it come at the same time or one after the other', async () => {
+    socket.set('pane.read', paneRead('w17:p1', questionScreen(1)))
+    const ours = port()
+    const read = await ours.readDialog(chat)
+    const id = read.ok && read.value !== null && typeof read.value === 'object' ? read.value.id : ''
+    const sent = keys().length
+    const both = await Promise.all([ours.answerDialog(chat, { id, n: 2 }), ours.answerDialog(chat, { id, n: 3 })])
+    expect(both.map((r) => (r.ok ? r.value : r.error.reason)).sort()).toEqual(['dialogChanged', 'sent'])
+    expect(await ours.answerDialog(chat, { id, n: 2 })).toEqual({ ok: true, value: 'dialogChanged' })
+    expect(keys().length).toBe(sent + 1)
+  })
+
   it('reads no screen of a chat that does not wait, and none of a Codex chat', async () => {
     socket.set('agent.list', {
       ...results['agent.list'],
