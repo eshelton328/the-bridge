@@ -239,10 +239,13 @@ export function usePinnedEnd(
       toEnd(scroller)
       endTop = scroller.scrollTop
     }
-    // The entries in view while the reader is away from the end, each with how far below the view's top it starts.
+    // The entries in view while the reader is away from the end, each with how far below the view's top it starts, and
+    // the scroll position then.
     let place: { readonly entry: Element; readonly top: number }[] = []
+    let placeScroll = 0
     const notePlace = () => {
       place = []
+      placeScroll = scroller.scrollTop
       if (pinnedRef.current) return
       const top = scroller.getBoundingClientRect().top
       const bottom = top + scroller.clientHeight
@@ -253,13 +256,17 @@ export function usePinnedEnd(
         if (box.bottom > top) place.push({ entry, top: box.top - top })
       }
     }
-    // Moves the scroll so the first noted entry still in the transcript starts where it did.
+    // Moves the scroll by how far the layout above moved the first noted entry still in the transcript. The scroll's
+    // own movement since the note is the reader's (its scroll event may not have come yet), so it is not undone.
     const keepPlace = () => {
       if (pinnedRef.current) return
       const held = place.find(({ entry }) => entry.parentElement === scroller)
       if (held === undefined) return
-      const moved = held.entry.getBoundingClientRect().top - scroller.getBoundingClientRect().top - held.top
-      if (Math.abs(moved) >= 1) scroller.scrollTop += moved
+      const shown = held.entry.getBoundingClientRect().top - scroller.getBoundingClientRect().top
+      const moved = shown - held.top + (scroller.scrollTop - placeScroll)
+      if (Math.abs(moved) < 1) return
+      scroller.scrollTop += moved
+      placeScroll += moved
     }
     const onScroll = () => {
       if (atEnd(scroller)) {

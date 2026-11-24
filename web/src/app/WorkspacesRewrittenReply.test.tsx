@@ -307,4 +307,31 @@ describe('a reply that a Stop hook had written again (R62)', () => {
       expect(fromEnd(scroller)).toBeGreaterThan(2)
       expect(getReports()).toEqual([])
     })
+
+  it("keeps the reader's own scroll when an entry changes before its scroll event, on the phone", async () => {
+    const server = withPlan(long)
+    const chat = await openChat([390, 844])
+    const scroller = scrollerIn(chat)
+    await expect.element(page.getByText('question 29', { exact: true })).toBeInTheDocument()
+    await expect.poll(() => fromEnd(scroller)).toBeLessThanOrEqual(2)
+    await expect.poll(() => server.openStreams()).toEqual([plan])
+    // The reader scrolls up to the middle of the transcript.
+    const scrolled = new Promise((resolve) => {
+      scroller.addEventListener('scroll', resolve, { once: true })
+    })
+    scroller.dispatchEvent(new WheelEvent('wheel', { deltaY: -400, bubbles: true }))
+    scroller.scrollTop = scroller.scrollHeight / 2
+    await scrolled
+    await afterRendering()
+    // He scrolls 120 further up, and an entry changes (a streamed word) before that scroll's event comes.
+    scroller.dispatchEvent(new WheelEvent('wheel', { deltaY: -120, bubbles: true }))
+    const goal = scroller.scrollTop - 120
+    scroller.scrollTop = goal
+    const last = scroller.lastElementChild?.previousElementSibling
+    if (last === null || last === undefined) throw new Error('no entry')
+    last.append(document.createTextNode(''))
+    await afterRendering()
+    expect(Math.abs(scroller.scrollTop - goal)).toBeLessThanOrEqual(1)
+    expect(getReports()).toEqual([])
+  })
 })
