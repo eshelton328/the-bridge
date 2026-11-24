@@ -230,7 +230,12 @@ export function sealedReviewGate(root: string, page: string, frameId: string): R
   try {
     data = JSON.parse(readFileSync(file, 'utf8'))
   } catch (error) {
-    return { ok: false, problem: 'seal', blocking: [], detail: `invalid: ${error instanceof Error ? error.message : String(error)}` }
+    return {
+      ok: false,
+      problem: 'seal',
+      blocking: [],
+      detail: `invalid: ${error instanceof Error ? error.message : String(error)}`,
+    }
   }
   const seal = checkSeal(data, frameId, inputsDigest(inputs.files, inputs.library))
   return seal.ok
