@@ -380,7 +380,11 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
     noteOutage(chat, miss)
   }
   // A changed entry older than those the view holds stays out (its page shows it); `added` names the new ones.
+  // The changes that come while an older page is read or waits to go in: that page takes them, as the view does not
+  // hold its entries yet (review of #494).
+  let olderChanges: Map<string, TranscriptEntry> | undefined
   const apply = (entries: readonly TranscriptEntry[], added?: readonly string[]) => {
+    for (const e of entries) olderChanges?.set(e.id, e)
     update((view) => {
       const held = new Set(view.entries.map((e) => e.id))
       const kept = added === undefined ? entries : entries.filter((e) => held.has(e.id) || added.includes(e.id))
@@ -574,6 +578,7 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
     if (closed() || olderRead || shown?.loaded !== true || !shown.earlier || shown.older === 'end') return
     if (first === undefined || room <= 0) return
     olderRead = true
+    olderChanges = new Map()
     const signal = abort.signal
     const missed = (kind: string) => {
       update((view) => ({ ...view, older: { problem: `${transcriptText.olderMissed} — ${kind}` } }))
@@ -595,7 +600,7 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
         // A newest read that replaced the view meanwhile: this page no longer joins it.
         if (view.entries[0]?.id !== first.id) return { ...view, older: undefined }
         const held = new Set(view.entries.map((e) => e.id))
-        const before = page.entries.filter((e) => !held.has(e.id))
+        const before = page.entries.filter((e) => !held.has(e.id)).map((e) => olderChanges?.get(e.id) ?? e)
         // A page with no entry the view lacks is the last one: no read again, and no loop at the top.
         if (before.length === 0) return { ...view, older: 'end' }
         return { ...view, entries: [...before, ...view.entries], earlier: page.earlier, older: undefined }
@@ -607,6 +612,7 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
       missed('bad-reply')
     } finally {
       olderRead = false
+      olderChanges = undefined
     }
   }
 

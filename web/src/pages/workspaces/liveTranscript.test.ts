@@ -700,6 +700,22 @@ describe('paging', () => {
   const loaded = (count: number) => expect.poll(() => view()?.entries.length).toBe(count)
   const pane = () => chatPane(withTranscripts(liveData(), transcriptViews()))
 
+  it('puts a change that came while the older page waited for the scroll to rest into that page', async () => {
+    const server = fakeTranscriptServer()
+    server.set(chat, many(150))
+    watch(server)
+    await loaded(100)
+    let rest: (() => void) | undefined
+    loadEarlier(chat, () => new Promise<void>((resolve) => (rest = resolve)))
+    await expect.poll(() => rest).toBeDefined()
+    server.push(chat, [user('e10', 'done')])
+    await settle()
+    expect(view()?.entries).toHaveLength(100)
+    rest?.()
+    await loaded(150)
+    expect(view()?.entries[10]).toEqual(user('e10', 'done'))
+  })
+
   it('reads the newest page only, then each page before the first entry, until the first one', async () => {
     const server = fakeTranscriptServer()
     server.set(chat, many(250))
