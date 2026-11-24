@@ -14,23 +14,37 @@
 // size of its MarkdownView. The caller wraps it in a BlockBoundary. Props
 // only.
 import type { ReactNode } from 'react'
-import Markdown, { type Components } from 'react-markdown'
+import Markdown, { type Components, type ExtraProps } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { type MarkdownSize, markdownTableParts } from './markdownTableParts.ts'
 
 const remarkPlugins = [remarkGfm]
 
-/** The URL a link opens, or undefined when it is not http, https or mailto; a GFM `www.` autolink goes to https. */
-function linkUrl(href: string | undefined, children: ReactNode): string | undefined {
+/** The length of the Markdown source a link came from, or undefined when the parser gave no position. */
+const sourceLength = (node: ExtraProps['node']): number | undefined => {
+  const start = node?.position?.start.offset
+  const end = node?.position?.end.offset
+  return start === undefined || end === undefined ? undefined : end - start
+}
+
+/**
+ * The URL a link opens, or undefined when it is not http, https or mailto. A bare `www.` autolink goes to https: its
+ * source is its text alone, where a Markdown link `[www.…](http://www.…)` keeps the URL its author wrote.
+ */
+function linkUrl(href: string | undefined, children: ReactNode, node: ExtraProps['node']): string | undefined {
   if (href === undefined) return undefined
-  const www = typeof children === 'string' && children.startsWith('www.') && href === `http://${children}`
+  const www =
+    typeof children === 'string' &&
+    children.startsWith('www.') &&
+    href === `http://${children}` &&
+    sourceLength(node) === children.length
   const url = www ? `https://${children}` : href
   return /^(https?:\/\/|mailto:)/i.test(url) ? url : undefined
 }
 
 const inline: Components = {
-  a: ({ href, children }) => {
-    const url = linkUrl(href, children)
+  a: ({ href, children, node }) => {
+    const url = linkUrl(href, children, node)
     return url === undefined ? (
       children
     ) : (

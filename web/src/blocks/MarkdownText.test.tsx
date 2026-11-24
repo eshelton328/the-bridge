@@ -47,3 +47,18 @@ describe('a link', () => {
     await expect.element(page.getByText(/the plan/)).toBeVisible()
   })
 })
+
+describe('an explicit link whose text is its www. address', () => {
+  // Codex review of #500: only a bare www. autolink goes to https; a Markdown link keeps the URL its author wrote.
+  it('keeps its http URL, while the same address written bare goes to https', async () => {
+    view = await testRender(
+      <MarkdownText text={'[www.example.com](http://www.example.com) and also www.example.org bare'} />,
+    )
+    await expect
+      .element(page.getByRole('link', { name: 'www.example.com' }))
+      .toHaveAttribute('href', 'http://www.example.com')
+    await expect
+      .element(page.getByRole('link', { name: 'www.example.org' }))
+      .toHaveAttribute('href', 'https://www.example.org')
+  })
+})
