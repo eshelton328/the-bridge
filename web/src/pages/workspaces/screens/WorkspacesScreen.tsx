@@ -40,6 +40,7 @@
 // order from the phone's and tablet's edit mode; their line draws under the
 // live notice in every layout, with Dismiss.
 import type { ChatCommandRequest } from '@bridge/contract'
+import { LoadingShell } from '../../../blocks/LoadingShell.tsx'
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
 import { type ReactNode, useLayoutEffect, useRef, useState } from 'react'
 import { reportShellDiagnostic } from '../../../errors/shellDiagnostic.ts'
@@ -130,6 +131,11 @@ export type WorkspacesScreenProps = {
   newChat?: NewChatStarter | undefined
   /** The live list's edits (R41, R42): renames and the workspaces' order; none on a fixture. */
   edits?: WorkspaceEdits | undefined
+  /**
+   * The page waits for its first workspace list (R58): the list draws its real header with its controls off, and
+   * workspaces that load in place of the groups. Only the phone's and the tablet's list draw it.
+   */
+  loading?: boolean | undefined
 }
 
 export function WorkspacesScreen({
@@ -155,6 +161,7 @@ export function WorkspacesScreen({
   layoutWrites,
   newChat,
   edits,
+  loading,
 }: WorkspacesScreenProps) {
   const [changed, setChanged] = useState<{ of: WorkspacesUi; ui: WorkspacesUi }>({ of: stateUi, ui: stateUi })
   const ui = changed.of === stateUi ? changed.ui : stateUi
@@ -311,6 +318,7 @@ export function WorkspacesScreen({
             layoutWrites={layoutWrites}
             newChat={newChat}
             edits={edits}
+            loading={loading}
           />
           {phoneDeviceOf(layout, data) === undefined || data.phone === undefined ? (
             <DesktopNewChat data={data} ui={ui} change={change} newChat={newChat} />
@@ -389,6 +397,7 @@ function WorkspacesLayout({
   layoutWrites,
   newChat,
   edits,
+  loading,
 }: WorkspacesLayoutProps) {
   // The names the owner gave chats (D21) take the place of their titles: in the sidebar, in the header of the chat
   // alone and in the panes of the workbench, with or without the sidebar.
@@ -439,6 +448,19 @@ function WorkspacesLayout({
         layoutWrites={layoutWrites}
         newChat={newChat}
         edits={edits}
+        loading={loading}
+      />
+    )
+  // The desktop waits for its first list with the shell and lines (the sidebar and chat skeleton come next, R58).
+  if (loading === true)
+    return (
+      <LoadingShell
+        selected="workspaces"
+        label="Loading Workspaces"
+        navPages={navPages}
+        settings={settingsEntry}
+        viewport="desktop"
+        onNavigate={onNavigate}
       />
     )
   // The shown workspace (R6): a tab the owner picked shows its own panes, so the focused chat, the chats the sidebar can

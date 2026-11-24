@@ -72,7 +72,7 @@ export function LibraryHeader({
   return (
     <Stack gap="10">
       {header}
-      <div className={ownWidth} data-fit="found">
+      <div className={ownWidth} data-fit="found" data-fit-width="content">
         <FoundStatus text={found} />
       </div>
     </Stack>

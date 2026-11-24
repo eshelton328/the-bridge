@@ -87,7 +87,7 @@ export function ArtifactsLibrary({
           error={addLinkError}
         />
       )}
-      <div className={chips} data-figma="filter · chips" data-fit="chips">
+      <div className={chips} data-figma="filter · chips" data-fit="chips" data-fit-width="content">
         <FilterChips
           label="Filter by source"
           items={loading ? data.chips.map((chip) => ({ ...chip, count: undefined })) : data.chips}

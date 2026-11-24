@@ -37,6 +37,7 @@ import { PhoneAddMenu } from './PhoneAddMenu.tsx'
 import { PhoneEditGroup } from './PhoneEditGroup.tsx'
 import { ReorderHandle } from './ReorderHandle.tsx'
 import { SidebarGroup } from './SidebarGroup.tsx'
+import { WorkspaceGroupSkeleton } from './WorkspaceGroupSkeleton.tsx'
 import { useWorkspaceReorder } from './useWorkspaceReorder.ts'
 
 // The list fills the screen, running under the tab bar that lies over its foot (M1 105:2327, 38 to 767).
@@ -76,6 +77,8 @@ export type PhoneWorkspaceListProps = {
   notice?: ReactNode
   /** The live list's edits: edit mode renames and orders the workspaces through them, and draws nothing else. */
   edits?: WorkspaceEdits | undefined
+  /** The page waits for its first list (R58): the header with Edit and + off, and workspaces that load. */
+  loading?: boolean | undefined
 }
 
 /** A chat row's ⋯ (M1 146:3), on the row and on its lifted copy (M9 146:268). */
@@ -115,6 +118,7 @@ export function PhoneWorkspaceList({
   heldRow,
   notice,
   edits,
+  loading = false,
 }: PhoneWorkspaceListProps) {
   const collapsed = ui.collapsed ?? []
   const editing = ui.editing === true && text.done !== undefined
@@ -164,7 +168,7 @@ export function PhoneWorkspaceList({
     onUiChange?.({ collapsed: open ? collapsed.filter((c) => c !== id) : [...collapsed, id] })
   return (
     <Container size={device} gap="4" className={fill} data-figma={layers?.phoneList}>
-      <div className={device === 'tablet' ? tabletHeader : header} data-figma={layers?.phoneHeader}>
+      <div className={device === 'tablet' ? tabletHeader : header} data-figma={layers?.phoneHeader} data-fit="header">
         <PageHeader size="phone" title={text.title}>
           {editing ? (
             // M2 105:2508: Done ends edit mode and closes the fields; a field with the focus saves as it blurs.
@@ -179,6 +183,7 @@ export function PhoneWorkspaceList({
           ) : text.edit === undefined ? null : (
             <Button
               size="sm"
+              disabled={loading}
               data-figma={layers?.phoneEdit}
               onClick={text.done === undefined ? undefined : () => onUiChange?.({ editing: true })}
             >
@@ -189,7 +194,7 @@ export function PhoneWorkspaceList({
           <PhoneAddMenu
             label={text.add}
             text={text.addMenu}
-            disabled={editing}
+            disabled={editing || loading}
             open={ui.addMenuOpen === true}
             onOpenChange={(addMenuOpen) => onUiChange?.({ addMenuOpen })}
             onSelect={onAdd}
@@ -198,6 +203,7 @@ export function PhoneWorkspaceList({
         </PageHeader>
       </div>
       {notice}
+      {loading ? <WorkspaceGroupSkeleton /> : null}
       {shown.map((w) =>
         editing ? (
           <PhoneEditGroup
