@@ -422,7 +422,7 @@ describe('/clear and the pane follow (W5)', () => {
     await expect.poll(() => chats.commands).toEqual([{ chat: plan, request: { command: 'clear' } }])
     // The list now names the chat mac-mini/c1-c1 on the same pane: the page shows it, with no messages yet.
     await expect.poll(() => chats.opens).toContain(`${plan}-c1`)
-    await expect.element(chatRegion('plan the slice').getByText('No messages yet')).toBeVisible()
+    await expect.element(chatRegion('plan the slice').getByText('Send a message to start.')).toBeVisible()
     await expect.element(page.getByRole('heading', { name: 'plan the slice' })).toBeVisible()
     expect(chatRegion('plan the slice').getByText('Fix the build').elements()).toHaveLength(0)
     // The draft was for the old context: the new chat's composer is empty.
@@ -449,7 +449,7 @@ describe('/clear and the pane follow (W5)', () => {
     await userEvent.click(page.getByRole('alertdialog').getByRole('button', { name: 'Clear' }))
     await expect.poll(() => chats.commands).toEqual([{ chat: plan, request: { command: 'clear' } }])
     await expect.poll(() => chats.opens).toContain(`${plan}-c1`)
-    await expect.element(chatRegion('plan the slice').getByText('No messages yet')).toBeVisible()
+    await expect.element(chatRegion('plan the slice').getByText('Send a message to start.')).toBeVisible()
     expect(chatRegion('plan the slice').getByText('Fix the build').elements()).toHaveLength(0)
   })
 
@@ -504,7 +504,7 @@ describe('/clear and the pane follow (W5)', () => {
     await expect.element(chatRegion('plan the slice').getByText('Fix the build')).toBeVisible()
     await pick('plan the slice', 'Clear context…', 'menuitem')
     await userEvent.click(page.getByRole('alertdialog').getByRole('button', { name: 'Clear' }))
-    await expect.element(chatRegion('plan the slice').getByText('No messages yet')).toBeVisible()
+    await expect.element(chatRegion('plan the slice').getByText('Send a message to start.')).toBeVisible()
     expect(chatRegion('plan the slice').getByText('Fix the build').elements()).toHaveLength(0)
     await expect.poll(() => chats.opens).toContain(`${plan}-c1`)
     // The other panes stay.
@@ -519,7 +519,7 @@ describe('/clear and the pane follow (W5)', () => {
     await pick('plan the slice', 'Clear context…', 'menuitem')
     await userEvent.click(page.getByRole('alertdialog').getByRole('button', { name: 'Clear' }))
     await expect.poll(() => chats.commands.length).toBe(1)
-    await expect.element(chatRegion('plan the slice').getByText('No messages yet')).toBeVisible()
+    await expect.element(chatRegion('plan the slice').getByText('Send a message to start.')).toBeVisible()
     await expect.element(page.getByRole('heading', { name: 'plan the slice' })).toBeVisible()
   })
 
@@ -551,7 +551,7 @@ describe('/clear and the pane follow (W5)', () => {
       await expect.element(chatRegion('review notes').getByText('Review the notes')).toBeVisible()
       // review notes is not the chat its layout focuses, so only the follow keeps it open.
       workspaces.replaceChat(review, `${review}-t`)
-      await expect.element(chatRegion('review notes').getByText('No messages yet')).toBeVisible()
+      await expect.element(chatRegion('review notes').getByText('Send a message to start.')).toBeVisible()
       await expect.element(page.getByRole('heading', { name: 'review notes' })).toBeVisible()
       expect(chats.opens).toContain(`${review}-t`)
       // On the desktop the chat still shows alone beside the sidebar, not the workbench's panes.

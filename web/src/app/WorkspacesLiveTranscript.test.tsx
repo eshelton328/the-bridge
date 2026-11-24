@@ -13,7 +13,7 @@ import { resetRetries } from '../errors/retryGuard.ts'
 import { type FakeTranscriptServer, fakeTranscriptServer } from '../lib/fakeTranscriptServer.ts'
 import { clickNow, holdTimers } from '../lib/holdTimers.ts'
 import { queryClient } from '../lib/queryClient.ts'
-import { renderedUntil, setViewport } from '../lib/rendering.ts'
+import { afterRendering, renderedUntil, setViewport } from '../lib/rendering.ts'
 import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
@@ -313,12 +313,82 @@ describe("a live chat's transcript (slice 3b)", () => {
     fakeServer(server)
     await tapWorkspaces([390, 844])
     await tapChat('plan the slice')
-    await expect.element(page.getByText('No messages yet')).toBeVisible()
+    await expect.element(page.getByText('Send a message to start.')).toBeVisible()
     server.push(plan, [user('u1', 'First message')])
     await expect.element(page.getByText('First message')).toBeVisible()
-    await expect.element(page.getByText('No messages yet')).not.toBeInTheDocument()
+    await expect.element(page.getByText('Send a message to start.')).not.toBeInTheDocument()
     expect(getReports()).toEqual([])
   })
+
+  // R68 (the owner: "something a bit more polished for new chats", "nice icons that are centered"): a new chat's
+  // transcript centres the chat's mark in a round tile, its name and one quiet line above the composer. A short space
+  // (the keyboard up) hides the line, then the name, and never covers or moves the composer.
+  for (const [device, size] of [
+    ['phone', [390, 844]],
+    ['tablet', [744, 1133]],
+  ] as const)
+    it(`centres a new chat's mark, name and line, opened from the list, on the ${device}`, async () => {
+      const server = fakeTranscriptServer()
+      server.set(plan, [])
+      fakeServer(server)
+      await tapWorkspaces(size)
+      await tapChat('plan the slice')
+      // The render's root fills the window, as `#root` does in index.css; earlier tests leave their renders.
+      const root = [...document.body.children].filter((el) => el.querySelector('.app-shell__root') !== null).at(-1)
+      if (!(root instanceof HTMLElement)) throw new Error('no root')
+      root.style.height = '100%'
+      await afterRendering()
+      const region = chatRegion('plan the slice')
+      await expect.element(region.getByText('Send a message to start.')).toBeVisible()
+      const empty = region.element().querySelector<HTMLElement>('[data-chat-empty]')
+      const part = (name: string) => empty?.querySelector<HTMLElement>(`[data-chat-empty-part="${name}"]`)
+      const mark = part('mark')
+      const title = part('title')
+      const line = part('line')
+      const body = empty?.closest<HTMLElement>('.scroll-frame__body')
+      const composer = region.getByRole('textbox').element().closest('.scroll-frame__footer')
+      if (!empty || !mark || !title || !line || !body || !composer) throw new Error('no empty state in the chat')
+      expect(mark.querySelector('svg')).not.toBeNull()
+      expect(title.textContent).toBe('plan the slice')
+      // Centred across the transcript, and in the middle of the space above the composer.
+      const middle = (r: DOMRect) => r.left + r.width / 2
+      const box = body.getBoundingClientRect()
+      for (const el of [mark, title, line])
+        expect(Math.abs(middle(el.getBoundingClientRect()) - middle(box))).toBeLessThanOrEqual(1)
+      const group = { top: mark.getBoundingClientRect().top, bottom: line.getBoundingClientRect().bottom }
+      const space = empty.getBoundingClientRect()
+      expect(Math.abs(group.top - space.top - (space.bottom - group.bottom))).toBeLessThanOrEqual(2)
+      expect(space.bottom).toBeLessThanOrEqual(composer.getBoundingClientRect().top + 0.5)
+      // The keyboard up: the transcript's space shrinks by its reach. Where the space holds the mark and the name, the line
+      // is out of the box; where it holds the mark alone, the name is too. The empty state never reaches under the composer.
+      const shell = body.closest<HTMLElement>('.app-shell__root')
+      if (!shell) throw new Error('no AppShell')
+      const inside = (el: HTMLElement) => {
+        const r = el.getBoundingClientRect()
+        const s = empty.getBoundingClientRect()
+        return r.left >= s.left - 0.5 && r.right <= s.right + 0.5 && r.top >= s.top - 0.5 && r.bottom <= s.bottom + 0.5
+      }
+      const rest = space.height
+      for (const [room, shows] of [
+        // The composer's footer takes up to 8 of it on the keyboard (review R36).
+        [96, { title: true, line: false }],
+        [60, { title: false, line: false }],
+      ] as const) {
+        const keyboard = rest - room
+        shell.style.setProperty('--app-shell-keyboard', `${String(keyboard)}px`)
+        await afterRendering()
+        await afterRendering()
+        expect(empty.getBoundingClientRect().bottom).toBeLessThanOrEqual(composer.getBoundingClientRect().top + 0.5)
+        expect(inside(mark)).toBe(true)
+        expect(inside(title)).toBe(shows.title)
+        expect(inside(line)).toBe(shows.line)
+      }
+      shell.style.removeProperty('--app-shell-keyboard')
+      await afterRendering()
+      expect(inside(line)).toBe(true)
+      expect(inside(title)).toBe(true)
+      expect(getReports()).toEqual([])
+    })
 
   it('shows the earlier line and the cut line', async () => {
     const server = fakeTranscriptServer()
