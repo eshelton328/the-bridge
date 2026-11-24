@@ -25,10 +25,12 @@ export type TextMeasure = {
   clippers: Edges[]
   /** Whether the holder or an ancestor ends the text with an ellipsis or a line clamp (TruncatedText). */
   truncated: boolean
+  /** Whether that ellipsis or clamp hides text now (its box scrolls wider or taller than it shows). */
+  truncatedCuts: boolean
 }
 
 /** A text run the page cuts or lets spill out of its box. */
-export type TextProblem = { key: string; text: string; kind: 'clipped' | 'overflow'; by: number }
+export type TextProblem = { key: string; text: string; kind: 'clipped' | 'overflow' | 'truncated'; by: number }
 
 /** The window for each layout: the owner's phone, an iPad in portrait and the MacBook Pro. */
 export const windows = {
@@ -60,13 +62,17 @@ export function outBy(inner: Edges, outer: Edges): number {
 const tolerance = 1
 
 /**
- * The problems of one page: text that an ancestor cuts, or that spills out of a holder that lets it overflow,
- * unless the page ends it with an ellipsis or a line clamp on purpose.
+ * The problems of one page: text that an ancestor cuts, that spills out of a holder that lets it overflow, or
+ * that an ellipsis or a line clamp hides. An ellipsis is the design where Small already shows one there; at a
+ * larger size a new one hides text, which d-122 forbids ("never clip, never ellipsis"), so newProblems keeps it.
  */
 export function problemsOf(measures: readonly TextMeasure[]): TextProblem[] {
   const out: TextProblem[] = []
   for (const m of measures) {
-    if (m.truncated) continue
+    if (m.truncated) {
+      if (m.truncatedCuts) out.push({ key: m.key, text: m.text, kind: 'truncated', by: 0 })
+      continue
+    }
     const clipped = Math.max(0, ...m.clippers.map((c) => outBy(m.box, c)))
     if (clipped > tolerance) {
       out.push({ key: m.key, text: m.text, kind: 'clipped', by: Math.round(clipped) })

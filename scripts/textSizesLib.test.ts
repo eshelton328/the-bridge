@@ -21,6 +21,7 @@ const measure = (over: Partial<TextMeasure>): TextMeasure => ({
   holderVisible: true,
   clippers: [],
   truncated: false,
+  truncatedCuts: false,
   ...over,
 })
 
@@ -56,11 +57,23 @@ void test('text that spills out of a visible holder overflows; a hidden holder i
   assert.deepEqual(problemsOf([measure({ box: edges(10, 10, 72, 26), holderVisible: false })]), [])
 })
 
-void test('an ellipsis or a line clamp is the design, not a problem', () => {
+void test('an ellipsis or a line clamp that shows all its text is no problem', () => {
   assert.deepEqual(
     problemsOf([measure({ box: edges(10, 10, 90, 26), clippers: [edges(0, 0, 60, 26)], truncated: true })]),
     [],
   )
+})
+
+void test('an ellipsis that hides text is new at a larger size unless Small hides it there too', () => {
+  const cut = measure({
+    box: edges(10, 10, 90, 26),
+    clippers: [edges(0, 0, 60, 26)],
+    truncated: true,
+    truncatedCuts: true,
+  })
+  assert.deepEqual(problemsOf([cut]), [{ key: 'div:1/span:2', text: 'Projects', kind: 'truncated', by: 0 }])
+  assert.deepEqual(newProblems([], problemsOf([cut])).length, 1)
+  assert.deepEqual(newProblems(problemsOf([cut]), problemsOf([cut])), [])
 })
 
 void test('only the problems Small does not have are new', () => {

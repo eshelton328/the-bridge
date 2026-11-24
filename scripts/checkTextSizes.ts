@@ -77,10 +77,17 @@ function measureText(): TextMeasure[] {
     const rect = range.getBoundingClientRect()
     if (rect.width === 0 || rect.height === 0) continue
     let truncated = false
+    let truncatedCuts = false
     const clippers: TextMeasure['clippers'] = []
     for (let a: Element | null = holder; a !== null && a !== document.documentElement; a = a.parentElement) {
       const s = getComputedStyle(a)
-      if (s.textOverflow === 'ellipsis' || (s.webkitLineClamp !== '' && s.webkitLineClamp !== 'none')) truncated = true
+      const ellipsis = s.textOverflow === 'ellipsis'
+      const clamp = s.webkitLineClamp !== '' && s.webkitLineClamp !== 'none'
+      if (ellipsis || clamp) {
+        truncated = true
+        if (ellipsis && a.scrollWidth > a.clientWidth + 1) truncatedCuts = true
+        if (clamp && a.scrollHeight > a.clientHeight + 1) truncatedCuts = true
+      }
       const scrolls = [s.overflowX, s.overflowY].some((o) => o === 'auto' || o === 'scroll')
       if (scrolls) break
       if ([s.overflowX, s.overflowY].some((o) => o === 'hidden' || o === 'clip'))
@@ -94,6 +101,7 @@ function measureText(): TextMeasure[] {
       holderVisible: style.overflowX === 'visible' && style.overflowY === 'visible',
       clippers,
       truncated,
+      truncatedCuts,
     })
   }
   return out
