@@ -200,6 +200,8 @@ export const WorkbenchPane = z.discriminatedUnion('type', [
      * live — unreachable"; none when not set.
      */
     problem: z.string().optional(),
+    /** A live chat whose transcript has not loaded yet: the skeleton's label, such as "Loading this chat". */
+    loading: z.string().optional(),
   }),
   z.object({
     type: z.literal('shell'),

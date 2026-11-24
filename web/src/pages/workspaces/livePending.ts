@@ -125,7 +125,8 @@ subscribeTranscripts(() => {
     const view = views.get(chat)
     if (view !== undefined) for (const pending of sends) pending.watched = true
     // A send that started before the transcript's first read takes that read as what came before it.
-    if (view?.loaded === true)
+    // A view kept from the chat's last visit is not a read: entries written since may hold the sent text.
+    if (view?.loaded === true && view.stale !== true)
       for (const pending of sends)
         if (!pending.based) {
           for (const id of userIds(view)) pending.before.add(id)
@@ -160,7 +161,7 @@ export function startPending(chat: string, text: string, files: readonly string[
   const pending: Pending = {
     match: { text: promptText(text), files: files.map(sentFileName) },
     before: userIds(view),
-    based: view?.loaded === true,
+    based: view?.loaded === true && view.stale !== true,
     watched: view !== undefined,
     quietAt: undefined,
     timer: undefined,

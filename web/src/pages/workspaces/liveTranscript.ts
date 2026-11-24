@@ -62,6 +62,7 @@ import {
 } from '@bridge/contract'
 import type { Result } from '@bridge/shared'
 import { report } from '../../errors/reporter.ts'
+import { registerReset } from '../../state/resetStores.ts'
 import { api } from '../../lib/api.ts'
 import { type Frame, frames, reconnectGraceMs } from '../../lib/eventFrames.ts'
 import { type LiveMiss, liveReadTimeoutMs, readChecked, readJson } from './liveWorkspaces.ts'
@@ -90,7 +91,17 @@ export const transcriptText = {
   note: { task: 'Task', peer: 'Message', hook: 'Hook' },
   /** Under the entries while the stream is down and the page connects again. */
   dropped: 'Transcript updates lost — connecting again',
+  /** The skeleton's label while the first read has not answered (bridge-coord, 2026-11-23). */
+  loading: 'Loading this chat',
+  /** In place of the skeleton when no read answered in `loadLimitMs`, with Retry: never an endless skeleton. */
+  stalled: 'Could not load this chat',
 } as const
+
+/** How long the skeleton may show before "Could not load this chat" with Retry takes its place, in ms. */
+export const loadLimitMs = 10_000
+
+/** How many chats that no pane shows keep their last view, so a chat opened again shows it at once. */
+export const keptViews = 5
 
 /** What a read or a stream missed, for the pane's line and report(): never text from the server. */
 type TranscriptMiss = {
@@ -151,12 +162,34 @@ export type TranscriptView = {
   readonly earlier: boolean
   /** The quiet line under the entries, with Retry; none when not set. */
   readonly problem: string | undefined
+  /**
+   * The view kept from the chat's last visit (`keptViews`), shown until this visit's first read answers: what the
+   * chat held then, not now. None once a read answered.
+   */
+  readonly stale?: true | undefined
 }
 
 const emptyView: TranscriptView = { loaded: false, entries: [], earlier: false, problem: undefined }
 
 /** Each watched chat's view, by chat ID; a new map on each change, for useSyncExternalStore. */
 let views: ReadonlyMap<string, TranscriptView> = new Map()
+
+/**
+ * The last loaded view of each chat that no pane shows now, for the `keptViews` chats closed last, the oldest first:
+ * a chat opened again starts from it. Kept apart from `views`, which holds only the chats a pane shows, as
+ * keptSends.ts and livePending.ts read it.
+ */
+const kept = new Map<string, TranscriptView>()
+
+/** Keeps `view` for `chat`, closed now, and drops the oldest kept view past `keptViews`. */
+function keepView(chat: string, view: TranscriptView): void {
+  kept.delete(chat)
+  kept.set(chat, view)
+  for (const old of kept.keys()) {
+    if (kept.size <= keptViews) break
+    kept.delete(old)
+  }
+}
 const listeners = new Set<() => void>()
 
 /** The views of the watched chats, by chat ID. */
@@ -252,6 +285,10 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
   const abort = new AbortController()
   const closed = () => abort.signal.aborted
   let wake: (() => void) | undefined
+  /** The connection that runs now, so Retry can end it and start again; none between connections. */
+  let current: AbortController | undefined
+  /** Retry ended the connection that ran: it shows no line and reports nothing, and the next one starts at once. */
+  let restart = false
   /** The trip to the background whose quiet miss this chat has had (`hidesSoFar`); -1 for none yet. */
   let quietFor = -1
   /**
@@ -293,8 +330,26 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
   const update = (change: (view: TranscriptView) => TranscriptView) => {
     if (!closed()) setView(chat, change(views.get(chat) ?? emptyView))
   }
+  // The pane shows the kept view of a chat opened again at once, with no skeleton, and the read updates it in place;
+  // a chat with none shows the skeleton until the first read answers.
+  setView(chat, kept.get(chat) ?? emptyView)
+  kept.delete(chat)
+  /** The limit of the skeleton: with no read answered in `loadLimitMs`, the stalled line with Retry takes its place. */
+  let stall: ReturnType<typeof setTimeout> | undefined
+  const armStall = () => {
+    clearTimeout(stall)
+    if (views.get(chat)?.loaded === true) return
+    stall = setTimeout(() => {
+      const view = views.get(chat)
+      // A line of a miss already shows in place of the skeleton; the connection goes on, and a read that answers
+      // later shows the transcript and takes the line away.
+      if (view === undefined || view.loaded || view.problem !== undefined) return
+      update((shown) => ({ ...shown, problem: transcriptText.stalled }))
+    }, loadLimitMs)
+  }
+  armStall()
   const fail = (line: string, miss: TranscriptMiss) => {
-    if (closed()) return
+    if (closed() || restart) return
     update((view) => ({ ...view, problem: line }))
     noteOutage(chat, miss)
   }
@@ -355,6 +410,7 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
   const connect = async (): Promise<Outcome> => {
     const mark = resumeMark()
     const connection = new AbortController()
+    current = connection
     const signal = AbortSignal.any([abort.signal, connection.signal])
     let res: Response
     // A stream that gives no answer at all would leave the pane blank, as the read waits for it: after `openMs` it
@@ -492,7 +548,12 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
   const run = async () => {
     while (!closed()) {
       const outcome = await connect()
+      current = undefined
       if (closed()) return
+      if (restart) {
+        restart = false
+        continue
+      }
       if (outcome === 'resume') {
         // Back from the background: at once when the page shows, else after the retry time or as soon as it shows.
         if (!isHidden()) continue
@@ -510,19 +571,33 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
     watchers: 0,
     retry: () => {
       update((view) => ({ ...view, problem: undefined }))
-      wake?.()
+      armStall()
+      // Between connections Retry ends the wait; during one (a stream or a read with no answer yet) it ends that
+      // connection and starts a new one.
+      if (wake !== undefined) wake()
+      else if (current !== undefined) {
+        restart = true
+        current.abort()
+      }
     },
     stop: () => {
       endGrace()
+      clearTimeout(stall)
       abort.abort()
     },
   }
 }
 
+// A test or a story starts with no kept view (state/resetStores.ts).
+registerReset(() => {
+  kept.clear()
+})
+
 /**
  * Reads `chat`'s transcript into its view (`transcriptViews`) until the result is called: one session for each chat,
- * however many panes watch it. The last stop closes the stream and drops the view, so the chat opened again reads
- * the transcript again.
+ * however many panes watch it. The last stop closes the stream and takes the view out of `transcriptViews`; a read view
+ * is kept apart, with no line, for the `keptViews` chats closed last (bridge-coord, 2026-11-23), so the chat opened
+ * again shows it at once and reads the transcript again.
  */
 export function watchTranscript(chat: string, deps: TranscriptDeps = {}): () => void {
   let session = sessions.get(chat)
@@ -540,6 +615,8 @@ export function watchTranscript(chat: string, deps: TranscriptDeps = {}): () => 
     if (watched.watchers > 0) return
     watched.stop()
     if (sessions.get(chat) === watched) sessions.delete(chat)
+    const shown = views.get(chat)
+    if (shown?.loaded === true) keepView(chat, { ...shown, problem: undefined, stale: true })
     setView(chat, undefined)
     // The chat no longer shows: a miss when it opens again is reported again.
     outages.delete(chat)
@@ -602,6 +679,8 @@ export function withTranscripts(data: WorkspacesData, shown: ReadonlyMap<string,
           ? { empty: transcriptText.empty }
           : {}),
         ...(view.problem === undefined ? {} : { problem: view.problem }),
+        // No read answered yet and no line: the skeleton, at most `loadLimitMs`.
+        ...(!view.loaded && view.problem === undefined ? { loading: transcriptText.loading } : {}),
       }
     }),
   }

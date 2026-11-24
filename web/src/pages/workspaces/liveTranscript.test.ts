@@ -7,6 +7,7 @@
 import type { TranscriptEntry } from '@bridge/contract'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { clearReports, getReports, repeatWindowMs } from '../../errors/reporter.ts'
+import { resetAllStores } from '../../state/resetStores.ts'
 import { type FakeTranscriptServer, fakeTranscriptServer } from '../../lib/fakeTranscriptServer.ts'
 import { workbench } from './states/workbench.ts'
 import {
@@ -65,6 +66,8 @@ afterEach(() => {
   vi.useRealTimers()
   vi.unstubAllGlobals()
   clearReports()
+  // The views kept for chats opened again go, so each test starts with none.
+  resetAllStores()
 })
 
 describe('mergeEntries', () => {
@@ -431,6 +434,55 @@ describe('watchTranscript', () => {
     watch(server)
     await expect.poll(() => server.reads.length).toBe(2)
     await expect.poll(ids).toEqual(['u1'])
+  })
+
+  it('keeps a closed chat out of the shown views, and shows its last transcript at once when it opens again', async () => {
+    const server = fakeTranscriptServer()
+    server.set(chat, [user('u1', 'go')])
+    const stop = watch(server)
+    await expect.poll(ids).toEqual(['u1'])
+    stop()
+    // keptSends.ts and livePending.ts read the shown views: a closed chat is not one, so opening it again is news.
+    expect(transcriptViews().has(chat)).toBe(false)
+    server.set(chat, [user('u1', 'go'), reply('a1', 'done')])
+    watch(server, 200)
+    // At once, before the read answers: the kept view, with no skeleton.
+    expect(ids()).toEqual(['u1'])
+    expect(view()?.loaded).toBe(true)
+    await expect.poll(ids).toEqual(['u1', 'a1'])
+  })
+
+  it('ends a connection whose read has no answer on Retry, and reads again at once with no line', async () => {
+    const server = fakeTranscriptServer()
+    server.set(chat, [user('u1', 'go')])
+    // The first read gets no answer until the page ends it, as a read that hangs past the skeleton's limit.
+    let hang = true
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
+        const path = new URL(url, window.location.origin).pathname
+        if (hang && !path.endsWith('/events')) {
+          hang = false
+          return new Promise<Response>((_resolve, reject) => {
+            init?.signal?.addEventListener('abort', () => {
+              reject(new DOMException('The read was ended', 'AbortError'))
+            })
+          })
+        }
+        const answer = server.handle(path, init)
+        if (answer === undefined) throw new TypeError(`no stub for ${url}`)
+        return answer
+      }),
+    )
+    // A retry time longer than the test: only Retry can start the next connection.
+    stops.push(watchTranscript(chat, { retryMs: 60_000 }))
+    await expect.poll(() => server.opens.length).toBe(1)
+    await settle()
+    retryTranscript(chat)
+    await expect.poll(ids).toEqual(['u1'])
+    expect(view()?.problem).toBeUndefined()
+    expect(getReports()).toEqual([])
   })
 
   it('shows a missed read with its kind, reports it once for the outage, and Retry reads again', async () => {

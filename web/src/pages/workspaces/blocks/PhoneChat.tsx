@@ -191,6 +191,7 @@ export function PhoneChat(props: PhoneChatProps) {
       earlier={pane.earlier}
       empty={pane.empty}
       problem={pane.problem}
+      loading={pane.loading === undefined ? undefined : { label: pane.loading, kind: pane.head.kind }}
       composer={pane.composer}
       drafts={drafts}
       onSend={onSend}
