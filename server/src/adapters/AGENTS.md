@@ -71,7 +71,10 @@ client of a socket or a file sits beside them.
   (NAME of a chat name's form) is the same note from NAME, `via`
   `prompt`, and any other text with the tag stays the owner's; and an
   `isMeta` line with no origin that starts "Stop hook feedback:" is
-  "Stop hook: reply rewritten". A queued line of a task or a peer gives
+  "Stop hook: reply rewritten". The last reply of the turn before that
+  note is a draft: its `replacedBy` is the last reply after the note and
+  before the next prompt or hook note, and a draft with no such reply
+  (a stop) has none (R62). A queued line of a task or a peer gives
   the same note. Any other meta line or origin (an idle notice, a skill
   body) shows nothing. A slash command's own line shows as
   the owner typed it (`/compact keep the plan`), its

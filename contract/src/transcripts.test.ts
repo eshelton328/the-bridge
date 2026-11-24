@@ -98,4 +98,9 @@ describe('transcripts', () => {
       TranscriptEntry.safeParse({ ...peer, message: { ...message, text: 'x'.repeat(maxEntryText + 1) } }).success,
     ).toBe(false)
   })
+
+  it('takes the ID of the reply that replaced a draft that a Stop hook sent back (R62)', () => {
+    expect(TranscriptEntry.parse({ ...assistant, replacedBy: 'a2' })).toEqual({ ...assistant, replacedBy: 'a2' })
+    expect(TranscriptEntry.safeParse({ ...assistant, replacedBy: '' }).success).toBe(false)
+  })
 })

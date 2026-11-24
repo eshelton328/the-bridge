@@ -301,6 +301,36 @@ function entriesOf(value: unknown, options: TranscriptOptions, results: Set<stri
   })
 }
 
+/**
+ * Marks each reply that a Stop hook sent back (R62). Before a hook note, the last assistant entry of the turn (after
+ * the last prompt) is the draft; its `replacedBy` is the last assistant entry after the note and before the next
+ * prompt or hook note. A draft with no reply after the note (a stop) keeps no mark.
+ */
+function markDrafts(entries: TranscriptEntry[]): TranscriptEntry[] {
+  const turnEnd = (from: number, step: 1 | -1) => {
+    let found: number | undefined
+    for (let i = from; i >= 0 && i < entries.length; i += step) {
+      const entry = entries[i]
+      if (entry === undefined || entry.type === 'user' || (entry.type === 'note' && entry.kind === 'hook')) break
+      if (entry.type === 'assistant') {
+        found = i
+        if (step === -1) break
+      }
+    }
+    return found
+  }
+  const marked = [...entries]
+  entries.forEach((note, i) => {
+    if (note.type !== 'note' || note.kind !== 'hook') return
+    const draft = turnEnd(i - 1, -1)
+    const reply = turnEnd(i + 1, 1)
+    const entry = draft === undefined ? undefined : marked[draft]
+    const by = reply === undefined ? undefined : entries[reply]
+    if (draft !== undefined && entry?.type === 'assistant' && by !== undefined) marked[draft] = { ...entry, replacedBy: by.id }
+  })
+  return marked
+}
+
 /** The last entries of the session file at `path`; no entries when the file is missing or cannot be read. */
 export async function readClaudeTranscript(path: string, options: TranscriptOptions): Promise<TranscriptRead> {
   const found: TranscriptEntry[] = [] // newest first
@@ -353,7 +383,7 @@ export async function readClaudeTranscript(path: string, options: TranscriptOpti
       end = start
     }
     const earlier = found.length > maxTranscriptEntries || stopAt > 0
-    return { entries: found.slice(0, maxTranscriptEntries).reverse(), earlier }
+    return { entries: markDrafts(found.slice(0, maxTranscriptEntries).reverse()), earlier }
   } catch {
     return { entries: [], earlier: false }
   } finally {

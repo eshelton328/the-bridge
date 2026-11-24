@@ -40,7 +40,9 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
   most `maxNoteText` (200) characters. Only a `peer` note may have a
   `message` (R55): the sender's chat name (null when none), `via`
   (`message` or `prompt`) and the text, cut as a user entry's
-  (`transcripts.test.ts`).
+  (`transcripts.test.ts`). An assistant entry that a Stop hook sent
+  back has `replacedBy`: the ID of the reply written after the hook's
+  note (R62), so the page can show the note in the draft's place.
 - A chat's "/" list (`ChatSkillsResponse`) names each skill as typed
   after "/", never a path, with a one-line description and its source
   (`skills.test.ts`).

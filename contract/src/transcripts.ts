@@ -39,8 +39,16 @@ export const UserEntry = z.object({
   files: z.array(z.string().min(1).max(maxEntryFileName)).min(1).max(maxAttachments).optional(),
 })
 
-/** The agent's reply text, in Markdown, as written. */
-export const AssistantEntry = z.object({ type: z.literal('assistant'), id: EntryId, ...Text })
+/**
+ * The agent's reply text, in Markdown, as written. `replacedBy` marks a draft that a Stop hook sent back (R62):
+ * the ID of the reply that the agent wrote after the hook's note. A draft with no later reply has none.
+ */
+export const AssistantEntry = z.object({
+  type: z.literal('assistant'),
+  id: EntryId,
+  ...Text,
+  replacedBy: EntryId.optional(),
+})
 
 /** The kind of a tool call (R32): a command, a file read or edit, a search, the web, an agent, a message, a plan step, an MCP tool, or other. */
 export const ToolKind = z.enum(['shell', 'read', 'edit', 'search', 'web', 'agent', 'message', 'plan', 'mcp', 'other'])
