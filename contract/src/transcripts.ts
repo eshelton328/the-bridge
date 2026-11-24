@@ -180,8 +180,9 @@ export type TranscriptResponse = z.infer<typeof TranscriptResponse>
 
 /**
  * Entries of the chat that are new or changed, in transcript order: replace an entry with the same ID, else add it at
- * the end. The last `added` of them are new to the transcript; the others were in it before, so a client that does not
- * hold one of those leaves it out, as it is older than the entries the client read. All are new when not set.
+ * the end. The last `added` of them are new to the transcript: new entries always come last, as in the transcript. The
+ * others were in it before, so a client that does not hold one of those leaves it out, as it is older than the entries
+ * the client read. All are new when not set.
  */
 export const TranscriptChangedEvent = eventOf(
   'transcript.changed',
