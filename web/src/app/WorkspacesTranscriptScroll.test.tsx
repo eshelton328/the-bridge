@@ -486,12 +486,13 @@ describe('the end of a live transcript after Send, the background and a reconnec
     await expect.poll(() => server.openStreams()).toEqual([plan])
     const worst = watchFrames(scroller)
     setHidden(true)
-    // While the page is away the stream drops; entries come in, and the page connects again and reads them.
+    // While the page is away the stream drops and entries come in; the page connects again and reads them once it
+    // shows (R70: a hidden page does not connect again).
     server.drop(plan)
     pushReplies(server, plan, 1, 6)
-    await expect.element(page.getByText(/^Reply 6 landed\./)).toBeInTheDocument()
     await new Promise((resolve) => setTimeout(resolve, 3000))
     setHidden(false)
+    await expect.element(page.getByText(/^Reply 6 landed\./)).toBeInTheDocument()
     // Safari puts the view back at a place it kept from before, with no touch.
     const frames = await strayScroll(scroller, Math.round(scroller.scrollTop / 2))
     expect(Math.max(...frames)).toBeLessThanOrEqual(2)
@@ -613,9 +614,10 @@ describe('the end of a live transcript after Send, the background and a reconnec
     setHidden(true)
     server.drop(plan)
     pushReplies(server, plan, 1, 3)
+    // The page connects again and reads once it shows (R70).
+    setHidden(false)
     await expect.poll(() => server.reads.filter((chat) => chat === plan).length).toBeGreaterThanOrEqual(2)
     await expect.element(page.getByText(/^Reply 3 landed\./)).toBeInTheDocument()
-    setHidden(false)
     await afterRendering()
     const after = firstShown(scroller)
     expect(after.entry.textContent).toBe(text)

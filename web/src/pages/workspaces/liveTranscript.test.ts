@@ -56,7 +56,8 @@ function stubFetch(server: FakeTranscriptServer, readDelayMs: number) {
 const stops: (() => void)[] = []
 const watch = (server: FakeTranscriptServer, readDelayMs = 0) => {
   stubFetch(server, readDelayMs)
-  const stop = watchTranscript(chat, { retryMs: 50 })
+  // The fake's stream asked for 100 ms before R70 ignored its `retry` field: the same wait, fixed. No banner floor.
+  const stop = watchTranscript(chat, { retryMs: 100, floorMs: 0 })
   stops.push(stop)
   return stop
 }
@@ -67,6 +68,7 @@ afterEach(() => {
   for (const stop of stops.splice(0)) stop()
   vi.useRealTimers()
   vi.unstubAllGlobals()
+  vi.restoreAllMocks()
   clearReports()
   // The views kept for chats opened again go, so each test starts with none.
   resetAllStores()
@@ -285,6 +287,31 @@ describe('watchTranscript', () => {
     ])
   })
 
+  it('says Reconnecting… on the backoff, reports nothing before 10 s, and connects at once when online again', async () => {
+    // Each wait is 99 % of its step: 0.495, 0.99, 1.98, 3.96, then 7.92 s.
+    vi.spyOn(Math, 'random').mockReturnValue(0.99)
+    const server = fakeTranscriptServer()
+    server.set(chat, [user('u1', 'go')])
+    stubFetch(server, 0)
+    stops.push(watchTranscript(chat))
+    await expect.poll(ids).toEqual(['u1'])
+    const opened = server.opens.length
+    server.answerStreams(() => new Response('', { status: 502 }))
+    server.drop(chat)
+    await expect.poll(() => view()?.problem).toBe(transcriptText.reconnecting)
+    // 5 misses in a row by 3.5 s: still "Reconnecting…" and no report, as 10 s have not passed (the R43 grace).
+    await expect.poll(() => server.opens.length - opened, { timeout: 8000 }).toBe(4)
+    expect(view()?.problem).toBe(transcriptText.reconnecting)
+    expect(getReports()).toEqual([])
+    // The 5th miss waits 7.92 s: the online event ends that wait at once.
+    server.answerStreams(undefined)
+    server.set(chat, [user('u1', 'go'), reply('a1', 'back online')])
+    window.dispatchEvent(new Event('online'))
+    await expect.poll(ids, { timeout: 1000 }).toEqual(['u1', 'a1'])
+    expect(view()?.problem).toBeUndefined()
+    expect(getReports()).toEqual([])
+  })
+
   it("reports a second outage inside report()'s repeat window once: the screen line still shows it", async () => {
     // Date stands still, so the second outage comes within the repeat window.
     vi.useFakeTimers({ toFake: ['Date'] })
@@ -327,7 +354,7 @@ describe('watchTranscript', () => {
         return answer === undefined ? Promise.reject(new TypeError(`no stub for ${url}`)) : Promise.resolve(answer)
       }),
     )
-    stops.push(watchTranscript(chat, { retryMs: 50, openMs: 100 }))
+    stops.push(watchTranscript(chat, { retryMs: 50, openMs: 100, floorMs: 0 }))
     await expect.poll(() => view()?.problem).toBe(transcriptText.dropped)
     expect(getReports().map((r) => r.error.message)).toEqual([
       'A chat transcript stream missed: timeout (chat mac-mini/c1)',

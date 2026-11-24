@@ -625,7 +625,7 @@ describe("a live chat's transcript (slice 3b)", () => {
     }
 
     for (const device of sizes)
-      it(`connects again quietly while hidden, with no line and no report, on ${device.name}`, async () => {
+      it(`does not connect again while hidden, then connects at once and quietly when it shows, on ${device.name}`, async () => {
         const server = withPlan()
         await openPlan(device.size)
         await expect.poll(() => server.openStreams()).toContain(plan)
@@ -636,17 +636,18 @@ describe("a live chat's transcript (slice 3b)", () => {
         setHidden(true)
         server.close(plan)
         await renderedUntil(() => !server.openStreams().includes(plan))
-        // Hidden, it connects again after the retry time (100 ms in the fake), as a desktop tab in the background does,
-        // and not before. The wait for that time starts after the stream has ended: wait for its timer first.
-        await renderedUntil(() => vi.getTimerCount() > 0)
+        // Hidden, it does not connect again however long it waits (R70).
+        for (let at = 0; at < 40; at += 1) await vi.advanceTimersByTimeAsync(1000)
+        await afterRendering()
         expect(server.openStreams()).not.toContain(plan)
-        vi.advanceTimersByTime(200)
+        expect(server.reads.length).toBe(reads)
+        expect(document.body.textContent).not.toMatch(outageLine)
+        // Shown, it connects at once: the clock stands still.
+        setHidden(false)
         await renderedUntil(() => server.openStreams().includes(plan))
         await renderedUntil(() => server.reads.length > reads)
         expect(server.reads.length).toBe(reads + 1)
         release()
-        await expect.element(page.getByText(outageLine)).not.toBeInTheDocument()
-        setHidden(false)
         await expect.element(page.getByText('Looking at the build now.')).toBeVisible()
         await expect.element(page.getByText(outageLine)).not.toBeInTheDocument()
         await expect.element(page.getByRole('button', { name: 'Retry' })).not.toBeInTheDocument()
@@ -688,36 +689,47 @@ describe("a live chat's transcript (slice 3b)", () => {
       await expect.poll(() => server.reads.length).toBe(reads + 1)
       expect(getReports()).toEqual([])
       // The page is visible, and the connection it made after it showed drops, and the server does not answer again
-      // within the grace (R43): an outage. The page's clock moves only when the test moves it (lib/holdTimers.ts).
+      // by the 4th try (R70): an outage. The page's clock moves only when the test moves it (lib/holdTimers.ts).
       server.answerStreams(() => new Response('Bad Gateway', { status: 502 }))
+      // The backoff waits half of each step: 0.25, 0.5, 1, 2, 4 and 8 s.
+      vi.spyOn(Math, 'random').mockReturnValue(0.5)
       const release = holdTimers()
       server.drop(plan)
-      for (let at = 0; at < 11_000; at += 250) await vi.advanceTimersByTimeAsync(250)
+      for (let at = 0; at < 11_000; at += 500) await vi.advanceTimersByTimeAsync(500)
       const shown = () => document.body.textContent.includes('Transcript updates lost — connecting again')
       await renderedUntil(shown)
       expect(getReports().map((r) => r.error.message)).toEqual([
         'A chat transcript stream missed: status 502 (chat mac-mini/c1)',
       ])
-      // It connects again after the retry time once the server answers.
+      // It connects again after the backoff's wait once the server answers: the miss at 10 s waited 15 s.
       server.answerStreams(undefined)
-      for (let at = 0; at < 1000; at += 250) await vi.advanceTimersByTimeAsync(250)
+      for (let at = 11_000; at < 26_000; at += 1000) await vi.advanceTimersByTimeAsync(1000)
       await renderedUntil(() => server.reads.length === reads + 2 && !shown())
       release()
       expect(getReports()).toHaveLength(1)
     })
 
-    it('reports a read that answers a 502 that is not JSON while the page is hidden, on the phone', async () => {
+    it('reports a read that answers a 502 that is not JSON at the 4th visible miss, after the page showed', async () => {
       const server = withPlan()
       await openPlan([390, 844])
       await expect.poll(() => server.openStreams()).toContain(plan)
-      // The proxy answers for a server that is down: an answer, not the background's close.
+      // The proxy answers for a server that is down: an answer, not the background's close, so the backoff counts it.
       server.answerReads(() => new Response('Bad Gateway', { status: 502 }))
       setHidden(true)
       server.close(plan)
-      await expect.poll(() => getReports().length).toBe(1)
+      await expect.poll(() => server.openStreams()).not.toContain(plan)
+      vi.spyOn(Math, 'random').mockReturnValue(0.5)
+      const release = holdTimers()
+      setHidden(false)
+      await renderedUntil(() => document.body.textContent.includes('Reconnecting…'))
+      // The miss at 10 s after the first, with 4 in a row, shows the line and reports.
+      for (let at = 0; at < 12_000 && getReports().length === 0; at += 250) await vi.advanceTimersByTimeAsync(250)
+      release()
+      expect(getReports()).toHaveLength(1)
       expect(getReports().map((r) => r.error.message)).toEqual([
         'A chat transcript read missed: unreachable 502 (chat mac-mini/c1)',
       ])
+      await expect.element(page.getByText(/^Transcript not live —/)).toBeVisible()
     })
 
     it("reports the stream's error event even when the read then gets no answer while hidden, on the phone", async () => {
@@ -734,11 +746,11 @@ describe("a live chat's transcript (slice 3b)", () => {
             }
           }),
       )
-      setHidden(true)
+      // Visible, a stream that ends connects again after the backoff's wait and waits for the read; then the page hides.
       server.close(plan)
-      // Hidden, it connects again on the retry time and waits for the read.
       await expect.poll(() => endRead).toBeDefined()
       await expect.poll(() => server.openStreams()).toContain(plan)
+      setHidden(true)
       // The server's watch fails first, then the read gets no answer.
       server.fail(plan, 'internal')
       endRead?.()
