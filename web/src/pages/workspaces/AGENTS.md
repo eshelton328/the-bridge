@@ -139,7 +139,8 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   "Answering…" shows until text comes. A read that misses is read again
   for up to 150 s; a 404 says "This answer is gone — the server
   restarted", and no answer by 150 s says "Answer not live — the server
-  did not answer" with a report. `failed`, `timedOut` ("Stopped after 2 minutes") and
+  did not answer" with a report. An ask that answers after the page left
+  starts no reads. `failed`, `timedOut` ("Stopped after 2 minutes") and
   `cut` each have their line. The chat never sees the question or the answer. One question of
   a chat at a time: a second says "Not asked — a side question is still
   answering" with no request; over `maxSideQuestion` is not sent. A

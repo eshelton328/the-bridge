@@ -414,6 +414,39 @@ describe('Side chat on a live Claude chat (backend #460)', () => {
     await expect.poll(fromEnd).toBeLessThan(2)
   })
 
+  it('reads no answer after the page closed while the question was being asked', async () => {
+    const fakes = withChats()
+    const served = globalThis.fetch
+    let release: () => void = () => undefined
+    let posted = false
+    const held = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
+        if (init?.method === 'POST' && new URL(url, window.location.origin).pathname.endsWith('/side')) {
+          posted = true
+          await held
+        }
+        return served(input, init)
+      }),
+    )
+    await openChat('desktop', 'sketch the plan')
+    await openSide('desktop', 'sketch the plan')
+    await ask('desktop', 'Still here?')
+    await expect.poll(() => posted).toBe(true)
+    await view?.unmount()
+    view = undefined
+    release()
+    await expect.poll(() => fakes.side.asks).toHaveLength(1)
+    // Three read times pass with the page gone: no read of the answer goes out.
+    await new Promise((resolve) => setTimeout(resolve, 1_600))
+    expect(fakes.side.sides).toHaveLength(1)
+    expect(fakes.side.reads).toEqual([])
+  })
+
   it('says the answer is gone when the server lost it in a restart', async () => {
     const fakes = withChats()
     await openChat('desktop', 'sketch the plan')

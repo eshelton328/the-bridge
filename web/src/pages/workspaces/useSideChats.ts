@@ -81,9 +81,13 @@ export function useSideChats(on: boolean): SideChats | undefined {
   const turnsRef = useRef(turns)
   const nextIdRef = useRef(0)
   const stopsRef = useRef(new Set<() => void>())
+  // False once the page left: an ask that answers after that starts no reads.
+  const shownRef = useRef(true)
   useEffect(() => {
     const open = stopsRef.current
+    shownRef.current = true
     return () => {
+      shownRef.current = false
       for (const stop of open) stop()
       open.clear()
     }
@@ -148,6 +152,7 @@ export function useSideChats(on: boolean): SideChats | undefined {
         return { line: asked.line, retry: asked.retry }
       }
       update(chat, id, (t) => ({ ...t, side: asked.side }))
+      if (!shownRef.current) return true
       const stop = live.watchSide(chat, asked.side, {
         onAnswer: (answer) => {
           update(chat, id, (t) => ({ ...t, answer }))
