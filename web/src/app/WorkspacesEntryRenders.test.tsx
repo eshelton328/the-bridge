@@ -5,7 +5,6 @@ import { clearReports, getReports } from '../errors/reporter.ts'
 import { resetRetries } from '../errors/retryGuard.ts'
 import { queryClient } from '../lib/queryClient.ts'
 import { afterRendering, setViewport } from '../lib/rendering.ts'
-import { ChatEntryView } from '../pages/workspaces/blocks/ChatEntryView.tsx'
 import { resetAllStores } from '../state/resetStores.ts'
 import { markdownShown, openWorkspaces, stubLongChats } from './longLiveChat.ts'
 import { stubLiveServer } from './liveServerStub.ts'
@@ -64,7 +63,11 @@ const isFiber = (value: unknown): value is Fiber =>
   'return' in value &&
   'stateNode' in value
 
-/** The props of each transcript entry (`ChatEntryView`) React holds now, by its key. */
+/**
+ * The props of each live transcript entry (`ChatEntryView`) React holds now, by its key: `TranscriptEntries` keys a
+ * live entry `id-<entry ID>` and passes it as `entry`. The app's tests enter a page only through its index, so the
+ * test finds the entries by that key, not by the component.
+ */
 function entryProps(inside: Element): Map<string, unknown> {
   const own = Object.keys(inside).find((name) => name.startsWith('__reactFiber$'))
   let root: unknown = own === undefined ? undefined : Reflect.get(inside, own)
@@ -78,7 +81,15 @@ function entryProps(inside: Element): Map<string, unknown> {
   while (walk.length > 0) {
     const fiber = walk.pop()
     if (!isFiber(fiber)) continue
-    if (fiber.elementType === ChatEntryView && typeof fiber.key === 'string') props.set(fiber.key, fiber.memoizedProps)
+    const { key, memoizedProps } = fiber
+    if (
+      typeof key === 'string' &&
+      key.startsWith('id-') &&
+      typeof memoizedProps === 'object' &&
+      memoizedProps !== null &&
+      'entry' in memoizedProps
+    )
+      props.set(key, memoizedProps)
     walk.push(fiber.child, fiber.sibling)
   }
   return props
