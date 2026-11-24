@@ -309,6 +309,55 @@ describe("a live chat's transcript scroll", () => {
     })
   }
 
+  it("keeps the reader's scroll up when an entry comes in before its scroll event, on the tablet", async () => {
+    const server = withLong()
+    await tapWorkspaces([756, 1129])
+    const scroller = await tapChat('plan the slice')
+    await expectAtEnd(scroller)
+    await expect.poll(() => server.openStreams()).toEqual([plan])
+    // The reader turns the wheel up, and an entry lands before the browser sends the scroll event (the CI failure of
+    // the-bridge#478): the page draws the entry, and the reader's scroll still wins.
+    const scrolled = new Promise((resolve) => {
+      scroller.addEventListener('scroll', resolve, { once: true })
+    })
+    scroller.dispatchEvent(new WheelEvent('wheel', { deltaY: -400, bubbles: true }))
+    scroller.scrollTop = 0
+    server.push(plan, [reply('raced-1', 'A reply that raced the scroll.')])
+    await expect.element(page.getByText('A reply that raced the scroll.')).toBeInTheDocument()
+    await scrolled
+    await afterRendering()
+    expect(scroller.scrollTop).toBe(0)
+    expect(fromEnd(scroller)).toBeGreaterThan(scroller.clientHeight)
+  })
+
+  it("keeps the reader's scroll up when a long frame delays its scroll event past the input window, on the tablet", async () => {
+    const server = withLong()
+    await tapWorkspaces([756, 1129])
+    const scroller = await tapChat('plan the slice')
+    await expectAtEnd(scroller)
+    await expect.poll(() => server.openStreams()).toEqual([plan])
+    // The page just moved the layout, the reader turns the wheel up, and the main thread is busy for longer than the
+    // reader's input window before the browser sends the scroll event (the CI failure of the-bridge#469, on a loaded
+    // runner): the scroll is still the reader's.
+    const scrolled = new Promise((resolve) => {
+      scroller.addEventListener('scroll', resolve, { once: true })
+    })
+    window.dispatchEvent(new Event('resize'))
+    scroller.dispatchEvent(new WheelEvent('wheel', { deltaY: -400, bubbles: true }))
+    scroller.scrollTop = 0
+    const busy = performance.now()
+    while (performance.now() - busy < 700) {
+      // A long task, as a loaded CI runner has.
+    }
+    await scrolled
+    await afterRendering()
+    expect(scroller.scrollTop).toBe(0)
+    server.push(plan, [reply('late-frame-1', 'A reply after the long frame.')])
+    await expect.element(page.getByText('A reply after the long frame.')).toBeInTheDocument()
+    await afterRendering()
+    expect(scroller.scrollTop).toBe(0)
+  })
+
   it('opens at the newest entry when the transcript read answers after the stream opened, on the phone', async () => {
     let answer: () => void = () => undefined
     const gate = new Promise<void>((resolve) => {

@@ -574,7 +574,15 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   Only the reader leaves the end: a moving finger on the transcript, a
   wheel turn, a scroll key, a mouse drag (its scroll bar, a text
   selection) or a focus moved
-  into an entry (Tab, a link). Another scroll away from the end goes back
+  into an entry (Tab, a link). The focus on the transcript's body itself,
+  which a tap on it off a control gives as it closes the keyboard, is not
+  the reader's: after a send it let iOS's scroll leave the end (review
+  R61, `app/WorkspacesSendStaysEnd.test.tsx`). A reader's scroll up that
+  lands before its scroll event, as an entry comes in, leaves the end; the
+  pin does not move it back (the-bridge#478's CI failure). The reader's
+  input counts for 500 ms, or 3 rendering steps when frames run slow, so
+  a long frame before the scroll event keeps it the reader's (#469's CI
+  failure). Another scroll away from the end goes back
   in the same frame only within 1.5 s of a layout change the page made (a
   resize of the transcript or the composer, the keyboard, an entry added
   or removed, the page back on screen), such as the one iOS made after
