@@ -61,6 +61,7 @@ import {
   promptKey,
   switchModelDialogOf,
 } from './claudeInput.ts'
+import { dialogKeys, dialogOf, type ScreenDialog } from './claudeDialog.ts'
 import { readCodeMode, sideRecord } from './claudeSide.ts'
 import { readClaudeTranscript, readClaudeTranscriptPage } from './claudeTranscript.ts'
 import { readClaudeSkills } from './claudeSkills.ts'
@@ -379,6 +380,8 @@ const lateSessionMs = 1500
 const stopHoldMs = 2000
 /** How long a stop waits for the chat to go idle, and so put the stopped prompt back, before it reads the box. */
 const putBackWaitMs = 3000
+/** How long a pane refuses a second answer to the dialog it was just answered for. */
+const answerHoldMs = 5000
 /** How many times a stop reads the box for the prompt that comes back, and the time between two reads. */
 const putBackReads = 5
 const putBackReadGapMs = 100
@@ -849,6 +852,27 @@ export function createHerdrAgents({
     return read.ok ? ok(read.value.read.text) : read
   }
 
+  /**
+   * The dialog on a Claude chat's screen; null, with no read, for a chat that does not wait for the owner, so no
+   * other screen text leaves the adapter (R69).
+   */
+  /** The dialog each pane was last answered for, and when. */
+  const answered = new Map<string, { readonly id: string; readonly at: number }>()
+  const dialogShown = async (
+    chat: ChatId,
+  ): Promise<
+    Result<'notFound' | 'shell' | 'noCommands' | null | { pane: string; shown: ScreenDialog | null }, AgentPortError>
+  > => {
+    const target = await agentPane(chat)
+    if (!target.ok) return target
+    if (typeof target.value === 'string') return ok(target.value)
+    const { pane, status, claude } = target.value
+    if (!claude) return ok('noCommands')
+    if (status !== 'needsYou') return ok(null)
+    const screen = await screenOf(pane)
+    return screen.ok ? ok({ pane, shown: dialogOf(screen.value) }) : screen
+  }
+
   /** The input box of a Claude chat's pane, from its screen; null when the screen shows none. */
   const inputBox = async (pane: string): Promise<Result<InputBox | null, AgentPortError>> => {
     const screen = await screenOf(pane)
@@ -1311,6 +1335,31 @@ export function createHerdrAgents({
           : await effortStep(pane, ['shift+down'], (shown) => shown === 'low' || shown === 'none')
       if (done.ok && done.value === 'set') await keepEffort(pane, effort)
       return done
+    },
+    async readDialog(chat) {
+      const found = await dialogShown(chat)
+      if (!found.ok) return found
+      if (found.value === null || typeof found.value === 'string') return ok(found.value)
+      return ok(found.value.shown?.dialog ?? null)
+    },
+    async answerDialog(chat, { id, n }) {
+      const found = await dialogShown(chat)
+      if (!found.ok) return found
+      if (typeof found.value === 'string') return ok(found.value)
+      if (found.value === null) return ok('dialogChanged')
+      const { shown, pane } = found.value
+      const keys = shown?.dialog.id === id ? dialogKeys(shown, n) : null
+      // One answer for each dialog: a second answer that read the same screen, at once or as a second tap, would
+      // answer the next dialog (review of #495). The ID is noted before the keys go, so an answer at the same time
+      // finds it, and kept for `answerHoldMs`.
+      const last = answered.get(pane)
+      if (keys === null || (last?.id === id && now() - last.at < answerHoldMs)) return ok('dialogChanged')
+      answered.set(pane, { id, at: now() })
+      // herdr takes keys for a blocked agent (probe in a test herdr session, 2026-11-24).
+      const sent = await input('agent.send_keys', { target: pane, keys })
+      if (!sent.ok) answered.delete(pane)
+      if (!sent.ok) return sent
+      return ok(sent.value === 'sent' ? 'sent' : 'dialogChanged')
     },
     async clearInputBox(chat) {
       const target = await agentPane(chat)

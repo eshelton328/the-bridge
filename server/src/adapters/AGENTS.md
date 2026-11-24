@@ -175,6 +175,13 @@ client of a socket or a file sits beside them.
   answers `sent` only once the dialog is gone and the box shows again,
   else `inputUnreadable`. It never types into an open dialog: a
   screen with no box sends nothing (`herdrAgents.test.ts`).
+- A dialog (R69, d-125, `claudeDialog.ts`) is read only for a `blocked`
+  Claude chat with no input box: the text below the last edge above "❯"
+  (else the whole screen) is `raw`, its hash the ID. Only one choice
+  numbered from 1 gives options, never "Type something." or "Chat about
+  this". An answer reads the screen again and, only when the ID and the
+  option match, sends ↑ or ↓ and Enter in one `agent.send_keys`, which
+  herdr takes for a blocked agent (probe, 2026-11-24); else `dialogChanged`.
 - A command (`/compact` with its instructions on one line, or
   `/clear`) goes to an idle Claude chat only, as a prompt does, with
   the same box checks; a chat that is not idle or done (working, or a
