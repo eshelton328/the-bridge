@@ -286,6 +286,11 @@ type ChatPaneBase = {
   notLive?: string | undefined
   /** A live chat's server chat ID: while the pane shows, `transcripts` reads its transcript (slice 3b). */
   liveChat?: string | undefined
+  /**
+   * The transcript opens at its newest entry and follows new ones while the reader is at the end, as a live chat's
+   * does, with no transcript to read: a live side chat's answer (useSideChats.ts). A live chat (`liveChat`) follows.
+   */
+  follows?: boolean | undefined
   transcripts?: TranscriptWatch | undefined
   /** How wide the chat draws on the tablet and the desktop (Settings → Appearance); full when not set. */
   chatWidth?: ChatWidth | undefined
@@ -377,6 +382,7 @@ export function ChatPane(props: ChatPaneProps) {
     entries,
     notLive,
     liveChat,
+    follows,
     transcripts,
     chatWidth,
     onCopy,
@@ -473,7 +479,8 @@ export function ChatPane(props: ChatPaneProps) {
     [liveChat, transcripts],
   )
   // A live chat opens at its newest entry and follows new ones while the reader is at the end.
-  const { ref: pinRef, newest } = usePinnedEnd(liveChat !== undefined, chatId, entries.at(-1))
+  const following = liveChat !== undefined || follows === true
+  const { ref: pinRef, newest } = usePinnedEnd(following, chatId, entries.at(-1))
   const label = props.label
   const footerRef = useCallback(
     (el: HTMLDivElement | null) => {
@@ -593,7 +600,8 @@ export function ChatPane(props: ChatPaneProps) {
     event.currentTarget.value = ''
     if (picked.length > 0) files?.add(picked)
   }
-  // A live chat's files; a sample chat's chips come from its state, and a live Codex chat has no paperclip.
+  // A live chat's files; a sample chat's chips come from its state, and a live Codex chat and a live side chat have no
+  // paperclip.
   const attachProps =
     files !== undefined
       ? {
@@ -608,7 +616,7 @@ export function ChatPane(props: ChatPaneProps) {
       : {
           attachments: composer.attachments.map((name) => ({ id: name, name })),
           onRemoveAttachment: () => undefined,
-          onAttach: composer.notLive === undefined ? () => undefined : undefined,
+          onAttach: composer.notLive === undefined && composer.noAttach !== true ? () => undefined : undefined,
         }
   // R31: one row while nothing is in or on the box; the library draws it expanded anyway with chips. R45: a running
   // chat too, so a turn that starts or ends changes no height; the row draws Stop beside Send.
@@ -760,7 +768,7 @@ export function ChatPane(props: ChatPaneProps) {
             }
           />
         )}
-        {liveChat === undefined ? null : <NewestButton newest={newest} />}
+        {following ? <NewestButton newest={newest} /> : null}
       </>
     ) : (
       <NotLive text={notLive} />

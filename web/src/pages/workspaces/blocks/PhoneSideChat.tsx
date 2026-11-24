@@ -14,7 +14,9 @@ import { useRef } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { SideChat, SidebarLayers } from '../types.ts'
 import type { CopyReply } from './ChatEntryView.tsx'
+import type { DraftBook } from './draftBook.ts'
 import { SideChatPanel } from './SideChatPanel.tsx'
+import type { ComposerAnswer } from './useComposerActions.ts'
 
 // The sheet is a flex column; the panel fills it and shrinks with it.
 const fill = css({ display: 'flex', flexDirection: 'column', flex: '1', minH: '[0]' })
@@ -29,9 +31,25 @@ export type PhoneSideChatProps = {
   layers?: SidebarLayers | undefined
   /** A reply's Copy: the page writes the clipboard, and the button shows the result (audit P-4). */
   onCopy?: CopyReply | undefined
+  /** Asks a live side question (SideChatPanel `onSend`); not set, as in a sample, the message counts as sent at once. */
+  onSend?: ((text: string) => Promise<ComposerAnswer>) | undefined
+  /** Stops the live side answer: the answering composer's Stop (SideChatPanel `onStop`). */
+  onStop?: (() => Promise<ComposerAnswer>) | undefined
+  /** The page's drafts by chat (SideChatPanel `drafts`). */
+  drafts?: DraftBook | undefined
 }
 
-export function PhoneSideChat({ chat, open, onOpenChange, device, layers, onCopy }: PhoneSideChatProps) {
+export function PhoneSideChat({
+  chat,
+  open,
+  onOpenChange,
+  device,
+  layers,
+  onCopy,
+  onSend,
+  onStop,
+  drafts,
+}: PhoneSideChatProps) {
   const ref = useRef<HTMLDivElement>(null)
   return (
     <BottomSheet
@@ -49,6 +67,9 @@ export function PhoneSideChat({ chat, open, onOpenChange, device, layers, onCopy
           device={device}
           layers={layers}
           onCopy={onCopy}
+          onSend={onSend}
+          onStop={onStop}
+          drafts={drafts}
           onClose={() => {
             onOpenChange?.(false)
           }}

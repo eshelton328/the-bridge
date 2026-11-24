@@ -131,3 +131,7 @@ next one, so the chip starts at the kind mark's x (44). The header's
 height and the first row do not change, so the frame's header box (105:1810)
 still passes the position check. It is a frame exception that the owner's
 decision sets (`blocks/ChatHead.tsx`, `app/WorkspacesChatHeadRows.test.tsx`).
+
+## Live side chat (backend #460)
+
+On the live page a Claude chat's Side chat asks the server (`useSideChats.ts`). Its composer draws no paperclip, as the side question route takes the question only (bridge-coord's decision, 2026-11-23). Figma draws one here. The live note fills in the chat's name in M5's words ("Nothing here enters <chat>. Close it and the main chat carries on."). While an answer comes, the composer draws the library's Stop beside Send, as a running main chat's does, and Stop stops the answer on the server (backend #465); Figma draws this side chat at rest, with no Stop. This frame's state and story are the fixture's, so the checks above are unchanged.

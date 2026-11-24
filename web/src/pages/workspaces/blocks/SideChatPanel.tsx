@@ -7,12 +7,19 @@
 // deviations.md); `placement="sheet"` fills the
 // phone's side chat sheet under its grabber (M5 105:3106), with a larger title. In
 // the tablet's sheet (T2 105:1914, `device="tablet"`) its parts sit 23 in from the
-// sheet's edges and the note is 13 px. Props only.
+// sheet's edges and the note is 13 px. A live side chat's Send asks the
+// server through `onSend` (useSideChats.ts); a sample's Send counts as sent at
+// once. A live side chat keeps its unsent question in the page's drafts
+// (`drafts`, by its own id, so a switch to another chat's side chat and back
+// keeps it) and follows its answer's end as a live chat does (ChatPane
+// `follows`). Props only.
 import { BubbleIcon, Button, CloseIcon, type IconSize, Inline, SplitIcon } from '@eshelton328/component-library-1701'
 import { css, cx } from '../../../../styled-system/css/index.js'
 import type { SideChat, SidebarLayers } from '../types.ts'
 import type { CopyReply } from './ChatEntryView.tsx'
 import { ChatPane } from './ChatPane.tsx'
+import type { DraftBook } from './draftBook.ts'
+import type { ComposerAnswer } from './useComposerActions.ts'
 
 const panel = css({ display: 'flex', flexDirection: 'column', minH: '[0]' })
 const placements = {
@@ -92,6 +99,12 @@ export type SideChatPanelProps = {
   layers?: SidebarLayers | undefined
   /** A reply's Copy: the page writes the clipboard, and the button shows the result (audit P-4). */
   onCopy?: CopyReply | undefined
+  /** Asks a live side question (ChatPane `onSend`); not set, as in a sample, the message counts as sent at once. */
+  onSend?: ((text: string) => Promise<ComposerAnswer>) | undefined
+  /** Stops the live side answer: the answering composer's Stop (ChatPane `onStop`). */
+  onStop?: (() => Promise<ComposerAnswer>) | undefined
+  /** The page's drafts by chat (draftBook.ts): a live side chat (one with an `id`) keeps its unsent question there. */
+  drafts?: DraftBook | undefined
 }
 
 export function SideChatPanel({
@@ -101,6 +114,9 @@ export function SideChatPanel({
   device = 'phone',
   layers,
   onCopy,
+  onSend,
+  onStop,
+  drafts,
 }: SideChatPanelProps) {
   const tablet = placement === 'sheet' && device === 'tablet'
   const openAsPane =
@@ -146,10 +162,16 @@ export function SideChatPanel({
         {placement !== 'pane' && noteText}
       </div>
       <ChatPane
+        // Each chat's side chat has its own box: a switch to another chat's mounts its own.
+        key={chat.id ?? `${chat.command} ${chat.title}`}
         size={placement === 'pane' ? 'inset' : placement}
-        // The side chat's data has no id of its own; its command and title name it.
-        chatId={`${chat.command} ${chat.title}`}
+        // A sample side chat has no id of its own; its command and title name it.
+        chatId={chat.id ?? `${chat.command} ${chat.title}`}
         onCopy={onCopy}
+        onSend={onSend}
+        onStop={onStop}
+        drafts={chat.id === undefined ? undefined : drafts}
+        follows={chat.id !== undefined}
         figma={{
           composer: layers?.sideComposer ?? '105:948',
           entries: layers?.sideEntries ?? ['105:933', '105:935'],

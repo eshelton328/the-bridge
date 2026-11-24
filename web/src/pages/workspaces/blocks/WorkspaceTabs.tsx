@@ -58,6 +58,10 @@ export type WorkspaceTabsProps = {
   onMoveChat?: ((chat: string, workspace: string) => void) | undefined
   /** Forks a live Claude chat beside it (backend #443); none on a fixture. */
   onForkChat?: ((chat: string) => void) | undefined
+  /** Asks a live Claude chat's side question (useSideChats.ts), by chat id; none on a fixture. */
+  onSideAsk?: ((chat: string, question: string) => Promise<ComposerAnswer>) | undefined
+  /** Stops a live Claude chat's side answer (the side composer's Stop), by chat id; none on a fixture. */
+  onSideStop?: ((chat: string) => Promise<ComposerAnswer>) | undefined
 }
 
 // The box that sees a press on a handle draws no box of its own: the panes lay out as they do without it.
@@ -84,6 +88,8 @@ export function WorkspaceTabs({
   layout,
   onMoveChat,
   onForkChat,
+  onSideAsk,
+  onSideStop,
 }: WorkspaceTabsProps) {
   const shown = shownWorkspace(data, ui)
   const current = data.workspaces.find((w) => w.id === shown)
@@ -115,6 +121,8 @@ export function WorkspaceTabs({
         layout={layout}
         onMoveChat={onMoveChat}
         onForkChat={onForkChat}
+        onSideAsk={onSideAsk}
+        onSideStop={onSideStop}
       />
     </div>
   )

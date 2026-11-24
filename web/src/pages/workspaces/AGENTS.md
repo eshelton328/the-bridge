@@ -22,11 +22,11 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   Retry in every layout; any other error goes to RouteError
   (`app/WorkspacesLiveDefault.test.tsx`). The live page offers only what
   a route backs (reviews R41, R42): a live chat's actions are New chat,
-  Fork (a Claude chat only), Move to workspace, Rename chat (Rename in the
-  phone's sheet), Close pane…, Compact context… and Clear context… (with
-  the layout actions in a desktop pane, whose menu has no Rename, as it
-  has no name field). Side chat and Subtask stay hidden until their
-  routes come. The fixture states keep every action, and their edit mode
+  Fork (a Claude chat only), Side chat (a Claude chat only), Move to
+  workspace, Rename chat (Rename in the phone's sheet), Close pane…,
+  Compact context… and Clear context… (with the layout actions in a
+  desktop pane, whose menu has no Rename, as it has no name field).
+  Subtask stays hidden until its route comes. The fixture states keep every action, and their edit mode
   every control (`app/WorkspacesLiveUnbacked.test.tsx`).
 - The live list's edits (R41, R42, backend #423 and #427; `useWorkspaceEdits.ts`,
   `liveWorkspaceEdits.ts`): the phone's and tablet's Edit opens edit
@@ -119,6 +119,49 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   with a report (kind and status only), and no answer in 75 s says the
   list shows the chat if it started (`app/WorkspacesLiveFork.test.tsx`;
   the fake is `lib/fakeWorkspacesServer.ts`).
+- Side chat (backend #456, #460, `liveSide.ts`, `useSideChats.ts`): a
+  live Claude chat's Side chat, in the phone's sheet ("Side chat"), the
+  tablet's menu and the desktop's chat and pane menus ("Side chat
+  (/btw)"), after Fork, opens the side chat for that chat
+  (`ui.sideChatFor`): the phone's and the tablet's sheet (M5, T2), the
+  panel beside the desktop's chat (D2), or inside its pane of the
+  workbench (D5). The page draws it in `data.sideChat` from the chat's
+  questions, kept in page memory by the chat's server ID while the page
+  is open. Send posts `POST /api/chats/:chat/side` with the contract's
+  `SideQuestionRequest`, the question only, as it is: nothing of the
+  earlier questions goes with it, as a new copy of the chat's session
+  answers each one. With the 202's side ID the page reads `GET
+  /api/chats/:chat/side/:side` every 500 ms until the answer's last
+  state, and never holds the server's event stream of it: with the
+  transcript streams and `/api/events`, one more held connection would
+  take the browser's last HTTP/1.1 connection to the host, and Stop or a
+  send would wait behind it (review of #477). "Asking…" then
+  "Answering…" shows until text comes. A read that misses is read again
+  for up to 150 s; a 404 says "This answer is gone — the server
+  restarted", and no answer by 150 s says "Answer not live — the server
+  did not answer" with a report. An ask that answers after the page left
+  starts no reads. `failed`, `timedOut` ("Stopped after 2 minutes") and
+  `cut` each have their line. The chat never sees the question or the answer. One question of
+  a chat at a time: a second says "Not asked — a side question is still
+  answering" with no request; over `maxSideQuestion` is not sent. A
+  miss puts the question back in the box with one line by kind: 409
+  `noSession`, `sideBusy` (with Retry), a 404, a 400 (the server's
+  message), and any other "Not asked — <kind>", with Retry for a 5xx, a
+  429 or no answer. report() gets only an ask's 5xx, and once per answer
+  a read's error status, a lost answer or an answer the page does not
+  expect, with the step, kind and status, never the
+  question, the answer or a chat ID. The composer has no paperclip and
+  the pane no "Open as its own pane", as no route takes them. While a
+  question waits (`waiting`), the composer draws Stop, which posts
+  `POST /api/chats/:chat/side/:side/stop` (backend #465): the answer
+  ends `stopped` ("Stopped — the answer ends here") with the text so far, and
+  a stop that misses is a quiet "Not stopped — …" line with no report().
+  The side chat keeps its unsent question in the page's drafts by its own
+  id (`side:<pane>`), and its transcript follows the answer's end as a
+  live chat's does (ChatPane `follows`). A Codex chat and a shell
+  have no Side chat (`withCommands`), as the server answers them 409
+  `noSession` (`app/WorkspacesLiveSide.test.tsx`; the fake is
+  `lib/fakeSideServer.ts`).
 - Each live workspace's panes are its herdr layout's active tab (slice
   3a): `liveWorkspaces.ts` reads `GET /api/workspaces/:workspace/layout`
   on load, on `workspaces.changed` and on that workspace's

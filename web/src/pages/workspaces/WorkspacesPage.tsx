@@ -35,7 +35,8 @@
 // A live workspace's rename, a live chat's rename (herdr's pane label) and the workspaces' order go to the server one
 // at a time and show from the list read after `workspaces.changed` (useWorkspaceEdits.ts, reviews R41, R42). A live
 // Claude chat's Fork is one of those edits (backend #443), and its new chat opens once the list shows it
-// (useForkedChat.ts).
+// (useForkedChat.ts). A live Claude chat's Side chat asks its questions of a copy of the chat's session and streams
+// each answer (useSideChats.ts, backend #460): the page draws the side chat of `ui.sideChatFor` in `data.sideChat`.
 import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { report } from '../../errors/reporter.ts'
@@ -64,6 +65,7 @@ import { useLiveUploads } from './useLiveUploads.ts'
 import { useChatLink } from './useChatLink.ts'
 import { useNewChat } from './useNewChat.ts'
 import { useForkedChat } from './useForkedChat.ts'
+import { useSideChats } from './useSideChats.ts'
 import {
   useSeenPanes,
   useWorkspacesActions,
@@ -184,7 +186,17 @@ export function WorkspacesPage() {
   const efforts = useLiveEffort(import.meta.env.DEV && live, state.data)
   // The Inbox badge: the app's live count on the live home, the shown state's number on fixtures (lib/inboxFeed.ts).
   const railBadge = useInboxBadge(data.railBadge, live)
-  const screenData = withRestarting({ ...data, railBadge }, models.isRestarting)
+  // The live side chats (backend #460): the side chat of the chat the owner opened it for, while that chat is a live
+  // Claude chat; none for a Codex chat or a shell, and the fixtures keep their own.
+  const sides = useSideChats(import.meta.env.DEV && live)
+  const sidePane = data.panes.find((p) => p.id === shownUi.sideChatFor)
+  const sideChat =
+    sides === undefined
+      ? data.sideChat
+      : sidePane?.type === 'chat' && sidePane.liveChat !== undefined && sidePane.takesCommands !== undefined
+        ? sides.sideChatOf(sidePane.id, sidePane.liveChat, sidePane.head.title)
+        : undefined
+  const screenData = withRestarting({ ...data, railBadge, sideChat }, models.isRestarting)
   const layoutWrites = useLayoutWrites(import.meta.env.DEV && live, data, (workspace, chat, tab) => {
     changeUi(followTab(liveData, uiRef.current, workspace, chat, tab))
   })
@@ -374,6 +386,26 @@ export function WorkspacesPage() {
         onCopy={copyReply}
         onSend={onSend}
         newChat={newChat}
+        onSideAsk={
+          sides === undefined
+            ? undefined
+            : (chat, question) => {
+                const pane = data.panes.find((p) => p.id === chat)
+                return pane?.type === 'chat' && pane.liveChat !== undefined && pane.takesCommands !== undefined
+                  ? sides.ask(pane.liveChat, question)
+                  : Promise.resolve(false)
+              }
+        }
+        onSideStop={
+          sides === undefined
+            ? undefined
+            : (chat) => {
+                const pane = data.panes.find((p) => p.id === chat)
+                return pane?.type === 'chat' && pane.liveChat !== undefined
+                  ? sides.stop(pane.liveChat)
+                  : Promise.resolve(false)
+              }
+        }
         filesOf={(chat) => files.filesOf(chat, liveChatOf(chat))}
         pendingOf={(chat) => pendings.pendingOf(liveChatOf(chat))}
         effortOf={(chat) => {
