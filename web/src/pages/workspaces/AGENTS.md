@@ -651,9 +651,9 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   chat reads its newest 100 entries (`pageEntries`); "Loading earlier entries"
   in view reads the 100 before the first, one read at a time, up to the 500
   cap, and the pin keeps the reader's place (`earlierSlot`). A miss shows
-  "Earlier entries not loaded — <kind>" with Retry. A 409, or a reconnect's
-  page with no entry in the view, replaces the view at its end
-  (`WorkspacesEntryRenders.test.tsx`).
+  "Earlier entries not loaded — <kind>" with Retry. A read again (a
+  reconnect, Retry) takes as many entries as the view holds; a 409 reads the
+  newest page again (`WorkspacesEntryRenders.test.tsx`).
 - A live chat opens at its newest entry and stays there as entries come
   in, unless the reader scrolled up; back at the end, it follows again
   (`blocks/usePinnedEnd.ts`, `app/WorkspacesTranscriptScroll.test.tsx`).

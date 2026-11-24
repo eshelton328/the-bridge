@@ -723,18 +723,22 @@ describe('paging', () => {
     ])
   })
 
-  it('keeps the loaded pages through a read of the newest page again', async () => {
+  it('reads as many entries as the view holds again, so a loaded page comes fresh through a reconnect', async () => {
     const server = fakeTranscriptServer()
     server.set(chat, many(250))
     watch(server)
     await loaded(100)
     loadEarlier(chat)
     await loaded(200)
+    // An older entry changed while the page heard nothing, such as a tool call that ended.
+    server.set(
+      chat,
+      many(250).map((e) => (e.id === 'e60' ? user('e60', 'changed') : e)),
+    )
     retryTranscript(chat)
-    await expect.poll(() => server.readQueries.length).toBe(3)
-    await settle()
+    await expect.poll(() => view()?.entries.find((e) => e.id === 'e60')).toEqual(user('e60', 'changed'))
+    expect(server.readQueries.at(-1)).toEqual({ limit: '200' })
     expect(ids()?.[0]).toBe('e50')
-    expect(view()?.entries).toHaveLength(200)
   })
 
   it('reads the newest page again in place of the view when the first entry is gone (409 entryNotFound)', async () => {

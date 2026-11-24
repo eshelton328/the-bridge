@@ -287,25 +287,6 @@ export function bufferedAfterRead(
   return entries.filter((e) => held.has(e.id))
 }
 
-/**
- * The view after a read of the newest page. When the page starts at an entry the view holds, the older entries before
- * it stay, so a reconnect keeps the pages the reader loaded; else the page alone, as what came before it is not known.
- */
-export function withNewestPage(
-  view: TranscriptView,
-  page: Pick<TranscriptResponse, 'entries' | 'earlier'>,
-): TranscriptView {
-  const first = page.entries[0]
-  const at = view.loaded && page.earlier && first !== undefined ? view.entries.findIndex((e) => e.id === first.id) : -1
-  if (at <= 0) return { loaded: true, entries: page.entries, earlier: page.earlier, problem: undefined }
-  return {
-    loaded: true,
-    entries: [...view.entries.slice(0, at), ...page.entries],
-    earlier: view.earlier,
-    problem: undefined,
-  }
-}
-
 /** One watched chat: how many panes show it, Retry, the read of an older page and stop. */
 type Session = { watchers: number; readonly retry: () => void; readonly older: () => void; readonly stop: () => void }
 
@@ -407,10 +388,12 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
    * Reads the transcript and shows it; false when the read missed (the line shows) or `signal` ended it, `quiet` when
    * it got no answer as the page came back from the background (`mark`).
    */
-  const load = async (signal: AbortSignal, mark?: ResumeMark, fresh = false): Promise<boolean | 'quiet'> => {
+  // A read again takes as many entries as the view holds, so the older pages the reader loaded come fresh too.
+  const held = () => Math.min(maxTranscriptEntries, Math.max(pageEntries, views.get(chat)?.entries.length ?? 0))
+  const load = async (signal: AbortSignal, mark?: ResumeMark, limit = held()): Promise<boolean | 'quiet'> => {
     let answer: Result<TranscriptResponse, LiveMiss>
     try {
-      answer = await readTranscript(chat, signal, { limit: pageEntries })
+      answer = await readTranscript(chat, signal, { limit })
     } catch (thrown) {
       if (signal.aborted) return false
       // A reply that is not JSON or that the contract refuses: the line and the report name its kind, not its text.
@@ -441,9 +424,9 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
       fail(readLine(miss), miss)
       return false
     }
-    const read = answer.value
+    const { entries, earlier } = answer.value
     readCounts.set(chat, transcriptReads(chat) + 1)
-    update((view) => withNewestPage(fresh ? emptyView : view, read))
+    update(() => ({ loaded: true, entries, earlier, problem: undefined }))
     outages.delete(chat)
     endGrace()
     return true
@@ -595,7 +578,7 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
       if (signal.aborted) return
       if (!answer.ok) {
         if (answer.error.kind !== 'status' || answer.error.status !== 409) missed(answer.error.kind)
-        else await load(signal, undefined, true)
+        else await load(signal, undefined, pageEntries)
         return
       }
       const page = answer.value
