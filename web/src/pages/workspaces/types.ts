@@ -614,7 +614,7 @@ export const PhoneText = z.object({
    * current workspace, and New workspace, which adds a workspace named `untitled` and opens its name as a field in
    * edit mode. Without it, + draws only.
    */
-  /** The live page (W3) names New chat alone: New workspace waits for W4. */
+  /** The live page names New chat (W3) and New workspace (W4), which opens the live dialog in place of edit mode. */
   addMenu: z
     .object({ newChat: z.string(), newWorkspace: z.string().optional(), untitled: z.string().optional() })
     .optional(),
@@ -1175,6 +1175,11 @@ export const WorkspacesUi = z.object({
   workspaceMenuFor: z.string().nullable().optional(),
   /** The menu that + opens at the top of the phone's list is open (M15). */
   addMenuOpen: z.boolean().optional(),
+  /**
+   * The live New workspace dialog is open (W4, NewWorkspaceDialog): the phone's and tablet's + menu and the desktop
+   * sidebar's + open it.
+   */
+  newWorkspaceOpen: z.boolean().optional(),
   /** The workspaces the owner added with that menu's New workspace, by id, with the name each started with. */
   addedWorkspaces: z.array(z.object({ id: z.string(), label: z.string() })).optional(),
   /** The workspace New chat opens with, by id, in place of the form's own: the one New chat was picked for. */
@@ -1233,4 +1238,22 @@ export type WorkspaceEdits = {
    * needing the owner, as a new chat does.
    */
   readonly forkChat: (chat: string) => void
+  /**
+   * Makes a live workspace with one shell (W4, backend #471), named `name` (trimmed), or the server's default name when
+   * it is empty; the workspace opens once the list shows it. The answer is for the dialog that asked.
+   */
+  readonly createWorkspace: (name: string) => Promise<NewWorkspaceAnswer>
 }
+
+/**
+ * What the New workspace dialog shows after its Create (W4): `created` closes it, `name` is the name field's error
+ * (the server's 400 or the `Label` rule), `retry` a line with Retry (herdr's 502 or 503, an unreachable server),
+ * `miss` a line with no Retry, and `unknown` a line after which the dialog sends nothing more, as the workspace may
+ * have been made (no answer in time, a 201 the page cannot read).
+ */
+export type NewWorkspaceAnswer =
+  | { readonly kind: 'created' }
+  | { readonly kind: 'name'; readonly line: string }
+  | { readonly kind: 'retry'; readonly line: string }
+  | { readonly kind: 'miss'; readonly line: string }
+  | { readonly kind: 'unknown'; readonly line: string }

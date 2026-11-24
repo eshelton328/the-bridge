@@ -66,11 +66,32 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   Dismiss. report() gets only a 5xx or an unexpected answer, with the
   action, kind and status (`app/WorkspacesLiveEdits.test.tsx`; the fake
   is `lib/fakeWorkspacesServer.ts`).
+- New workspace (W4, R59 part 2, backend #471, `blocks/NewWorkspaceDialog.tsx`):
+  the phone's and the tablet's + menu (M15) and the desktop sidebar's +
+  (D2 105:617) open one library `Dialog` at every size (`ui.newWorkspaceOpen`),
+  with an optional name field. Create, or Enter, posts `POST
+  /api/workspaces` with the contract's `CreateWorkspaceRequest`: the
+  trimmed name, or none when the field is empty, so the server names it
+  "untitled". A name the contract's `Label` refuses is the field's error
+  and is not sent. A 201 closes the dialog, and the workspace opens as a
+  click on its tab does (`switchTo`) with the first list read that shows
+  it, after `workspaces.changed` or the page's own read 2.5 s later. A
+  400 shows the server's words as the field's error; herdr's 502 and 503,
+  a 5xx with no error body and an unreachable server show "Not made —
+  <kind>" with Retry, which posts the same name again; no answer in 30 s
+  says the list shows the workspace if it was made, with no Retry. It is
+  one of the list's edits, so one at a time with them, and report() gets
+  only a 5xx or an unexpected answer, by kind and status, never the name.
+  M15 draws New workspace as a workspace added with its name a field in
+  edit mode; the fixtures keep that, and the live page asks for the name
+  first, as the desktop has no such field
+  (`app/WorkspacesLiveCreate.test.tsx`; the fake is
+  `lib/fakeWorkspacesServer.ts`).
 - Move to workspace (backend #435, `blocks/moveToWorkspace.ts`): a
   live chat's actions in the phone's sheet, the tablet's menu and the
   desktop's chat and pane menus list the other workspaces of the list,
-  never the chat's own and with no New workspace row (no route makes
-  one); with no other workspace there is no Move to workspace. A pick
+  never the chat's own and with no New workspace row (the create route
+  makes an empty workspace and does not move a chat into it); with no other workspace there is no Move to workspace. A pick
   posts `POST /api/chats/:chat/workspace` with `{ workspace }`
   (`liveWorkspaceEdits.ts`, the contract's `MoveToWorkspaceRequest`).
   A chat that is its workspace's last asks first in a library

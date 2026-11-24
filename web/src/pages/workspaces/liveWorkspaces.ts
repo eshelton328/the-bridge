@@ -328,7 +328,8 @@ function liveOnly(
   tabs: ReadonlyMap<string, LiveTab[]> = new Map(),
 ): WorkspacesScreenState {
   const panes = livePanes(workspaces, machine)
-  // No route makes a workspace from a chat's Move to workspace list, so the live list has no New workspace row.
+  // No route makes a workspace from a chat's Move to workspace list (W4 makes an empty one), so the live list has no
+  // New workspace row.
   const data = state.data
   const layouts = Object.fromEntries(
     workspaces.map((w): [string, WorkspaceLayout] => {
@@ -378,7 +379,8 @@ function liveOnly(
               ...withEdit(data.phone),
               closeWorkspace: liveCloseWorkspace,
               chatMenu: livePhoneChatMenu,
-              addMenu: { newChat: 'New chat' },
+              // W4 (backend #471): New workspace opens the live dialog (NewWorkspaceDialog).
+              addMenu: { newChat: 'New chat', newWorkspace: 'New workspace' },
               workspaceMenu: [{ value: 'newChat', label: 'New chat in {workspace}' }],
             },
           }),

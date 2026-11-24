@@ -209,6 +209,11 @@ export function WorkspacesPhone({
         })
       return
     }
+    // The live page (W4): New workspace asks for the name in its dialog, which the screen draws at every size.
+    if (edits !== undefined) {
+      onUiChange({ addMenuOpen: false, newWorkspaceOpen: true })
+      return
+    }
     const untitled = text.addMenu?.untitled
     if (untitled === undefined || text.done === undefined) return
     const added = ui.addedWorkspaces ?? []

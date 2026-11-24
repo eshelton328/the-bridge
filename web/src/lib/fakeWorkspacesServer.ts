@@ -116,11 +116,23 @@
 // old workspace leaves when it is empty,
 // which sends `workspaces.changed`, and the answer is 200 with the contract's
 // `MoveToWorkspaceResponse`. `answerEdits` gives the other 409 states.
+//
+// W4 (backend #471): `POST /api/workspaces` takes the contract's
+// `CreateWorkspaceRequest` (a body it refuses, or no JSON content type, is
+// 400). It lists a new workspace last (`<machine>/w-new<n>`), named `name` or
+// `defaultWorkspaceName`, with one shell chat, sends `workspaces.changed`
+// unless `quietCreates`, and answers 201 with the contract's
+// `CreateWorkspaceResponse`. `answerCreates` answers each next create with a
+// test's error, after it made the workspace when `made` (herdr made it and
+// the server's list read after it missed), and `creates` records each body.
 import {
   ChatId,
   type ChatSummary,
   CloseChatRequest,
   CloseWorkspaceRequest,
+  CreateWorkspaceRequest,
+  CreateWorkspaceResponse,
+  defaultWorkspaceName,
   type ErrorBody,
   FocusChatRequest,
   ForkChatRequest,
@@ -253,6 +265,12 @@ export function fakeWorkspacesServer(
     body: unknown
   }[] = []
   let editAnswer: (() => Response) | undefined
+  /** W4: each create's body, an answer in place of the next ones', and whether a create sends no event. */
+  const creates: unknown[] = []
+  let createAnswer: (() => Response) | undefined
+  let createMade = false
+  let quietCreates = false
+  let made = 0
 
   /** The ID of the tab made `at`th for `workspace`; it stays while the tab lives. */
   const tabId = (workspace: string, at: number) => `${workspace}:t${String(at + 1)}`
@@ -807,6 +825,40 @@ export function fakeWorkspacesServer(
     return new Response(null, { status: 204 })
   }
 
+  /** A new workspace (W4): the contract's checks, the test's answer, then the workspace last with one shell, and 201. */
+  const create = (init: RequestInit | undefined) => {
+    const body = bodyOf(init)
+    creates.push(body)
+    const parsed = CreateWorkspaceRequest.safeParse(body)
+    if (new Headers(init?.headers).get('content-type') !== 'application/json' || !parsed.success) return badBody()
+    if (createAnswer !== undefined && !createMade) return createAnswer()
+    made += 1
+    const id = `${response.machine}/w-new${String(made)}`
+    const workspace = {
+      id,
+      label: parsed.data.name ?? defaultWorkspaceName,
+      chats: [
+        {
+          id: `${id}-shell`,
+          kind: 'shell',
+          title: 'zsh',
+          model: 'zsh',
+          contextUsed: null,
+          modelId: null,
+          effort: null,
+          pane: `${id}-pane`,
+          status: 'idle',
+          parent: null,
+        },
+      ],
+    }
+    response = WorkspacesResponse.parse({ ...response, workspaces: [...response.workspaces, workspace] })
+    if (!quietCreates) changed()
+    if (createAnswer !== undefined) return createAnswer()
+    const answer = CreateWorkspaceResponse.parse({ workspace: response.workspaces.find((w) => w.id === id) })
+    return new Response(JSON.stringify(answer), { status: 201, headers: { 'content-type': 'application/json' } })
+  }
+
   /** A move of a chat to another workspace (backend #435): the contract's checks, the test's answer, then 200. */
   const moveChat = (target: string, init: RequestInit | undefined) => {
     const body = bodyOf(init)
@@ -975,6 +1027,17 @@ export function fakeWorkspacesServer(
     answerEdits: (answer: (() => Response) | undefined) => {
       editAnswer = answer
     },
+    /** Each new workspace's body the page posted (W4), in order. */
+    creates,
+    /** Answers each next create with `answer` until it is set to undefined. */
+    answerCreates: (answer: (() => Response) | undefined, made = false) => {
+      createAnswer = answer
+      createMade = made
+    },
+    /** A create sends no `workspaces.changed` while set: the page must read the list again by itself. */
+    quietCreates: (quiet: boolean) => {
+      quietCreates = quiet
+    },
     /** Adds `chat` to the end of `workspace` (checked against the contract), and tells the streams unless `quiet`. */
     putChat: (workspace: string, chat: unknown, quiet = false) => {
       response = WorkspacesResponse.parse({
@@ -990,6 +1053,7 @@ export function fakeWorkspacesServer(
     },
     /** The answer to a request for `path`, or undefined when it is not a workspace route. */
     handle: (path: string, init?: RequestInit): Response | undefined => {
+      if (path === '/api/workspaces' && init?.method === 'POST') return create(init)
       if (path === '/api/workspaces') return json(response)
       const layout = /^\/api\/workspaces\/([^/]+)\/layout$/.exec(path)
       if (layout !== null) {

@@ -63,6 +63,7 @@ import { CloseChatDialog } from '../blocks/CloseChatDialog.tsx'
 import { type LayoutWrites, tabOf, withLayoutActions } from '../blocks/layoutActions.ts'
 import { MoveChatDialog } from '../blocks/MoveChatDialog.tsx'
 import { MoveWorkspaceDialog } from '../blocks/MoveWorkspaceDialog.tsx'
+import { NewWorkspaceDialog } from '../blocks/NewWorkspaceDialog.tsx'
 import { moveOrAsk, workspaceOf } from '../blocks/moveToWorkspace.ts'
 import { ChatNameField } from '../blocks/ChatNameField.tsx'
 import { ChatToast } from '../blocks/ChatToast.tsx'
@@ -296,6 +297,16 @@ export function WorkspacesScreen({
         }}
       />
     )
+  // New workspace of the live page (W4): one dialog at every size, from the phone's and tablet's + and the sidebar's +.
+  const newWorkspaceDialog =
+    edits === undefined || ui.newWorkspaceOpen !== true ? null : (
+      <NewWorkspaceDialog
+        onOpenChange={(open) => {
+          if (!open) change({ newWorkspaceOpen: false })
+        }}
+        onCreate={edits.createWorkspace}
+      />
+    )
   // The ui lives here, above the layout, so a width change that swaps the layout keeps what the owner changed.
   return (
     <ViewportFrame initial={viewport}>
@@ -335,6 +346,7 @@ export function WorkspacesScreen({
           {closeDialog}
           {moveDialog}
           {moveAskDialog}
+          {newWorkspaceDialog}
         </>
       )}
     </ViewportFrame>
@@ -680,6 +692,13 @@ function WorkspacesLayout({
                 onUiChange={change}
                 layers={data.layers}
                 notice={notice}
+                onNewWorkspace={
+                  edits === undefined
+                    ? undefined
+                    : () => {
+                        change({ newWorkspaceOpen: true })
+                      }
+                }
               />
             </SlotBoundary>
           }
