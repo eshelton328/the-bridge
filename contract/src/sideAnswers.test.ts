@@ -22,7 +22,8 @@ describe('side answers', () => {
 
   it('takes an answer of a known state with text up to maxEntryText, in the event envelope', () => {
     expect(SideAnswer.parse(answer)).toEqual(answer)
-    expect(SideAnswer.safeParse({ ...answer, state: 'stopped' }).success).toBe(false)
+    expect(SideAnswer.safeParse({ ...answer, state: 'stopped' }).success).toBe(true)
+    expect(SideAnswer.safeParse({ ...answer, state: 'paused' }).success).toBe(false)
     expect(SideAnswer.safeParse({ ...answer, text: 'x'.repeat(maxEntryText + 1) }).success).toBe(false)
     const event = { source: 'test-mac/side', seq: 0, type: 'side.changed', data: { ...answer, state: 'done' } }
     expect(SideChangedEvent.parse(event)).toEqual(event)

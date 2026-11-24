@@ -24,6 +24,7 @@ import { describe, expect, it } from 'vitest'
 import { createFakeAgents } from '../adapters/fakeAgents.ts'
 import { createApp } from '../app.ts'
 import { memoryLogger } from '../logger.ts'
+import { maxSmallJsonBytes } from './jsonBody.ts'
 import type { AgentPortError, RestartOutcome } from '../services/agentPort.ts'
 
 const machine = MachineId.parse('test-mac')
@@ -829,6 +830,38 @@ describe('POST /api/chats/:chat/side and its answer', () => {
     expect(await busy.json()).toMatchObject({ error: { kind: 'chat-not-ready', state: 'sideBusy' } })
     const shell = await ask(app, 'test-mac/brain-git', { question: 'Why?' })
     expect(await shell.json()).toMatchObject({ error: { kind: 'chat-not-ready', state: 'noSession' } })
+  })
+
+  it('stops an answer with 204, which ends its stream as stopped; 204 again, 404 for an unknown side', async () => {
+    const agents = createFakeAgents(machine)
+    agents.setSideAnswer(ChatId.parse(themes), ['hang'])
+    const app = createApp({ agents, owner, log: memoryLogger().log })
+    const { side } = SideStarted.parse(await (await ask(app, themes, { question: 'Why?' })).json())
+    const stop = (path: string, body: unknown = {}) =>
+      app.request(`${path}/stop`, {
+        method: 'POST',
+        headers: { ...local, 'content-type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+    const stream = await app.request(`${sidePath(themes, side)}/events`, { headers: local })
+    if (stream.body === null) throw new Error('no body')
+    const read = frames(stream.body, 3)
+    // A body over 4 KiB is refused before it is read in full, and stops nothing.
+    const big = await app.request(`${sidePath(themes, side)}/stop`, {
+      method: 'POST',
+      headers: { ...local, 'content-type': 'application/json' },
+      body: `{}${' '.repeat(maxSmallJsonBytes)}`,
+    })
+    expect(big.status).toBe(400)
+    expect(await big.text()).toContain('"kind":"invalid-input"')
+    expect((await stop(sidePath(themes, side))).status).toBe(204)
+    const last = SideChangedEvent.parse(JSON.parse((await read)[2]?.data ?? ''))
+    expect(last.data.state).toBe('stopped')
+    expect((await stop(sidePath(themes, side))).status).toBe(204)
+    expect((await stop(sidePath(themes, 'a1b2c3d4e5f60718'))).status).toBe(404)
+    expect((await stop(sidePath(themes, side), { now: true })).status).toBe(400)
+    // The chat takes its next question.
+    expect((await ask(app, themes, { question: 'Again?' })).status).toBe(202)
   })
 
   it('answers 404 for an unknown chat or side, and 400 for an empty question, a model or a bad side ID', async () => {

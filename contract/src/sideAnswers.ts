@@ -21,8 +21,11 @@ export const SideId = z
   .brand<'SideId'>()
 export type SideId = z.infer<typeof SideId>
 
-/** Where a side answer is: still `answering`, `done`, `failed`, or stopped at the server's time limit (`timedOut`). */
-export const SideState = z.enum(['answering', 'done', 'failed', 'timedOut'])
+/**
+ * Where a side answer is: still `answering`, `done`, `failed`, stopped at the server's time limit (`timedOut`), or
+ * stopped by the owner (`stopped`).
+ */
+export const SideState = z.enum(['answering', 'done', 'failed', 'timedOut', 'stopped'])
 export type SideState = z.infer<typeof SideState>
 
 /** A side answer: its whole text so far, in Markdown, cut at `maxEntryText` (`cut`), and its state. */

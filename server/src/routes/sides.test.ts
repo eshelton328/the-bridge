@@ -18,6 +18,7 @@ function stub() {
   const sides: SideAnswers = {
     ask: () => Promise.reject(new Error('not used')),
     get: (c, s) => (c === chat && s === side ? answer : undefined),
+    stop: () => 'notFound',
     watch: (c, s, listener) => {
       if (c !== chat || s !== side) return undefined
       listeners.add(listener)
