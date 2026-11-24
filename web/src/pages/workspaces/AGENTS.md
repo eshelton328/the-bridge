@@ -253,12 +253,20 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   (LIBRARY_GAPS.md: Sent file chips).
   A slash command's error output (`ErrorEntry`) shows as an `event`
   entry labelled "Error" with its text. A harness note (`NoteEntry`,
-  R46: a task's report, a peer's message, a Stop hook) is a `note`
-  entry: a small `fg.muted` line with its kind's library icon (task
-  `AgentIcon`, peer `ChatIcon`, hook `HookIcon`, named Task, Message,
-  Hook) and no bubble, never the owner's bubble or its colour
-  (`blocks/NoteLine.tsx`, `app/WorkspacesNoteLines.test.tsx`). Figma
-  draws no note.
+  R46: a task's report, a Stop hook) is a `note` entry: a small
+  `fg.muted` line with its kind's library icon (task `AgentIcon`, hook
+  `HookIcon`, named Task, Hook) and no bubble, never the owner's bubble
+  or its colour (`blocks/NoteLine.tsx`). A `peer` note (R55: a
+  SendMessage message or a prompt another chat typed in an
+  `<agent-prompt>` wrapper; the server decides which lines are peer
+  notes, #454) is a `peer` entry, drawn as the library's
+  `Message from="peer"`: an amber start bar and "From <name>" with the
+  chat icon, its `message` text as Markdown (`EntryText`) and the cut
+  line, or the label alone when the note has no `message`. The sender
+  is `message.from`, "another chat" when null, or for a note with no
+  `message` the name in its "Message from <name>" text
+  (`liveTranscript.ts`, `app/WorkspacesNoteLines.test.tsx`). Figma
+  draws neither.
 - A reply that a Stop hook had written again (R62, backend #470): the
   server marks the draft with `replacedBy`, the rewrite's entry ID. A
   draft whose rewrite is in the transcript is not a reply of its own

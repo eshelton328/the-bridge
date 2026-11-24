@@ -2,7 +2,9 @@
 // call with its kind as a `ToolRow`, R32), an
 // agent's reply with Copy (`ReplyEntry`, with the drafts of a rewritten reply, R62), progress lines or a command waiting for approval
 // (D1 105:210 to 105:291), or a line that records an event, such as where a
-// fork starts (D16 417:718), or a harness note (`NoteLine`, R46). A live message or reply whose text the server cut
+// fork starts (D16 417:718), a harness note (`NoteLine`, R46), or a message
+// from another chat (`Message from="peer"`, R55: an amber bar and "From
+// <name>", never the owner's bubble). A live message or reply whose text the server cut
 // shows a quiet line under it (`cut`, slice 3b). A message's and a reply's text
 // is Markdown (`EntryText`). The files sent with a message show as chips above
 // it, as the composer showed them, and a message of files alone shows only the
@@ -95,6 +97,17 @@ export const ChatEntryView = memo(function ChatEntryView({ entry, figma, onAct, 
     case 'note':
       // A harness note (R46): a muted line with its kind's icon, never the owner's bubble.
       return <NoteLine kind={entry.kind} label={entry.label} text={entry.text} figma={figma} />
+    case 'peer':
+      // A message from another chat (R55): the library's peer message with its Markdown text, or its label alone
+      // when the server sent no text; never the owner's bubble.
+      return (
+        <div data-figma={figma}>
+          <Message from="peer" name={entry.name}>
+            {entry.text === undefined ? null : <EntryText text={entry.text} />}
+          </Message>
+          {entry.cut === undefined ? null : <span className={cutLine}>{entry.cut}</span>}
+        </div>
+      )
     case 'assistant':
       // A reply, with its Copy and, when a Stop hook had it written again, its note and drafts (R62).
       return <ReplyEntry entry={entry} figma={figma} onCopy={onCopy} />
