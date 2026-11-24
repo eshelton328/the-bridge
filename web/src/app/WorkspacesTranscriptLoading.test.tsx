@@ -200,6 +200,22 @@ const loading = () => page.getByRole('status', { name: 'Loading this chat' })
 const skeleton = () => document.querySelector('[data-loading="transcript"]')
 const messageBox = () => page.getByRole('combobox').first().getByRole('textbox')
 
+/** The scroller's content box: its client box less its padding, where the list's entries sit. */
+function listBox(body: Element): { top: number; bottom: number } {
+  const box = body.getBoundingClientRect()
+  const style = getComputedStyle(body)
+  const top = box.top + body.clientTop + Number.parseFloat(style.paddingTop)
+  return { top, bottom: box.top + body.clientTop + body.clientHeight - Number.parseFloat(style.paddingBottom) }
+}
+
+/** The skeleton's entries that show: those in its first column, as the ones that do not fit wrap past its edge. */
+function shownEntries(skel: Element): DOMRect[] {
+  const column = skel.querySelector('[role=status] > div')
+  if (column === null) throw new Error('no skeleton column')
+  const edge = column.getBoundingClientRect().right
+  return [...column.children].map((entry) => entry.getBoundingClientRect()).filter((rect) => rect.left < edge)
+}
+
 /** The child of the transcript's scroller that holds `el`: an entry's own box, the skeleton's place in the list. */
 function rowOf(el: Element, body: Element): Element {
   let row = el
@@ -209,7 +225,7 @@ function rowOf(el: Element, body: Element): Element {
 
 describe('a live chat while its transcript loads', () => {
   for (const device of sizes)
-    it(`shows the skeleton at the bottom, takes text at once and puts the newest entry where it ended, on ${device.name}`, async () => {
+    it(`fills the pane with the skeleton from its top to the composer, takes text at once and puts the newest entry where it ended, on ${device.name}`, async () => {
       const server = slowServer()
       server.hold()
       await openChat(device.size, device.taps)
@@ -217,9 +233,13 @@ describe('a live chat while its transcript loads', () => {
       const skel = skeleton()
       const body = skel?.parentElement ?? null
       if (skel === null || body === null) throw new Error('no skeleton')
-      // At the bottom: the skeleton ends where the scroller's content ends, over the composer.
-      const skelBottom = skel.getBoundingClientRect().bottom
-      expect(skelBottom).toBeGreaterThan(body.getBoundingClientRect().top + body.clientHeight / 2)
+      // R64: the skeleton fills the list, from its top under the header to its bottom over the composer: the first
+      // entry starts at the list's top and the last whole one ends at its bottom, each within 2 px.
+      const list = listBox(body)
+      const shown = shownEntries(skel)
+      expect(shown.length).toBeGreaterThanOrEqual(2)
+      expect(Math.abs((shown[0]?.top ?? Number.NaN) - list.top)).toBeLessThanOrEqual(2)
+      expect(Math.abs((shown.at(-1)?.bottom ?? Number.NaN) - list.bottom)).toBeLessThanOrEqual(2)
       await expect.element(page.getByText('Fix the build')).not.toBeInTheDocument()
       // The composer works while the chat loads.
       await userEvent.fill(messageBox(), 'a draft while it loads')
