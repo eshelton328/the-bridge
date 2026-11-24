@@ -137,7 +137,6 @@ export {
 export {
   maxSideQuestion,
   SideAnswer,
-  SideChangedEvent,
   SideId,
   SideQuestionRequest,
   SideStarted,

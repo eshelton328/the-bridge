@@ -15,7 +15,6 @@ import {
   RestartModelResponse,
   MoveToWorkspaceResponse,
   SideAnswer,
-  SideChangedEvent,
   SideStarted,
 } from '@bridge/contract'
 import { ok, type Result } from '@bridge/shared'
@@ -794,7 +793,7 @@ describe('POST /api/chats/:chat/side and its answer', () => {
     })
   const sidePath = (chat: string, side: string) => `/api/chats/${encodeURIComponent(chat)}/side/${side}`
 
-  it('answers 202 with the side ID, then streams the answer as it comes and ends after its last state', async () => {
+  it('answers 202 with the side ID, then gives the answer as it comes until its last state', async () => {
     const agents = createFakeAgents(machine)
     agents.setSideAnswer(ChatId.parse(themes), [
       { text: 'The build ' },
@@ -807,16 +806,14 @@ describe('POST /api/chats/:chat/side and its answer', () => {
     expect(res.status).toBe(202)
     const { side } = SideStarted.parse(await res.json())
     expect(agents.sideQuestions()).toEqual([{ chat: themes, question: 'Why did the build fail?' }])
-    const stream = await app.request(`${sidePath(themes, side)}/events`, { headers: local })
-    expect(stream.status).toBe(200)
-    if (stream.body === null) throw new Error('no body')
-    const read = await frames(stream.body, 2)
-    expect(read[0]?.event).toBe('open')
-    const last = SideChangedEvent.parse(JSON.parse(read[1]?.data ?? ''))
-    expect(last.source).toBe('test-mac/side')
-    expect(last.data).toEqual({ side, chat: themes, state: 'done', text: 'The build needs marker-5150.', cut: false })
-    const now = await app.request(sidePath(themes, side), { headers: local })
-    expect(SideAnswer.parse(await now.json()).state).toBe('done')
+    const read = async () =>
+      SideAnswer.parse(await (await app.request(sidePath(themes, side), { headers: local })).json())
+    let now = await read()
+    for (let i = 0; i < 100 && now.state === 'answering'; i++) {
+      await new Promise((r) => setTimeout(r, 5))
+      now = await read()
+    }
+    expect(now).toEqual({ side, chat: themes, state: 'done', text: 'The build needs marker-5150.', cut: false })
     expect(JSON.stringify(lines())).not.toMatch(/marker-5150|Why did the build/)
   })
 
@@ -832,7 +829,7 @@ describe('POST /api/chats/:chat/side and its answer', () => {
     expect(await shell.json()).toMatchObject({ error: { kind: 'chat-not-ready', state: 'noSession' } })
   })
 
-  it('stops an answer with 204, which ends its stream as stopped; 204 again, 404 for an unknown side', async () => {
+  it('stops an answer with 204, which reads as stopped after; 204 again, 404 for an unknown side', async () => {
     const agents = createFakeAgents(machine)
     agents.setSideAnswer(ChatId.parse(themes), ['hang'])
     const app = createApp({ agents, owner, log: memoryLogger().log })
@@ -843,9 +840,6 @@ describe('POST /api/chats/:chat/side and its answer', () => {
         headers: { ...local, 'content-type': 'application/json' },
         body: JSON.stringify(body),
       })
-    const stream = await app.request(`${sidePath(themes, side)}/events`, { headers: local })
-    if (stream.body === null) throw new Error('no body')
-    const read = frames(stream.body, 3)
     // A body over 4 KiB is refused before it is read in full, and stops nothing.
     const big = await app.request(`${sidePath(themes, side)}/stop`, {
       method: 'POST',
@@ -855,8 +849,8 @@ describe('POST /api/chats/:chat/side and its answer', () => {
     expect(big.status).toBe(400)
     expect(await big.text()).toContain('"kind":"invalid-input"')
     expect((await stop(sidePath(themes, side))).status).toBe(204)
-    const last = SideChangedEvent.parse(JSON.parse((await read)[2]?.data ?? ''))
-    expect(last.data.state).toBe('stopped')
+    const after = await app.request(sidePath(themes, side), { headers: local })
+    expect(SideAnswer.parse(await after.json()).state).toBe('stopped')
     expect((await stop(sidePath(themes, side))).status).toBe(204)
     expect((await stop(sidePath(themes, 'a1b2c3d4e5f60718'))).status).toBe(404)
     expect((await stop(sidePath(themes, side), { now: true })).status).toBe(400)
@@ -869,7 +863,6 @@ describe('POST /api/chats/:chat/side and its answer', () => {
     const app = createApp({ agents, owner, log: memoryLogger().log })
     expect((await ask(app, 'test-mac/no-such-chat', { question: 'Why?' })).status).toBe(404)
     expect((await app.request(sidePath(themes, 'a1b2c3d4e5f60718'), { headers: local })).status).toBe(404)
-    expect((await app.request(`${sidePath(themes, 'a1b2c3d4e5f60718')}/events`, { headers: local })).status).toBe(404)
     expect((await app.request(sidePath(themes, 'not-hex'), { headers: local })).status).toBe(400)
     for (const body of [{ question: '  ' }, { question: 'Why?', model: 'opus' }, {}])
       expect((await ask(app, themes, body)).status).toBe(400)

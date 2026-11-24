@@ -132,7 +132,7 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
   never a session, a model or a flag. Its `SideId` is 16 hex
   characters; a `SideAnswer` holds the whole text so far, cut at
   `maxEntryText`, and a state (`answering`, `done`, `failed`,
-  `timedOut`, `stopped`); `side.changed` carries it in the event envelope. A
+  `timedOut`, `stopped`). A
   chat that cannot take one is 409 `chat-not-ready` `noSession` or
   `sideBusy` (`sideAnswers.test.ts`).
 - A `ClientErrorReport` holds only its listed fields (a strict object),

@@ -1,4 +1,4 @@
-import { ChatId, MachineId, maxEntryText, type SideAnswer } from '@bridge/contract'
+import { ChatId, MachineId, maxEntryText } from '@bridge/contract'
 import { describe, expect, it } from 'vitest'
 import { createFakeAgents } from '../adapters/fakeAgents.ts'
 import type { Result } from '@bridge/shared'
@@ -23,7 +23,7 @@ const newId = () => {
 }
 
 describe('side answers', () => {
-  it('keeps the text as it comes, cut at maxEntryText, and tells each watch', async () => {
+  it('keeps the text as it comes, cut at maxEntryText', async () => {
     const agents = createFakeAgents(machine)
     agents.setSideAnswer(themes, [
       { text: 'x'.repeat(maxEntryText - 2) },
@@ -33,13 +33,10 @@ describe('side answers', () => {
     ])
     const sides = createSideAnswers(agents, { newId })
     const side = sideOf(await sides.ask(themes, 'Why?'))
-    const seen: SideAnswer[] = []
-    sides.watch(themes, side, (a) => seen.push(a))
     await until(() => sides.get(themes, side)?.state === 'done')
     const answer = sides.get(themes, side)
     expect(answer?.text.length).toBe(maxEntryText)
     expect(answer?.cut).toBe(true)
-    expect(seen.at(-1)?.state).toBe('done')
     expect(sides.get(ChatId.parse('test-mac/other'), side)).toBeUndefined()
   })
 
@@ -63,12 +60,9 @@ describe('side answers', () => {
     const sides = createSideAnswers(agents, { newId })
     const side = sideOf(await sides.ask(themes, 'Why?'))
     await until(() => sides.get(themes, side)?.text === 'Part')
-    const seen: SideAnswer[] = []
-    sides.watch(themes, side, (a) => seen.push(a))
     expect(sides.stop(ChatId.parse('test-mac/other'), side)).toBe('notFound')
     expect(sides.stop(themes, side)).toBe('stopped')
     expect(sides.get(themes, side)).toMatchObject({ state: 'stopped', text: 'Part' })
-    expect(seen.map((a) => a.state)).toEqual(['stopped'])
     expect(sides.stop(themes, side)).toBe('ended')
     agents.setSideAnswer(themes, [{ end: 'done' }])
     const next = sideOf(await sides.ask(themes, 'Again?'))

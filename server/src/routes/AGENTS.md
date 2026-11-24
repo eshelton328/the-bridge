@@ -185,9 +185,9 @@ Thin Hono sub-apps, one file for each area, named after the area
   409 `noSession` for a shell, a Codex chat or a chat with no saved
   session, 409 `sideBusy` while one of the chat's own or three in all
   answer, 400 for any other field. `GET /:chat/side/:side` gives the
-  answer so far, and `/events` streams `side.changed` with the whole
-  answer, from its state when the stream opens, and ends after its
-  last state; an unknown side is 404. `POST /:chat/side/:side/stop`
+  whole answer so far, which the page reads again until its last state
+  (a held stream took the browser's last HTTP/1.1 connection, so other
+  requests waited); an unknown side is 404. `POST /:chat/side/:side/stop`
   (`{}`, at most 4 KiB) stops an answer that answers as `stopped`:
   204, also for an answer that ended (the page's Stop and the end can
   cross), 404 for an unknown side. The question and the answer never

@@ -3,40 +3,28 @@
 // `SideQuestionRequest` (a strict object with the question only, trimmed, 1
 // to 4000 characters; anything else is 400) and answers 202 with the
 // contract's `SideStarted`; `GET /api/chats/:chat/side/:side` gives the answer
-// so far, and `.../events` streams it as the server does: an `open` frame,
-// then `side.changed` with the whole answer from its state when the stream
-// opens and at each change, and it ends after the answer's last state. An
-// unknown side, or one of another chat, is 404. Every answer and event is
-// checked against the contract (`SideAnswer`, `SideChangedEvent`), so a test
-// cannot send what the server would not. A test plugs `handle` into its
-// `fetch` stub.
+// so far. The server has no stream of an answer, so `.../events` is 404, as
+// there; `opens` records each such request, so a test can show the page makes
+// none. An unknown side, or one of another chat, is 404. Every answer is
+// checked against the contract (`SideAnswer`), so a test cannot send what the
+// server would not. A test plugs `handle` into its `fetch` stub.
 //
 // `asks` records each question the page posted, with its chat and body;
 // `answerAsks` answers each next one with a test's error (such as 503
 // herdr-unavailable, as the served server answers until the runner PR).
-// `change` moves an answer on (text, state, cut); `drop` ends its open
-// streams with no last state, as a server restart does, and `forget` drops
-// the answer, so the next read or stream is 404.
+// `change` moves an answer on (text, state, cut), and `forget` drops the
+// answer, so the next read is 404.
 //
 // `POST /api/chats/:chat/side/:side/stop` (backend #465) takes the
 // contract's `StopChatRequest` (an empty object; anything else is 400) and
 // answers 204, also for an answer that already ended: one that still answers
-// becomes `stopped`, with its text so far, and its streams end. An unknown
+// becomes `stopped`, with its text so far. An unknown
 // side, or one of another chat, is 404. `stops` records each side the page
 // stopped; `answerStops` answers each next stop with a test's error.
 // `reads` records the side ID of each read of an answer (`GET
 // .../side/:side`), and `answerReads` answers each next read with a test's
 // error.
-import {
-  ChatId,
-  SideAnswer,
-  SideChangedEvent,
-  SideQuestionRequest,
-  SideStarted,
-  StopChatRequest,
-} from '@bridge/contract'
-
-type Stream = { readonly side: string; readonly control: ReadableStreamDefaultController<Uint8Array> }
+import { ChatId, SideAnswer, SideQuestionRequest, SideStarted, StopChatRequest } from '@bridge/contract'
 
 const json = (body: unknown, status: number) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } })
@@ -52,13 +40,11 @@ const readBody = (init: RequestInit | undefined): unknown => {
   }
 }
 
-export function fakeSideServer(machine = 'test-box') {
-  const encoder = new TextEncoder()
+export function fakeSideServer() {
   /** Each question the page posted, taken or not: its chat and body. */
   const asks: { chat: string; body: unknown }[] = []
   const answers = new Map<string, SideAnswer>()
-  const open: Stream[] = []
-  /** The side ID of each stream the page opened, in order. */
+  /** The side ID of each stream the page asked for (`.../events`, 404), in order. */
   const opens: string[] = []
   let askAnswer: (() => Response) | undefined
   /** The side ID of each read of an answer the page made, answered or not. */
@@ -67,67 +53,13 @@ export function fakeSideServer(machine = 'test-box') {
   /** The side ID of each stop the page posted, taken or not. */
   const stops: string[] = []
   let stopAnswer: (() => Response) | undefined
-  let seq = 0
   let made = 0
 
-  const send = (s: Stream, answer: SideAnswer) => {
-    const event = SideChangedEvent.parse({ source: `${machine}/side`, seq, type: 'side.changed', data: answer })
-    seq += 1
-    s.control.enqueue(
-      encoder.encode(`event: side.changed\nid: ${String(event.seq)}\ndata: ${JSON.stringify(event)}\n\n`),
-    )
-  }
-  const close = (s: Stream) => {
-    const at = open.indexOf(s)
-    if (at !== -1) open.splice(at, 1)
-    s.control.close()
-  }
-
-  const stream = (side: string, signal: AbortSignal | null | undefined) => {
-    let control: ReadableStreamDefaultController<Uint8Array> | undefined
-    let ended = false
-    const body = new ReadableStream<Uint8Array>({
-      start: (c) => {
-        control = c
-        c.enqueue(encoder.encode('event: open\nretry: 5000\ndata: {}\n\n'))
-      },
-      cancel: () => {
-        ended = true
-      },
-    })
-    if (control !== undefined) {
-      const s: Stream = { side, control }
-      open.push(s)
-      opens.push(side)
-      const now = answers.get(side)
-      if (now !== undefined) {
-        send(s, now)
-        if (now.state !== 'answering') {
-          ended = true
-          close(s)
-        }
-      }
-    }
-    signal?.addEventListener('abort', () => {
-      const at = open.findIndex((s) => s.control === control)
-      if (at !== -1) open.splice(at, 1)
-      if (ended) return
-      ended = true
-      control?.error(new DOMException('The stream was closed.', 'AbortError'))
-    })
-    return new Response(body, { status: 200, headers: { 'content-type': 'text/event-stream' } })
-  }
-
-  /** Moves the answer `side` on, and sends it on each open stream; a last state ends them. */
+  /** Moves the answer `side` on. */
   const change = (side: string, next: Partial<Pick<SideAnswer, 'state' | 'text' | 'cut'>>) => {
     const now = answers.get(side)
     if (now === undefined) throw new Error(`no side answer ${side}`)
-    const answer = SideAnswer.parse({ ...now, ...next })
-    answers.set(side, answer)
-    for (const s of open.filter((o) => o.side === side)) {
-      send(s, answer)
-      if (answer.state !== 'answering') close(s)
-    }
+    answers.set(side, SideAnswer.parse({ ...now, ...next }))
   }
 
   /** The answer for `path`, or undefined when the path is not a side route. */
@@ -177,13 +109,15 @@ export function fakeSideServer(machine = 'test-box') {
     if (read === null || method !== 'GET') return undefined
     const chat = decodeURIComponent(read[1] ?? '')
     const side = read[2] ?? ''
-    if (read[3] === undefined) {
-      reads.push(side)
-      if (readAnswer !== undefined) return readAnswer()
+    if (read[3] !== undefined) {
+      opens.push(side)
+      return missing(path)
     }
+    reads.push(side)
+    if (readAnswer !== undefined) return readAnswer()
     const answer = answers.get(side)
     if (answer?.chat !== chat) return missing(path)
-    return read[3] === undefined ? json(SideAnswer.parse(answer), 200) : stream(side, init?.signal)
+    return json(SideAnswer.parse(answer), 200)
   }
 
   return {
@@ -217,11 +151,7 @@ export function fakeSideServer(machine = 'test-box') {
       askAnswer = answer
     },
     change,
-    /** Ends the open streams of `side` with no last state, as a server restart does. */
-    drop: (side: string) => {
-      for (const s of open.filter((o) => o.side === side)) close(s)
-    },
-    /** Drops the answer `side`: its next read or stream is 404. */
+    /** Drops the answer `side`: its next read is 404. */
     forget: (side: string) => {
       answers.delete(side)
     },
