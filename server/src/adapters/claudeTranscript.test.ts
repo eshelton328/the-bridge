@@ -258,6 +258,21 @@ describe('Claude transcript', () => {
       { id: 'a3', replacedBy: undefined },
       { id: 'a4', replacedBy: undefined },
     ])
+    // A peer's prompt after the rewrite starts a new turn: its reply does not take the draft's mark.
+    expect(
+      await read([
+        user('u1', 'Fix it'),
+        assistant('a1', [text('draft')]),
+        hook('s1'),
+        assistant('a2', [text('fixed')]),
+        user('p1', '<agent-prompt from="bridge-coord">status?</agent-prompt>'),
+        assistant('a3', [text('status reply')]),
+      ]),
+    ).toEqual([
+      { id: 'a1', replacedBy: 'a2' },
+      { id: 'a2', replacedBy: undefined },
+      { id: 'a3', replacedBy: undefined },
+    ])
     // A stop after the hook's note: no reply replaced the draft, so it stays a reply.
     expect(
       await read([user('u1', 'Fix it'), assistant('a1', [text('draft')]), hook('s1'), user('u2', 'Stop there')]),

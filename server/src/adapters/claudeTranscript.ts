@@ -303,15 +303,16 @@ function entriesOf(value: unknown, options: TranscriptOptions, results: Set<stri
 
 /**
  * Marks each reply that a Stop hook sent back (R62). Before a hook note, the last assistant entry of the turn (after
- * the last prompt) is the draft; its `replacedBy` is the last assistant entry after the note and before the next
- * prompt or hook note. A draft with no reply after the note (a stop) keeps no mark.
+ * the last prompt or note) is the draft; its `replacedBy` is the last assistant entry after the note and before the
+ * next prompt or note. Any note ends a turn: a peer's message or a task report starts a new one, so its reply never
+ * marks the draft. A draft with no reply after the note (a stop) keeps no mark.
  */
 function markDrafts(entries: TranscriptEntry[]): TranscriptEntry[] {
   const turnEnd = (from: number, step: 1 | -1) => {
     let found: number | undefined
     for (let i = from; i >= 0 && i < entries.length; i += step) {
       const entry = entries[i]
-      if (entry === undefined || entry.type === 'user' || (entry.type === 'note' && entry.kind === 'hook')) break
+      if (entry === undefined || entry.type === 'user' || entry.type === 'note') break
       if (entry.type === 'assistant') {
         found = i
         if (step === -1) break
