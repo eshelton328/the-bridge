@@ -466,6 +466,7 @@ export function fakeTranscriptServer({ streams: mode = 'open', uploads: uploadOp
     /** Changes a chat's transcript and sends `transcript.changed` with `entries` to each of its open streams. */
     push: (chat: string, entries: readonly TranscriptEntry[]) => {
       const now = [...(transcripts.get(chat) ?? [])]
+      const added = entries.length - 1 - entries.findLastIndex((entry) => now.some((e) => e.id === entry.id))
       for (const entry of entries) {
         const at = now.findIndex((e) => e.id === entry.id)
         if (at === -1) now.push(entry)
@@ -476,7 +477,7 @@ export function fakeTranscriptServer({ streams: mode = 'open', uploads: uploadOp
         source: 'mac-mini/transcripts',
         seq: seq++,
         type: 'transcript.changed',
-        data: { chat, entries },
+        data: { chat, entries, added },
       })
       const text = `event: transcript.changed\nid: ${String(event.seq)}\ndata: ${JSON.stringify(event)}\n\n`
       for (const s of open) if (s.chat === chat) s.control.enqueue(encoder.encode(text))

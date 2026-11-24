@@ -364,9 +364,13 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
     update((view) => ({ ...view, problem: line }))
     noteOutage(chat, miss)
   }
-  const apply = (entries: readonly TranscriptEntry[]) => {
+  // A changed entry older than those the view holds stays out (its page shows it); `added`: the new ones at the end.
+  const apply = (entries: readonly TranscriptEntry[], added = entries.length) => {
     update((view) => {
-      const merged = mergeEntries(view.entries, entries)
+      const held = new Set(view.entries.map((e) => e.id))
+      const kept = entries.filter((e, i) => i >= entries.length - added || held.has(e.id))
+      if (kept.length === 0) return view
+      const merged = mergeEntries(view.entries, kept)
       return { ...view, entries: merged.entries, earlier: view.earlier || merged.dropped > 0 }
     })
   }
@@ -495,7 +499,7 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
         connection.abort()
         return
       }
-      if (loaded) apply(parsed.data.data.entries)
+      if (loaded) apply(parsed.data.data.entries, parsed.data.data.added)
       else waiting.push(parsed.data.data.entries)
     }
     const body = res.body

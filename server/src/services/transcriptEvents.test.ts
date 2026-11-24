@@ -37,13 +37,18 @@ describe('transcript events', () => {
         source: 'test-mac/transcript',
         seq: 0,
         type: 'transcript.changed',
-        data: { chat: themes, entries: [{ type: 'assistant', id: 'a2', text: 'Done.', cut: false }] },
+        data: { chat: themes, entries: [{ type: 'assistant', id: 'a2', text: 'Done.', cut: false }], added: 1 },
       },
       {
         source: 'test-mac/transcript',
         seq: 1,
         type: 'transcript.changed',
-        data: { chat: themes, entries: [{ type: 'tool', id: 't2', name: 'Bash', target: 'pnpm', running: false }] },
+        data: {
+          chat: themes,
+          entries: [{ type: 'tool', id: 't2', name: 'Bash', target: 'pnpm', running: false }],
+          // The tool call was in the transcript, running: a change, not a new entry.
+          added: 0,
+        },
       },
     ])
     for (const event of c.events) expect(TranscriptChangedEvent.parse(event)).toEqual(event)
