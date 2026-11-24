@@ -75,6 +75,7 @@ import {
   resumeMark,
   whenVisible,
 } from '../../lib/pageResume.ts'
+import { foldDrafts } from './rewrittenReplies.ts'
 import type { AgentKind, ChatEntry, WorkspacesData } from './types.ts'
 
 /** The pane's quiet lines, picked by the chat that built slice 3b's page part (d-101); the PR records them. */
@@ -87,6 +88,10 @@ export const transcriptText = {
   empty: 'No messages yet',
   /** The label of a slash command's error output, such as a /compact that failed. */
   error: 'Error',
+  /** The note on a reply that a Stop hook had written again (R62); a tap on it shows the drafts. */
+  rewritten: 'Reply rewritten',
+  /** The author line of each draft behind that note. */
+  draft: 'Draft',
   /** The label of a harness note (R46), by its kind: never the owner's bubble. */
   note: { task: 'Task', peer: 'Message', hook: 'Hook' },
   /** Under the entries while the stream is down and the page connects again. */
@@ -630,15 +635,44 @@ export function retryTranscript(chat: string): void {
 
 const agentNames: Record<AgentKind, string> = { claude: 'Claude', codex: 'Codex', shell: 'Shell' }
 
-/** One transcript entry as the page draws it, in a chat of `kind`: the agent's name and Copy on a reply. */
-export function chatEntryOf(entry: TranscriptEntry, kind: AgentKind): ChatEntry {
+/**
+ * One transcript entry as the page draws it, in a chat of `kind`: the agent's name and Copy on a reply, and on a reply
+ * that a Stop hook had written again its `drafts`, oldest first, behind the note (R62, `rewrittenReplies.ts`).
+ */
+export function chatEntryOf(
+  entry: TranscriptEntry,
+  kind: AgentKind,
+  drafts: readonly Extract<TranscriptEntry, { type: 'assistant' }>[] = [],
+): ChatEntry {
   const cut = 'cut' in entry && entry.cut ? { cut: transcriptText.cut } : {}
   switch (entry.type) {
     case 'user':
       // The file names stay data for the chips: never Markdown, so a name is shown as sent.
-      return { type: 'user', text: entry.text, ...(entry.files === undefined ? {} : { files: entry.files }), ...cut }
-    case 'assistant':
-      return { type: 'assistant', kind, name: agentNames[kind], text: entry.text, copy: 'Copy', ...cut }
+      return {
+        type: 'user',
+        id: entry.id,
+        text: entry.text,
+        ...(entry.files === undefined ? {} : { files: entry.files }),
+        ...cut,
+      }
+    case 'assistant': {
+      const [first, ...rest] = drafts.map((draft) => ({
+        id: draft.id,
+        name: transcriptText.draft,
+        text: draft.text,
+        ...(draft.cut ? { cut: transcriptText.cut } : {}),
+      }))
+      return {
+        type: 'assistant',
+        id: entry.id,
+        kind,
+        name: agentNames[kind],
+        text: entry.text,
+        copy: 'Copy',
+        ...cut,
+        ...(first === undefined ? {} : { rewritten: { label: transcriptText.rewritten, drafts: [first, ...rest] } }),
+      }
+    }
     case 'tool':
       // R32: the kind, title and label when the server sends them (backend #371); an older server's entry has none.
       return {
@@ -652,10 +686,10 @@ export function chatEntryOf(entry: TranscriptEntry, kind: AgentKind): ChatEntry 
         ...(entry.label === undefined ? {} : { label: entry.label }),
       }
     case 'error':
-      return { type: 'event', label: transcriptText.error, text: entry.text }
+      return { type: 'event', id: entry.id, label: transcriptText.error, text: entry.text }
     case 'note':
       // R46: a harness input is a muted note line with its kind's icon, never the owner's bubble.
-      return { type: 'note', kind: entry.kind, label: transcriptText.note[entry.kind], text: entry.text }
+      return { type: 'note', id: entry.id, kind: entry.kind, label: transcriptText.note[entry.kind], text: entry.text }
   }
 }
 
@@ -673,7 +707,8 @@ export function withTranscripts(data: WorkspacesData, shown: ReadonlyMap<string,
       if (view === undefined) return pane
       return {
         ...pane,
-        entries: view.entries.map((entry) => chatEntryOf(entry, pane.head.kind)),
+        // A draft whose rewrite is there shows only behind the rewrite's note (R62).
+        entries: foldDrafts(view.entries).map(({ entry, drafts }) => chatEntryOf(entry, pane.head.kind, drafts)),
         ...(view.earlier ? { earlier: transcriptText.earlier } : {}),
         ...(view.loaded && view.entries.length === 0 && view.problem === undefined
           ? { empty: transcriptText.empty }

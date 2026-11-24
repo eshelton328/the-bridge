@@ -1,6 +1,6 @@
 // One entry of a chat pane's transcript: the owner's message, a tool line (a live
 // call with its kind as a `ToolRow`, R32), an
-// agent's reply with Copy (`ReplyCopyButton`), progress lines or a command waiting for approval
+// agent's reply with Copy (`ReplyEntry`, with the drafts of a rewritten reply, R62), progress lines or a command waiting for approval
 // (D1 105:210 to 105:291), or a line that records an event, such as where a
 // fork starts (D16 417:718), or a harness note (`NoteLine`, R46). A live message or reply whose text the server cut
 // shows a quiet line under it (`cut`, slice 3b). A message's and a reply's text
@@ -16,7 +16,7 @@ import type { CopyTextResult } from '../../../lib/copyText.ts'
 import type { ChatEntry } from '../types.ts'
 import { EntryText } from './EntryText.tsx'
 import { NoteLine } from './NoteLine.tsx'
-import { ReplyCopyButton } from './ReplyCopyButton.tsx'
+import { ReplyEntry } from './ReplyEntry.tsx'
 import { SentFileChip } from './SentFileChip.tsx'
 import { ToolRow } from './ToolRow.tsx'
 
@@ -96,25 +96,8 @@ export const ChatEntryView = memo(function ChatEntryView({ entry, figma, onAct, 
       // A harness note (R46): a muted line with its kind's icon, never the owner's bubble.
       return <NoteLine kind={entry.kind} label={entry.label} text={entry.text} figma={figma} />
     case 'assistant':
-      return (
-        <div data-figma={figma}>
-          <Message
-            kind={entry.kind}
-            name={entry.name}
-            actions={
-              entry.copy === undefined ? undefined : (
-                <ReplyCopyButton
-                  label={entry.copy}
-                  onCopy={onCopy === undefined ? undefined : () => onCopy(entry.text)}
-                />
-              )
-            }
-          >
-            <EntryText text={entry.text} />
-          </Message>
-          {entry.cut === undefined ? null : <span className={cutLine}>{entry.cut}</span>}
-        </div>
-      )
+      // A reply, with its Copy and, when a Stop hook had it written again, its note and drafts (R62).
+      return <ReplyEntry entry={entry} figma={figma} onCopy={onCopy} />
     case 'progress':
       return (
         <Stack gap="10">

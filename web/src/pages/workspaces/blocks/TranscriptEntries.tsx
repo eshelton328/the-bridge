@@ -6,7 +6,7 @@
 // memoised too (ChatEntryView), so a transcript change renders only the
 // entries it changed. A run of two or more live tool calls draws as one group
 // row (R32, `toolGroups.ts`, `ToolGroup`); the newest run stays open while the
-// chat works. Props only.
+// chat works. A live entry is keyed by its ID. Props only.
 import { memo, useMemo } from 'react'
 import { BlockBoundary } from '../../../errors/BlockBoundary.tsx'
 import type { ChatEntry } from '../types.ts'
@@ -46,7 +46,13 @@ export const TranscriptEntries = memo(function TranscriptEntries({
           />
         ) : (
           <ChatEntryView
-            key={`${item.entry.type}-${String(item.index)}`}
+            // A live entry's ID keys it, so a draft that folds away above it (R62) does not mount it again and the
+            // reader's place holds; a fixture entry has no ID, and its place keys it.
+            key={
+              'id' in item.entry && item.entry.id !== undefined
+                ? `id-${item.entry.id}`
+                : `${item.entry.type}-${String(item.index)}`
+            }
             entry={item.entry}
             figma={figma?.[item.index]}
             onCopy={onCopy}
