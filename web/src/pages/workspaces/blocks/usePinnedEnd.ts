@@ -200,6 +200,7 @@ export function usePinnedEnd(
   useLayoutEffect(() => {
     if (!enabled || scroller === null || footer === null) return undefined
     pinnedRef.current = true
+    touchDownRef.current = false
     const view = scroller.ownerDocument.defaultView ?? window
     // The reader's input: a finger that moves on the transcript, a mouse button down in it, and the time of the
     // last wheel turn, scroll key, lifted finger or focus move into the transcript.
@@ -452,6 +453,8 @@ export function usePinnedEnd(
       cameRef.current = undefined
       newest.set(hidden)
       scroller.removeEventListener('scroll', onScroll)
+      // A finger that rests as the transcript unmounts gives no touchend here: the wait must not outlive it.
+      touchDownRef.current = false
       scroller.removeEventListener('touchstart', onTouchStart)
       scroller.removeEventListener('touchmove', onTouchMove)
       scroller.removeEventListener('wheel', onReader)

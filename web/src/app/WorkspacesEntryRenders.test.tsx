@@ -204,6 +204,36 @@ describe('a long live chat reads its transcript a page at a time', () => {
     expect(server.readQueries).toHaveLength(2)
   })
 
+  it('loads the next older page after the chat closed under a resting finger, on the phone', async () => {
+    const server = stubLongChats(count, true)
+    view = await openWorkspaces([390, 844])
+    const transcript = async () => {
+      await userEvent.click(page.getByText(title, { exact: true }).first())
+      const scroller = page.getByRole('region', { name: title }).element().querySelector('.scroll-frame__body')
+      if (!(scroller instanceof HTMLElement)) throw new Error('no transcript')
+      return scroller
+    }
+    const scroller = await transcript()
+    await markdownShown(100)
+    scroller.dispatchEvent(new TouchEvent('touchstart', { bubbles: true }))
+    scroller.dispatchEvent(new TouchEvent('touchmove', { bubbles: true }))
+    scroller.scrollTop = 0
+    await expect.poll(() => server.readQueries.length).toBe(2)
+    // Back to the list while the finger still rests: the transcript unmounts with no touchend.
+    await userEvent.click(page.getByRole('button', { name: 'Back to Workspaces' }).first())
+    const again = await transcript()
+    await markdownShown(100)
+    again.dispatchEvent(new WheelEvent('wheel', { bubbles: true }))
+    again.scrollTop = 0
+    // Well before the 3 s cap: the chat reads its older page again, and it goes in.
+    await expect
+      .poll(() => [server.readQueries.length, document.querySelectorAll('.markdown-view').length], {
+        timeout: 1500,
+        interval: 50,
+      })
+      .toEqual([4, 200])
+  })
+
   it('stays at the end when a short chat at its end loads the older page by itself, on the phone', async () => {
     const server = stubLongChats(count, true)
     // 99 tool calls draw as one group row, so the newest page does not fill the screen and the earlier line is in view.
