@@ -25,7 +25,8 @@ type Step = Pick<
 > & { then?: string | undefined }
 
 // D8 458:25: 196 × 82, the top row 11 in, the lines 3 under it and 3 apart. The library's FlowDiagram card pads 12
-// at the sides; 10 keeps each line on one line in the 196 px card (Figma 11).
+// at the sides; 10 keeps each line on one line in the 196 px card (Figma 11) at Small. At Default and Large (d-122)
+// a line wraps in the card, which stays 196 wide and grows taller: no line is cut.
 const card = css.raw({
   display: 'flex',
   flexDirection: 'column',
@@ -59,7 +60,7 @@ const top = {
   sm: css({ display: 'flex', alignItems: 'center', gap: '6' }),
 }
 const title = {
-  md: css({ textStyle: 'label', color: 'fg.default', whiteSpace: 'nowrap' }),
+  md: css({ textStyle: 'label', color: 'fg.default' }),
   sm: css({ textStyle: 'labelXs', color: 'fg.default', whiteSpace: 'nowrap' }),
 }
 const amber = css({ color: 'status.needsYou.fg' })
@@ -85,13 +86,13 @@ const select = css({
   [focusRing]: { _after: { outlineWidth: 'strong', outlineStyle: 'solid', outlineColor: 'border.focus' } },
 })
 const note = {
-  md: css({ textStyle: 'small', color: 'fg.muted', whiteSpace: 'nowrap' }),
+  md: css({ textStyle: 'small', color: 'fg.muted' }),
   sm: css({ textStyle: 'smallXs', color: 'fg.muted' }),
 }
 const uses = {
   md: {
-    code: css({ textStyle: 'mono', color: 'fg.accent', whiteSpace: 'nowrap' }),
-    agent: css({ textStyle: 'mono', color: 'kind.agent', whiteSpace: 'nowrap' }),
+    code: css({ textStyle: 'mono', color: 'fg.accent' }),
+    agent: css({ textStyle: 'mono', color: 'kind.agent' }),
   },
   sm: {
     code: css({ textStyle: 'monoSm', color: 'fg.accent' }),
