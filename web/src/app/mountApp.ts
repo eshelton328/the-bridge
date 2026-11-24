@@ -11,6 +11,7 @@ import { createElement, Fragment, StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { AppBoundary } from '../errors/AppBoundary.tsx'
 import { InboxFeedProvider } from './InboxFeedProvider.tsx'
+import { endLaunchOnFirstDraw } from './launchEnd.ts'
 import { ErrorTray } from '../errors/ErrorTray.tsx'
 import { type ErrorEventTarget, installGlobalHandlers } from '../errors/globalHandlers.ts'
 import { rootErrorOptions } from '../errors/rootErrorOptions.ts'
@@ -41,6 +42,7 @@ export function mountApp(container: Element, options: MountOptions = {}): () => 
         }, readPushPreview)
       : undefined
   const routes = createElement(RouterProvider, { router: appRouter })
+  const stopLaunch = endLaunchOnFirstDraw(container)
   const root = createRoot(container, rootErrorOptions)
   root.render(
     createElement(
@@ -60,6 +62,7 @@ export function mountApp(container: Element, options: MountOptions = {}): () => 
     ),
   )
   return () => {
+    stopLaunch()
     root.unmount()
     stopPush?.()
     removeHandlers()
