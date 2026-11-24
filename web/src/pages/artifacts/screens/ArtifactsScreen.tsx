@@ -64,6 +64,8 @@ export type ArtifactsScreenProps = {
   onRemove?: ((id: string) => void) | undefined
   /** The line of the last write that missed: under Add a link's link field, or in the artifact's status line. */
   notice?: ArtifactsNotice | undefined
+  /** While the route loads (R58): the library's real layout with its counts gone, its controls off and cards that load. */
+  loading?: boolean | undefined
 }
 
 export function ArtifactsScreen({
@@ -80,6 +82,7 @@ export function ArtifactsScreen({
   onFile,
   onRemove,
   notice,
+  loading,
 }: ArtifactsScreenProps) {
   return (
     <ViewportFrame initial={viewport}>
@@ -228,6 +231,7 @@ export function ArtifactsScreen({
                     onOpenArtifact={openCard}
                     onSubmitAddLink={submitAddLink}
                     addLinkError={addLinkError}
+                    loading={loading}
                   />
                 ) : open === undefined || view === undefined ? (
                   <ArtifactsLibrary
@@ -238,6 +242,7 @@ export function ArtifactsScreen({
                     onOpenArtifact={openCard}
                     onSubmitAddLink={submitAddLink}
                     addLinkError={addLinkError}
+                    loading={loading}
                   />
                 ) : layout !== 'desktop' && discussing && thread !== undefined ? (
                   <ArtifactDiscussionPage
@@ -336,7 +341,8 @@ export function ArtifactsScreen({
               }}
               pages={navLayout(navPages, layout === 'tablet' ? 'tablet' : 'phone').more}
               selected="artifacts"
-              counts={{ artifacts: data.count }}
+              // While the library loads (R58) the drawer has no count: the page has not read one.
+              counts={loading === true ? undefined : { artifacts: data.count }}
               onNavigate={onNavigate}
             />
           </Backdrop>
