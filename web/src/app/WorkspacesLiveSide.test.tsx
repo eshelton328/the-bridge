@@ -377,6 +377,19 @@ describe('Side chat on a live Claude chat (backend #460)', () => {
       expect(fakes.chats.stops).toEqual([])
     })
 
+  it("keeps a side chat's unsent question when the owner opens another chat and comes back", async () => {
+    const fakes = withChats()
+    await openChat('desktop', 'sketch the plan')
+    await openSide('desktop', 'sketch the plan')
+    await userEvent.fill(questionBox('desktop'), 'Half a question')
+    await userEvent.click(page.getByText('tidy the notes', { exact: true }).first())
+    await expect.element(page.getByRole('heading', { name: 'tidy the notes' })).toBeVisible()
+    await userEvent.click(page.getByText('sketch the plan', { exact: true }).first())
+    await expect.element(page.getByRole('heading', { name: 'sketch the plan' })).toBeVisible()
+    await expect.element(questionBox('desktop')).toHaveValue('Half a question')
+    expect(fakes.side.asks).toEqual([])
+  })
+
   it('says the answer is gone when the server lost it in a restart', async () => {
     const fakes = withChats()
     await openChat('desktop', 'sketch the plan')

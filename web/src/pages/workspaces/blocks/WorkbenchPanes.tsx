@@ -334,6 +334,7 @@ export function WorkbenchPanes({
                   onCopy={onCopy}
                   onSend={onSideAsk === undefined ? undefined : (text) => onSideAsk(pane.id, text)}
                   onStop={onSideStop === undefined ? undefined : () => onSideStop(pane.id)}
+                  drafts={drafts}
                   onClose={() => onUiChange?.({ sideChatOpen: false })}
                 />
               ) : undefined

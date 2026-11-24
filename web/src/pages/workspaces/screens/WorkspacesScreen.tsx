@@ -610,6 +610,7 @@ function WorkspacesLayout({
           onCopy={onCopy}
           onSend={onSideAsk === undefined || sideFor === undefined ? undefined : (text) => onSideAsk(sideFor, text)}
           onStop={onSideStop === undefined || sideFor === undefined ? undefined : () => onSideStop(sideFor)}
+          drafts={drafts}
           onClose={() => {
             change({ sideChatOpen: false })
           }}

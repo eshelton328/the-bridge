@@ -9,12 +9,15 @@
 // the tablet's sheet (T2 105:1914, `device="tablet"`) its parts sit 23 in from the
 // sheet's edges and the note is 13 px. A live side chat's Send asks the
 // server through `onSend` (useSideChats.ts); a sample's Send counts as sent at
-// once. Props only.
+// once. A live side chat keeps its unsent question in the page's drafts
+// (`drafts`, by its own id, so a switch to another chat's side chat and back
+// keeps it). Props only.
 import { BubbleIcon, Button, CloseIcon, type IconSize, Inline, SplitIcon } from '@eshelton328/component-library-1701'
 import { css, cx } from '../../../../styled-system/css/index.js'
 import type { SideChat, SidebarLayers } from '../types.ts'
 import type { CopyReply } from './ChatEntryView.tsx'
 import { ChatPane } from './ChatPane.tsx'
+import type { DraftBook } from './draftBook.ts'
 import type { ComposerAnswer } from './useComposerActions.ts'
 
 const panel = css({ display: 'flex', flexDirection: 'column', minH: '[0]' })
@@ -99,6 +102,8 @@ export type SideChatPanelProps = {
   onSend?: ((text: string) => Promise<ComposerAnswer>) | undefined
   /** Stops the live side answer: the answering composer's Stop (ChatPane `onStop`). */
   onStop?: (() => Promise<ComposerAnswer>) | undefined
+  /** The page's drafts by chat (draftBook.ts): a live side chat (one with an `id`) keeps its unsent question there. */
+  drafts?: DraftBook | undefined
 }
 
 export function SideChatPanel({
@@ -110,6 +115,7 @@ export function SideChatPanel({
   onCopy,
   onSend,
   onStop,
+  drafts,
 }: SideChatPanelProps) {
   const tablet = placement === 'sheet' && device === 'tablet'
   const openAsPane =
@@ -163,6 +169,7 @@ export function SideChatPanel({
         onCopy={onCopy}
         onSend={onSend}
         onStop={onStop}
+        drafts={chat.id === undefined ? undefined : drafts}
         figma={{
           composer: layers?.sideComposer ?? '105:948',
           entries: layers?.sideEntries ?? ['105:933', '105:935'],

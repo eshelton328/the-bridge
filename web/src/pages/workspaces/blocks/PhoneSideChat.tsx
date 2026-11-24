@@ -14,6 +14,7 @@ import { useRef } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { SideChat, SidebarLayers } from '../types.ts'
 import type { CopyReply } from './ChatEntryView.tsx'
+import type { DraftBook } from './draftBook.ts'
 import { SideChatPanel } from './SideChatPanel.tsx'
 import type { ComposerAnswer } from './useComposerActions.ts'
 
@@ -34,6 +35,8 @@ export type PhoneSideChatProps = {
   onSend?: ((text: string) => Promise<ComposerAnswer>) | undefined
   /** Stops the live side answer: the answering composer's Stop (SideChatPanel `onStop`). */
   onStop?: (() => Promise<ComposerAnswer>) | undefined
+  /** The page's drafts by chat (SideChatPanel `drafts`). */
+  drafts?: DraftBook | undefined
 }
 
 export function PhoneSideChat({
@@ -45,6 +48,7 @@ export function PhoneSideChat({
   onCopy,
   onSend,
   onStop,
+  drafts,
 }: PhoneSideChatProps) {
   const ref = useRef<HTMLDivElement>(null)
   return (
@@ -65,6 +69,7 @@ export function PhoneSideChat({
           onCopy={onCopy}
           onSend={onSend}
           onStop={onStop}
+          drafts={drafts}
           onClose={() => {
             onOpenChange?.(false)
           }}

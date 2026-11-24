@@ -594,6 +594,7 @@ export function WorkspacesPhone({
             onCopy={onCopy}
             onSend={onSideAsk === undefined ? undefined : (text) => onSideAsk(ui.focusedPane, text)}
             onStop={onSideStop === undefined ? undefined : () => onSideStop(ui.focusedPane)}
+            drafts={drafts}
           />
         )}
         {data.fork === undefined || device !== 'phone' ? null : (
