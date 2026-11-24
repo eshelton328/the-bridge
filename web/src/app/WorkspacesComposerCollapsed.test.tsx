@@ -8,6 +8,7 @@ import { rootErrorOptions } from '../errors/rootErrorOptions.ts'
 import { RouteError } from '../errors/RouteError.tsx'
 import { resetRetries } from '../errors/retryGuard.ts'
 import { fakeTranscriptServer } from '../lib/fakeTranscriptServer.ts'
+import { holdTimers } from '../lib/holdTimers.ts'
 import { answerLateServerReads } from '../lib/lateServerReads.ts'
 import { queryClient } from '../lib/queryClient.ts'
 import { setViewport } from '../lib/rendering.ts'
@@ -335,6 +336,10 @@ describe.each([
     })
     await openChat(size)
     await expect.poll(collapsed).toBe(true)
+    // The proxy's fallback moves the focus into the box after 600 ms on the clock, with no keyboard report, and the box
+    // expands then. Two frames on a busy runner can take that long, so the clock waits until the keyboard reports; the
+    // tap is DOM events and the wait counts frames, which move no held clock (#469, #470).
+    const releaseTimers = holdTimers()
     const stop = installKeyboardProxy({ proxyWaitMs: 600 })
     try {
       const field = box().element()
@@ -357,6 +362,7 @@ describe.each([
         },
         { once: true },
       )
+      releaseTimers()
       viewport.move({ height: viewport.height - 300 })
       await expect.poll(() => document.activeElement, { timeout: 3000 }).toBe(field)
       await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))
