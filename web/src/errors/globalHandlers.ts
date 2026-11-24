@@ -11,7 +11,7 @@ import { report } from './reporter.ts'
 export type ErrorEventTarget = Pick<Window, 'addEventListener' | 'removeEventListener'>
 
 /** The masked event of an error in a script from another origin: no error object, no file and line 0. */
-export function isOpaqueScriptError(event: ErrorEvent): boolean {
+function isOpaqueScriptError(event: ErrorEvent): boolean {
   return (event.error === null || event.error === undefined) && event.filename === '' && event.lineno === 0
 }
 
