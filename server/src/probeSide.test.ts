@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { probeFailures } from './probeSide.ts'
+import { probeFailures, probeOptions } from './probeSide.ts'
 
 const good = { codeMode: true, end: 'done', answer: 'The word is heliotrope-5150. The Read was denied.' }
 
@@ -21,5 +21,29 @@ describe('side run probe', () => {
       'the codeMode answer does not name the word of its chat',
       'the plain run read the file outside its folder',
     ])
+  })
+
+  it('resolves a relative root, keeps the side run variables and finds sessions under CLAUDE_CONFIG_DIR', () => {
+    const env = {
+      PATH: '/usr/bin',
+      HTTPS_PROXY: 'http://proxy.example.com:8080',
+      NODE_EXTRA_CA_CERTS: '/home/dev/ca.pem',
+      CLAUDE_CONFIG_DIR: '/home/dev/claude-config',
+      HERDR_PANE_ID: 'w1:p1',
+    }
+    const options = probeOptions('.', env, '/home/dev')
+    expect(options.root).toBe(process.cwd())
+    expect(options.env).toEqual({
+      PATH: '/usr/bin',
+      HTTPS_PROXY: 'http://proxy.example.com:8080',
+      NODE_EXTRA_CA_CERTS: '/home/dev/ca.pem',
+      CLAUDE_CONFIG_DIR: '/home/dev/claude-config',
+    })
+    expect(options.projects).toBe('/home/dev/claude-config/projects')
+    expect(probeOptions(undefined, { PATH: '/usr/bin' }, '/home/dev')).toEqual({
+      root: '/home/dev/ncc-1701',
+      env: { PATH: '/usr/bin' },
+      projects: '/home/dev/.claude/projects',
+    })
   })
 })

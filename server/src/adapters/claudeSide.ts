@@ -91,7 +91,7 @@ const keptEnv = [
   'SSL_CERT_FILE',
 ] as const
 
-function sideEnv(env: Readonly<Record<string, string | undefined>>): Record<string, string> {
+export function sideEnv(env: Readonly<Record<string, string | undefined>>): Record<string, string> {
   const kept: Record<string, string> = {}
   for (const key of keptEnv) {
     const value = env[key]

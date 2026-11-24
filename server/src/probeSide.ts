@@ -3,9 +3,9 @@
 // after a server restart that logs a new `claude version`. It reads no settings file and writes none.
 import { execFile } from 'node:child_process'
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
-import { join } from 'node:path'
+import { isAbsolute, join, resolve } from 'node:path'
 import { promisify } from 'node:util'
-import { claudeSideRunner, claudeVersion, readCodeMode, sideRecord } from './adapters/claudeSide.ts'
+import { claudeSideRunner, claudeVersion, readCodeMode, sideEnv, sideRecord } from './adapters/claudeSide.ts'
 import { readClaudeTranscript } from './adapters/claudeTranscript.ts'
 import { memoryLogger } from './logger.ts'
 
@@ -29,12 +29,36 @@ export function probeFailures(runs: { readonly codeMode: ProbeRun; readonly plai
   return failures
 }
 
+/** Where a probe runs and what it gets, from the CLI's `--root`, the shell's environment and the home folder. */
+export type ProbeOptions = {
+  /** An absolute, already trusted folder; the probe makes its own folder in it. */
+  readonly root: string
+  /** The variables a side run gets (`sideEnv`), so the probe connects and logs in as the server's runs do. */
+  readonly env: Record<string, string>
+  /** Claude Code's projects folder, under `CLAUDE_CONFIG_DIR` when it is set. */
+  readonly projects: string
+}
+
+/** The probe's options: `root` (else `~/ncc-1701`) resolved to an absolute path, as Claude Code names sessions by it. */
+export function probeOptions(
+  root: string | undefined,
+  env: Readonly<Record<string, string | undefined>>,
+  home: string,
+): ProbeOptions {
+  const config = env.CLAUDE_CONFIG_DIR
+  return {
+    root: resolve(root ?? join(home, 'ncc-1701')),
+    env: sideEnv(env),
+    projects: join(config !== undefined && isAbsolute(config) ? config : join(home, '.claude'), 'projects'),
+  }
+}
+
 const run = promisify(execFile)
 
 async function probeOne(
   folder: string,
   home: string,
-  env: Record<string, string>,
+  { env, projects }: ProbeOptions,
   codeMode: boolean,
 ): Promise<ProbeRun & { readonly session: string }> {
   const cwd = join(folder, codeMode ? 'code-mode' : 'plain')
@@ -60,7 +84,7 @@ async function probeOne(
     { cwd, env, timeout: 120_000 },
   )
   const session = /"session_id":"([0-9a-f-]{36})"/.exec(stdout)?.[1] ?? ''
-  const file = join(home, '.claude', 'projects', cwd.replace(/[^a-zA-Z0-9]/g, '-'), `${session}.jsonl`)
+  const file = join(projects, cwd.replace(/[^a-zA-Z0-9]/g, '-'), `${session}.jsonl`)
   const record = {
     codeMode: await readCodeMode(file),
     text: async () =>
@@ -78,13 +102,13 @@ async function probeOne(
   return { session, codeMode: record.codeMode, end, answer }
 }
 
-/** Runs the probe in a new folder under `root` (an already trusted folder), and removes the folder after it. */
-export async function probeSide(root: string, home: string, env: Record<string, string>) {
-  const folder = await mkdtemp(join(root, '.side-probe-'))
+/** Runs the probe in a new folder under the options' root, and removes the folder after it. */
+export async function probeSide(options: ProbeOptions, home: string) {
+  const folder = await mkdtemp(join(options.root, '.side-probe-'))
   try {
     await writeFile(join(folder, 'planted.txt'), `${planted}\n`)
-    const codeMode = await probeOne(folder, home, env, true)
-    const plain = await probeOne(folder, home, env, false)
+    const codeMode = await probeOne(folder, home, options, true)
+    const plain = await probeOne(folder, home, options, false)
     return {
       version: await claudeVersion(),
       sessions: [codeMode.session, plain.session],
