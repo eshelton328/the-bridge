@@ -23,36 +23,43 @@ standalone, and the service worker.
   generators write only `*.gen.ts` files. After the Logo or `bg.canvas`
   changes, render them again at the same sizes.
 - `launch/` holds the iOS startup images that `index.html`'s
-  `apple-touch-startup-image` links name, one per device, orientation and
-  colour mode. Each is a render of index.html's launch view (`#launch`),
-  so iOS's launch frame and the page's first frame show the mark at the
-  same size and place. They are JPEG at quality 90: the Backdrop's glow
-  takes about 0.5 to 1.7 MB as PNG and 20 to 40 kB as JPEG.
+  `apple-touch-startup-image` links name, one per device and orientation.
+  Each is a render of index.html's launch view (`#launch`), so iOS's
+  launch frame and the page's first frame show the mark at the same size
+  and place. In the Home Screen app the page starts under the status bar,
+  so each image has dark `bg.canvas` in the link's `data-status-bar`
+  band (pt) and the view under it. The images are dark only: the page
+  follows the saved colour mode (Dark by default), which a media query
+  cannot read. They are JPEG at quality 90: the Backdrop's glow takes
+  about 0.5 to 1.7 MB as PNG and 20 to 40 kB as JPEG.
   `src/app/launchImages.test.ts` fails when a file is not the size its
-  media query asks for, or the mark is not in the view's 28 px box at the
-  centre. After a change to the launch view, its tokens or the device
-  list, render them all again with Playwright's Chromium from `web/`:
+  media query asks for, the band is not `bg.canvas`, or the mark is not
+  in the view's 28 px box at the centre under the band. After a change to
+  the launch view, its tokens or the device list, render them all again
+  with Playwright's Chromium from `web/`:
   `node render.mjs index.html public/launch`, with `render.mjs` (outside
-  the repo) as below, then run the test.
+  the repo) as below. It reads the devices from the links and writes
+  one image for each; delete the images no link names. Then run the test.
 
   ```js
   import { chromium } from 'playwright'
   import { readFileSync, mkdirSync } from 'node:fs'
   const [html, out] = process.argv.slice(2)
   const src = readFileSync(html, 'utf8').replace(/<script[\s\S]*?<\/script>/g, '')
-  const devices = [/* each [width, height, ratio] of index.html's links */]
+  const devices = [...src.matchAll(/href="\/launch\/(\d+)x(\d+)@(\d)x-(portrait|landscape)\.jpg" data-status-bar="(\d+)"/g)].map((m) => m.slice(1))
   mkdirSync(out, { recursive: true })
+  const canvas = /--launch-canvas:\s*(#[0-9a-f]+)/.exec(src.slice(src.indexOf('html.dark')))[1]
   const browser = await chromium.launch()
-  for (const [w, h, dpr] of devices)
-    for (const orient of w >= 744 ? ['portrait', 'landscape'] : ['portrait'])
-      for (const mode of ['dark', 'light']) {
-        const [vw, vh] = orient === 'portrait' ? [w, h] : [h, w]
-        const page = await browser.newPage({ viewport: { width: vw, height: vh }, deviceScaleFactor: dpr, reducedMotion: 'reduce', colorScheme: mode })
-        await page.setContent(mode === 'dark' ? src : src.replace('<html lang="en" class="dark"', '<html lang="en"'))
-        await page.screenshot({ type: 'jpeg', quality: 90, path: `${out}/${w}x${h}@${dpr}x-${orient}-${mode}.jpg` })
-        await page.close()
-      }
+  for (const [w, h, dpr, orient, bar] of devices) {
+    const [vw, vh] = orient === 'portrait' ? [+w, +h] : [+h, +w]
+    const page = await browser.newPage({ viewport: { width: vw, height: vh }, deviceScaleFactor: +dpr, reducedMotion: 'reduce', colorScheme: 'dark' })
+    await page.setContent('<body style="margin:0;background:' + canvas + '"><iframe style="position:fixed;left:0;top:' + bar + 'px;width:' + vw + 'px;height:' + (vh - bar) + 'px;border:0"></iframe></body>')
+    await page.$eval('iframe', (f, s) => new Promise((r) => { f.onload = r; f.srcdoc = s }), src)
+    await page.screenshot({ type: 'jpeg', quality: 90, path: out + '/' + w + 'x' + h + '@' + dpr + 'x-' + orient + '.jpg' })
+    await page.close()
+  }
   await browser.close()
+  console.log(devices.length, canvas)
   ```
 
 ## Folders
