@@ -1,6 +1,7 @@
 import { createMemoryHistory, createRootRoute, createRoute, createRouter } from '@tanstack/react-router'
 import { createElement } from 'react'
 import { afterEach, describe, expect, it } from 'vitest'
+import indexHtml from '../../index.html?raw'
 import { endLaunchOnFirstDraw } from './launchEnd.ts'
 import { mountApp } from './mountApp.ts'
 
@@ -15,7 +16,20 @@ afterEach(() => {
   container?.remove()
   container = undefined
   document.getElementById('launch')?.remove()
+  for (const style of styles.splice(0)) style.remove()
 })
+
+const styles: HTMLStyleElement[] = []
+
+/** Adds index.html's own launch style, and `extra` after it. */
+function addLaunchStyle(extra = '') {
+  const source = /<style id="launch-style">([\s\S]*?)<\/style>/.exec(indexHtml)?.[1]
+  if (source === undefined) throw new Error('no launch style in index.html')
+  const style = document.createElement('style')
+  style.textContent = source + extra
+  document.head.append(style)
+  styles.push(style)
+}
 
 function addLaunch() {
   const launch = document.createElement('div')
@@ -50,6 +64,34 @@ describe('the launch view', () => {
     await expect.poll(() => document.getElementById('launch')).toBeNull()
     expect(container.textContent).toContain('home')
     expect([...document.body.children]).toEqual([...before, container])
+  })
+
+  it('fades out, taking no tap from the start of the fade, then goes from the DOM (R66)', async () => {
+    addLaunchStyle()
+    addLaunch()
+    container = document.createElement('div')
+    document.body.append(container)
+    unmount = endLaunchOnFirstDraw(container)
+    container.append(document.createElement('main'))
+    await frame()
+    await frame()
+    const launch = document.getElementById('launch')
+    if (launch === null) throw new Error('the launch view went before its fade')
+    expect(launch.hasAttribute('data-leaving')).toBe(true)
+    expect(getComputedStyle(launch).pointerEvents).toBe('none')
+    await expect.poll(() => document.getElementById('launch')).toBeNull()
+  })
+
+  it('goes at once when the style has no fade, as with reduced motion', async () => {
+    addLaunchStyle('#launch[data-leaving] { transition: none; }')
+    addLaunch()
+    container = document.createElement('div')
+    document.body.append(container)
+    unmount = endLaunchOnFirstDraw(container)
+    container.append(document.createElement('main'))
+    await frame()
+    await frame()
+    expect(document.getElementById('launch')).toBeNull()
   })
 
   it('stays while the app has drawn nothing', async () => {

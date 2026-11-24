@@ -169,6 +169,21 @@ describe('the launch view (index.html)', () => {
     expect(indexHtml).toMatch(/@media \(prefers-reduced-motion: reduce\) \{\s*#launch::before \{\s*animation: none;/)
   })
 
+  it('fades out on duration.fade and easing.fade and takes no tap once it leaves; with reduced motion it goes at once', async () => {
+    const doc = await launchAt(390)
+    const launch = element(doc, '#launch')
+    expect(getComputedStyle(launch).pointerEvents).toBe('auto')
+    launch.setAttribute('data-leaving', '')
+    const leaving = getComputedStyle(launch)
+    expect(leaving.pointerEvents).toBe('none')
+    expect(leaving.transitionProperty).toBe('opacity')
+    expect(leaving.transitionDuration).toBe(computed('transitionDuration', 'var(--durations-fade)'))
+    expect(leaving.transitionTimingFunction).toBe(computed('transitionTimingFunction', 'var(--easings-fade)'))
+    expect(indexHtml).toMatch(
+      /@media \(prefers-reduced-motion: reduce\) \{\s*#launch\[data-leaving\] \{\s*transition: none;/,
+    )
+  })
+
   it('needs no request: no link or script in the launch view', () => {
     const doc = new DOMParser().parseFromString(indexHtml, 'text/html')
     const launch = doc.getElementById('launch')
