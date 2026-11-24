@@ -143,7 +143,7 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
   a number and a label) is there only when the server read the numbered
   list for sure, and `raw` is the dialog's text, at most
   `maxDialogChars`. This is the one place the contract carries a
-  screen's text (an exception to d-110 for R69): the owner must see the
+  screen's text (d-125, an exception to d-110): the owner must see the
   dialog to answer it. An answer is `{ id, n }` only, never a key; the
   server sends it only when the screen still shows that dialog and
   option, else 409 `chat-not-ready` `dialogChanged`. Logs keep the ID

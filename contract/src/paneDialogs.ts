@@ -2,6 +2,7 @@
 // waits for the owner (`needsYou`) and its transcript has no open question, `GET /api/chats/:chat/dialog` reads the
 // dialog that the chat's screen shows. `POST /api/chats/:chat/dialog` sends one option of it, only on the owner's tap:
 // the server never picks an option. Logs keep only the dialog ID and the option number, never the dialog's text.
+// `raw` is a screen's text, an exception to d-110 that d-125 records.
 import { z } from 'zod'
 
 /** The most characters of a dialog's text that the server sends. */
