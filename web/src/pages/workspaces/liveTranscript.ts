@@ -75,7 +75,7 @@ import {
   resumeMark,
   whenVisible,
 } from '../../lib/pageResume.ts'
-import { foldDrafts } from './rewrittenReplies.ts'
+import { type FoldedEntry, foldDrafts } from './rewrittenReplies.ts'
 import type { AgentKind, ChatEntry, WorkspacesData } from './types.ts'
 
 /** The pane's quiet lines, picked by the chat that built slice 3b's page part (d-101); the PR records them. */
@@ -693,6 +693,31 @@ export function chatEntryOf(
   }
 }
 
+/** The last `ChatEntry` drawn for each transcript entry, with the kind and the drafts it was drawn with. */
+const drawn = new WeakMap<
+  TranscriptEntry,
+  { readonly kind: AgentKind; readonly drafts: readonly TranscriptEntry[]; readonly entry: ChatEntry }
+>()
+
+/**
+ * `chatEntryOf`, the same object again for an entry, a kind and drafts it drew before (the-bridge #476 CI): each
+ * transcript change maps the whole view, and a new object for every entry rendered all 500 of a long chat again, a
+ * long frame on a busy phone. An entry the server changed or replaced is a new object, and a reply whose drafts
+ * changed draws again. The entries hold the cache: it goes with the transcript.
+ */
+function drawnEntryOf(entry: TranscriptEntry, kind: AgentKind, drafts: FoldedEntry['drafts']): ChatEntry {
+  const last = drawn.get(entry)
+  if (
+    last?.kind === kind &&
+    last.drafts.length === drafts.length &&
+    last.drafts.every((draft, i) => draft === drafts[i])
+  )
+    return last.entry
+  const next = chatEntryOf(entry, kind, drafts)
+  drawn.set(entry, { kind, drafts, entry: next })
+  return next
+}
+
 /**
  * `data` with each watched live chat's transcript in its pane: its entries, the earlier line, the empty line once a
  * read found none, and the problem line.
@@ -708,7 +733,7 @@ export function withTranscripts(data: WorkspacesData, shown: ReadonlyMap<string,
       return {
         ...pane,
         // A draft whose rewrite is there shows only behind the rewrite's note (R62).
-        entries: foldDrafts(view.entries).map(({ entry, drafts }) => chatEntryOf(entry, pane.head.kind, drafts)),
+        entries: foldDrafts(view.entries).map(({ entry, drafts }) => drawnEntryOf(entry, pane.head.kind, drafts)),
         ...(view.earlier ? { earlier: transcriptText.earlier } : {}),
         ...(view.loaded && view.entries.length === 0 && view.problem === undefined
           ? { empty: transcriptText.empty }
