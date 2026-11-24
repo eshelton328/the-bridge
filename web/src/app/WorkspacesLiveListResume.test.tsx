@@ -248,6 +248,23 @@ describe('the Workspaces list read back from the background', () => {
     })
 
   for (const device of devices)
+    it(`keeps the list the page opened with through a 502 before its event watch read the list, on ${device.name}`, async () => {
+      const server = withServer()
+      // The route loader's reads answer; once the page draws the list, every read, the event watch's first one too
+      // (it starts after the page drew), gets a 502 from the proxy of a server that went down (R43b, the-bridge #476).
+      const drawn = () => document.body.textContent.includes('live work')
+      server.answer(() => (drawn() ? new Response('Bad Gateway', { status: 502 }) : answerWith(list)()))
+      await tapWorkspaces(device.size)
+      const reads = server.reads()
+      // The watch's read and the app client's two more tries of the 5xx.
+      await renderedUntil(() => server.reads() >= reads + 3)
+      await quiet()
+      expect(notice().query()).toBeNull()
+      await expect.element(page.getByText('live work').first()).toBeVisible()
+      expect(getReports()).toEqual([])
+    })
+
+  for (const device of devices)
     it(`shows the notice for a 502 answer after a quiet miss around a hide, on ${device.name}`, async () => {
       const server = withServer()
       await tapWorkspaces(device.size)

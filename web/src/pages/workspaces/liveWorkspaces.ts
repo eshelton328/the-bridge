@@ -610,6 +610,20 @@ let lastShown:
   | undefined
 
 /**
+ * The list a load drew while no watch ran, as the route loader draws the page's first list before the page starts its
+ * watch. It is on screen, so the watch takes it as `lastShown` when it starts (R43b, the-bridge #476: a restart
+ * before the watch's own first load ended showed the notice over that list). A load that misses drops it.
+ */
+let drawnBeforeWatch:
+  | {
+      readonly workspaces: Workspace[]
+      readonly machine: WorkspacesResponse['machine']
+      readonly layouts: Map<string, WorkspaceLayout>
+      readonly tabs: Map<string, LiveTab[]>
+    }
+  | undefined
+
+/**
  * R43b: the grace of a list read that got no answer (no answer, a timeout or a 5xx that is not an error body: the
  * Vite proxy for a server that is down) after the page had shown the server's list, as a restart makes. Undefined
  * when none runs; `over` once `reconnectGraceMs` passed, when it loads the page again so a miss then shows.
@@ -913,6 +927,10 @@ export function watchLiveWorkspaces({
   onInbox,
 }: WatchDeps): () => void {
   watching += 1
+  if (watching === 1) {
+    lastShown ??= drawnBeforeWatch
+    drawnBeforeWatch = undefined
+  }
   stopped = undefined
   lost = undefined
   const abort = new AbortController()
@@ -1057,6 +1075,7 @@ export function watchLiveWorkspaces({
     if (watching === 0) {
       layoutOutage = false
       lastShown = undefined
+      drawnBeforeWatch = undefined
       endListGrace()
     }
     clearTimeout(timer)
@@ -1141,6 +1160,7 @@ export async function withLiveWorkspaces(
     // A restart (R43b): the page keeps the list and the layouts it read last, with no notice, until the grace passes.
     if (lastShown !== undefined && quietListMiss(thrown.miss))
       return liveOnly(state, lastShown.workspaces, lastShown.machine, lastShown.layouts, lastShown.tabs)
+    drawnBeforeWatch = undefined
     // The notice and the status bar say it: an expected miss is not reported (d-117).
     const alert = `Live data is not available (${thrown.miss.message}); the page shows no workspaces.`
     const empty = liveOnly(state, [])
@@ -1152,7 +1172,9 @@ export async function withLiveWorkspaces(
   const workspaces = toWorkspaces(response)
   const herdr = await untilAborted(layoutsOf(response, workspaces, client, readLayout), signal)
   noteLayoutMiss(herdr.missed)
-  if (watching > 0) lastShown = { workspaces, machine: response.machine, layouts: herdr.layouts, tabs: herdr.tabs }
+  const shown = { workspaces, machine: response.machine, layouts: herdr.layouts, tabs: herdr.tabs }
+  if (watching > 0) lastShown = shown
+  else drawnBeforeWatch = shown
   const live = liveOnly(state, workspaces, response.machine, herdr.layouts, herdr.tabs)
   const alert = stopped ?? lost
   const hints = herdr.missed === undefined ? live.data.status.hints : [layoutMissLine, ...live.data.status.hints]
