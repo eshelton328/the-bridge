@@ -326,7 +326,8 @@ function markDrafts(entries: TranscriptEntry[]): TranscriptEntry[] {
     const reply = turnEnd(i + 1, 1)
     const entry = draft === undefined ? undefined : marked[draft]
     const by = reply === undefined ? undefined : entries[reply]
-    if (draft !== undefined && entry?.type === 'assistant' && by !== undefined) marked[draft] = { ...entry, replacedBy: by.id }
+    if (draft !== undefined && entry?.type === 'assistant' && by !== undefined)
+      marked[draft] = { ...entry, replacedBy: by.id }
   })
   return marked
 }

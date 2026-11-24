@@ -206,10 +206,19 @@ describe('Claude transcript', () => {
     const read = async (lines: object[]) =>
       (await readClaudeTranscript(file(lines), options)).entries.flatMap((e) =>
         // An entry's ID is its line's uuid and the block's place in the line ("a1:0").
-        e.type === 'assistant' ? [{ id: e.id.replace(/:\d+$/, ''), replacedBy: e.replacedBy?.replace(/:\d+$/, '') }] : [],
+        e.type === 'assistant'
+          ? [{ id: e.id.replace(/:\d+$/, ''), replacedBy: e.replacedBy?.replace(/:\d+$/, '') }]
+          : [],
       )
     // One rewrite.
-    expect(await read([user('u1', 'Fix it'), assistant('a1', [text('draft')]), hook('s1'), assistant('a2', [text('fixed')])])).toEqual([
+    expect(
+      await read([
+        user('u1', 'Fix it'),
+        assistant('a1', [text('draft')]),
+        hook('s1'),
+        assistant('a2', [text('fixed')]),
+      ]),
+    ).toEqual([
       { id: 'a1', replacedBy: 'a2' },
       { id: 'a2', replacedBy: undefined },
     ])
@@ -250,9 +259,9 @@ describe('Claude transcript', () => {
       { id: 'a4', replacedBy: undefined },
     ])
     // A stop after the hook's note: no reply replaced the draft, so it stays a reply.
-    expect(await read([user('u1', 'Fix it'), assistant('a1', [text('draft')]), hook('s1'), user('u2', 'Stop there')])).toEqual([
-      { id: 'a1', replacedBy: undefined },
-    ])
+    expect(
+      await read([user('u1', 'Fix it'), assistant('a1', [text('draft')]), hook('s1'), user('u2', 'Stop there')]),
+    ).toEqual([{ id: 'a1', replacedBy: undefined }])
   })
 
   it('shows the text of a queued prompt with a pasted image, which Claude Code stores as blocks', async () => {
