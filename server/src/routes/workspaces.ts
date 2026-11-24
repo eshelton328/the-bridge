@@ -25,7 +25,14 @@ import { Hono } from 'hono'
 import { type AppEnv, agentErrorJson, errorJson } from '../errors.ts'
 import type { Logger } from '../logger.ts'
 import type { AgentPort, AgentPortError } from '../services/agentPort.ts'
-import { closeWorkspace, createWorkspace, listWorkspaces, orderWorkspaces, readLayout, renameWorkspace } from '../services/workspaces.ts'
+import {
+  closeWorkspace,
+  createWorkspace,
+  listWorkspaces,
+  orderWorkspaces,
+  readLayout,
+  renameWorkspace,
+} from '../services/workspaces.ts'
 import { setSplitRatio } from '../services/layoutWrites.ts'
 import { jsonBody, jsonLimit, jsonOnly, smallJson } from './jsonBody.ts'
 
