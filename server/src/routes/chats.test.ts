@@ -705,7 +705,10 @@ describe('GET and POST /api/chats/:chat/dialog (R69)', () => {
     expect([stranger.status, agents.dialogAnswers()]).toEqual([403, []])
     // An option the dialog does not offer: 409 dialogChanged, nothing sent.
     const offMenu = await pick(app, themes, { id: dialog.id, n: 3 })
-    expect([offMenu.status, ErrorBody.parse(await offMenu.json()).error]).toMatchObject([409, { state: 'dialogChanged' }])
+    expect([offMenu.status, ErrorBody.parse(await offMenu.json()).error]).toMatchObject([
+      409,
+      { state: 'dialogChanged' },
+    ])
     expect((await pick(app, themes, { id: dialog.id, n: 2 })).status).toBe(204)
     expect(agents.dialogAnswers()).toEqual([{ chat: themes, id: dialog.id, n: 2 }])
     const again = await pick(app, themes, { id: dialog.id, n: 2 })
