@@ -98,9 +98,12 @@ function changed(state: ChatState) {
   state.shown =
     dialog === undefined
       ? undefined
-      : answered?.id === dialog.id
-        ? { dialog, phase: answered.phase, line: answered.line, retry: answered.retry }
-        : { dialog, phase: 'ready' }
+      : answered?.phase === 'sending'
+        ? // While an answer is on its way every option is off, also those of a dialog a read brought meanwhile.
+          { dialog, phase: 'sending' }
+        : answered?.id === dialog.id
+          ? { dialog, phase: answered.phase, line: answered.line, retry: answered.retry }
+          : { dialog, phase: 'ready' }
   for (const listener of [...state.listeners]) listener()
 }
 

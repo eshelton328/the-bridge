@@ -349,6 +349,23 @@ describe("a chat's terminal dialog (R69)", () => {
     expect(workspaces.dialogAnswers).toEqual([{ chat: plan, body: { id: sample.id, n: 1 } }])
   })
 
+  it('keeps the options of a dialog read while an answer goes off until that answer ends', async () => {
+    const { workspaces, gate } = withChats()
+    workspaces.showDialog(plan, sample)
+    await openChat(phone)
+    gate.hold = true
+    await userEvent.click(option('1 Send structured'))
+    // The terminal changes while the answer is on its way: the next read brings the new dialog.
+    workspaces.showDialog(plan, changedSample, true)
+    await expect.element(card().getByText('Sample step, again', { exact: true }), { timeout: 8000 }).toBeVisible()
+    for (const o of changedSample.options) await expect.element(option(`${String(o.n)} ${o.label}`)).toBeDisabled()
+    // The answer ends (the screen changed, a 409): the new dialog's options come on.
+    gate.hold = false
+    gate.release()
+    await expect.element(option('1 Send structured')).toBeEnabled()
+    expect(workspaces.dialogAnswers).toEqual([{ chat: plan, body: { id: sample.id, n: 1 } }])
+  })
+
   it('says the terminal changed on a 409, then shows the new dialog from the next read', async () => {
     const { workspaces } = withChats()
     const posted = watchPosts()
