@@ -33,7 +33,10 @@
 // no input this hook sees. A scroll of any kind that reaches the end pins
 // again. The reader's scroll up can land before its scroll event, just as
 // an entry comes in or a box resizes; the pin then leaves the end with it
-// and does not move it back (the CI failure of the-bridge#478).
+// and does not move it back (the CI failure of the-bridge#478). The
+// reader's input counts for `readerScrollMs`, or `layoutSteps` rendering
+// steps when frames run slow, so a long frame between the input and its
+// scroll event does not turn the reader's scroll into the page's (#469).
 //
 // Scroll to the newest message (the owner's request, 2026-11-21): `newest`
 // says whether the reader is more than one screen above the end, and whether
@@ -168,8 +171,24 @@ export function usePinnedEnd(
     const view = scroller.ownerDocument.defaultView ?? window
     // The reader's input: a finger that moves on the transcript, a mouse button down in it, and the time of the
     // last wheel turn, scroll key, lifted finger or focus move into the transcript.
-    const reader = { touching: false, dragging: false, last: Number.NEGATIVE_INFINITY }
-    const readerScrolls = () => reader.touching || reader.dragging || performance.now() - reader.last < readerScrollMs
+    // `steps` counts the rendering steps since that input: a busy device can hold a frame past `readerScrollMs`, and
+    // the scroll the input made comes in the next steps (the CI failures of the-bridge#469).
+    const reader = { touching: false, dragging: false, last: Number.NEGATIVE_INFINITY, steps: layoutSteps }
+    let readerFrame: number | undefined
+    const readerStep = () => {
+      reader.steps += 1
+      readerFrame = reader.steps < layoutSteps ? view.requestAnimationFrame(readerStep) : undefined
+    }
+    const readerInput = () => {
+      reader.last = performance.now()
+      reader.steps = 0
+      readerFrame ??= view.requestAnimationFrame(readerStep)
+    }
+    const readerScrolls = () =>
+      reader.touching ||
+      reader.dragging ||
+      reader.steps < layoutSteps ||
+      performance.now() - reader.last < readerScrollMs
     // When the page last moved the layout, and how many rendering steps ran since; the chat's opening counts.
     let laidOut = Number.NEGATIVE_INFINITY
     let steps = layoutSteps
@@ -233,11 +252,11 @@ export function usePinnedEnd(
     const onTouchEnd = () => {
       if (!reader.touching) return
       reader.touching = false
-      reader.last = performance.now()
+      readerInput()
     }
     // A wheel turn.
     const onReader = (event: Event) => {
-      if (!ours(event.target)) reader.last = performance.now()
+      if (!ours(event.target)) readerInput()
     }
     // A focus that moves to an entry in the transcript, which scrolls it into view. The focus on the body itself
     // scrolls nothing: a tap on the transcript off a control gives it the focus and closes the keyboard, and the
@@ -246,7 +265,7 @@ export function usePinnedEnd(
       if (event.target !== scroller) onReader(event)
     }
     const onKey = (event: KeyboardEvent) => {
-      if (scrollKeys.has(event.key) && !typing(event.target)) reader.last = performance.now()
+      if (scrollKeys.has(event.key) && !typing(event.target)) readerInput()
     }
     // A mouse press in the transcript: on its scroll bar, or the start of a text selection, which scrolls the
     // transcript when the drag passes its top or bottom edge.
@@ -256,7 +275,7 @@ export function usePinnedEnd(
     const onPointerUp = () => {
       if (!reader.dragging) return
       reader.dragging = false
-      reader.last = performance.now()
+      readerInput()
     }
     // Back from the background: entries may have come in while the page could not draw them.
     const onShow = () => {
@@ -303,6 +322,7 @@ export function usePinnedEnd(
       reader.touching = false
       reader.dragging = false
       reader.last = Number.NEGATIVE_INFINITY
+      reader.steps = layoutSteps
       pinnedRef.current = true
       if (reducedMotion()) {
         stopSeeking()
@@ -345,6 +365,7 @@ export function usePinnedEnd(
     view.visualViewport?.addEventListener('resize', layoutMoved, passive)
     return () => {
       if (stepFrame !== undefined) view.cancelAnimationFrame(stepFrame)
+      if (readerFrame !== undefined) view.cancelAnimationFrame(readerFrame)
       stopSeeking()
       newest.bind(undefined)
       cameRef.current = undefined
