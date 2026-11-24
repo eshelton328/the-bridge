@@ -24,6 +24,9 @@
 // becomes `stopped`, with its text so far, and its streams end. An unknown
 // side, or one of another chat, is 404. `stops` records each side the page
 // stopped; `answerStops` answers each next stop with a test's error.
+// `reads` records the side ID of each read of an answer (`GET
+// .../side/:side`), and `answerReads` answers each next read with a test's
+// error.
 import {
   ChatId,
   SideAnswer,
@@ -58,6 +61,9 @@ export function fakeSideServer(machine = 'test-box') {
   /** The side ID of each stream the page opened, in order. */
   const opens: string[] = []
   let askAnswer: (() => Response) | undefined
+  /** The side ID of each read of an answer the page made, answered or not. */
+  const reads: string[] = []
+  let readAnswer: (() => Response) | undefined
   /** The side ID of each stop the page posted, taken or not. */
   const stops: string[] = []
   let stopAnswer: (() => Response) | undefined
@@ -171,6 +177,10 @@ export function fakeSideServer(machine = 'test-box') {
     if (read === null || method !== 'GET') return undefined
     const chat = decodeURIComponent(read[1] ?? '')
     const side = read[2] ?? ''
+    if (read[3] === undefined) {
+      reads.push(side)
+      if (readAnswer !== undefined) return readAnswer()
+    }
     const answer = answers.get(side)
     if (answer?.chat !== chat) return missing(path)
     return read[3] === undefined ? json(SideAnswer.parse(answer), 200) : stream(side, init?.signal)
@@ -180,6 +190,13 @@ export function fakeSideServer(machine = 'test-box') {
     handle,
     get asks() {
       return asks
+    },
+    get reads() {
+      return reads
+    },
+    /** Answers each next read of an answer with `answer` until it is set to undefined; the read is still recorded. */
+    answerReads: (answer: (() => Response) | undefined) => {
+      readAnswer = answer
     },
     get stops() {
       return stops

@@ -18,8 +18,8 @@ import { routeTree } from './routeTree.gen.ts'
 
 // Backend #456, #460: a live Claude chat's Side chat, in the phone's sheet (M5), the tablet's sheet (T2), beside the
 // desktop's chat (D2) and inside its pane of the workbench (D5), posts `POST /api/chats/:chat/side` with the question
-// only and streams the answer from `GET /api/chats/:chat/side/:side/events`: the answer grows as it comes and the main
-// chat gets nothing. The composer has no paperclip and the pane has no "Open as its own pane", as no route takes them.
+// only and reads the answer from `GET /api/chats/:chat/side/:side` until its last state, holding no stream (review of
+// PR #477): the answer grows as it comes and the main chat gets nothing. The composer has no paperclip and the pane has no "Open as its own pane", as no route takes them.
 // A Codex chat and a shell, which the server refuses (409 noSession), have no Side chat. Each miss is one line under
 // the composer with the question back in the box; a 5xx is reported with the step, the kind and the status only. An
 // answer that fails, stops at the server's 2 minutes, is cut or that the server no longer has says so. While a
@@ -187,7 +187,7 @@ describe('Side chat on a live Claude chat (backend #460)', () => {
         .toEqual([{ chat: sketch, body: { question: 'Why did the build fail?' } }])
       await expect.element(side.getByText('Why did the build fail?', { exact: true })).toBeVisible()
       await expect.element(side.getByText('Answering…', { exact: true })).toBeVisible()
-      await expect.poll(() => fakes.side.opens).toHaveLength(1)
+      await expect.poll(() => fakes.side.reads.length).toBeGreaterThan(0)
       const [id] = fakes.side.sides
       if (id === undefined) throw new Error('no side answer')
       fakes.side.change(id, { text: 'The build ' })
@@ -197,6 +197,8 @@ describe('Side chat on a live Claude chat (backend #460)', () => {
       await expect.element(side.getByText('Answering…', { exact: true })).not.toBeInTheDocument()
       await expect.element(side.getByRole('button', { name: 'Copy' })).toBeVisible()
       await expect.element(questionBox(size)).toHaveValue('')
+      // The page read the answer and held no stream of it, which would take a connection the page needs.
+      expect(fakes.side.opens).toEqual([])
       // The main chat gets nothing: no prompt, and its transcript shows neither the question nor the answer.
       expect(fakes.chats.prompts).toEqual([])
       expect(page.getByText('The build needs marker-5150.', { exact: true }).elements()).toHaveLength(1)
@@ -239,7 +241,7 @@ describe('Side chat on a live Claude chat (backend #460)', () => {
     await openChat('desktop', 'sketch the plan')
     await openSide('desktop', 'sketch the plan')
     await ask('desktop', 'First?')
-    await expect.poll(() => fakes.side.opens).toHaveLength(1)
+    await expect.poll(() => fakes.side.reads.length).toBeGreaterThan(0)
     await ask('desktop', 'Second?')
     await expect
       .element(sideChat('desktop').getByText('Not asked — a side question is still answering', { exact: true }))
@@ -310,7 +312,7 @@ describe('Side chat on a live Claude chat (backend #460)', () => {
       await openChat('desktop', 'sketch the plan')
       await openSide('desktop', 'sketch the plan')
       await ask('desktop', 'What now?')
-      await expect.poll(() => fakes.side.opens).toHaveLength(1)
+      await expect.poll(() => fakes.side.reads.length).toBeGreaterThan(0)
       const [id] = fakes.side.sides
       if (id === undefined) throw new Error('no side answer')
       fakes.side.change(id, next)
@@ -328,7 +330,7 @@ describe('Side chat on a live Claude chat (backend #460)', () => {
       // No question waits: the composer draws no Stop.
       expect(side.getByRole('button', { name: 'Stop', exact: true }).elements()).toHaveLength(0)
       await ask(size, 'How long is it?')
-      await expect.poll(() => fakes.side.opens).toHaveLength(1)
+      await expect.poll(() => fakes.side.reads.length).toBeGreaterThan(0)
       const [id] = fakes.side.sides
       if (id === undefined) throw new Error('no side answer')
       fakes.side.change(id, { text: 'Half an answer' })
@@ -361,7 +363,7 @@ describe('Side chat on a live Claude chat (backend #460)', () => {
       await openSide(size, 'sketch the plan')
       const side = sideChat(size)
       await ask(size, 'Why marker-5150?')
-      await expect.poll(() => fakes.side.opens).toHaveLength(1)
+      await expect.poll(() => fakes.side.reads.length).toBeGreaterThan(0)
       const [id] = fakes.side.sides
       if (id === undefined) throw new Error('no side answer')
       await userEvent.click(side.getByRole('button', { name: 'Stop', exact: true }))
@@ -380,33 +382,38 @@ describe('Side chat on a live Claude chat (backend #460)', () => {
     await openChat('desktop', 'sketch the plan')
     await openSide('desktop', 'sketch the plan')
     await ask('desktop', 'Still there?')
-    await expect.poll(() => fakes.side.opens).toHaveLength(1)
+    await expect.poll(() => fakes.side.reads.length).toBeGreaterThan(0)
     const [id] = fakes.side.sides
     if (id === undefined) throw new Error('no side answer')
     fakes.side.change(id, { text: 'Part' })
     await expect.element(sideChat('desktop').getByText('Part', { exact: true })).toBeVisible()
     fakes.side.forget(id)
-    fakes.side.drop(id)
-    // The page connects again after the server's retry time and finds no answer.
+    // The next read finds no answer.
     await expect
-      .element(sideChat('desktop').getByText('This answer is gone — the server restarted', { exact: true }), {
-        timeout: 10_000,
-      })
+      .element(sideChat('desktop').getByText('This answer is gone — the server restarted', { exact: true }))
       .toBeVisible()
     await expect.element(sideChat('desktop').getByText('Part', { exact: true })).toBeVisible()
   })
 
-  it('connects again after a drop and shows the answer as it is then', async () => {
+  it('reads again after a read that missed, reports it once with the status only, and shows the answer then', async () => {
+    clearReports()
+    onTestFinished(clearReports)
     const fakes = withChats()
     await openChat('desktop', 'sketch the plan')
     await openSide('desktop', 'sketch the plan')
     await ask('desktop', 'Again?')
-    await expect.poll(() => fakes.side.opens).toHaveLength(1)
+    await expect.poll(() => fakes.side.reads.length).toBeGreaterThan(0)
     const [id] = fakes.side.sides
     if (id === undefined) throw new Error('no side answer')
-    fakes.side.drop(id)
-    fakes.side.change(id, { text: 'Written while dropped.' })
-    await expect.poll(() => fakes.side.opens, { timeout: 10_000 }).toHaveLength(2)
-    await expect.element(sideChat('desktop').getByText('Written while dropped.', { exact: true })).toBeVisible()
+    fakes.side.answerReads(() =>
+      errorAnswer({ kind: 'herdr-unavailable', message: 'herdr does not answer marker-5150', requestId: 'r-503' }, 503),
+    )
+    const before = fakes.side.reads.length
+    await expect.poll(() => fakes.side.reads.length, { timeout: 5_000 }).toBeGreaterThan(before + 2)
+    fakes.side.change(id, { text: 'Written while it missed.' })
+    fakes.side.answerReads(undefined)
+    await expect.element(sideChat('desktop').getByText('Written while it missed.', { exact: true })).toBeVisible()
+    expect(getReports().map((r) => r.error.message)).toEqual(["A side question's read missed: status (503)"])
+    expect(JSON.stringify(getReports())).not.toMatch(/marker-5150|sketch|Again/)
   })
 })

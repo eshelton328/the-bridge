@@ -1,14 +1,14 @@
 // The live side chats of the Workspaces page (backend #456, #460), for its
 // entry: in development, while the page reads live, a live Claude chat's Side
 // chat asks its questions through liveSide.ts (loaded when first used, so a
-// build has no live code) and follows each answer's stream. The questions and
+// build has no live code) and reads each answer until it ends. The questions and
 // answers stay in the page's memory by the chat's server ID, for as long as
 // the page is open: each question goes as it is, with nothing of the ones
 // before it, as a new copy of the chat's session answers each one. One
 // question of a chat answers at a time; a second waits with a line, as the
 // server would refuse it (409 sideBusy). A question over `maxSideQuestion`
 // is not sent. While a question waits, the composer draws Stop (backend
-// #465): it stops the answer on the server, whose stream then ends with
+// #465): it stops the answer on the server, which then reads
 // `stopped`; the text so far stays. The fixtures have none and keep their
 // Figma side chats.
 import { maxSideQuestion, type SideAnswer, type SideId } from '@bridge/contract'
@@ -48,7 +48,7 @@ const endLines = {
 }
 const stoppedLine = 'Stopped — the answer ends here'
 
-/** A turn still waits for its answer: asked, or answering with its stream open. */
+/** A turn still waits for its answer: asked, or answering while the page reads it. */
 const waiting = (turn: Turn) =>
   turn.end === undefined && (turn.answer === undefined || turn.answer.state === 'answering')
 
