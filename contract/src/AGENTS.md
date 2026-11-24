@@ -35,8 +35,8 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
   (`transcripts.test.ts`).
 - A transcript entry has an ID that is stable in its chat; a change
   event replaces the entry with that ID or adds it at the end. Its
-  `added` says how many of its last entries are new; a client leaves out
-  a changed entry that it does not hold, as that entry is older. A tool
+  `added` names the entries that are new; a client leaves out a changed
+  entry that it does not hold, as that entry is older. A tool
   entry has a name and a short target, never its arguments or its
   result; the server adds its `ToolKind`, a readable title and a
   one-line label from the call's own description (R32). A user entry of a prompt sent with files has `files`: the

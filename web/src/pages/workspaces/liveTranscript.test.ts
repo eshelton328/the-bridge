@@ -337,6 +337,22 @@ describe('watchTranscript', () => {
     expect(getReports()).toHaveLength(1)
   })
 
+  it('adds a new entry that came during the first read but not in its answer, and then its change', async () => {
+    const server = fakeTranscriptServer()
+    const all = Array.from({ length: 600 }, (_, i) => user(`u${String(i)}`, 'go'))
+    server.set(chat, all)
+    // The read's answer is the transcript from before the new entry came.
+    const body = JSON.stringify({ chat, entries: all.slice(-500), earlier: true })
+    server.answerReads(() => new Response(body, { status: 200, headers: { 'content-type': 'application/json' } }))
+    watch(server, 60)
+    await expect.poll(() => server.openStreams()).toEqual([chat])
+    server.push(chat, [user('late', 'running')])
+    await expect.poll(() => view()?.loaded).toBe(true)
+    server.answerReads(undefined)
+    server.push(chat, [user('late', 'done')])
+    await expect.poll(() => view()?.entries.at(-1)).toEqual(user('late', 'done'))
+  })
+
   it('leaves out a changed entry older than those it holds, and adds the new ones at the end', async () => {
     const server = fakeTranscriptServer()
     server.set(

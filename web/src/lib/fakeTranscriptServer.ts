@@ -466,7 +466,7 @@ export function fakeTranscriptServer({ streams: mode = 'open', uploads: uploadOp
     /** Changes a chat's transcript and sends `transcript.changed` with `entries` to each of its open streams. */
     push: (chat: string, entries: readonly TranscriptEntry[]) => {
       const now = [...(transcripts.get(chat) ?? [])]
-      const added = entries.length - 1 - entries.findLastIndex((entry) => now.some((e) => e.id === entry.id))
+      const added = entries.filter((entry) => !now.some((e) => e.id === entry.id)).map((e) => e.id)
       for (const entry of entries) {
         const at = now.findIndex((e) => e.id === entry.id)
         if (at === -1) now.push(entry)

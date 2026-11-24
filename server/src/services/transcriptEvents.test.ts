@@ -37,7 +37,7 @@ describe('transcript events', () => {
         source: 'test-mac/transcript',
         seq: 0,
         type: 'transcript.changed',
-        data: { chat: themes, entries: [{ type: 'assistant', id: 'a2', text: 'Done.', cut: false }], added: 1 },
+        data: { chat: themes, entries: [{ type: 'assistant', id: 'a2', text: 'Done.', cut: false }], added: ['a2'] },
       },
       {
         source: 'test-mac/transcript',
@@ -47,7 +47,7 @@ describe('transcript events', () => {
           chat: themes,
           entries: [{ type: 'tool', id: 't2', name: 'Bash', target: 'pnpm', running: false }],
           // The tool call was in the transcript, running: a change, not a new entry.
-          added: 0,
+          added: [],
         },
       },
     ])
@@ -56,7 +56,7 @@ describe('transcript events', () => {
     expect(agents.watchers()).toBe(0)
   })
 
-  it('puts the new entries last in an event with a change, and counts them in added', async () => {
+  it('names the new entries of an event with a change in added', async () => {
     const agents = createFakeAgents(machine)
     const c = client()
     const connected = await connectTranscript(agents, themes, c)
@@ -68,8 +68,8 @@ describe('transcript events', () => {
     await tick()
     const events = c.events.map((e) => [e.data.entries.map((x) => x.id), e.data.added])
     expect(events).toEqual([
-      [['a2'], 1],
-      [['t2', 'a3'], 1],
+      [['a2'], ['a2']],
+      [['t2', 'a3'], ['a3']],
     ])
     connected.value()
   })
