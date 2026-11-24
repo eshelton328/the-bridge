@@ -141,6 +141,11 @@ describe('a long live chat reads its transcript a page at a time', () => {
     expect(first.isConnected).toBe(true)
     expect(Math.abs(offset() - top)).toBeLessThanOrEqual(1)
     expect(renderedAgain(before, entryProps(chat))).toEqual([])
+    // A reconnect reads the 200 the view holds again, and the reader keeps the place.
+    server.drop(plan)
+    await expect.poll(() => server.readQueries.at(-1)).toEqual({ limit: '200' })
+    await afterRendering()
+    expect(Math.abs(offset() - top)).toBeLessThanOrEqual(1)
     expect(getReports()).toEqual([])
   })
 
@@ -165,6 +170,11 @@ describe('a long live chat reads its transcript a page at a time', () => {
     expect(scroller.scrollHeight).toBeGreaterThan(scroller.clientHeight * 2)
     expect(scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight).toBeLessThanOrEqual(1)
     expect(page.getByRole('button', { name: 'Scroll to the newest message' }).query()).toBeNull()
+    // A reconnect reads the view's 150 again, and the chat stays at its end.
+    server.drop(plan)
+    await expect.poll(() => server.readQueries.at(-1)).toEqual({ limit: '150' })
+    await afterRendering()
+    expect(scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight).toBeLessThanOrEqual(1)
     expect(getReports()).toEqual([])
   })
 })
