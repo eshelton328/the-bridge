@@ -691,7 +691,21 @@ describe('GET and POST /api/chats/:chat/dialog (R69)', () => {
     const app = createApp({ agents, owner, log: logger.log })
     agents.showDialog(ChatId.parse(themes), dialog)
     agents.setStatus(ChatId.parse(themes), 'needsYou')
-    expect((await pick(app, themes, { id: dialog.id, n: 3 })).status).toBe(409)
+    // Only the owner answers: another Tailscale login sends nothing.
+    const stranger = await app.request(path(themes), {
+      method: 'POST',
+      headers: {
+        Host: 'mac.tailnet.example',
+        'X-Forwarded-For': '203.0.113.2',
+        'Tailscale-User-Login': 'someone@example.com',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({ id: dialog.id, n: 2 }),
+    })
+    expect([stranger.status, agents.dialogAnswers()]).toEqual([403, []])
+    // An option the dialog does not offer: 409 dialogChanged, nothing sent.
+    const offMenu = await pick(app, themes, { id: dialog.id, n: 3 })
+    expect([offMenu.status, ErrorBody.parse(await offMenu.json()).error]).toMatchObject([409, { state: 'dialogChanged' }])
     expect((await pick(app, themes, { id: dialog.id, n: 2 })).status).toBe(204)
     expect(agents.dialogAnswers()).toEqual([{ chat: themes, id: dialog.id, n: 2 }])
     const again = await pick(app, themes, { id: dialog.id, n: 2 })
