@@ -14,7 +14,10 @@
 // (and a moment after it lifts, for the fling), after a wheel turn or a
 // scroll key, while a mouse button is down in the transcript (a drag of its
 // scroll bar, or a text selection that scrolls past its edge), or after the
-// focus moves into it (Tab, a link or a screen reader's next item). Once the
+// focus moves to an entry in it (Tab, a link or a screen reader's next item),
+// never when the focus goes to the transcript's body itself, as a tap on it
+// does: that tap closes the keyboard, and iOS's scroll after it went far up
+// and unpinned the end after a send (R61). Once the
 // reader has left the end, no scroll is moved back: a fling's scroll events
 // after the finger lifts keep the place. A scroll away from the end that no
 // input explains goes back to the end in the same frame, before the browser
@@ -220,9 +223,15 @@ export function usePinnedEnd(
       reader.touching = false
       reader.last = performance.now()
     }
-    // A wheel turn, and a focus that moves into the transcript, which scrolls the focused entry into view.
+    // A wheel turn.
     const onReader = (event: Event) => {
       if (!ours(event.target)) reader.last = performance.now()
+    }
+    // A focus that moves to an entry in the transcript, which scrolls it into view. The focus on the body itself
+    // scrolls nothing: a tap on the transcript off a control gives it the focus and closes the keyboard, and the
+    // scroll iOS makes then with no touch is not the reader's (screen review R61).
+    const onFocusIn = (event: FocusEvent) => {
+      if (event.target !== scroller) onReader(event)
     }
     const onKey = (event: KeyboardEvent) => {
       if (scrollKeys.has(event.key) && !typing(event.target)) reader.last = performance.now()
@@ -310,7 +319,7 @@ export function usePinnedEnd(
     scroller.addEventListener('scroll', onScroll, passive)
     scroller.addEventListener('touchmove', onTouchMove, passive)
     scroller.addEventListener('wheel', onReader, passive)
-    scroller.addEventListener('focusin', onReader)
+    scroller.addEventListener('focusin', onFocusIn)
     scroller.addEventListener('pointerdown', onPointerDown, passive)
     view.addEventListener('touchend', onTouchEnd, passive)
     view.addEventListener('touchcancel', onTouchEnd, passive)
@@ -331,7 +340,7 @@ export function usePinnedEnd(
       scroller.removeEventListener('scroll', onScroll)
       scroller.removeEventListener('touchmove', onTouchMove)
       scroller.removeEventListener('wheel', onReader)
-      scroller.removeEventListener('focusin', onReader)
+      scroller.removeEventListener('focusin', onFocusIn)
       scroller.removeEventListener('pointerdown', onPointerDown)
       view.removeEventListener('touchend', onTouchEnd)
       view.removeEventListener('touchcancel', onTouchEnd)
