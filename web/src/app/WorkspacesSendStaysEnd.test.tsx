@@ -177,22 +177,35 @@ describe("the end of a long live chat after the owner's own send (R61)", () => {
     tap(tapped, scroller)
     await afterRendering()
     expect(document.activeElement).toBe(scroller)
-    // Right after the tap, the owner's finger drags the transcript down a long way: his scroll, which leaves the end.
+    // Then the owner's finger drags the transcript down a long way, in three moves: his scroll, which leaves the end.
+    // The composer closes after the tap; the drag waits until its height holds for a few frames.
+    const footer = root.querySelector('.scroll-frame__footer')
+    if (!(footer instanceof HTMLElement)) throw new Error('no composer footer')
+    await expect
+      .poll(async () => {
+        const before = footer.offsetHeight
+        for (let i = 0; i < 5; i += 1) await afterRendering()
+        return footer.offsetHeight === before
+      })
+      .toBe(true)
     const box = scroller.getBoundingClientRect()
     const finger = (y: number) =>
       new Touch({ identifier: 2, target: scroller, clientX: box.left + 40, clientY: box.top + y })
-    const moved = new Promise((resolve) => {
-      scroller.addEventListener('scroll', resolve, { once: true })
-    })
     scroller.dispatchEvent(
       new TouchEvent('touchstart', { bubbles: true, touches: [finger(100)], changedTouches: [finger(100)] }),
     )
-    scroller.dispatchEvent(
-      new TouchEvent('touchmove', { bubbles: true, touches: [finger(400)], changedTouches: [finger(400)] }),
-    )
-    scroller.scrollTop = Math.round(scroller.scrollTop / 4)
-    await moved
-    scroller.dispatchEvent(new TouchEvent('touchend', { bubbles: true, touches: [], changedTouches: [finger(400)] }))
+    for (const y of [300, 500, 700]) {
+      const moved = new Promise((resolve) => {
+        scroller.addEventListener('scroll', resolve, { once: true })
+      })
+      scroller.dispatchEvent(
+        new TouchEvent('touchmove', { bubbles: true, touches: [finger(y)], changedTouches: [finger(y)] }),
+      )
+      scroller.scrollTop -= scroller.clientHeight
+      await moved
+      await afterRendering()
+    }
+    scroller.dispatchEvent(new TouchEvent('touchend', { bubbles: true, touches: [], changedTouches: [finger(700)] }))
     await afterRendering()
     const place = scroller.scrollTop
     expect(fromEnd(scroller)).toBeGreaterThan(scroller.clientHeight)
