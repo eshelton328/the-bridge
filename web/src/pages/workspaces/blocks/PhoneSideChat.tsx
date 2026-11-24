@@ -7,8 +7,14 @@
 // width (T2 105:1914, `device="tablet"`) the panel's parts sit further in,
 // its note is larger and the sheet draws no scrim: Figma dims M5's chat
 // (its `scrim` layer, 105:3105) but leaves T2's chat above the sheet in full
-// colour. Either way the sheet is modal: a press above it closes it and the
-// focus goes back. Props only.
+// colour. Screen review R71: the sheet docks on the keyboard while its message
+// box has the focus (`keyboardDock`, library #347), so it rises with the
+// keyboard and sets no body scroll lock, and the main chat's composer stays
+// where it is. Only an explicit close closes it: ×, a swipe from the grabber
+// or Escape, and on the phone a tap on the scrim too (`closeOn`). A press on
+// the chat above the tablet's sheet, the focus and the keyboard keep it open,
+// and the press does not reach the chat. A live side chat's unsent question
+// stays in the page's drafts, so a close loses none of it. Props only.
 import { BottomSheet } from '@eshelton328/component-library-1701'
 import { useRef } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
@@ -56,6 +62,8 @@ export function PhoneSideChat({
       size="sm"
       label={chat.title}
       scrim={device !== 'tablet'}
+      keyboardDock
+      closeOn={device === 'tablet' ? 'explicit' : 'scrim'}
       open={open}
       onOpenChange={onOpenChange}
       initialFocus={() => ref.current?.querySelector('textarea') ?? null}

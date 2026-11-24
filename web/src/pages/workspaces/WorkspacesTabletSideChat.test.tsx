@@ -48,7 +48,7 @@ describe('the side chat on the tablet', () => {
     await expect.element(page.getByRole('button', { name: 'Home' })).toBeVisible()
   })
 
-  it('draws no scrim, and a press on the chat above the sheet closes it and stays in the chat', async () => {
+  it('draws no scrim, and a press on the chat above the sheet keeps it open and does not reach the chat', async () => {
     // T2's frame size.
     await page.viewport(756, 1158)
     const { data, ui } = workspacesStates.tabletSideChat
@@ -66,11 +66,15 @@ describe('the side chat on the tablet', () => {
     // the sheet listens for presses outside it.
     await expect.element(sheet.getByRole('textbox', { name: 'Ask a side question' })).toHaveFocus()
     await Promise.all(document.getAnimations().map((animation) => animation.finished))
-    // The sheet stays modal: the press closes it and does not reach the chat's Back under it.
+    // Screen review R71: the sheet closes only on an explicit close (`closeOn="explicit"`), so the press keeps it open,
+    // and it stays modal: the press does not reach the chat's Back under it.
     // The open sheet blocks the page's pointer events, so the press needs `force`.
     await userEvent.click(page.getByRole('button', { name: data.phone.back, includeHidden: true }), { force: true })
-    await expect.element(sheet).not.toBeInTheDocument()
-    await expect.element(page.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    // Give a close the time of the sheet's exit motion before the check that it stayed.
+    await new Promise((resolve) => setTimeout(resolve, 500))
+    await expect.element(sheet).toBeVisible()
+    await expect.element(sheet.getByRole('textbox', { name: 'Ask a side question' })).toBeVisible()
+    await expect.element(page.getByRole('heading', { name: 'bridge themes', includeHidden: true })).toBeVisible()
     await expect.element(page.getByRole('button', { name: 'Home' })).not.toBeInTheDocument()
   })
 })
