@@ -22,6 +22,8 @@ import type {
   StartChatResponse,
   ModelAlias,
   RestartModelResponse,
+  AnswerDialogRequest,
+  PaneDialog,
 } from '@bridge/contract'
 import type { Result } from '@bridge/shared'
 
@@ -151,6 +153,10 @@ export type SideRecord = { readonly codeMode: boolean; text(): Promise<string> }
 /** A side question's answer as it comes, or `notFound` for no such chat, `noSession` for no saved Claude session. */
 type SideOutcome = AsyncIterable<SideChunk> | 'notFound' | 'noSession'
 
+/** A chat's dialog (R69): null when the chat does not wait for the owner or its screen shows none. */
+export type DialogRead = PaneDialog | null | 'notFound' | 'shell' | 'noCommands'
+/** An answer to a dialog: `dialogChanged` when the screen no longer shows that dialog or option, with no key sent. */
+type DialogOutcome = 'sent' | 'dialogChanged' | 'notFound' | 'shell' | 'noCommands'
 /** What a stop did: as a send, or `notWorking` when the chat has no work to stop, so nothing was sent. */
 export type CancelOutcome = Exclude<SendOutcome, 'needsYou' | 'inputNotEmpty' | 'inputUnreadable'> | 'notWorking'
 
@@ -325,6 +331,10 @@ export type AgentPort = {
    * nothing. The answer ends when `signal` aborts.
    */
   askSide(chat: ChatId, question: string, signal: AbortSignal): Promise<Result<SideOutcome, AgentPortError>>
+  /** The dialog that a Claude chat that waits for the owner shows on its screen (R69, d-125). */
+  readDialog(chat: ChatId): Promise<Result<DialogRead, AgentPortError>>
+  /** Picks option `n` of the dialog `id`, only while the chat's screen shows that dialog (R69). */
+  answerDialog(chat: ChatId, answer: AnswerDialogRequest): Promise<Result<DialogOutcome, AgentPortError>>
   /**
    * Gives the split of `tab` at `path` (from the tree's root; empty for the root) the share `ratio` for its first
    * part; `notFound` for no such tab or split.

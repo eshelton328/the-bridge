@@ -225,6 +225,35 @@ export function switchModelScreen(): string {
   ].join('\r\n')
 }
 
+/**
+ * A Claude Code screen with a question dialog open, as a skill's AskUserQuestion shows it (probe in a test herdr
+ * session, 2026-11-24); `picked` is the option that "❯" marks, and `multi` draws the multi-select form.
+ */
+export function questionScreen(picked = 1, multi = false): string {
+  const box = multi ? '[ ] ' : ''
+  const item = (n: number, label: string) => [
+    `${n === picked ? '❯' : ' '} ${String(n)}. ${box}${label}`,
+    `${multi ? '    ' : ''}     Use ${label.toLowerCase()} for marker-5150.`,
+  ]
+  return [
+    '  line 59: example text',
+    rule,
+    multi ? `←  ${esc}[1m☐ Colour${esc}[0m  ✔ Submit  →` : ` ${esc}[1m☐ Colour${esc}[0m`,
+    '',
+    'Which colour for marker-5150?',
+    '',
+    ...item(1, 'Red'),
+    ...item(2, 'Green'),
+    ...item(3, 'Blue'),
+    `  4. ${box}Type something.`,
+    ...(multi ? ['     Submit'] : []),
+    rule,
+    '  5. Chat about this',
+    '',
+    'Enter to select · ↑/↓ to navigate · Esc to cancel',
+  ].join('\r\n')
+}
+
 export function claudeScreen(text: string): string {
   const box =
     text === ''

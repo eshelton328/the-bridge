@@ -19,6 +19,7 @@ import {
   claudeScreen,
   type FakeHerdrSocket,
   paneRead,
+  questionScreen,
   startFakeHerdrSocket,
   switchModelScreen,
 } from './fakeHerdrSocket.ts'
@@ -2851,5 +2852,56 @@ describe('herdr agents: project workspaces (R49)', () => {
     expect(await read({ 'w17:p1': outside, 'w17:p2': outside, 'w18:p1': alpha })).toEqual({ alpha: 'test-mac/w18' })
     expect(await read({ 'w17:p1': join(root, 'projects') })).toEqual({})
     expect(await read({ 'w17:p1': alpha }, null)).toEqual({})
+  })
+})
+
+describe('herdr agents: a dialog on a chat that waits (R69)', () => {
+  // The recorded list gives this chat herdr's "blocked".
+  const chat = ChatId.parse('test-mac/session-a')
+  const reads = () => socket.requests().filter((r) => r.method === 'pane.read').length
+  const keys = () => socket.requests().filter((r) => r.method === 'agent.send_keys')
+  afterEach(() => {
+    socket.set('pane.read', undefined)
+    socket.set('agent.list', undefined)
+  })
+
+  it('reads the dialog and moves to the tapped option before its Enter', async () => {
+    socket.set('pane.read', paneRead('w17:p1', questionScreen(1)))
+    const read = await port().readDialog(chat)
+    const dialog = read.ok && read.value !== null && typeof read.value === 'object' ? read.value : undefined
+    expect(dialog?.options?.map((o) => o.n)).toEqual([1, 2, 3])
+    const sent = keys().length
+    expect(await port().answerDialog(chat, { id: dialog?.id ?? '', n: 3 })).toEqual({ ok: true, value: 'sent' })
+    expect(
+      keys()
+        .slice(sent)
+        .map((r) => r.params),
+    ).toEqual([{ target: 'w17:p1', keys: ['down', 'down', 'enter'] }])
+  })
+
+  it('sends no key when the screen shows another dialog or the option is not offered', async () => {
+    socket.set('pane.read', paneRead('w17:p1', questionScreen(1)))
+    const read = await port().readDialog(chat)
+    const id = read.ok && read.value !== null && typeof read.value === 'object' ? read.value.id : ''
+    const sent = keys().length
+    expect(await port().answerDialog(chat, { id, n: 4 })).toEqual({ ok: true, value: 'dialogChanged' })
+    socket.set('pane.read', paneRead('w17:p1', questionScreen(2)))
+    expect(await port().answerDialog(chat, { id, n: 1 })).toEqual({ ok: true, value: 'dialogChanged' })
+    expect(keys().length).toBe(sent)
+  })
+
+  it('reads no screen of a chat that does not wait, and none of a Codex chat', async () => {
+    socket.set('agent.list', {
+      ...results['agent.list'],
+      agents: results['agent.list'].agents.map((a) => (a.pane_id === 'w17:p1' ? { ...a, agent_status: 'idle' } : a)),
+    })
+    const before = reads()
+    expect(await port().readDialog(chat)).toEqual({ ok: true, value: null })
+    expect(await port().answerDialog(chat, { id: 'a1b2c3d4e5f60718', n: 1 })).toEqual({
+      ok: true,
+      value: 'dialogChanged',
+    })
+    expect(await port().readDialog(ChatId.parse('test-mac/term_2'))).toEqual({ ok: true, value: 'noCommands' })
+    expect(reads()).toBe(before)
   })
 })

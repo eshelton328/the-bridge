@@ -61,6 +61,7 @@ import {
   promptKey,
   switchModelDialogOf,
 } from './claudeInput.ts'
+import { dialogKeys, dialogOf, type ScreenDialog } from './claudeDialog.ts'
 import { readCodeMode, sideRecord } from './claudeSide.ts'
 import { readClaudeTranscript, readClaudeTranscriptPage } from './claudeTranscript.ts'
 import { readClaudeSkills } from './claudeSkills.ts'
@@ -849,6 +850,25 @@ export function createHerdrAgents({
     return read.ok ? ok(read.value.read.text) : read
   }
 
+  /**
+   * The dialog on a Claude chat's screen; null, with no read, for a chat that does not wait for the owner, so no
+   * other screen text leaves the adapter (R69).
+   */
+  const dialogShown = async (
+    chat: ChatId,
+  ): Promise<
+    Result<'notFound' | 'shell' | 'noCommands' | null | { pane: string; shown: ScreenDialog | null }, AgentPortError>
+  > => {
+    const target = await agentPane(chat)
+    if (!target.ok) return target
+    if (typeof target.value === 'string') return ok(target.value)
+    const { pane, status, claude } = target.value
+    if (!claude) return ok('noCommands')
+    if (status !== 'needsYou') return ok(null)
+    const screen = await screenOf(pane)
+    return screen.ok ? ok({ pane, shown: dialogOf(screen.value) }) : screen
+  }
+
   /** The input box of a Claude chat's pane, from its screen; null when the screen shows none. */
   const inputBox = async (pane: string): Promise<Result<InputBox | null, AgentPortError>> => {
     const screen = await screenOf(pane)
@@ -1311,6 +1331,25 @@ export function createHerdrAgents({
           : await effortStep(pane, ['shift+down'], (shown) => shown === 'low' || shown === 'none')
       if (done.ok && done.value === 'set') await keepEffort(pane, effort)
       return done
+    },
+    async readDialog(chat) {
+      const found = await dialogShown(chat)
+      if (!found.ok) return found
+      if (found.value === null || typeof found.value === 'string') return ok(found.value)
+      return ok(found.value.shown?.dialog ?? null)
+    },
+    async answerDialog(chat, { id, n }) {
+      const found = await dialogShown(chat)
+      if (!found.ok) return found
+      if (typeof found.value === 'string') return ok(found.value)
+      if (found.value === null) return ok('dialogChanged')
+      const { shown, pane } = found.value
+      const keys = shown?.dialog.id === id ? dialogKeys(shown, n) : null
+      if (keys === null) return ok('dialogChanged')
+      // herdr takes keys for a blocked agent (probe in a test herdr session, 2026-11-24).
+      const sent = await input('agent.send_keys', { target: pane, keys })
+      if (!sent.ok) return sent
+      return ok(sent.value === 'sent' ? 'sent' : 'dialogChanged')
     },
     async clearInputBox(chat) {
       const target = await agentPane(chat)

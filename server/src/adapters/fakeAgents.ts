@@ -16,8 +16,10 @@ import {
   type WorkspaceLayout,
   type WorkspaceSummary,
   WorkspaceId,
+  type AnswerDialogRequest,
+  type PaneDialog,
 } from '@bridge/contract'
-import { err, ok } from '@bridge/shared'
+import { err, ok, type Result } from '@bridge/shared'
 import { builtinCommands } from './claudeSkills.ts'
 import type {
   ChatCommand,
@@ -26,6 +28,7 @@ import type {
   AgentPortError,
   SideChunk,
   TranscriptRead,
+  DialogRead,
 } from '../services/agentPort.ts'
 
 /** What a chat of the fake got from the owner: a prompt's text, or a stop. */
@@ -161,6 +164,10 @@ export type FakeAgents = AgentPort & {
   readonly endAll: (error: AgentPortError) => void
   /** Marks a workspace as one whose pane runs the server, which no close may end. */
   readonly holdServer: (workspace: WorkspaceId) => void
+  /** Shows `dialog` on a chat's screen (R69), or none; the port reads it only while the chat needs the owner. */
+  readonly showDialog: (chat: ChatId, dialog: PaneDialog | null) => void
+  /** Each dialog answer that reached a chat, in order. */
+  readonly dialogAnswers: () => ({ readonly chat: ChatId } & AnswerDialogRequest)[]
   /** Each prompt and stop that a chat got, in order. */
   readonly inputs: () => FakeInput[]
   /** Puts `text` in a chat's input box, as the owner typing in its terminal; '' empties the box. */
@@ -292,6 +299,16 @@ export function createFakeAgents(
   /** The text in each chat's input box; the fake's stop puts no prompt back, as the real port clears it. */
   const drafts = new Map<ChatId, string>()
   const dropEnter = new Set<ChatId>()
+  const dialogs = new Map<ChatId, PaneDialog>()
+  const answered: ({ readonly chat: ChatId } & AnswerDialogRequest)[] = []
+  /** The dialog a chat shows while it needs the owner, as the port reads it. */
+  const dialogOf = (chat: ChatId): Result<DialogRead, AgentPortError> => {
+    if ('error' in answer) return err(answer.error)
+    const found = chatOf(chat)
+    if (found?.kind !== 'claude')
+      return ok(found === undefined ? 'notFound' : found.kind === 'shell' ? 'shell' : 'noCommands')
+    return ok(found.status === 'needsYou' ? (dialogs.get(chat) ?? null) : null)
+  }
   const chatOf = (chat: ChatId) => (data ?? []).flatMap((w) => w.chats).find((c) => c.id === chat)
   /** The workspace that holds a chat; the fake has one tab in each workspace. */
   const workspaceOf = (chat: ChatId) => (data ?? []).find((w) => w.chats.some((c) => c.id === chat))
@@ -786,6 +803,25 @@ export function createFakeAgents(
     },
     dropNextEnter: (chat) => {
       dropEnter.add(chat)
+    },
+    showDialog: (chat, dialog) => {
+      if (dialog === null) dialogs.delete(chat)
+      else dialogs.set(chat, dialog)
+    },
+    dialogAnswers: () => [...answered],
+    readDialog(chat) {
+      return Promise.resolve(dialogOf(chat))
+    },
+    answerDialog(chat, { id, n }) {
+      const found = dialogOf(chat)
+      if (!found.ok) return Promise.resolve(found)
+      if (typeof found.value === 'string') return Promise.resolve(ok(found.value))
+      const dialog = found.value
+      if (dialog?.id !== id || dialog.options?.some((o) => o.n === n) !== true)
+        return Promise.resolve(ok('dialogChanged'))
+      dialogs.delete(chat)
+      answered.push({ chat, id, n })
+      return Promise.resolve(ok('sent'))
     },
     clearInputBox(chat) {
       if ('error' in answer) return Promise.resolve(err(answer.error))
