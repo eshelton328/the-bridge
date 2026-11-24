@@ -166,6 +166,9 @@ async function read(chat: string, state: ChatState) {
   const next = parsed.data.dialog ?? undefined
   if (next?.id !== state.dialog?.id || (next === undefined) !== (state.dialog === undefined)) {
     state.dialog = next
+    // A done answer belongs to the dialog it answered: a dialog that goes, or another one, ends it, so the same text
+    // on the screen again later is a new question with its options on. An answer still on its way stays.
+    if (state.answered !== undefined && state.answered.phase !== 'sending') state.answered = undefined
     changed(state)
   }
 }

@@ -314,6 +314,23 @@ describe("a chat's terminal dialog (R69)", () => {
     await expect.poll(() => workspaces.dialogAnswers).toEqual([{ chat: plan, body: { id: twoOptions.id, n: 2 } }])
   })
 
+  it('turns the options on again when an answered dialog goes and the same one comes back', async () => {
+    const { workspaces } = withChats()
+    workspaces.showDialog(plan, sample)
+    await openChat(phone)
+    // The server takes the answer but the chat still needs the owner, with the dialog on the screen.
+    workspaces.answerDialogs(() => new Response(null, { status: 204 }))
+    await userEvent.click(option('2 Send original'))
+    await expect.element(option('1 Send structured')).toBeDisabled()
+    // The dialog goes from the screen, and then the same step shows again: a new question.
+    workspaces.showDialog(plan, null, true)
+    await expect.element(card(), { timeout: 8000 }).not.toBeInTheDocument()
+    workspaces.showDialog(plan, sample, true)
+    await expect.element(option('1 Send structured'), { timeout: 8000 }).toBeEnabled()
+    for (const o of sample.options) await expect.element(option(`${String(o.n)} ${o.label}`)).toBeEnabled()
+    expect(workspaces.dialogAnswers).toHaveLength(1)
+  })
+
   it('turns every option off while the answer goes, and sends a second tap never', async () => {
     const { workspaces, gate } = withChats()
     workspaces.showDialog(plan, sample)
