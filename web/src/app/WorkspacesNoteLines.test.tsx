@@ -403,4 +403,16 @@ describe('a message from another chat in a live transcript (R55)', () => {
           document.documentElement.classList.add('dark')
         }
       })
+
+  it("shows each peer message in amber with its text, never as the owner's bubble, on the desktop", async () => {
+    withPlan([prompt, notes[0] ?? prompt, ...peerNotes, quoting, notes[1] ?? prompt, reply])
+    await tapWorkspaces([1512, 982])
+    await userEvent.click(page.getByRole('button', { name: 'Hide the workspace sidebar' }))
+    await expect.element(page.getByRole('article', { name: 'From sample-lab' })).toBeVisible()
+    await expect.element(page.getByRole('article', { name: 'From sample-inbox' })).toBeVisible()
+    const pane = workbenchPane('plan the slice')
+    if (pane === null) throw new Error('no pane')
+    expectPeersApart(pane)
+    expect(getReports()).toEqual([])
+  })
 })
