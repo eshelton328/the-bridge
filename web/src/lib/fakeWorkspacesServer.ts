@@ -123,7 +123,8 @@
 // `defaultWorkspaceName`, with one shell chat, sends `workspaces.changed`
 // unless `quietCreates`, and answers 201 with the contract's
 // `CreateWorkspaceResponse`. `answerCreates` answers each next create with a
-// test's error, and `creates` records each body.
+// test's error, after it made the workspace when `made` (herdr made it and
+// the server's list read after it missed), and `creates` records each body.
 import {
   ChatId,
   type ChatSummary,
@@ -267,6 +268,7 @@ export function fakeWorkspacesServer(
   /** W4: each create's body, an answer in place of the next ones', and whether a create sends no event. */
   const creates: unknown[] = []
   let createAnswer: (() => Response) | undefined
+  let createMade = false
   let quietCreates = false
   let made = 0
 
@@ -829,7 +831,7 @@ export function fakeWorkspacesServer(
     creates.push(body)
     const parsed = CreateWorkspaceRequest.safeParse(body)
     if (new Headers(init?.headers).get('content-type') !== 'application/json' || !parsed.success) return badBody()
-    if (createAnswer !== undefined) return createAnswer()
+    if (createAnswer !== undefined && !createMade) return createAnswer()
     made += 1
     const id = `${response.machine}/w-new${String(made)}`
     const workspace = {
@@ -852,6 +854,7 @@ export function fakeWorkspacesServer(
     }
     response = WorkspacesResponse.parse({ ...response, workspaces: [...response.workspaces, workspace] })
     if (!quietCreates) changed()
+    if (createAnswer !== undefined) return createAnswer()
     const answer = CreateWorkspaceResponse.parse({ workspace: response.workspaces.find((w) => w.id === id) })
     return new Response(JSON.stringify(answer), { status: 201, headers: { 'content-type': 'application/json' } })
   }
@@ -1027,8 +1030,9 @@ export function fakeWorkspacesServer(
     /** Each new workspace's body the page posted (W4), in order. */
     creates,
     /** Answers each next create with `answer` until it is set to undefined. */
-    answerCreates: (answer: (() => Response) | undefined) => {
+    answerCreates: (answer: (() => Response) | undefined, made = false) => {
       createAnswer = answer
+      createMade = made
     },
     /** A create sends no `workspaces.changed` while set: the page must read the list again by itself. */
     quietCreates: (quiet: boolean) => {
