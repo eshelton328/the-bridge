@@ -4,7 +4,7 @@
 // (its transcript entries) before the question. The question goes on stdin, never in an argument, and the answer
 // comes back as the text of each top-level assistant message of the stream-json output. It never throws: a process
 // that fails, ends with no result or cannot start ends the answer as `failed`.
-import { spawn } from 'node:child_process'
+import { execFile, spawn } from 'node:child_process'
 import { open } from 'node:fs/promises'
 import { createInterface } from 'node:readline'
 import type { TranscriptEntry } from '@bridge/contract'
@@ -91,7 +91,7 @@ const keptEnv = [
   'SSL_CERT_FILE',
 ] as const
 
-function sideEnv(env: Readonly<Record<string, string | undefined>>): Record<string, string> {
+export function sideEnv(env: Readonly<Record<string, string | undefined>>): Record<string, string> {
   const kept: Record<string, string> = {}
   for (const key of keptEnv) {
     const value = env[key]
@@ -207,11 +207,20 @@ export async function readCodeMode(path: string): Promise<boolean> {
   }
 }
 
+/** The words of Claude Code's refusal to resume a Code Mode session in a run without Code Mode (2.1.331). */
+const refusedResume = (line: string) => line.includes('Failed to resume session') && line.includes('Code Mode')
+
+type Attempt = {
+  readonly outcome: 'done' | 'failed' | 'stopped'
+  readonly refused: boolean
+  readonly wrote: boolean
+}
+
 /**
  * A side runner that starts `command` (`claude` by default) with {@link sideArgs}. `model` is the model of every
- * side answer, and `env`
- * the server's environment, which the run gets through {@link sideEnv}. A chat whose session started in Code Mode
- * gets a run with no session and its record before the question.
+ * side answer, and `env` the server's environment, which the run gets through {@link sideEnv}. A chat whose session
+ * started in Code Mode gets a run with no session and its record; a resume that Claude Code refuses for Code Mode,
+ * with no answer text yet, runs once more so and logs `side run retried`.
  */
 export function claudeSideRunner({
   model,
@@ -232,14 +241,13 @@ export function claudeSideRunner({
 }): SideRunner {
   const childEnv = sideEnv(env)
   const [bin, ...pre] = command
-  return async function* run({ session, folder, question, record, signal }): AsyncGenerator<SideChunk> {
-    // A function, as TypeScript keeps a narrowed `signal.aborted` across the await below.
-    const aborted = () => signal.aborted
-    if (aborted()) return
-    const input = record.codeMode ? sidePrompt(await record.text(), question) : question
-    // A stop during that read sends nothing: an abort before the listener below is there would not end the process.
-    if (aborted()) return
-    const child = spawn(bin, [...pre, ...sideArgs(record.codeMode ? undefined : session, model)], {
+  async function* attempt(
+    session: string | undefined,
+    folder: string,
+    input: string,
+    signal: AbortSignal,
+  ): AsyncGenerator<{ readonly text: string }, Attempt> {
+    const child = spawn(bin, [...pre, ...sideArgs(session, model)], {
       cwd: folder,
       env: childEnv,
       stdio: ['pipe', 'pipe', 'pipe'],
@@ -258,8 +266,8 @@ export function claudeSideRunner({
         resolve()
       })
     })
-    // An object, so the checks after the loop read what the abort and the timer wrote.
-    const state = { stopped: false, timedOut: false }
+    // An object, so the checks after the loop read what the abort, the timer and the lines wrote.
+    const state = { stopped: false, timedOut: false, refused: false }
     let killer: NodeJS.Timeout | undefined
     const end = () => {
       if (child.exitCode !== null || child.signalCode !== null) return
@@ -284,6 +292,7 @@ export function claudeSideRunner({
     let result: 'done' | 'failed' = 'failed'
     try {
       for await (const raw of createInterface({ input: child.stdout })) {
+        if (refusedResume(raw)) state.refused = true
         const line = lineOf(raw)
         if (line === undefined) continue
         if (line.type === 'result') {
@@ -311,15 +320,48 @@ export function claudeSideRunner({
       await exited
       if (killer !== undefined) clearTimeout(killer)
     }
-    if (state.stopped) return
+    if (state.stopped) return { outcome: 'stopped', refused: false, wrote }
     const outcome = child.exitCode === 0 && !state.timedOut ? result : 'failed'
-    if (outcome === 'failed')
+    const refused = outcome === 'failed' && !wrote && (state.refused || refusedResume(stderr))
+    if (outcome === 'failed' && !refused)
       log.warn('side run failed', {
         exitCode: child.exitCode,
         signal: child.signalCode,
         timedOut: state.timedOut,
         stderr,
       })
-    yield { end: outcome }
+    return { outcome, refused, wrote }
   }
+  return async function* run({ session, folder, question, record, signal }): AsyncGenerator<SideChunk> {
+    // A function, as TypeScript keeps a narrowed `signal.aborted` across the awaits below.
+    const aborted = () => signal.aborted
+    if (aborted()) return
+    const fresh = async function* () {
+      const text = await record.text()
+      if (aborted()) return { outcome: 'stopped', refused: false, wrote: false } satisfies Attempt
+      return yield* attempt(undefined, folder, sidePrompt(text, question), signal)
+    }
+    let last = record.codeMode ? yield* fresh() : yield* attempt(session, folder, question, signal)
+    if (last.refused && !record.codeMode && !aborted()) {
+      log.info('side run retried', { reason: 'codeMode' })
+      last = yield* fresh()
+    }
+    if (last.outcome === 'stopped' || aborted()) return
+    if (last.refused) log.warn('side run failed', { reason: 'codeMode' })
+    yield { end: last.outcome }
+  }
+}
+
+/**
+ * The first line of `claude --version` (such as "2.1.331 (Claude Code)"), or null when it does not run in 5 s. The
+ * server logs it at start: Claude Code updates itself, and a new version can change what a side run may do (d-123).
+ */
+export function claudeVersion(command: readonly [string, ...string[]] = ['claude']): Promise<string | null> {
+  const [bin, ...pre] = command
+  return new Promise((resolve) => {
+    execFile(bin, [...pre, '--version'], { timeout: 5_000 }, (error, stdout) => {
+      const line = stdout.split('\n')[0]?.trim() ?? ''
+      resolve(error === null && line !== '' ? line.slice(0, 100) : null)
+    })
+  })
 }

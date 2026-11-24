@@ -1,8 +1,8 @@
 {
   "frameId": "T04",
-  "inputs": "70cc7f64248a1fd9af84e8e78271c3d8b5c942b48cf80d4c4586efda353a1dd0",
+  "inputs": "e2a25d849af30dde1fc4e2ff4d5541559a33d94aabe43dd636f1a7da8de95a57",
   "library": "1.0.0-beta.111",
-  "recordSha256": "530ca5791e995f402dc350ada4bdb850ce58361eb671ebc9a73b6f0d23cc9ea2",
+  "recordSha256": "f32221b147b56eed746fb8304f35561b51bfe9e634b6de959b9492a6f77cd63c",
   "record": {
     "verdict": "match",
     "viewport": "1180x820 iPad landscape, Light (tablet layout)",
@@ -12,7 +12,7 @@
       "render": "reports/fidelity/settings/T04.sideBySide.png",
       "reference_side": "left"
     },
-    "summary": "The render matches the reference except for the accepted deviations. The disabled Text size control with \"Coming soon\" and the new Chat width row are shown, and they push the Navigation card down so only Home and Inbox are visible above the tab bar.",
+    "summary": "The render matches the reference apart from the accepted changes: Text size is disabled with \"Coming soon\", and the new Chat width row pushes Navigation down.",
     "findings": [],
     "accepted_deviations": [
       {
@@ -20,46 +20,46 @@
         "as_given": "Text size: the control is disabled (muted labels) and its line under it says \"Coming soon\" in place of \"Scales the whole app: Small 87.5 %, Default 100 %, Large 112.5 %.\" (step D adds text size later). On a narrow screen the one-line note makes every section below it sit about one text line higher.",
         "status": "as-described",
         "finding": null,
-        "note": "Small/Default/Large are muted and the note reads \"Coming soon\". On this tablet width the reference note also fits on one line, so this change moves nothing."
+        "note": "Small, Default and Large are muted and the line says \"Coming soon\". On the tablet the original note was already one line, so nothing shifts from this change."
       },
       {
         "id": "A2",
         "as_given": "A new \"NOTIFICATIONS\" section with one \"Notifications\" switch (off) sits between the Navigation section and the New chat defaults section. So New chat defaults sits lower, or below the bottom edge.",
         "status": "not-seen",
         "finding": null,
-        "note": "Both pictures end inside the Navigation card, so the section is below the bottom edge."
+        "note": "The section sits below the bottom edge of this frame."
       },
       {
         "id": "A3",
         "as_given": "The Notifications switch moved to that section: the desktop rail no longer has the \"Notifications / Blocked in Settings\" switch at its bottom, and the More drawer no longer has the \"Notifications / Blocked in Settings\" row at its end. So the drawer is shorter and its top edge sits lower.",
         "status": "not-seen",
         "finding": null,
-        "note": "This tablet frame has no rail and the More drawer is closed. The tab bars match."
+        "note": "This tablet frame has no rail, and the More drawer is closed."
       },
       {
         "id": "A4",
         "as_given": "The Navigation list has a new last row, \"Settings\", with the line \"Always shown: in the bar or under More.\" under it and up and down buttons but no switch (the owner's decision: Settings is an entry of the bar order that cannot be hidden). So Toolkit's down button is now enabled, the Navigation card is taller, and every section below it sits lower or below the bottom edge.",
         "status": "not-seen",
         "finding": null,
-        "note": "The end of the Navigation list is below the bottom edge in both pictures."
+        "note": "Only the Home and Inbox rows of the Navigation list show in this frame. The Settings and Toolkit rows sit below the bottom edge."
       },
       {
         "id": "A5",
         "as_given": "On the phone and the tablet only: a thin rule line with the text \"Under More on this device\" under it sits after the last page that the tab bar shows (Projects on the phone, Artifacts on the tablet), so the rows after it sit lower by about 40 px.",
         "status": "not-seen",
         "finding": null,
-        "note": "In the render, the visible rows stop at Inbox, so the Artifacts row and the rule line are below the bottom edge."
+        "note": "The Artifacts row and the rule after it sit below the bottom edge of this frame."
       },
       {
         "id": "A6",
         "as_given": "Appearance has a new last row, \"Chat width\", under Text size: a three-way control \"Full\", \"Wide\", \"Narrow\" with Full selected, and a line under it. On the desktop and the tablet the control is enabled and the line says \"The messages and the message box of a Workspaces chat, centred.\"; on the phone the control is disabled (muted labels) and the line says \"Phone: always full\". So the Appearance card is taller, and every section below it sits lower (about one row) or below the bottom edge.",
         "status": "as-described",
         "finding": null,
-        "note": "The Chat width row is enabled, Full is selected and the line matches. The Navigation card moves down by about 100 px, so Workspaces and Projects are now below the tab bar."
+        "note": "Chat width is enabled with Full selected, and the line under it reads as described. The Navigation card starts about 100 px lower (y 460 to 560), so only Home and Inbox fit above the tab bar."
       }
     ],
     "limits": [
-      "The Notifications section, the end of the Navigation list, the tablet \"Under More on this device\" rule and the More drawer are outside this frame, so A2 to A5 could not be checked."
+      "Rows below the bottom edge of the frame (Navigation rows after Inbox, Notifications, New chat defaults) cannot be checked in this frame."
     ]
   }
 }

@@ -7,17 +7,27 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { memoryLogger } from '../logger.ts'
 import type { TranscriptEntry } from '@bridge/contract'
 import type { SideChunk, SideRecord } from '../services/agentPort.ts'
-import { claudeSideRunner, readCodeMode, sideArgs, sidePrompt, sideRecord } from './claudeSide.ts'
+import { claudeSideRunner, claudeVersion, readCodeMode, sideArgs, sidePrompt, sideRecord } from './claudeSide.ts'
 
 const fake = `
-const { writeFileSync } = require('node:fs')
+const { appendFileSync, writeFileSync } = require('node:fs')
 const [seen] = process.argv.slice(2)
+if (process.argv.includes('--version')) {
+  process.stdout.write('9.9.9 (Claude Code)\\nmore\\n')
+  process.exit(0)
+}
 let question = ''
 process.stdin.on('data', (d) => { question += d })
 process.stdin.on('end', () => {
   const herdr = Object.keys(process.env).filter((k) => k.startsWith('HERDR_'))
-  writeFileSync(seen, JSON.stringify({ args: process.argv.slice(3), question, herdr, path: process.env.PATH, marker: process.env.SIDE_MARKER }))
+  const args = process.argv.slice(3)
+  writeFileSync(seen, JSON.stringify({ args, question, herdr, path: process.env.PATH, marker: process.env.SIDE_MARKER }))
+  appendFileSync(seen + '.runs', JSON.stringify(args) + '\\n')
   const out = (line) => process.stdout.write(JSON.stringify(line) + '\\n')
+  if (question === 'refuse' && args.includes('--resume')) {
+    out({ type: 'result', subtype: 'error_during_execution', is_error: true, errors: ['Failed to resume session: This session was started in Code Mode (experimental), which is off in this run'] })
+    process.exit(1)
+  }
   const say = (text, parent = null) =>
     out({ type: 'assistant', parent_tool_use_id: parent, message: { content: [{ type: 'text', text }] } })
   if (question === 'hang') return setInterval(() => undefined, 1000)
@@ -237,5 +247,23 @@ describe('claude side runner', () => {
     }
     expect(await ask('q', stop.signal, {}, record)).toEqual([])
     await expect(readFile(join(dir, 'seen.json'), 'utf8')).rejects.toThrow()
+  })
+
+  it('runs once more with the record when Claude Code refuses to resume a Code Mode session', async () => {
+    const record = { ...plain, text: () => Promise.resolve('Owner: hi') }
+    expect((await ask('refuse', undefined, {}, record)).at(-1)).toEqual({ end: 'done' })
+    const runs = (await readFile(join(dir, 'seen.json.runs'), 'utf8')).trim().split('\n')
+    expect(runs.map((line): unknown => JSON.parse(line))).toEqual([
+      sideArgs('session-5150', 'sonnet'),
+      sideArgs(undefined, 'sonnet'),
+    ])
+    expect(logged.lines()).toEqual([expect.objectContaining({ msg: 'side run retried', reason: 'codeMode' })])
+  })
+
+  it("gives the first line of claude's version, or null for a command that does not run", async () => {
+    expect(await claudeVersion([process.execPath, join(dir, 'fake.cjs'), join(dir, 'seen.json')])).toBe(
+      '9.9.9 (Claude Code)',
+    )
+    expect(await claudeVersion([join(dir, 'no-such-claude')])).toBeNull()
   })
 })
