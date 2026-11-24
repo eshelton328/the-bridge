@@ -246,7 +246,10 @@ client of a socket or a file sits beside them.
   free of `<name>-fork`, `-fork-2` to `-fork-9`. A side question finds the
   session as a fork does (`noSession` likewise, also for a chat with no
   folder) and gives the session, the folder and the question to the
-  `runSide` option; with none it is `unreachable`. `main.ts` gives
+  `runSide` option, with the chat's record: `codeMode` when the session file's newest
+  `repl-mode` line (in its last 1 MiB, else its first 64 KiB) says so, and
+  the chat's transcript entries on call; with no option it is
+  `unreachable`. `main.ts` gives
   `claudeSideRunner` (`claudeSide.ts`): `claude -p --resume <session>
   --fork-session --no-session-persistence` with the model `sonnet`, the
   tools `Read,Grep,Glob` only, stream-json output and an empty MCP
@@ -257,10 +260,13 @@ client of a socket or a file sits beside them.
   environment that `claude` needs (`PATH`, `HOME`, `USER`, the locale,
   `TMPDIR`, the proxy and CA variables, `CLAUDE_CONFIG_DIR`), so no
   `HERDR_` variable (in a herdr pane, Claude Code's herdr hook would
-  report the side session as the server pane's) and no token, and with the owner's settings
-  file's `env.CLAUDE_CODE_EXPERIMENTAL_CODE_MODE` when it sets one, read
-  at each run and no other `env` key: `--restricted` loads no settings
-  file, and a session started in Code Mode resumes only in it. The question goes on stdin. The answer is the
+  report the side session as the server pane's) and no token. A
+  session started in Code Mode does not resume with these tools (Claude
+  Code 2.1.331 refuses it, d-123), so its run has no `--resume` and
+  gets on stdin the chat's record before the question: its newest whole
+  entries in at most 64 KB (a tool with its name and target only), in a
+  fence of tildes longer than any in the record, marked as the chat's
+  record and as data. The question goes on stdin. The answer is the
   text of each top-level assistant message; an error result, an exit
   with no result, a command that does not start or a run past its 120 s
   limit is `failed` and logs `side run failed` with the exit, the

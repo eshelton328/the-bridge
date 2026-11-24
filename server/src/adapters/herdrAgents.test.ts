@@ -13,7 +13,7 @@ import { basename, join } from 'node:path'
 import { TabId, ChatId, MachineId, type StartChatRequest, WorkspaceId } from '@bridge/contract'
 import { ok } from '@bridge/shared'
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
-import type { AgentEvent } from '../services/agentPort.ts'
+import type { AgentEvent, SideRunner } from '../services/agentPort.ts'
 import { describeAgentPort } from './agentPortContract.ts'
 import {
   claudeScreen,
@@ -2432,6 +2432,7 @@ describe('herdr agents: a new chat (slice W3)', () => {
   const setup = async (
     { chatRoot }: { chatRoot: string | undefined } = { chatRoot: root },
     moreAgents: readonly Record<string, unknown>[] = [],
+    runSide?: SideRunner,
   ) => {
     const socket = await startFakeHerdrSocket({
       ...results,
@@ -2449,6 +2450,7 @@ describe('herdr agents: a new chat (slice W3)', () => {
       claudeProjects: projects,
       home,
       ...(chatRoot === undefined ? {} : { chatRoot }),
+      ...(runSide === undefined ? {} : { runSide }),
     })
     const sent = (method: string) =>
       socket
@@ -2575,6 +2577,50 @@ describe('herdr agents: a new chat (slice W3)', () => {
       ['-n', 'side-copy', '--resume', 'session-a', '--fork-session'],
     ])
     expect(refused).toEqual([ok('noSession'), ok('noSession'), ok('notFound'), ok('notFound')])
+  })
+
+  it('gives a side run the session, the folder and the record: Code Mode from the session file, the transcript on call', async () => {
+    const runs: Parameters<SideRunner>[0][] = []
+    const runSide: SideRunner = (run) => {
+      runs.push(run)
+      return (async function* () {
+        yield await Promise.resolve({ end: 'done' } as const)
+      })()
+    }
+    writeFileSync(
+      join(projects, '-home-dev-ncc-1701', 'session-cm.jsonl'),
+      `${[
+        JSON.stringify({ type: 'repl-mode', replMode: true, sessionId: 'session-cm' }),
+        JSON.stringify({ type: 'user', uuid: 'cm-1', message: { content: 'Why marker-5150?' } }),
+      ].join('\n')}\n`,
+    )
+    const { socket, adapter } = await setup(
+      { chatRoot: root },
+      [
+        {
+          agent: 'claude',
+          agent_session: { agent: 'claude', kind: 'id', source: 'herdr:claude', value: 'session-cm' },
+          agent_status: 'idle',
+          cwd,
+          name: 'code-mode',
+          pane_id: 'w18:p3',
+          terminal_id: 'term_9',
+          workspace_id: 'w18',
+        },
+      ],
+      runSide,
+    )
+    const signal = new AbortController().signal
+    await adapter.askSide(ChatId.parse('test-mac/session-a'), 'q', signal)
+    const asked = await adapter.askSide(ChatId.parse('test-mac/session-cm'), 'q', signal)
+    await socket.close()
+    expect(asked.ok && typeof asked.value === 'string' ? asked.value : 'run').toBe('run')
+    expect(runs.map((run) => [run.session, run.record.codeMode])).toEqual([
+      ['session-a', false],
+      ['session-cm', true],
+    ])
+    expect(runs[1]?.folder).toBe(cwd)
+    expect(await runs[1]?.record.text()).toBe('Owner: Why marker-5150?')
   })
 
   it('numbers a fork whose name is taken, and refuses a session with no saved turn, with no pane made', async () => {

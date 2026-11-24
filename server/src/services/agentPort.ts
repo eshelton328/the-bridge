@@ -137,8 +137,16 @@ export type SideRunner = (run: {
   readonly session: string
   readonly folder: string
   readonly question: string
+  /**
+   * The chat's record, for a run that cannot resume the session: `codeMode` when the session started in Code Mode,
+   * which no read-only run resumes (d-123), and `text`, which reads the chat's transcript only when called.
+   */
+  readonly record: SideRecord
   readonly signal: AbortSignal
 }) => AsyncIterable<SideChunk>
+
+/** See {@link SideRunner}. */
+export type SideRecord = { readonly codeMode: boolean; text(): Promise<string> }
 
 /** A side question's answer as it comes, or `notFound` for no such chat, `noSession` for no saved Claude session. */
 type SideOutcome = AsyncIterable<SideChunk> | 'notFound' | 'noSession'
