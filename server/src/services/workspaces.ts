@@ -1,12 +1,27 @@
 // The workspaces service: the workspaces of this machine, their chats and
 // the layout of each workspace's tabs and panes.
-import type { ChatId, WorkspaceId, WorkspaceLayout, WorkspacesResponse } from '@bridge/contract'
+import {
+  type ChatId,
+  defaultWorkspaceName,
+  type WorkspaceId,
+  type WorkspaceLayout,
+  type WorkspaceSummary,
+  type WorkspacesResponse,
+} from '@bridge/contract'
 import { ok, type Result } from '@bridge/shared'
 import type { AgentPort, AgentPortError, CloseWorkspaceOutcome, OrderOutcome, PaneWriteOutcome } from './agentPort.ts'
 
 export async function listWorkspaces(agents: AgentPort): Promise<Result<WorkspacesResponse, AgentPortError>> {
   const read = await agents.listWorkspaces()
   return read.ok ? ok({ machine: agents.machine, workspaces: read.value }) : read
+}
+
+/** Makes a workspace named `name`, else `defaultWorkspaceName` (W4). */
+export function createWorkspace(
+  agents: AgentPort,
+  name: string | undefined,
+): Promise<Result<WorkspaceSummary, AgentPortError>> {
+  return agents.createWorkspace(name ?? defaultWorkspaceName)
 }
 
 /** Gives `workspace` a new label (R41). */

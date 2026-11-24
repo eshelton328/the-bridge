@@ -111,6 +111,10 @@ Thin Hono sub-apps, one file for each area, named after the area
   workspaces in that order: 204, 400 for an order that repeats one, or
   409 `workspace-not-ready` `orderStale` for an order that leaves out
   a listed workspace or names another (`workspaceEdits.test.ts`).
+  `POST /api/workspaces` (`{ name? }`, W4) makes a workspace with
+  one shell: 201 with the workspace as the list gives it, named
+  "untitled" when the body has no name; 400 for a bad name or any other
+  field (`workspaceEdits.test.ts`).
   `POST /api/workspaces/:workspace/close` (`{ confirm, panes }`)
   closes a workspace and each chat in it: 204, 400 when `confirm` is
   not this workspace (no call to the port), 404 for an unknown one, or

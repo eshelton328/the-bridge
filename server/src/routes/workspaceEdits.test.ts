@@ -1,6 +1,6 @@
 // API tests of the edit routes (R41, R42): rename a workspace and a chat, and
 // the owner's order of the workspaces, with the fake adapter (d-113).
-import { ErrorBody, MachineId, WorkspacesResponse } from '@bridge/contract'
+import { CreateWorkspaceResponse, ErrorBody, MachineId, WorkspacesResponse } from '@bridge/contract'
 import { describe, expect, it } from 'vitest'
 import { createFakeAgents } from '../adapters/fakeAgents.ts'
 import { createApp } from '../app.ts'
@@ -21,6 +21,20 @@ function setup() {
 }
 
 describe('the edit routes', () => {
+  it('makes a workspace named "untitled" by default and lists it, 400 for a bad name or a path (W4)', async () => {
+    const { post, list } = setup()
+    const first = await post('/api/workspaces', {})
+    expect(first.status).toBe(201)
+    const made = CreateWorkspaceResponse.parse(await first.json()).workspace
+    expect(made.label).toBe('untitled')
+    expect(made.chats.map((c) => c.kind)).toEqual(['shell'])
+    const named = CreateWorkspaceResponse.parse(await (await post('/api/workspaces', { name: ' loops ' })).json())
+    expect(named.workspace.label).toBe('loops')
+    expect((await list()).workspaces.map((w) => w.id)).toEqual(expect.arrayContaining([made.id, named.workspace.id]))
+    expect((await post('/api/workspaces', { name: '' })).status).toBe(400)
+    expect((await post('/api/workspaces', { cwd: '/home/dev' })).status).toBe(400)
+  })
+
   it('renames a workspace and a chat with a trimmed name, 404 for no such one and 400 for a bad name', async () => {
     const { post, list } = setup()
     const [first] = (await list()).workspaces

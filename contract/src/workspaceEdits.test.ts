@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   ChatOrderRequest,
   CloseWorkspaceRequest,
+  CreateWorkspaceRequest,
   ForkChatRequest,
   MoveToWorkspaceRequest,
   MoveToWorkspaceResponse,
@@ -19,6 +20,13 @@ describe('the workspace edit contract', () => {
     expect(RenameWorkspaceRequest.safeParse({ name: 'x'.repeat(65) }).success).toBe(false)
     expect(RenameChatRequest.safeParse({ name: `drift${bell}check` }).success).toBe(false)
     expect(RenameChatRequest.safeParse({ name: 'drift-check', path: '/home/dev' }).success).toBe(false)
+  })
+
+  it('takes a new workspace with an optional trimmed name and nothing else', () => {
+    expect(CreateWorkspaceRequest.parse({})).toEqual({})
+    expect(CreateWorkspaceRequest.parse({ name: ' loops ' })).toEqual({ name: 'loops' })
+    expect(CreateWorkspaceRequest.safeParse({ name: '  ' }).success).toBe(false)
+    expect(CreateWorkspaceRequest.safeParse({ name: 'loops', cwd: '/home/dev' }).success).toBe(false)
   })
 
   it('asks a close for the workspace ID and the number of chats the page listed', () => {

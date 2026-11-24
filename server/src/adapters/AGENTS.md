@@ -205,6 +205,11 @@ client of a socket or a file sits beside them.
   every workspace and no `before_workspace_id`, so herdr shows them in
   that order; an order that misses or repeats one is `stale`, with no
   call (`herdrAgents.test.ts`).
+- A new workspace (W4) calls `workspace.create` with the label,
+  `focus: false` and the chat root as its folder (with no chat root,
+  herdr's own), then reads the list and gives the new workspace from it
+  (its one shell); a workspace that the list does not have yet has no
+  chats (`herdrAgents.test.ts`).
 - A move to another workspace calls `pane.move` with the destination
   `{ type: 'new_tab', workspace_id }` and `focus: false`, only for a
   workspace that `workspace.list` names and a chat that is `idle` or

@@ -37,6 +37,7 @@ import {
   type StartState,
   WorkspaceId,
   WorkspaceLayout,
+  type WorkspaceSummary,
 } from '@bridge/contract'
 import { err, ok, type Result } from '@bridge/shared'
 import { z } from 'zod'
@@ -111,6 +112,8 @@ const SplitReply = z.object({ pane: z.object({ terminal_id: LocalIdPart }) })
 const NewPane = z.object({ pane_id: z.string(), terminal_id: LocalIdPart })
 const StartSplitReply = z.object({ pane: NewPane })
 const StartTabReply = z.object({ root_pane: NewPane })
+/** herdr's reply to `workspace.create`, of which the adapter reads only the new workspace's ID. */
+const CreatedWorkspace = z.object({ workspace: z.object({ workspace_id: LocalIdPart }) })
 /** The waits before each read of the screen after the effort keys, about 1.5 s in all. */
 const effortReadGapsMs = [100, 200, 400, 800]
 /** How often and how far apart a start tries again while herdr says the new pane's shell is busy (starting). */
@@ -1214,6 +1217,27 @@ export function createHerdrAgents({
     return ok({ pane: paneId, ...(chat === undefined ? {} : { chat }), state })
   }
 
+  const listAll = async (): Promise<Result<WorkspaceSummary[], AgentPortError>> => {
+    const [workspaces, agents, panes] = await Promise.all([
+      call('workspace.list', WorkspaceList),
+      call('agent.list', AgentList),
+      call('pane.list', PaneList),
+    ])
+    if (!workspaces.ok) return workspaces
+    if (!agents.ok) return agents
+    if (!panes.ok) return panes
+    const chats = await chatsOfPanes(agents.value.agents, panes.value.panes)
+    return ok(
+      workspaces.value.workspaces.map((w) => ({
+        id: WorkspaceId.parse(`${machine}/${w.workspace_id}`),
+        label: w.label,
+        chats: panes.value.panes
+          .filter((p) => p.workspace_id === w.workspace_id)
+          .flatMap((p) => chats.get(p.pane_id) ?? []),
+      })),
+    )
+  }
+
   return {
     machine,
     async sendPrompt(chat, text) {
@@ -1814,25 +1838,19 @@ export function createHerdrAgents({
       // A pane can close between layout.export and pane.list; one more read sees the tree without it.
       return !first.ok && first.error.message === strayPane ? readLayoutOnce(workspace) : first
     },
-    async listWorkspaces() {
-      const [workspaces, agents, panes] = await Promise.all([
-        call('workspace.list', WorkspaceList),
-        call('agent.list', AgentList),
-        call('pane.list', PaneList),
-      ])
-      if (!workspaces.ok) return workspaces
-      if (!agents.ok) return agents
-      if (!panes.ok) return panes
-      const chats = await chatsOfPanes(agents.value.agents, panes.value.panes)
-      return ok(
-        workspaces.value.workspaces.map((w) => ({
-          id: WorkspaceId.parse(`${machine}/${w.workspace_id}`),
-          label: w.label,
-          chats: panes.value.panes
-            .filter((p) => p.workspace_id === w.workspace_id)
-            .flatMap((p) => chats.get(p.pane_id) ?? []),
-        })),
-      )
+    listWorkspaces: listAll,
+    async createWorkspace(label) {
+      const made = await call('workspace.create', CreatedWorkspace, {
+        label,
+        focus: false,
+        ...(chatRoot === undefined ? {} : { cwd: chatRoot }),
+      })
+      if (!made.ok) return made
+      const id = WorkspaceId.parse(`${machine}/${made.value.workspace.workspace_id}`)
+      // herdr sends workspace.created, so each list stream reads the list again.
+      const listed = await listAll()
+      if (!listed.ok) return listed
+      return ok(listed.value.find((w) => w.id === id) ?? { id, label, chats: [] })
     },
     subscribe(onEvent, onEnd) {
       let listening: () => void = () => undefined

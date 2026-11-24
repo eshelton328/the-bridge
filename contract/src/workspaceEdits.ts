@@ -7,6 +7,7 @@ import { z } from 'zod'
 import { ChatId, PaneId, SendId, WorkspaceId } from './ids.ts'
 import { SplitDirection } from './layout.ts'
 import { ChatName } from './newChats.ts'
+import { WorkspaceSummary } from './workspaces.ts'
 
 /** The most characters of a workspace's or a shell's name. */
 export const maxLabel = 64
@@ -23,6 +24,20 @@ export const Label = z
   .min(1)
   .max(maxLabel)
   .refine((s) => !control.test(s), 'no control characters')
+
+/** The name of a new workspace when the owner gives none. */
+export const defaultWorkspaceName = 'untitled'
+
+/**
+ * The body of `POST /api/workspaces` (201): a new workspace with one shell, named `name`, else
+ * `defaultWorkspaceName`. The server picks its folder (the chat root), and the owner's focus does not change.
+ */
+export const CreateWorkspaceRequest = z.strictObject({ name: Label.optional() })
+export type CreateWorkspaceRequest = z.infer<typeof CreateWorkspaceRequest>
+
+/** The answer of `POST /api/workspaces`: the new workspace as the list gives it. */
+export const CreateWorkspaceResponse = z.object({ workspace: WorkspaceSummary })
+export type CreateWorkspaceResponse = z.infer<typeof CreateWorkspaceResponse>
 
 /** The body of `POST /api/workspaces/:workspace/rename`: herdr's workspace label (204). */
 export const RenameWorkspaceRequest = z.strictObject({ name: Label })
