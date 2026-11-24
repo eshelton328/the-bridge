@@ -10,7 +10,7 @@
 // installed Home Screen app, where no one can type a URL.
 import { execFileSync } from 'node:child_process'
 import { randomUUID } from 'node:crypto'
-import { existsSync, readFileSync, statSync } from 'node:fs'
+import { existsSync, readFileSync, realpathSync, statSync } from 'node:fs'
 import { mkdir, rename, rm, stat, writeFile } from 'node:fs/promises'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { dirname, join, resolve } from 'node:path'
@@ -80,17 +80,38 @@ export function readTraceBuild({
   return { commit: readCommit(), libraryVersion: readLibraryVersion() }
 }
 
+/** The served app's Vite root, under the ncc-1701 root: the main clone's `web/`. Only it writes to the brain. */
+const SERVED_WEB_ROOT = ['projects', 'ncc-1701', 'the-bridge', 'web'] as const
+
+/** `path` with its links resolved, or as given when it does not exist. */
+function realPath(path: string): string {
+  try {
+    return realpathSync(path)
+  } catch {
+    return resolve(path)
+  }
+}
+
 /**
- * The traces folder: `KEYBOARD_TRACE_DIR` when set, else
- * `engine/_local/phone-review/traces` in the first folder above `start`
- * that has an `engine/` folder (the ncc-1701 root). Undefined when none has.
+ * The traces folder: `KEYBOARD_TRACE_DIR` when set; else, when `viteRoot` is the served app's root (the main clone's
+ * `web/` in the first folder above it that has an `engine/` folder, the ncc-1701 root, compared as real paths),
+ * `engine/_local/phone-review/traces` there. Undefined otherwise, so a Vite in a worktree, such as a probe or a gate,
+ * records nothing in the owner's traces.
  */
-export function findTraceDir(env: NodeJS.ProcessEnv = process.env, start: string = repoRoot): string | undefined {
+export function findTraceDir(
+  env: NodeJS.ProcessEnv = process.env,
+  viteRoot: string = join(repoRoot, 'web'),
+): string | undefined {
   const fromEnv = env.KEYBOARD_TRACE_DIR
   if (fromEnv !== undefined && fromEnv !== '') return resolve(fromEnv)
-  for (let dir = resolve(start); ; dir = dirname(dir)) {
+  const root = realPath(viteRoot)
+  for (let dir = root; ; dir = dirname(dir)) {
     const engine = join(dir, 'engine')
-    if (existsSync(engine) && statSync(engine).isDirectory()) return join(engine, '_local', 'phone-review', 'traces')
+    if (existsSync(engine) && statSync(engine).isDirectory()) {
+      return root === realPath(join(dir, ...SERVED_WEB_ROOT))
+        ? join(engine, '_local', 'phone-review', 'traces')
+        : undefined
+    }
     if (dirname(dir) === dir) return undefined
   }
 }
@@ -389,18 +410,24 @@ type DevServer = { middlewares: { use: (path: string, handler: TraceHandler) => 
 export function keyboardTracePlugin(
   options: Parameters<typeof createTraceHandler>[0] & { build?: () => TraceBuild } = {},
 ) {
-  const { build = () => readTraceBuild(), ...handlerOptions } = options
+  const { build = () => readTraceBuild(), ...rest } = options
+  // The dev server's root, from its resolved config: the traces folder depends on it (findTraceDir).
+  let viteRoot: string | undefined
+  const traceDir = rest.traceDir ?? (() => findTraceDir(process.env, viteRoot))
+  const handlerOptions = { ...rest, traceDir }
   return {
     name: 'bridge-keyboard-trace',
     apply: 'serve' as const,
     config() {
       return { define: { [KEYBOARD_TRACE_BUILD_DEFINE]: JSON.stringify(build()) } }
     },
+    configResolved(config: { root: string }) {
+      viteRoot = config.root
+    },
     configureServer(server: DevServer) {
       // The switch first: connect matches by prefix, so the trace endpoint
       // would also take `/__keyboard-trace/enabled`.
-      const switchOptions = handlerOptions.traceDir ? { traceDir: handlerOptions.traceDir } : {}
-      server.middlewares.use(KEYBOARD_TRACE_ENABLED_PATH, createEnabledHandler(switchOptions))
+      server.middlewares.use(KEYBOARD_TRACE_ENABLED_PATH, createEnabledHandler({ traceDir }))
       server.middlewares.use(KEYBOARD_TRACE_PATH, createTraceHandler(handlerOptions))
     },
   }

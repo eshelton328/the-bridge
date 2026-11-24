@@ -1,8 +1,17 @@
 import assert from 'node:assert/strict'
-import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import {
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  realpathSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs'
 import { createServer, request, type Server } from 'node:http'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import { after, test } from 'node:test'
 import {
   createEnabledHandler,
@@ -359,14 +368,105 @@ void test('with no traces folder the endpoint answers 500 and says how to set on
   assert.match(await res.text(), /KEYBOARD_TRACE_DIR/)
 })
 
-void test('the traces folder is KEYBOARD_TRACE_DIR, else under the first folder above with engine/', () => {
-  assert.equal(findTraceDir({ KEYBOARD_TRACE_DIR: '/x/traces' }, '/'), '/x/traces')
-  const root = tempDir()
+/** An ncc-1701 root with `engine/`, the served clone's `web/` and a worktree's `web/`, as real paths. */
+function fakeNcc() {
+  const root = realpathSync(tempDir())
+  const served = join(root, 'projects', 'ncc-1701', 'the-bridge', 'web')
+  const worktree = join(root, 'projects', 'ncc-1701', 'the-bridge-worktrees', 'probe', 'web')
   mkdirSync(join(root, 'engine'))
-  const repo = join(root, 'projects', 'p', 'repo')
-  mkdirSync(repo, { recursive: true })
-  assert.equal(findTraceDir({}, repo), join(root, 'engine', '_local', 'phone-review', 'traces'))
+  mkdirSync(served, { recursive: true })
+  mkdirSync(worktree, { recursive: true })
+  return { root, served, worktree, brain: join(root, 'engine', '_local', 'phone-review', 'traces') }
+}
+
+void test('the traces folder is KEYBOARD_TRACE_DIR, else the brain folder only for the served clone', () => {
+  const ncc = fakeNcc()
+  assert.equal(findTraceDir({ KEYBOARD_TRACE_DIR: '/x/traces' }, ncc.worktree), '/x/traces')
+  assert.equal(findTraceDir({}, ncc.served), ncc.brain)
+  // Compared as real paths: a link to the served root is the served root.
+  const link = join(tempDir(), 'served-link')
+  symlinkSync(ncc.served, link)
+  assert.equal(findTraceDir({}, link), ncc.brain)
+  // A worktree, the repository root of the served clone, and a folder with no engine/ above it get none.
+  assert.equal(findTraceDir({}, ncc.worktree), undefined)
+  assert.equal(findTraceDir({}, dirname(ncc.served)), undefined)
   assert.equal(findTraceDir({}, tempDir()), undefined)
+})
+
+/** The plugin on a dev server whose root is `root`, with `env` set while it runs; serves its two routes. */
+async function servePlugin(root: string, env: Record<string, string | undefined> = {}) {
+  const routes: [string, TraceHandler][] = []
+  const plugin = keyboardTracePlugin({ now: () => NOW, build: () => ({ commit: null, libraryVersion: null }) })
+  plugin.configResolved({ root })
+  plugin.configureServer({ middlewares: { use: (path, handler) => routes.push([path, handler]) } })
+  const url = await serve((req, res, next) => {
+    const path = req.url ?? '/'
+    const route = routes.find(([prefix]) => path === prefix || path.startsWith(`${prefix}/`))
+    if (route === undefined) {
+      next(new Error(`no route for ${path}`))
+      return
+    }
+    req.url = path.slice(route[0].length) || '/'
+    route[1](req, res, next)
+  })
+  const withEnv = async <T>(run: () => Promise<T>): Promise<T> => {
+    const saved = Object.fromEntries(Object.keys(env).map((key) => [key, process.env[key]]))
+    const set = (values: Record<string, string | undefined>) => {
+      for (const [key, value] of Object.entries(values)) {
+        if (value === undefined) Reflect.deleteProperty(process.env, key)
+        else process.env[key] = value
+      }
+    }
+    set(env)
+    try {
+      return await run()
+    } finally {
+      set(saved)
+    }
+  }
+  return {
+    post: (body: string) => withEnv(() => post(`${url}${KEYBOARD_TRACE_PATH}`, body)),
+    enabled: () =>
+      withEnv(async () => {
+        const body: unknown = await (await fetch(`${url}${KEYBOARD_TRACE_ENABLED_PATH}`)).json()
+        return body
+      }),
+  }
+}
+
+const TRACE_FILE = '2026-11-19T09-58-12-345Z.json'
+
+void test('a dev server on the served clone writes to the brain traces folder', async () => {
+  const ncc = fakeNcc()
+  mkdirSync(ncc.brain, { recursive: true })
+  writeFileSync(join(ncc.brain, 'ENABLED'), '')
+  const plugin = await servePlugin(ncc.served, { KEYBOARD_TRACE_DIR: undefined })
+  assert.deepEqual(await plugin.enabled(), { enabled: true })
+  assert.equal((await plugin.post(trace())).status, 204)
+  assert.deepEqual(readdirSync(ncc.brain).sort(), [TRACE_FILE, 'ENABLED'])
+})
+
+void test('a dev server in a worktree with no KEYBOARD_TRACE_DIR records nothing, and its switch is off', async () => {
+  const ncc = fakeNcc()
+  mkdirSync(ncc.brain, { recursive: true })
+  writeFileSync(join(ncc.brain, 'ENABLED'), '')
+  const plugin = await servePlugin(ncc.worktree, { KEYBOARD_TRACE_DIR: undefined })
+  assert.deepEqual(await plugin.enabled(), { enabled: false })
+  assert.equal((await plugin.post(trace())).status, 500)
+  assert.deepEqual(readdirSync(ncc.brain), ['ENABLED'])
+})
+
+void test('a dev server in a worktree with KEYBOARD_TRACE_DIR writes there, never to the brain', async () => {
+  const ncc = fakeNcc()
+  mkdirSync(ncc.brain, { recursive: true })
+  const own = tempDir()
+  const plugin = await servePlugin(ncc.worktree, { KEYBOARD_TRACE_DIR: own })
+  assert.deepEqual(await plugin.enabled(), { enabled: false })
+  writeFileSync(join(own, 'ENABLED'), '')
+  assert.deepEqual(await plugin.enabled(), { enabled: true })
+  assert.equal((await plugin.post(trace())).status, 204)
+  assert.deepEqual(readdirSync(own).sort(), [TRACE_FILE, 'ENABLED'])
+  assert.deepEqual(readdirSync(ncc.brain), [])
 })
 
 /**

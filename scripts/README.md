@@ -86,9 +86,14 @@ still taken. Each chat session has its own `startedAt`, so its own file. A trace
 sample is older than the one already written gets 409 and does not
 replace it, since a hidden page POSTs while an earlier POST may still be
 out. The traces folder is
-`KEYBOARD_TRACE_DIR` when set, else `engine/_local/phone-review/traces/`
-in the first folder above the repository that has `engine/` (the
-ncc-1701 root); it answers 500 when there is none.
+`KEYBOARD_TRACE_DIR` when set. Without it, only the served app's dev
+server writes: when Vite's root is the main clone's `web/`
+(`projects/ncc-1701/the-bridge/web` in the first folder above it that
+has `engine/`, the ncc-1701 root, compared as real paths), the folder is
+`engine/_local/phone-review/traces/` there. A dev server in a worktree,
+such as a probe or a gate, has no traces folder: the endpoint answers 500
+and the switch answers `{ "enabled": false }`, so it records nothing in
+the owner's traces.
 
 When the dev server starts, the plugin's `config` hook reads the build
 once (`readTraceBuild`: `git rev-parse --short HEAD` in the repository
