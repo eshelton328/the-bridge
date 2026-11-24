@@ -2,8 +2,10 @@
 // New chat and New workspace, under + at its end. Like every menu trigger, +
 // draws border.active while the menu is open (the library default). The menu
 // is 220 wide (`width="phone"`) with its icons in the label's colour
-// (`iconTone="default"`), as Figma's; its rows are 44 with 20 px icons against
-// Figma's 42 and 18, on the 4 px grid (d-100). Props only.
+// (`iconTone="default"`), as Figma's. Its rows are the standard menu rows of
+// the ⋯ chat menus (size md: label 14, 16 px icons) with `touch`, 44 high on a
+// coarse pointer, in place of M15's 42 px rows with 15 px labels (review R59,
+// bridge-coord; M15 deviations.md). Props only.
 import { Button, GridIcon, Menu, PlusIcon } from '@eshelton328/component-library-1701'
 import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
@@ -51,16 +53,16 @@ export function PhoneAddMenu({ label, text, disabled, open, onOpenChange, onSele
         if (value === 'newChat' || value === 'newWorkspace') onSelect?.(value)
       }}
       placement="bottom-end"
-      size="lg"
+      touch
       width="phone"
       iconTone="default"
       trigger={trigger}
       // The live page lists New chat (W3) and New workspace (W4), which opens the live dialog.
       items={[
-        { value: 'newChat', label: text.newChat, icon: icon('newChat', <PlusIcon size="20" />) },
+        { value: 'newChat', label: text.newChat, icon: icon('newChat', <PlusIcon size="16" />) },
         ...(text.newWorkspace === undefined
           ? []
-          : [{ value: 'newWorkspace', label: text.newWorkspace, icon: icon('newWorkspace', <GridIcon size="20" />) }]),
+          : [{ value: 'newWorkspace', label: text.newWorkspace, icon: icon('newWorkspace', <GridIcon size="16" />) }]),
       ]}
     />
   )

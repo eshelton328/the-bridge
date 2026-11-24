@@ -188,6 +188,8 @@ export function PaneMenu(props: PaneMenuProps) {
       placement="bottom-end"
       width="sm"
       density="compact"
+      // Rows 44 high on a coarse pointer, as the + menu's (review R59).
+      touch
       highlightedValue={props.highlighted}
       onHighlightChange={props.onHighlightChange}
       trigger={
