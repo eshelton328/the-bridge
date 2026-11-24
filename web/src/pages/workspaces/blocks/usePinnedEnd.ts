@@ -97,7 +97,11 @@ const atEnd = (el: HTMLElement) => fromEnd(el) <= endSlack
 const toEnd = (el: HTMLElement) => {
   el.scrollTop = el.scrollHeight
 }
-const ours = (node: EventTarget | Node | null) => node instanceof Element && node.closest(`[${newestSlot}]`) !== null
+/** The attribute on the line that loads older entries (`EarlierLine`): no entry, so the place holds by those under it. */
+export const earlierSlot = 'data-earlier-slot'
+
+const ours = (node: EventTarget | Node | null) =>
+  node instanceof Element && node.closest(`[${newestSlot}], [${earlierSlot}]`) !== null
 const reducedMotion = () =>
   typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
@@ -345,7 +349,13 @@ export function usePinnedEnd(
       if (real.length === 0) return
       if (real.some((r) => r.target === scroller && [...r.addedNodes, ...r.removedNodes].some((n) => !ours(n))))
         layoutMoved()
-      if (!pinnedRef.current && real.some((r) => r.target === scroller && [...r.addedNodes].some((n) => !ours(n))))
+      // An older page that lands above the reader's place dots nothing.
+      const above = (n: Node) =>
+        ((place[0]?.entry.compareDocumentPosition(n) ?? 0) & Node.DOCUMENT_POSITION_PRECEDING) > 0
+      if (
+        !pinnedRef.current &&
+        real.some((r) => r.target === scroller && [...r.addedNodes].some((n) => !ours(n) && !above(n)))
+      )
         unseen = true
       observeAll()
       // An entry that comes in while the button's scroll runs moves its goal to the new end.

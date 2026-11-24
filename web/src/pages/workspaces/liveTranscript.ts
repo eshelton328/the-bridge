@@ -80,8 +80,12 @@ import type { AgentKind, ChatEntry, WorkspacesData } from './types.ts'
 
 /** The pane's quiet lines, picked by the chat that built slice 3b's page part (d-101); the PR records them. */
 export const transcriptText = {
-  /** Over the entries, when the server has older entries than the last 500 it sends. */
+  /** Over the entries, when the server has older entries than the page holds and the view has room for no more. */
   earlier: 'Earlier entries not live yet',
+  /** Over the entries while the server has older ones: it loads them when it comes into view (paging). */
+  older: 'Loading earlier entries',
+  /** The lead of the line, with Retry, of an older page's read that missed: "Earlier entries not loaded — <kind>". */
+  olderMissed: 'Earlier entries not loaded',
   /** Under an entry whose text the server cut at 65,536 characters. */
   cut: 'Cut — full text not live yet',
   /** In place of the entries when the read transcript has none, under the chat's mark and name (R68). */
@@ -106,6 +110,12 @@ export const transcriptText = {
 
 /** How long the skeleton may show before "Could not load this chat" with Retry takes its place, in ms. */
 export const loadLimitMs = 10_000
+
+/** How many entries a page holds: the first read's newest page, and each older page the reader scrolls up to. */
+export const pageEntries = 100
+
+/** The most entries a view holds once the reader loaded an older page; live entries drop the oldest past it (a proposal). */
+export const maxLoadedEntries = 1500
 
 /** How many chats that no pane shows keep their last view, so a chat opened again shows it at once. */
 export const keptViews = 5
@@ -146,6 +156,7 @@ class TranscriptMissError extends Error {
 export function mergeEntries(
   current: readonly TranscriptEntry[],
   changed: readonly TranscriptEntry[],
+  cap = maxTranscriptEntries,
 ): { entries: TranscriptEntry[]; dropped: number } {
   const next = [...current]
   const at = new Map(next.map((entry, i) => [entry.id, i]))
@@ -156,7 +167,7 @@ export function mergeEntries(
       next.push(entry)
     } else next[i] = entry
   }
-  const dropped = Math.max(0, next.length - maxTranscriptEntries)
+  const dropped = Math.max(0, next.length - cap)
   return { entries: dropped === 0 ? next : next.slice(dropped), dropped }
 }
 
@@ -174,6 +185,10 @@ export type TranscriptView = {
    * chat held then, not now. None once a read answered.
    */
   readonly stale?: true | undefined
+  /** The reader loaded an older page: live entries drop the oldest only past `maxLoadedEntries`. */
+  readonly paged?: true | undefined
+  /** An older page's read: `end` after a page with no new entry (the server's last), or the line of one that missed. */
+  readonly older?: 'end' | { readonly problem: string } | undefined
 }
 
 const emptyView: TranscriptView = { loaded: false, entries: [], earlier: false, problem: undefined }
@@ -251,12 +266,12 @@ const openStream = (chat: ChatId, signal: AbortSignal) =>
     headers: { Accept: 'text/event-stream' },
   })
 
-const readTranscript = (chat: ChatId, signal: AbortSignal) =>
+/** Reads a page of `chat`'s transcript: the newest `limit` entries, or the `limit` entries before `before`. */
+const readTranscript = (chat: ChatId, signal: AbortSignal, query: { limit: number; before?: string }) =>
   readChecked(
     (init) =>
       api.api.chats[':chat'].transcript.$get(
-        // No query: the newest page.
-        { param: { chat: encodeURIComponent(chat) }, query: {} },
+        { param: { chat: encodeURIComponent(chat) }, query },
         { init: { signal: init } },
       ),
     (body) => TranscriptResponse.parse(body),
@@ -278,8 +293,28 @@ export function bufferedAfterRead(
   return entries.filter((e) => held.has(e.id))
 }
 
-/** One watched chat: how many panes show it, Retry and stop. */
-type Session = { watchers: number; readonly retry: () => void; readonly stop: () => void }
+/**
+ * The view after a read of the newest page. When the page starts at an entry the view holds, the older entries before
+ * it stay, so a reconnect keeps the pages the reader loaded; else the page alone, as what came before it is not known.
+ */
+export function withNewestPage(
+  view: TranscriptView,
+  page: Pick<TranscriptResponse, 'entries' | 'earlier'>,
+): TranscriptView {
+  const first = page.entries[0]
+  const at = view.loaded && page.earlier && first !== undefined ? view.entries.findIndex((e) => e.id === first.id) : -1
+  if (at <= 0) return { loaded: true, entries: page.entries, earlier: page.earlier, problem: undefined }
+  return {
+    loaded: true,
+    entries: [...view.entries.slice(0, at), ...page.entries],
+    earlier: view.earlier,
+    problem: undefined,
+    ...(view.paged === true ? { paged: true } : {}),
+  }
+}
+
+/** One watched chat: how many panes show it, Retry, the read of an older page and stop. */
+type Session = { watchers: number; readonly retry: () => void; readonly older: () => void; readonly stop: () => void }
 
 const sessions = new Map<string, Session>()
 
@@ -370,7 +405,8 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
       const held = new Set(view.entries.map((e) => e.id))
       const kept = added === undefined ? entries : entries.filter((e) => held.has(e.id) || added.includes(e.id))
       if (kept.length === 0) return view
-      const merged = mergeEntries(view.entries, kept)
+      const merged = mergeEntries(view.entries, kept, view.paged === true ? maxLoadedEntries : maxTranscriptEntries)
+
       return { ...view, entries: merged.entries, earlier: view.earlier || merged.dropped > 0 }
     })
   }
@@ -379,10 +415,10 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
    * Reads the transcript and shows it; false when the read missed (the line shows) or `signal` ended it, `quiet` when
    * it got no answer as the page came back from the background (`mark`).
    */
-  const load = async (signal: AbortSignal, mark?: ResumeMark): Promise<boolean | 'quiet'> => {
+  const load = async (signal: AbortSignal, mark?: ResumeMark, fresh = false): Promise<boolean | 'quiet'> => {
     let answer: Result<TranscriptResponse, LiveMiss>
     try {
-      answer = await readTranscript(chat, signal)
+      answer = await readTranscript(chat, signal, { limit: pageEntries })
     } catch (thrown) {
       if (signal.aborted) return false
       // A reply that is not JSON or that the contract refuses: the line and the report name its kind, not its text.
@@ -413,9 +449,9 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
       fail(readLine(miss), miss)
       return false
     }
-    const { entries, earlier } = answer.value
+    const read = answer.value
     readCounts.set(chat, transcriptReads(chat) + 1)
-    update(() => ({ loaded: true, entries, earlier, problem: undefined }))
+    update((view) => withNewestPage(fresh ? emptyView : view, read))
     outages.delete(chat)
     endGrace()
     return true
@@ -547,6 +583,54 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
     return 'again'
   }
 
+  /** An older page's read runs now: one at a time. */
+  let olderRead = false
+  // Puts the page before the first entry above the entries, one read at a time. A 409 (that entry is gone) reads the
+  // newest page again in place of the view; any other miss shows its line with Retry.
+  const older = async () => {
+    const shown = views.get(chat)
+    const first = shown?.entries[0]
+    const room = maxLoadedEntries - (shown?.entries.length ?? 0)
+    if (closed() || olderRead || shown?.loaded !== true || !shown.earlier || shown.older === 'end') return
+    if (first === undefined || room <= 0) return
+    olderRead = true
+    const signal = abort.signal
+    const missed = (kind: string) => {
+      update((view) => ({ ...view, older: { problem: `${transcriptText.olderMissed} — ${kind}` } }))
+    }
+    update((view) => ({ ...view, older: undefined }))
+    try {
+      const answer = await readTranscript(chat, signal, { limit: Math.min(pageEntries, room), before: first.id })
+      if (signal.aborted) return
+      if (!answer.ok) {
+        if (answer.error.kind !== 'status' || answer.error.status !== 409) missed(answer.error.kind)
+        else await load(signal, undefined, true)
+        return
+      }
+      const page = answer.value
+      if (page.chat !== chat) {
+        missed('bad-reply')
+        return
+      }
+      update((view) => {
+        // A newest read that replaced the view meanwhile: this page no longer joins it.
+        if (view.entries[0]?.id !== first.id) return { ...view, older: undefined }
+        const held = new Set(view.entries.map((e) => e.id))
+        const before = page.entries.filter((e) => !held.has(e.id))
+        // A page with no entry the view lacks is the last one: no read again, and no loop at the top.
+        if (before.length === 0) return { ...view, older: 'end' }
+        return { ...view, entries: [...before, ...view.entries], earlier: page.earlier, older: undefined, paged: true }
+      })
+    } catch (thrown) {
+      // A reply that is not JSON or that the contract refuses; a stop or a closed chat ends the read quietly.
+      if (signal.aborted) return
+      if (!(thrown instanceof Error)) throw thrown
+      missed('bad-reply')
+    } finally {
+      olderRead = false
+    }
+  }
+
   /** Waits `ms`, or with none until Retry; Retry and a stop end the wait at once. */
   const pause = (ms: number | undefined) =>
     new Promise<void>((resolve) => {
@@ -596,6 +680,7 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
         current.abort()
       }
     },
+    older: () => void older(),
     stop: () => {
       endGrace()
       clearTimeout(stall)
@@ -637,6 +722,11 @@ export function watchTranscript(chat: string, deps: TranscriptDeps = {}): () => 
     // The chat no longer shows: a miss when it opens again is reported again.
     outages.delete(chat)
   }
+}
+
+/** Reads the page before `chat`'s first entry, when the server has one: the reader at the top, or its line's Retry. */
+export function loadEarlier(chat: string): void {
+  sessions.get(chat)?.older()
 }
 
 /** Connects and reads `chat`'s transcript again now: the Retry of its line. */
@@ -753,6 +843,14 @@ function drawnEntryOf(entry: TranscriptEntry, kind: AgentKind, drafts: FoldedEnt
   return next
 }
 
+/** The line over a view's entries: none with no older entries; the loader while the view has room; else the old line. */
+function earlierOf(view: TranscriptView) {
+  if (!view.earlier) return {}
+  if (view.entries.length >= maxLoadedEntries || view.older === 'end') return { earlier: transcriptText.earlier }
+  if (typeof view.older === 'object') return { earlier: view.older.problem, earlierLoad: 'missed' as const }
+  return { earlier: transcriptText.older, earlierLoad: 'more' as const }
+}
+
 /**
  * `data` with each watched live chat's transcript in its pane: its entries, the earlier line, the empty line once a
  * read found none, and the problem line.
@@ -769,7 +867,7 @@ export function withTranscripts(data: WorkspacesData, shown: ReadonlyMap<string,
         ...pane,
         // A draft whose rewrite is there shows only behind the rewrite's note (R62).
         entries: foldDrafts(view.entries).map(({ entry, drafts }) => drawnEntryOf(entry, pane.head.kind, drafts)),
-        ...(view.earlier ? { earlier: transcriptText.earlier } : {}),
+        ...earlierOf(view),
         ...(view.loaded && view.entries.length === 0 && view.problem === undefined
           ? { empty: transcriptText.empty }
           : {}),

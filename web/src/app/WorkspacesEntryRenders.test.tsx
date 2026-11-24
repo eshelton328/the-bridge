@@ -117,6 +117,33 @@ async function openLongChat() {
   return { server, chat: page.getByRole('region', { name: title }).element() }
 }
 
+describe('a long live chat reads its transcript a page at a time', () => {
+  it('reads one page on open; at the top it puts the older page above, renders no shown entry again and keeps the place, on the phone', async () => {
+    const server = stubLongChats(count, true)
+    view = await openWorkspaces([390, 844])
+    await userEvent.click(page.getByText(title, { exact: true }).first())
+    await markdownShown(100)
+    expect(server.readQueries).toEqual([{ limit: '100' }])
+    const chat = page.getByRole('region', { name: title }).element()
+    const scroller = chat.querySelector('.scroll-frame__body')
+    const first = scroller?.querySelector('article')
+    if (!(scroller instanceof HTMLElement) || !(first instanceof HTMLElement)) throw new Error('no transcript')
+    const before = entryProps(chat)
+    const offset = () => first.getBoundingClientRect().top - scroller.getBoundingClientRect().top
+    // The reader scrolls to the top: a wheel turn makes the scroll theirs, and the earlier line comes into view.
+    scroller.dispatchEvent(new WheelEvent('wheel', { bubbles: true }))
+    scroller.scrollTop = 0
+    const top = offset()
+    await markdownShown(200)
+    await afterRendering()
+    expect(server.readQueries).toEqual([{ limit: '100' }, { limit: '100', before: 'plan-u500' }])
+    expect(first.isConnected).toBe(true)
+    expect(Math.abs(offset() - top)).toBeLessThanOrEqual(1)
+    expect(renderedAgain(before, entryProps(chat))).toEqual([])
+    expect(getReports()).toEqual([])
+  })
+})
+
 const reply = (id: string, text: string, replacedBy?: string): TranscriptEntry => ({
   type: 'assistant',
   id,

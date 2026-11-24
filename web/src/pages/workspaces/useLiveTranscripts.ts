@@ -31,7 +31,10 @@ export function useLiveTranscripts(
   const shown = on ? live : undefined
   const views = useSyncExternalStore(shown?.subscribeTranscripts ?? noSubscribe, shown?.transcriptViews ?? getNoViews)
   const transcripts = useMemo(
-    () => (shown === undefined ? undefined : { watch: shown.watchTranscript, retry: shown.retryTranscript }),
+    () =>
+      shown === undefined
+        ? undefined
+        : { watch: shown.watchTranscript, retry: shown.retryTranscript, older: shown.loadEarlier },
     [shown],
   )
   const withViews = useMemo(

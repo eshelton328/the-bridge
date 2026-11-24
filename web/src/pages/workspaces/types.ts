@@ -232,6 +232,8 @@ export const WorkbenchPane = z.discriminatedUnion('type', [
     takesCommands: z.boolean().optional(),
     /** The line over the entries when the transcript has older entries than it shows, such as "Earlier entries not live yet". */
     earlier: z.string().optional(),
+    /** The earlier line loads older entries (`EarlierLine`): `more`, or `missed` with Retry; plain when not set. */
+    earlierLoad: z.enum(['more', 'missed']).optional(),
     /** The line of a read transcript with no entries, such as "Send a message to start." (R68, `ChatEmpty`). */
     empty: z.string().optional(),
     /**
