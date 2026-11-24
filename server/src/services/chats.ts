@@ -2,6 +2,7 @@
 // input clear and its commands. A prompt goes through sendPromptWithFiles in uploads.ts.
 import {
   type ChatId,
+  type AnswerDialogRequest,
   type ChatSkillsResponse,
   type KeyEffort,
   maxTranscriptEntries,
@@ -16,6 +17,7 @@ import type {
   ChatCommand,
   ClearOutcome,
   CommandOutcome,
+  DialogRead,
   EffortOutcome,
 } from './agentPort.ts'
 
@@ -63,6 +65,14 @@ export function setEffort(
 ): Promise<Result<EffortOutcome, AgentPortError>> {
   return agents.setEffort(chat, effort)
 }
+
+/** The dialog on `chat`'s screen while it waits for the owner (R69). */
+export const readDialog = (agents: AgentPort, chat: ChatId): Promise<Result<DialogRead, AgentPortError>> =>
+  agents.readDialog(chat)
+
+/** Picks the owner's option of the dialog on `chat`'s screen, only while it shows that dialog (R69). */
+export const answerDialog = (agents: AgentPort, chat: ChatId, answer: AnswerDialogRequest) =>
+  agents.answerDialog(chat, answer)
 
 /** Stops the work of `chat`, when it works. */
 export function stopChat(agents: AgentPort, chat: ChatId): Promise<Result<CancelOutcome, AgentPortError>> {

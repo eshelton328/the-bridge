@@ -133,6 +133,11 @@ Thin Hono sub-apps, one file for each area, named after the area
   (`working`, `needsYou`, `noCommands`, `inputNotEmpty`,
   `inputUnreadable`), or 409 `effortNotConfirmed` when the screen does
   not show the level after the keys (`chats.test.ts`).
+- `GET /api/chats/:chat/dialog` (R69) gives the dialog on the screen of a
+  Claude chat that waits for the owner (`PaneDialogResponse`), null for
+  any other status; `POST` with `{ id, n }` picks that option: 204, or
+  409 `dialogChanged` with nothing sent. The log line `dialog answered`
+  holds the ID and the number only (`chats.test.ts`).
 - `POST /api/chats/:chat/model` (slice W10) takes `{ model, confirm }`
   and restarts an idle Claude chat with that model by resume: 200 with
   the chat (the same ID) and its state, or 502 with `failed` and the
