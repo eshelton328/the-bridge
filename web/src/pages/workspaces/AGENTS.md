@@ -238,6 +238,18 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   Hook) and no bubble, never the owner's bubble or its colour
   (`blocks/NoteLine.tsx`, `app/WorkspacesNoteLines.test.tsx`). Figma
   draws no note.
+- A reply that a Stop hook had written again (R62, backend #470): the
+  server marks the draft with `replacedBy`, the rewrite's entry ID. A
+  draft whose rewrite is in the transcript is not a reply of its own
+  (`rewrittenReplies.ts`, `withTranscripts`): the rewrite carries it, and
+  beside its Copy a "Reply rewritten" button (`aria-expanded`) shows the
+  drafts under it, oldest first, each as a `Message` named "Draft"
+  (`blocks/ReplyEntry.tsx`; LIBRARY_GAPS.md: Rewritten reply note). With
+  several rejections in a row the last reply carries every draft. A draft
+  whose rewrite is not there (not yet come, or before the 500) shows as a
+  reply; when the rewrite comes it folds away. A live entry is keyed by
+  its ID (`TranscriptEntries`), so the fold mounts no other entry
+  (`rewrittenReplies.test.ts`, `app/WorkspacesRewrittenReply.test.tsx`).
 - A live tool call (review R32, backend #371) carries its `kind`, a
   readable `title` and its own one-line `label`: it draws its kind's
   icon, the title and the label in a quieter colour on one line
@@ -589,7 +601,12 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   Send closed the keyboard (review R33); the page back from the
   background follows too. Later, such a scroll is the reader's:
   VoiceOver's three-finger swipe and Find in page leave the end and keep
-  their place (`app/WorkspacesTranscriptQuietScroll.test.tsx`).
+  their place (`app/WorkspacesTranscriptQuietScroll.test.tsx`). Away
+  from the end, a change above the view (a draft that folds away, R62)
+  does not move what the reader sees: the hook notes the entries in view
+  after each scroll and moves the scroll back so the first of them still
+  there starts where it did, as Safari has no scroll anchoring of its own
+  (`app/WorkspacesRewrittenReply.test.tsx`).
   Fixture chats keep their scroll, so the fidelity frames do not move.
   More than a screen above the end, a button labelled "Scroll to the
   newest message" sticks 8 above the transcript's bottom, centred on it,

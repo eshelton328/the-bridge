@@ -81,6 +81,19 @@ export const PaneHead = z.object({
 })
 export type PaneHead = z.infer<typeof PaneHead>
 
+/** A live entry's ID from the server, which keys it, so an entry that folds away above it does not mount it again. */
+const EntryKey = z.string().optional()
+
+/**
+ * The drafts of a reply that a Stop hook sent back (R62), oldest first, behind the reply's note: `label` is the
+ * note's text, such as "Reply rewritten", each draft's `id` its entry ID, `name` its author line, and `cut` as for a
+ * reply.
+ */
+const RewrittenReply = z.object({
+  label: z.string(),
+  drafts: z.array(z.object({ id: z.string(), name: z.string(), text: z.string(), cut: z.string().optional() })).min(1),
+})
+
 /** One entry of a chat's transcript, a union on `type`. */
 export const ChatEntry = z.discriminatedUnion('type', [
   /**
@@ -89,6 +102,7 @@ export const ChatEntry = z.discriminatedUnion('type', [
    */
   z.object({
     type: z.literal('user'),
+    id: EntryKey,
     text: z.string(),
     cut: z.string().optional(),
     files: z.array(z.string()).optional(),
@@ -109,25 +123,31 @@ export const ChatEntry = z.discriminatedUnion('type', [
     title: z.string().optional(),
     label: z.string().optional(),
   }),
-  /** An agent's reply; `copy` labels its Copy button, and a reply without it has none (D3). `cut` as for `user`. */
+  /**
+   * An agent's reply; `copy` labels its Copy button, and a reply without it has none (D3). `cut` as for `user`.
+   * `rewritten` is a reply that a Stop hook had written again (R62): its drafts do not show as replies of their own;
+   * the reply carries a note, and a tap on it shows the drafts.
+   */
   z.object({
     type: z.literal('assistant'),
+    id: EntryKey,
     kind: AgentKind,
     name: z.string(),
     text: z.string(),
     copy: z.string().optional(),
     cut: z.string().optional(),
+    rewritten: RewrittenReply.optional(),
   }),
   /**
    * A line that records what happened to the chat, such as where a fork starts (D16 417:718): a done dot and the
    * text in mono, as a tool line. `label` names the dot for assistive technology.
    */
-  z.object({ type: z.literal('event'), label: z.string(), text: z.string() }),
+  z.object({ type: z.literal('event'), id: EntryKey, label: z.string(), text: z.string() }),
   /**
    * A harness note the chat got, never a prompt of the owner's (R46): a background task's report, a peer's message
    * or a Stop hook. It draws as a small muted line with its kind's icon and no bubble. `label` names the icon.
    */
-  z.object({ type: z.literal('note'), kind: NoteKind, label: z.string(), text: z.string() }),
+  z.object({ type: z.literal('note'), id: EntryKey, kind: NoteKind, label: z.string(), text: z.string() }),
   /** Lines of an agent's progress, in mono. */
   z.object({ type: z.literal('progress'), lines: z.array(z.string()) }),
   /** A command the agent asks to run. */

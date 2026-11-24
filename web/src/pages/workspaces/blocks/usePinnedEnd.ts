@@ -49,6 +49,15 @@
 // the reader takes over. A press on the button is not reader input. The
 // button's own slot sits in the scroller (`newestSlot`); its coming and going
 // is not a new entry and moves nothing.
+//
+// The reader's place (R62). Away from the end, an entry that changes above
+// the view, such as a reply's first draft that folds away once its rewrite
+// comes, must not move what the reader sees. Safari keeps no place by itself
+// (Chromium's CSS scroll anchoring does), so the hook keeps it: after each
+// scroll it notes each entry in view and how far below the view's top it
+// starts, and after each change of the entries or their sizes it moves the
+// scroll so the first of those entries still there starts where it did. A
+// reader at the end keeps the pin, as before.
 import { useCallback, useLayoutEffect, useRef, useState } from 'react'
 
 /** How near the end, in px, still counts as the end: a scroll position can be a fraction short of it. */
@@ -230,6 +239,35 @@ export function usePinnedEnd(
       toEnd(scroller)
       endTop = scroller.scrollTop
     }
+    // The entries in view while the reader is away from the end, each with how far below the view's top it starts, and
+    // the scroll position then.
+    let place: { readonly entry: Element; readonly top: number }[] = []
+    let placeScroll = 0
+    const notePlace = () => {
+      place = []
+      placeScroll = scroller.scrollTop
+      if (pinnedRef.current) return
+      const top = scroller.getBoundingClientRect().top
+      const bottom = top + scroller.clientHeight
+      for (const entry of scroller.children) {
+        if (ours(entry)) continue
+        const box = entry.getBoundingClientRect()
+        if (box.top >= bottom) break
+        if (box.bottom > top) place.push({ entry, top: box.top - top })
+      }
+    }
+    // Moves the scroll by how far the layout above moved the first noted entry still in the transcript. The scroll's
+    // own movement since the note is the reader's (its scroll event may not have come yet), so it is not undone.
+    const keepPlace = () => {
+      if (pinnedRef.current) return
+      const held = place.find(({ entry }) => entry.parentElement === scroller)
+      if (held === undefined) return
+      const shown = held.entry.getBoundingClientRect().top - scroller.getBoundingClientRect().top
+      const moved = shown - held.top + (scroller.scrollTop - placeScroll)
+      if (Math.abs(moved) < 1) return
+      scroller.scrollTop += moved
+      placeScroll += moved
+    }
     const onScroll = () => {
       if (atEnd(scroller)) {
         endTop = scroller.scrollTop
@@ -244,6 +282,7 @@ export function usePinnedEnd(
       else if (pinnedRef.current && (seeking || layoutScrolls())) follow()
       // A scroll no input and no layout change explains, such as VoiceOver's or Find in page's: the reader's.
       else pinnedRef.current = false
+      notePlace()
       show()
     }
     const onTouchMove = () => {
@@ -288,7 +327,9 @@ export function usePinnedEnd(
     // streams in is not, so a reader's VoiceOver scroll during a reply is not moved back.
     const resize = new ResizeObserver((sizes) => {
       if (sizes.some((size) => size.target === scroller || size.target === footer)) layoutMoved()
+      keepPlace()
       follow()
+      notePlace()
       show()
     })
     // Observed once: observing again reports the size again, which would read as a layout change on each entry.
@@ -309,7 +350,9 @@ export function usePinnedEnd(
       observeAll()
       // An entry that comes in while the button's scroll runs moves its goal to the new end.
       if (seeking) scroller.scrollTo({ top: scroller.scrollHeight, behavior: 'smooth' })
+      keepPlace()
       follow()
+      notePlace()
       show()
     })
     cameRef.current = () => {

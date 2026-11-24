@@ -230,7 +230,9 @@ const footer = css({ display: 'flex', flexDirection: 'column' })
 // it loads (the skeleton fills the pane, R64), so a short transcript's newest entry lands where the skeleton ended
 // (bridge-coord, 2026-11-23); a long one fills the pane and opens at its end as before. A fixture chat keeps Figma's
 // top start.
-const fromEnd = css({ '& > :first-child': { mt: 'auto' } })
+// A live transcript keeps the reader's place itself (usePinnedEnd, R62), on every browser alike: Chromium's own scroll
+// anchoring would move the scroll first, and the hook would read that move as the reader's.
+const fromEnd = css({ overflowAnchor: 'none', '& > :first-child': { mt: 'auto' } })
 // The line over a live transcript whose older entries the server did not send: quiet, as the composer's hint.
 const earlierLine = css({ display: 'block', textStyle: 'small', color: 'fg.muted' })
 // With `header` the frame is the root: the body's padding of `sizes` moves onto the transcript and the composer, so the

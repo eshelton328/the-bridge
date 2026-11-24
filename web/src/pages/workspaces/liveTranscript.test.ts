@@ -349,26 +349,31 @@ describe('watchTranscript', () => {
   it('shows a cut message or reply with the cut line, and the agent name and Copy from the chat', () => {
     expect(chatEntryOf({ ...user('u2', 'Look.'), files: ['plan.pdf', 'a_b.png'] }, 'claude')).toEqual({
       type: 'user',
+      id: 'u2',
       text: 'Look.',
       files: ['plan.pdf', 'a_b.png'],
     })
     expect(chatEntryOf({ ...user('u3', ''), files: ['notes.md'] }, 'claude')).toEqual({
       type: 'user',
+      id: 'u3',
       text: '',
       files: ['notes.md'],
     })
     expect(chatEntryOf({ type: 'error', id: 'e1', text: 'Error: compact failed', cut: false }, 'claude')).toEqual({
       type: 'event',
+      id: 'e1',
       label: 'Error',
       text: 'Error: compact failed',
     })
     expect(chatEntryOf({ ...user('u1', 'long'), cut: true }, 'claude')).toEqual({
       type: 'user',
+      id: 'u1',
       text: 'long',
       cut: 'Cut — full text not live yet',
     })
     expect(chatEntryOf(reply('a1', 'long', true), 'codex')).toEqual({
       type: 'assistant',
+      id: 'a1',
       kind: 'codex',
       name: 'Codex',
       text: 'long',
@@ -377,6 +382,7 @@ describe('watchTranscript', () => {
     })
     expect(chatEntryOf(reply('a2', 'short'), 'claude')).toEqual({
       type: 'assistant',
+      id: 'a2',
       kind: 'claude',
       name: 'Claude',
       text: 'short',
@@ -601,12 +607,14 @@ describe('a harness note (R46)', () => {
       chatEntryOf({ type: 'note', id: 'n1', kind: 'task', text: 'Background task finished: tests pass' }, 'claude'),
     ).toEqual({
       type: 'note',
+      id: 'n1',
       kind: 'task',
       label: transcriptText.note.task,
       text: 'Background task finished: tests pass',
     })
     expect(chatEntryOf({ type: 'note', id: 'n2', kind: 'peer', text: 'Message from bridge-coord' }, 'claude')).toEqual({
       type: 'note',
+      id: 'n2',
       kind: 'peer',
       label: transcriptText.note.peer,
       text: 'Message from bridge-coord',
@@ -614,6 +622,7 @@ describe('a harness note (R46)', () => {
     expect(chatEntryOf({ type: 'note', id: 'n3', kind: 'hook', text: 'Stop hook: reply rewritten' }, 'claude')).toEqual(
       {
         type: 'note',
+        id: 'n3',
         kind: 'hook',
         label: transcriptText.note.hook,
         text: 'Stop hook: reply rewritten',
