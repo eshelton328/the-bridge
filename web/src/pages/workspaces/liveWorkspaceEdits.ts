@@ -18,7 +18,14 @@
 // the right; it answers 201 (or 200 for a create ID it has seen) with the
 // contract's `StartChatResponse`, as a start does, and the page follows that
 // pane (useForkedChat.ts). The server waits up to 30 s for the chat, so the
-// page waits `forkWaitMs`, as New chat does.
+// page waits `forkWaitMs`, as New chat does. `POST /api/workspaces` (W4,
+// backend #471) takes `{ name? }`, a `Label` or nothing (the server names it
+// `defaultWorkspaceName`, "untitled"), and answers 201 with the new workspace
+// (`CreateWorkspaceResponse`), one shell in it; its own answers are
+// `CreateAnswer`: 400 is the name's line, a 5xx (herdr's 502 and 503, or the
+// proxy's for a server that is down) and an unreachable server are lines
+// with Retry, and a create that got no answer in time may have made the
+// workspace, so its line says the list shows it and offers no Retry.
 //
 // What a miss means to the page:
 // - 409 `workspace-not-ready` `orderStale`: the order does not name the list
@@ -51,12 +58,15 @@
 //   in the path; the bodies are the contract's.
 import {
   CloseWorkspaceRequest,
+  CreateWorkspaceRequest,
+  CreateWorkspaceResponse,
   ErrorBody,
   ForkChatRequest,
   MoveToWorkspaceRequest,
   MoveToWorkspaceResponse,
   RenameChatRequest,
   RenameWorkspaceRequest,
+  splitId,
   StartChatResponse,
   WorkspaceOrderRequest,
 } from '@bridge/contract'
@@ -65,7 +75,14 @@ import { api } from '../../lib/api.ts'
 import { liveReadTimeoutMs, readJson } from './liveWorkspaces.ts'
 
 /** An edit the page sends. */
-export type WorkspaceEdit = 'renameWorkspace' | 'renameChat' | 'order' | 'close' | 'moveChat' | 'forkChat'
+export type WorkspaceEdit =
+  | 'renameWorkspace'
+  | 'renameChat'
+  | 'order'
+  | 'close'
+  | 'moveChat'
+  | 'forkChat'
+  | 'createWorkspace'
 
 /** What the page does after an edit answered. */
 export type EditAnswer =
@@ -100,6 +117,7 @@ export const editLead: Record<WorkspaceEdit, string> = {
   close: 'Not closed',
   moveChat: 'Not moved',
   forkChat: 'Not forked',
+  createWorkspace: 'Not made',
 }
 
 /** The line of each state a move can meet (409 `chat-not-ready`); "{workspace}" is the target's name. */
@@ -295,4 +313,77 @@ export function forkChat(chat: string, createId: string): Promise<ForkAnswer> {
       api.api.chats[':chat'].fork.$post({ param: { chat: encodeURIComponent(chat) }, json }, { init: { signal } }),
     forkWaitMs,
   )
+}
+
+/**
+ * A new workspace's answer (W4): `created` with its page ID (the local part of the server's), `name` with the line
+ * the name field shows (400), `retry` with a line for a miss the same create may get past (a 5xx, an unreachable
+ * server), or `miss` with a line and no Retry.
+ */
+export type CreateAnswer =
+  | { readonly kind: 'created'; readonly workspace: string }
+  | { readonly kind: 'name'; readonly line: string }
+  | { readonly kind: 'retry'; readonly line: string }
+  | { readonly kind: 'miss'; readonly line: string }
+
+/** How long the page waits for a new workspace: herdr makes it and the server reads the list again before it answers. */
+const createWaitMs = 30_000
+
+/** What a create's answer that is not 201 means to the page. */
+async function createMissOf(res: Response): Promise<CreateAnswer> {
+  const parsed = ErrorBody.safeParse(readJson(await res.text()))
+  const lead = editLead.createWorkspace
+  if (!parsed.success) {
+    const kind = res.status >= 500 ? 'unreachable' : res.ok ? 'bad-reply' : 'status'
+    report(new WorkspaceEditMissError('createWorkspace', kind, res.status), 'live')
+    return { kind: res.status >= 500 ? 'retry' : 'miss', line: `${lead} — ${kind}` }
+  }
+  const error = parsed.data.error
+  switch (error.kind) {
+    case 'invalid-input':
+      // The server's own words: the name passed the contract's check here, so the server refused it for its own reason.
+      return { kind: 'name', line: error.message }
+    case 'herdr-unavailable':
+    case 'herdr-bad-reply':
+    case 'internal':
+      report(new WorkspaceEditMissError('createWorkspace', error.kind, res.status), 'live')
+      return { kind: 'retry', line: `${lead} — ${error.kind}` }
+    case 'too-many-requests':
+      return { kind: 'retry', line: `${lead} — ${error.kind}` }
+    case 'chat-not-ready':
+    case 'forbidden':
+    case 'inbox-read-only':
+    case 'not-found':
+    case 'storage-full':
+    case 'too-large':
+    case 'unsupported-media':
+    case 'upload-conflict':
+    case 'workspace-not-ready':
+      report(new WorkspaceEditMissError('createWorkspace', error.kind, res.status), 'live')
+      return { kind: 'miss', line: `${lead} — ${error.kind}` }
+  }
+}
+
+/** Makes a workspace with one shell, named `name` (a `Label`), or `defaultWorkspaceName` when it is undefined. */
+export async function createWorkspace(name: string | undefined): Promise<CreateAnswer> {
+  const json = CreateWorkspaceRequest.parse(name === undefined ? {} : { name })
+  const signal = AbortSignal.timeout(createWaitMs)
+  let res: Response
+  try {
+    res = await api.api.workspaces.$post({ json }, { init: { signal } })
+  } catch {
+    // With no answer in time herdr may have made it; an unreachable server made nothing, so a Retry is safe.
+    return signal.aborted
+      ? { kind: 'miss', line: 'Sent, no answer — the list shows the workspace if it was made' }
+      : { kind: 'retry', line: `${editLead.createWorkspace} — unreachable` }
+  }
+  try {
+    if (res.status !== 201) return await createMissOf(res)
+    const made = CreateWorkspaceResponse.safeParse(readJson(await res.text()))
+    if (made.success) return { kind: 'created', workspace: splitId(made.data.workspace.id).local }
+    report(new WorkspaceEditMissError('createWorkspace', 'bad-reply', res.status), 'live')
+    return { kind: 'miss', line: `${editLead.createWorkspace} — bad-reply` }
+  } catch {
+    return { kind: 'miss', line: 'Sent, no answer — the list shows the workspace if it was made' }
+  }
 }

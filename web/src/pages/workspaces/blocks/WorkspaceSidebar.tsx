@@ -1,6 +1,7 @@
 // The workspace sidebar (D2 105:611): the Workspaces title with the button
 // that hides the sidebar, + for a new workspace, then each workspace and its
-// chats. Only a chat with a pane to show can be selected. Props only; `ui`
+// chats. Only a chat with a pane to show can be selected. On the live page +
+// opens New workspace (W4, `onNewWorkspace`); a fixture's + draws only. Props only; `ui`
 // says which groups are closed, which header the pointer rests on and which
 // chat the owner drags onto which workspace.
 import { Button, Panel, PanelIcon, PlusIcon, Stack } from '@eshelton328/component-library-1701'
@@ -27,6 +28,8 @@ export type WorkspaceSidebarProps = {
   notice?: ReactNode
   /** Opens a chat's row; `onUiChange` with the chat focused when not set. */
   onSelect?: ((chat: string) => void) | undefined
+  /** + opens New workspace (the live page, W4); + draws only when not set. */
+  onNewWorkspace?: (() => void) | undefined
 }
 
 const fill = (template: string, values: Record<string, string>) =>
@@ -42,6 +45,7 @@ export function WorkspaceSidebar({
   layers,
   notice,
   onSelect = (chat) => onUiChange?.({ focusedPane: chat }),
+  onNewWorkspace,
 }: WorkspaceSidebarProps) {
   const collapsed = ui.collapsed ?? []
   const dragged = workspaces.flatMap((w) => w.chats ?? []).find((c) => c.id === ui.drag?.chat)
@@ -93,7 +97,12 @@ export function WorkspaceSidebar({
           </Button>
         }
         actions={
-          <Button size="sm" aria-label={text.newWorkspace} data-figma={layers?.newWorkspace ?? '105:617'}>
+          <Button
+            size="sm"
+            aria-label={text.newWorkspace}
+            data-figma={layers?.newWorkspace ?? '105:617'}
+            onClick={onNewWorkspace}
+          >
             <PlusIcon size="16" />
           </Button>
         }

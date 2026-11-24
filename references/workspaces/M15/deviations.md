@@ -78,3 +78,9 @@ library default for a menu trigger.
   workspace, omni-brain, chosen; New workspace adds a workspace named
   "new workspace" after the others and opens edit mode with its name as
   a field (M2), as the frame's note says.
+- **New workspace on the live page asks for the name first (W4, R59
+  part 2).** The fixture state above follows M15. On the live page
+  (backend #471) New workspace opens a library `Dialog` with an optional
+  name field, the same at every size, as the desktop sidebar's + has no
+  name field in the list (`blocks/NewWorkspaceDialog.tsx`). The frame's
+  fixture state does not open it, so no fidelity check measures it.

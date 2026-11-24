@@ -35,7 +35,7 @@
 // A live workspace's rename, a live chat's rename (herdr's pane label) and the workspaces' order go to the server one
 // at a time and show from the list read after `workspaces.changed` (useWorkspaceEdits.ts, reviews R41, R42). A live
 // Claude chat's Fork is one of those edits (backend #443), and its new chat opens once the list shows it
-// (useForkedChat.ts). A live Claude chat's Side chat asks its questions of a copy of the chat's session and streams
+// (useForkedChat.ts), and so is New workspace (W4), whose workspace opens once the list shows it. A live Claude chat's Side chat asks its questions of a copy of the chat's session and streams
 // each answer (useSideChats.ts, backend #460): the page draws the side chat of `ui.sideChatFor` in `data.sideChat`.
 import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
@@ -46,7 +46,7 @@ import { useInboxBadge, useInboxStreamHost } from '../../lib/inboxFeed.ts'
 import { workspacesSources } from './loadWorkspacesState.ts'
 import { createDraftBook } from './blocks/draftBook.ts'
 import { openMoved } from './blocks/moveToWorkspace.ts'
-import { layoutsSeenOf, withLoadedLayouts } from './blocks/workspaceLayout.ts'
+import { layoutsSeenOf, switchTo, withLoadedLayouts } from './blocks/workspaceLayout.ts'
 import { followTab, withShownTabs } from './shownTabs.ts'
 import { dropRestored, dropSend, keepSend, loadDrafts, markRestored, newSendId, saveDrafts } from './draftStorage.ts'
 import { chatPanesOf, paneMoves, withMovedChats } from './paneFollow.ts'
@@ -236,6 +236,11 @@ export function WorkspacesPage() {
       changeUi(openMoved(next, uiRef.current, chat))
     },
     followFork,
+    // A new workspace (W4) opens once the list shows it, as a click on its tab does: the desktop shows it, and the
+    // phone's and the tablet's list shows it with the others.
+    (workspace, next) => {
+      changeUi(switchTo(next, uiRef.current, workspace))
+    },
   )
   useLayoutEffect(() => {
     forkFailRef.current = (line) => {

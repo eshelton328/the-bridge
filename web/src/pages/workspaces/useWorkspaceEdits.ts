@@ -22,13 +22,17 @@
 // (Codex review of #438); a workspace it left empty leaves with that read.
 // A fork (backend #443) is one of these edits too, so it waits for the others
 // and they for it: its answer's new chat goes to `onForked`, which opens it
-// once the list shows it (useForkedChat.ts), and a miss is one line.
+// once the list shows it (useForkedChat.ts), and a miss is one line. A new
+// workspace (W4, backend #471) is one too: `createWorkspace` gives its
+// answer to the dialog that asked (NewWorkspaceDialog), which shows a miss
+// itself, and the workspace goes to `onCreated` with the first list read
+// that shows it, however late.
 import { Label, maxLabel, type StartChatResponse } from '@bridge/contract'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { report } from '../../errors/reporter.ts'
 import { newSendId } from './draftStorage.ts'
-import type { EditAnswer, WorkspaceEdit } from './liveWorkspaceEdits.ts'
-import type { WorkspaceEdits, WorkspacesData } from './types.ts'
+import type { CreateAnswer, EditAnswer, WorkspaceEdit } from './liveWorkspaceEdits.ts'
+import type { NewWorkspaceAnswer, WorkspaceEdits, WorkspacesData } from './types.ts'
 
 /** How long an edit that went through waits for `workspaces.changed` before the page reads the list again, in ms. */
 const listEventWaitMs = 2500
@@ -50,6 +54,7 @@ const lead: Record<WorkspaceEdit, string> = {
   close: 'Not closed',
   moveChat: 'Not moved',
   forkChat: 'Not forked',
+  createWorkspace: 'Not made',
 }
 
 const viaLive = (run: (live: Live) => Promise<EditAnswer>): Promise<EditAnswer> =>
@@ -75,14 +80,19 @@ export function useWorkspaceEdits(
   data: WorkspacesData,
   onMoved?: (chat: string, data: WorkspacesData) => void,
   onForked?: (started: StartChatResponse) => void,
+  onCreated?: (workspace: string, data: WorkspacesData) => void,
 ): WorkspaceEdits | undefined {
   const onMovedRef = useRef(onMoved)
   const onForkedRef = useRef(onForked)
+  const onCreatedRef = useRef(onCreated)
+  /** The workspace a create made (its page ID), until a list read shows it. */
+  const createdRef = useRef<string | undefined>(undefined)
   /** The chat a move took, and its workspace, until a list read shows it there. */
   const movedRef = useRef<{ readonly chat: string; readonly workspace: string } | undefined>(undefined)
   useLayoutEffect(() => {
     onMovedRef.current = onMoved
     onForkedRef.current = onForked
+    onCreatedRef.current = onCreated
   })
   const [pending, setPending] = useState<Pending>()
   const [line, setLine] = useState<string>()
@@ -125,6 +135,12 @@ export function useWorkspaceEdits(
     ) {
       movedRef.current = undefined
       onMovedRef.current?.(moved.chat, data)
+    }
+    // A new workspace opens with the first list read that shows it.
+    const created = createdRef.current
+    if (created !== undefined && data.workspaces.some((w) => w.id === created)) {
+      createdRef.current = undefined
+      onCreatedRef.current?.(created, data)
     }
     // A refused close asks again only with the list read after it.
     if (againRef.current !== undefined && listJson(data) !== againRef.current.seen) askAgain()
@@ -172,6 +188,52 @@ export function useWorkspaceEdits(
       return true
     },
     [done, askAgain],
+  )
+  /** Makes a workspace, one edit like the others: the dialog that asked shows the answer. */
+  const create = useCallback(
+    (name: string): Promise<NewWorkspaceAnswer> => {
+      const busy = (line: string): Promise<NewWorkspaceAnswer> => Promise.resolve({ kind: 'miss', line })
+      if (dataRef.current.liveMachine === undefined) return busy(`${lead.createWorkspace} — the list is not live`)
+      if (pendingRef.current !== undefined) return busy(`${lead.createWorkspace} — wait for the last change`)
+      const trimmed = name.trim()
+      if (trimmed !== '' && !Label.safeParse(trimmed).success)
+        return Promise.resolve({
+          kind: 'name',
+          line: `A name has 1 to ${String(maxLabel)} characters and no control character`,
+        })
+      const entry: Pending = { action: 'createWorkspace', seen: listJson(dataRef.current) }
+      pendingRef.current = entry
+      setPending(entry)
+      setLine(undefined)
+      const sent = import('./liveWorkspaceEdits.ts').then(
+        (m) => m.createWorkspace(trimmed === '' ? undefined : trimmed),
+        (error: unknown): CreateAnswer => {
+          report(error, 'handler')
+          return { kind: 'miss', line: 'Not made — the page could not load its live code' }
+        },
+      )
+      return sent.then((answer): NewWorkspaceAnswer => {
+        if (!aliveRef.current || pendingRef.current !== entry)
+          return answer.kind === 'created' ? { kind: 'created' } : answer
+        if (answer.kind !== 'created') {
+          done(entry)
+          return answer
+        }
+        createdRef.current = answer.workspace
+        // The event may have come before the 201: a list that shows the workspace already opens it now.
+        if (dataRef.current.workspaces.some((w) => w.id === answer.workspace)) {
+          createdRef.current = undefined
+          done(entry)
+          onCreatedRef.current?.(answer.workspace, dataRef.current)
+        } else
+          entry.timer = setTimeout(() => {
+            readList()
+            done(entry)
+          }, listEventWaitMs)
+        return { kind: 'created' }
+      })
+    },
+    [done],
   )
   /** The name to send, or a line: trimmed, never empty, as the contract's `Label` takes it. */
   const named = useCallback((action: WorkspaceEdit, name: string, was: string) => {
@@ -223,6 +285,7 @@ export function useWorkspaceEdits(
           }),
         )
       },
+      createWorkspace: create,
       forkChat: (chat) => {
         // A new create ID for each Fork; the page never sends it again, so the server starts one chat for it.
         const createId = newSendId()
@@ -235,7 +298,7 @@ export function useWorkspaceEdits(
         )
       },
     }),
-    [pending, line, named, start],
+    [pending, line, named, start, create],
   )
   return live ? edits : undefined
 }
