@@ -77,6 +77,13 @@ export {
   ZoomChatRequest,
 } from './layout.ts'
 export {
+  AnswerDialogRequest,
+  DialogOption,
+  maxDialogChars,
+  PaneDialog,
+  PaneDialogResponse,
+} from './paneDialogs.ts'
+export {
   ChatName,
   RestartModelRequest,
   RestartModelResponse,
