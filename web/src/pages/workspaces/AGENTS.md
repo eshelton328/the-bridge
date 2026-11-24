@@ -577,7 +577,9 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   into an entry (Tab, a link). The focus on the transcript's body itself,
   which a tap on it off a control gives as it closes the keyboard, is not
   the reader's: after a send it let iOS's scroll leave the end (review
-  R61, `app/WorkspacesSendStaysEnd.test.tsx`). Another scroll away from the end goes back
+  R61, `app/WorkspacesSendStaysEnd.test.tsx`). A reader's scroll up that
+  lands before its scroll event, as an entry comes in, leaves the end; the
+  pin does not move it back (the-bridge#478's CI failure). Another scroll away from the end goes back
   in the same frame only within 1.5 s of a layout change the page made (a
   resize of the transcript or the composer, the keyboard, an entry added
   or removed, the page back on screen), such as the one iOS made after

@@ -31,7 +31,9 @@
 // Any other scroll away from the end unpins, as the reader's does: VoiceOver's
 // three-finger swipe, Find in page and other assistive or browser scrolls send
 // no input this hook sees. A scroll of any kind that reaches the end pins
-// again.
+// again. The reader's scroll up can land before its scroll event, just as
+// an entry comes in or a box resizes; the pin then leaves the end with it
+// and does not move it back (the CI failure of the-bridge#478).
 //
 // Scroll to the newest message (the owner's request, 2026-11-21): `newest`
 // says whether the reader is more than one screen above the end, and whether
@@ -197,11 +199,21 @@ export function usePinnedEnd(
       const shown = !pinnedRef.current && fromEnd(scroller) > scroller.clientHeight
       newest.set({ shown, unseen: shown && unseen })
     }
+    // Where the pin last held the end. The reader's scroll up can land before its scroll event, after an entry came
+    // in or a box resized: it is then above this place, and the pin leaves the end rather than move it back.
+    let endTop = scroller.scrollTop
     const follow = () => {
-      if (pinnedRef.current && !seeking) toEnd(scroller)
+      if (!pinnedRef.current || seeking) return
+      if (readerScrolls() && scroller.scrollTop < endTop - endSlack) {
+        pinnedRef.current = false
+        return
+      }
+      toEnd(scroller)
+      endTop = scroller.scrollTop
     }
     const onScroll = () => {
       if (atEnd(scroller)) {
+        endTop = scroller.scrollTop
         pinnedRef.current = true
         stopSeeking()
       } else if (readerScrolls()) {
