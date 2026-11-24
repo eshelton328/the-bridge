@@ -1,14 +1,9 @@
 // A card group while the library loads (R58, the loading standard): a group header that loads, then cards that load
-// in the loaded grid's columns and gaps (cardGrid.ts), from the library's presets, so the cards take the skeleton's
+// in the loaded grid's columns and gaps (cardGrid.ts), the loaded card's Card with `loading` (LibraryCardSkeleton), so the cards take the skeleton's
 // place with no jump. Props only.
-import {
-  ArtifactCardSkeleton,
-  GroupHeaderSkeleton,
-  Grid,
-  SkeletonGroup,
-  Stack,
-} from '@eshelton328/component-library-1701'
+import { GroupHeaderSkeleton, Grid, SkeletonGroup, Stack } from '@eshelton328/component-library-1701'
 import type { Viewport } from '../../../lib/screenState.ts'
+import { LibraryCardSkeleton } from './LibraryCardSkeleton.tsx'
 import { cardColumns, cardGap, groupGap, tabletCardRows } from './cardGrid.ts'
 
 // Two rows of cards: enough to fill the first screen on each layout.
@@ -32,7 +27,7 @@ export function CardGroupSkeleton({ layout }: CardGroupSkeletonProps) {
           data-fit="items"
         >
           {cards[layout].map((id) => (
-            <ArtifactCardSkeleton key={id} />
+            <LibraryCardSkeleton key={id} />
           ))}
         </Grid>
       </Stack>
