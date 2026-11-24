@@ -50,6 +50,19 @@ afterEach(async () => {
 
 const fromEnd = (el: HTMLElement) => el.scrollHeight - el.scrollTop - el.clientHeight
 
+/**
+ * The transcript entry nearest the top of `el`'s view and how far below the view's top it starts, in px: what the
+ * reader sees, whatever the scroll position (the oldest entry drops off the front at the 500 cap).
+ */
+function firstShown(el: HTMLElement): { entry: Element; offset: number } {
+  const top = el.getBoundingClientRect().top
+  for (const child of el.children) {
+    const box = child.getBoundingClientRect()
+    if (box.bottom > top + 1) return { entry: child, offset: box.top - top }
+  }
+  throw new Error('no entry in view')
+}
+
 function scrollerIn(root: Element): HTMLElement {
   const body = root.querySelector('.scroll-frame__body')
   if (!(body instanceof HTMLElement)) throw new Error('no transcript scroller')
@@ -212,14 +225,20 @@ describe("the end of a long live chat after the owner's own send (R61)", () => {
     }
     scroller.dispatchEvent(new TouchEvent('touchend', { bubbles: true, touches: [], changedTouches: [finger(700)] }))
     await afterRendering()
-    const place = scroller.scrollTop
     expect(fromEnd(scroller)).toBeGreaterThan(scroller.clientHeight)
     await expect.poll(() => root.querySelector(`button[aria-label="${label}"]`)).not.toBeNull()
-    // The reply leaves him where he is.
+    const before = firstShown(scroller)
+    // The reply leaves him where he is: the entry he reads stays at its place, the view stays more than a screen
+    // above the end, and nothing jumps back to the newest message. The chat is over the 500 cap, so the oldest entry
+    // drops off the front as the reply comes and the scroll position moves by its height; the view does not.
     server.push(plan, [{ type: 'assistant', id: 'reply-1', text: replyText, cut: false }])
     await expect.element(chat.getByText(replyText)).toBeInTheDocument()
     await afterRendering()
-    expect(scroller.scrollTop).toBe(place)
+    const after = firstShown(scroller)
+    expect(after.entry).toBe(before.entry)
+    expect(Math.abs(after.offset - before.offset)).toBeLessThanOrEqual(1)
+    expect(fromEnd(scroller)).toBeGreaterThan(scroller.clientHeight)
+    expect(root.querySelector(`button[aria-label="${label}"]`)).not.toBeNull()
     expect(getReports()).toEqual([])
   })
 })
