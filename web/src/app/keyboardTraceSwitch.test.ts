@@ -30,11 +30,12 @@ const answer =
   () =>
     Promise.resolve(new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } }))
 
-/** Starts the trace through the switch with `fetchSwitch`, posting into `posts`; stops it after the test. */
+/** Starts the trace through the switch with `fetchSwitch` and the R57 shift with `fetchShift`, posting into `posts`; stops it after the test. */
 async function start(
   fetchSwitch: (url: string, init: RequestInit) => Promise<Response>,
   timeoutMs = 500,
   route?: RouteSource,
+  fetchShift: FetchSwitch = answer({ shiftTop: 0 }),
 ) {
   const posts: string[] = []
   const running = await startKeyboardTraceIfOn({
@@ -50,6 +51,7 @@ async function start(
       },
     },
     header: { everyMs: 40 },
+    shift: { fetchShift, everyMs: 30 },
   })
   if (running) onTestFinished(running.stop)
   return { running, posts }
@@ -233,5 +235,38 @@ describe('keyboard trace switch', () => {
       await new Promise((done) => setTimeout(done, 150))
       expect(posts).toEqual([])
     }
+  })
+
+  it('moves #root down by the shift with the switch on, live, and puts it back when it stops', async () => {
+    withSearch('')
+    withWebdriver(false)
+    const root = document.createElement('div')
+    root.id = 'root'
+    document.body.append(root)
+    onTestFinished(() => {
+      root.remove()
+    })
+    let shiftTop = 0
+    const fetchShift = vi.fn<FetchSwitch>(() => answer({ shiftTop })())
+    const { running } = await start(vi.fn<FetchSwitch>(answer({ enabled: true })), 500, onWorkspaces, fetchShift)
+    expect(running).toBeDefined()
+    await expect.poll(() => fetchShift.mock.calls.length).toBeGreaterThan(1)
+    expect(fetchShift.mock.calls[0]?.[0]).toBe('/__keyboard-trace/shift')
+    expect(root.style.top).toBe('')
+    shiftTop = 40
+    await expect.poll(() => root.style.top).toBe('40px')
+    expect(root.style.transform).toBe('')
+    running?.stop()
+    expect(root.style.top).toBe('')
+  })
+
+  it('never asks the shift while the switch is off', async () => {
+    withSearch('')
+    withWebdriver(false)
+    const fetchShift = vi.fn<FetchSwitch>(answer({ shiftTop: 40 }))
+    const { running } = await start(vi.fn<FetchSwitch>(answer({ enabled: false })), 50, onWorkspaces, fetchShift)
+    expect(running).toBeUndefined()
+    await new Promise((done) => setTimeout(done, 100))
+    expect(fetchShift).not.toHaveBeenCalled()
   })
 })
