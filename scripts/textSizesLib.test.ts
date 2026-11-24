@@ -1,7 +1,15 @@
 // Tests for the pure parts of the text size check. Run with `pnpm test:scripts`.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { layoutOf, newProblems, outBy, problemsOf, type TextMeasure } from './textSizesLib.ts'
+import {
+  addCounts,
+  layoutOf,
+  newProblems,
+  outBy,
+  problemsOf,
+  type SizeCounts,
+  type TextMeasure,
+} from './textSizesLib.ts'
 
 const edges = (left: number, top: number, right: number, bottom: number) => ({ left, top, right, bottom })
 
@@ -66,4 +74,15 @@ void test('only the problems Small does not have are new', () => {
     newProblems(small, large).map((p) => `${p.kind} ${p.key}`),
     ['overflow a', 'clipped b'],
   )
+})
+
+void test('a cut planted at Small shows in the Small count, and the counts add up by page', () => {
+  const smallCut = problemsOf([measure({ box: edges(10, 10, 60, 30), clippers: [edges(0, 0, 100, 26)] })])
+  const counts: Record<string, SizeCounts> = {}
+  addCounts(counts, 'inbox', smallCut, { default: [], large: [] })
+  assert.deepEqual(counts, { inbox: { small: 1, default: 0, large: 0 } })
+  const spill = problemsOf([measure({ key: 'b', box: edges(10, 10, 72, 26) })])
+  addCounts(counts, 'inbox', [], { default: [], large: newProblems(smallCut, spill) })
+  addCounts(counts, 'toolkit', [], { default: [], large: [] })
+  assert.deepEqual(counts, { inbox: { small: 1, default: 0, large: 1 }, toolkit: { small: 0, default: 0, large: 0 } })
 })

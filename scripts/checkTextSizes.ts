@@ -5,7 +5,8 @@
 // tools check; only type grows, so a new cut is the text size's. It serves
 // the built Storybook as `pnpm fidelity` does; pass --skip-build to reuse
 // web/storybook-static. Heavy: run it through the bridge-verify lock.
-// Prints one JSON line and exits 1 on a problem.
+// Prints one JSON line, with each page's counts at Small (every problem)
+// and at Default and Large (the new ones), and exits 1 on a new problem.
 import { execFileSync } from 'node:child_process'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -15,7 +16,16 @@ import { waitForAnimations, waitForLayout } from './fidelity/settle.ts'
 import { serveStatic, storybookDir, storyForState, storyUrl } from './fidelity/storyServer.ts'
 import { repoRoot } from './fidelity/references.ts'
 import { isStateFile } from './genRegistry.ts'
-import { layoutOf, newProblems, problemsOf, type TextMeasure, type TextProblem, windows } from './textSizesLib.ts'
+import {
+  addCounts,
+  layoutOf,
+  newProblems,
+  problemsOf,
+  type SizeCounts,
+  type TextMeasure,
+  type TextProblem,
+  windows,
+} from './textSizesLib.ts'
 
 const { values } = parseArgs({ options: { 'skip-build': { type: 'boolean' }, page: { type: 'string' } } })
 const pagesDir = join(repoRoot, 'web', 'src', 'pages')
@@ -109,6 +119,7 @@ const server = await serveStatic(storybookDir)
 const browser = await chromium.launch({ args: ['--font-render-hinting=none'] })
 const problems: (TextProblem & { state: string; size: string })[] = []
 const errors: string[] = []
+const counts: Record<string, SizeCounts> = {}
 let checked = 0
 try {
   for (const { page, state, layout } of states()) {
@@ -129,12 +140,17 @@ try {
       await tab.waitForSelector('#storybook-root > *')
       await tab.evaluate(() => document.fonts.ready.then(() => undefined))
       let small: TextProblem[] = []
+      const fresh: { default: TextProblem[]; large: TextProblem[] } = { default: [], large: [] }
       for (const [size, className] of sizes) {
         await useSize(tab, className)
         const found = problemsOf(await tab.evaluate(measureText))
         if (size === 'small') small = found
-        else for (const p of newProblems(small, found)) problems.push({ ...p, state: `${page}/${state}`, size })
+        else {
+          fresh[size] = newProblems(small, found)
+          for (const p of fresh[size]) problems.push({ ...p, state: `${page}/${state}`, size })
+        }
       }
+      addCounts(counts, page, small, fresh)
       checked += 1
     } catch (error) {
       errors.push(`${page}/${state}: ${error instanceof Error ? error.message : String(error)}`)
@@ -147,5 +163,5 @@ try {
   await server.close()
 }
 const ok = problems.length === 0 && errors.length === 0 && checked > 0
-console.log(JSON.stringify({ ok, checked, problems, errors }))
+console.log(JSON.stringify({ ok, checked, counts, problems, errors }))
 process.exitCode = ok ? 0 : 1

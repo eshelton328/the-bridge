@@ -86,3 +86,25 @@ export function newProblems(small: readonly TextProblem[], larger: readonly Text
   const base = new Set(small.map((p) => `${p.kind} ${p.key}`))
   return larger.filter((p) => !base.has(`${p.kind} ${p.key}`))
 }
+
+/** How many problems one page has at each size: every one at Small, and only the new ones at Default and Large. */
+export type SizeCounts = { small: number; default: number; large: number }
+
+/**
+ * Adds one state's problems to its page's counts, for the report only: the check passes or fails on the new
+ * problems at Default and Large, as before. Small counts every problem found at Small, so a cut the design
+ * already has shows there and is never hidden (bridge-coord, 2026-11-24).
+ */
+export function addCounts(
+  counts: Record<string, SizeCounts>,
+  page: string,
+  small: readonly TextProblem[],
+  fresh: { default: readonly TextProblem[]; large: readonly TextProblem[] },
+): void {
+  const c = counts[page] ?? { small: 0, default: 0, large: 0 }
+  counts[page] = {
+    small: c.small + small.length,
+    default: c.default + fresh.default.length,
+    large: c.large + fresh.large.length,
+  }
+}
