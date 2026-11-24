@@ -226,9 +226,10 @@ const footerShrinks = {
   inset: false,
 } satisfies Record<keyof typeof sizes, boolean>
 const footer = css({ display: 'flex', flexDirection: 'column' })
-// A live chat's transcript sits at the bottom of its pane, over the composer, as its skeleton does while it loads, so a
-// short transcript's newest entry lands where the skeleton ended (bridge-coord, 2026-11-23); a long one fills the pane
-// and opens at its end as before. A fixture chat keeps Figma's top start.
+// A live chat's transcript sits at the bottom of its pane, over the composer, where its skeleton's last entry ends while
+// it loads (the skeleton fills the pane, R64), so a short transcript's newest entry lands where the skeleton ended
+// (bridge-coord, 2026-11-23); a long one fills the pane and opens at its end as before. A fixture chat keeps Figma's
+// top start.
 const fromEnd = css({ '& > :first-child': { mt: 'auto' } })
 // The line over a live transcript whose older entries the server did not send: quiet, as the composer's hint.
 const earlierLine = css({ display: 'block', textStyle: 'small', color: 'fg.muted' })
@@ -298,7 +299,7 @@ type ChatPaneBase = {
   problem?: string | undefined
   /**
    * A live chat whose transcript has not loaded yet: the skeleton's label, such as "Loading this chat", and the chat's
-   * kind; the skeleton sits at the bottom of the transcript in place of the entries. None when not set.
+   * kind; the skeleton fills the transcript in place of the entries (R64). None when not set.
    */
   loading?: { readonly label: string; readonly kind: AgentKind } | undefined
   composer: ComposerState
