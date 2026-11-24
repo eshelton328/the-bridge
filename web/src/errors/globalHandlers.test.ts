@@ -61,6 +61,18 @@ describe('installGlobalHandlers', () => {
     expect(normal?.error).toBe(error)
   })
 
+  it('keeps the text of an event with no error object, no file and line 0 that is not masked', () => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    const remove = installGlobalHandlers(target)
+    target.dispatchEvent(
+      new ErrorEvent('error', { message: 'ResizeObserver loop completed with undelivered notifications.' }),
+    )
+    remove()
+    const [report] = getReports()
+    expect(report?.error).not.toBeInstanceOf(OpaqueScriptError)
+    expect(report?.error.message).toBe('ResizeObserver loop completed with undelivered notifications.')
+  })
+
   it('reports a query that fails for good until removed (audit W-7)', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => undefined)
     const remove = installGlobalHandlers(target)

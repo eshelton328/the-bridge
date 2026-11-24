@@ -49,7 +49,8 @@ Every error path of the app (d-084).
   class sends no message until it is added to the allowlist, with a
   one-line reason (`clientErrorSender.test.ts`,
   `pages/workspaces/liveTranscriptReport.test.ts`).
-- A window error event with no error object, no file and line 0 is the
+- A window error event with the text "Script error.", no error object,
+  no file and line 0 is the
   browser's masked error of a script from another origin: it is reported
   as an `OpaqueScriptError` (`appError.ts`) whose kind is the page's
   visibility and the time since load, and the server logs it at info
