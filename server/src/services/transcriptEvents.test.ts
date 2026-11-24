@@ -37,18 +37,41 @@ describe('transcript events', () => {
         source: 'test-mac/transcript',
         seq: 0,
         type: 'transcript.changed',
-        data: { chat: themes, entries: [{ type: 'assistant', id: 'a2', text: 'Done.', cut: false }] },
+        data: { chat: themes, entries: [{ type: 'assistant', id: 'a2', text: 'Done.', cut: false }], added: ['a2'] },
       },
       {
         source: 'test-mac/transcript',
         seq: 1,
         type: 'transcript.changed',
-        data: { chat: themes, entries: [{ type: 'tool', id: 't2', name: 'Bash', target: 'pnpm', running: false }] },
+        data: {
+          chat: themes,
+          entries: [{ type: 'tool', id: 't2', name: 'Bash', target: 'pnpm', running: false }],
+          // The tool call was in the transcript, running: a change, not a new entry.
+          added: [],
+        },
       },
     ])
     for (const event of c.events) expect(TranscriptChangedEvent.parse(event)).toEqual(event)
     connected.value()
     expect(agents.watchers()).toBe(0)
+  })
+
+  it('names the new entries of an event with a change in added', async () => {
+    const agents = createFakeAgents(machine)
+    const c = client()
+    const connected = await connectTranscript(agents, themes, c)
+    if (!connected.ok || connected.value === null) throw new Error('not connected')
+    // The first change starts a read; the two changes made while it runs go in the next read, as one event.
+    agents.changeTranscript(themes, { type: 'assistant', id: 'a2', text: 'Done.', cut: false })
+    agents.changeTranscript(themes, { type: 'tool', id: 't2', name: 'Bash', target: 'pnpm', running: false })
+    agents.changeTranscript(themes, { type: 'assistant', id: 'a3', text: 'New.', cut: false })
+    await tick()
+    const events = c.events.map((e) => [e.data.entries.map((x) => x.id), e.data.added])
+    expect(events).toEqual([
+      [['a2'], ['a2']],
+      [['t2', 'a3'], ['a3']],
+    ])
+    connected.value()
   })
 
   it('watches only while a client is connected, and only the chat it asked for', async () => {

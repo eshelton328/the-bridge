@@ -34,6 +34,10 @@ describe('transcripts', () => {
   it('parses a change event, and refuses one with no entry', () => {
     expect(TranscriptChangedEvent.parse(event)).toEqual(event)
     expect(TranscriptChangedEvent.safeParse({ ...event, data: { ...event.data, entries: [] } }).success).toBe(false)
+    expect(TranscriptChangedEvent.parse({ ...event, data: { ...event.data, added: ['t1'] } }).data.added).toEqual([
+      't1',
+    ])
+    expect(TranscriptChangedEvent.safeParse({ ...event, data: { ...event.data, added: ['u1'] } }).success).toBe(false)
   })
 
   it('refuses an entry ID twice in a response or an event', () => {

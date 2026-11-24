@@ -337,6 +337,39 @@ describe('watchTranscript', () => {
     expect(getReports()).toHaveLength(1)
   })
 
+  it('adds a new entry that came during the first read but not in its answer, and then its change', async () => {
+    const server = fakeTranscriptServer()
+    const all = Array.from({ length: 600 }, (_, i) => user(`u${String(i)}`, 'go'))
+    server.set(chat, all)
+    // The read's answer is the transcript from before the new entry came.
+    const body = JSON.stringify({ chat, entries: all.slice(-500), earlier: true })
+    server.answerReads(() => new Response(body, { status: 200, headers: { 'content-type': 'application/json' } }))
+    watch(server, 60)
+    await expect.poll(() => server.openStreams()).toEqual([chat])
+    server.push(chat, [user('late', 'running')])
+    await expect.poll(() => view()?.loaded).toBe(true)
+    server.answerReads(undefined)
+    server.push(chat, [user('late', 'done')])
+    await expect.poll(() => view()?.entries.at(-1)).toEqual(user('late', 'done'))
+  })
+
+  it('leaves out a changed entry older than those it holds, and adds the new ones at the end', async () => {
+    const server = fakeTranscriptServer()
+    server.set(
+      chat,
+      Array.from({ length: 600 }, (_, i) => user(`u${String(i)}`, 'go')),
+    )
+    watch(server)
+    await expect.poll(() => view()?.loaded).toBe(true)
+    // u3 is before the 500 the read gave: a tool call that ended long after it started, say.
+    server.push(chat, [user('u3', 'changed'), user('new', 'go')])
+    await expect.poll(() => ids()?.at(-1)).toBe('new')
+    server.push(chat, [user('u4', 'changed')])
+    await settle()
+    expect(ids()).toHaveLength(500)
+    expect(ids()?.slice(-2)).toEqual(['u599', 'new'])
+  })
+
   it('marks a transcript with earlier entries and keeps it marked once the cap drops one', async () => {
     const server = fakeTranscriptServer()
     server.set(chat, [user('u1', 'go')], true)

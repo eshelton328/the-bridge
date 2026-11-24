@@ -3,7 +3,7 @@
 // once when it opens, after the watch is ready, so a change made while it
 // opens is not lost. On each change it reads the transcript again and
 // sends the entries that are new or changed since its last read, in
-// transcript order. It sends nothing for a read with no change. With no
+// transcript order, with the IDs of those that are new (`added`). It sends nothing for a read with no change. With no
 // stream open for a chat, nothing watches it (d-112). Each stream also
 // takes the list's changes: when a read then finds no such chat (after
 // /clear the pane has a new session, so a new chat ID), the stream ends
@@ -78,9 +78,10 @@ export async function connectTranscript(
     }
     const entries = read.value.entries
     const changed = entries.filter((e) => known.get(e.id) !== JSON.stringify(e))
+    const added = changed.filter((e) => !known.has(e.id)).map((e) => e.id)
     remember(changed)
     if (changed.length > 0)
-      client.send({ source, seq: seq++, type: 'transcript.changed', data: { chat, entries: changed } })
+      client.send({ source, seq: seq++, type: 'transcript.changed', data: { chat, entries: changed, added } })
     if (again) {
       again = false
       await refresh()

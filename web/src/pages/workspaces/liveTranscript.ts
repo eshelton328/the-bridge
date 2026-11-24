@@ -364,9 +364,13 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
     update((view) => ({ ...view, problem: line }))
     noteOutage(chat, miss)
   }
-  const apply = (entries: readonly TranscriptEntry[]) => {
+  // A changed entry older than those the view holds stays out (its page shows it); `added` names the new ones.
+  const apply = (entries: readonly TranscriptEntry[], added?: readonly string[]) => {
     update((view) => {
-      const merged = mergeEntries(view.entries, entries)
+      const held = new Set(view.entries.map((e) => e.id))
+      const kept = added === undefined ? entries : entries.filter((e) => held.has(e.id) || added.includes(e.id))
+      if (kept.length === 0) return view
+      const merged = mergeEntries(view.entries, kept)
       return { ...view, entries: merged.entries, earlier: view.earlier || merged.dropped > 0 }
     })
   }
@@ -472,7 +476,7 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
       serverKind: undefined,
       gone: false,
     }
-    const waiting: (readonly TranscriptEntry[])[] = []
+    const waiting: TranscriptChangedEvent['data'][] = []
     const take = (frame: Frame) => {
       if (frame.retry !== undefined) retryMs = frame.retry
       if (frame.event === 'error') {
@@ -495,8 +499,8 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
         connection.abort()
         return
       }
-      if (loaded) apply(parsed.data.data.entries)
-      else waiting.push(parsed.data.data.entries)
+      if (loaded) apply(parsed.data.data.entries, parsed.data.data.added)
+      else waiting.push(parsed.data.data)
     }
     const body = res.body
     const streamed = (async () => {
@@ -513,7 +517,8 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
     if (read) {
       loaded = true
       const shown = views.get(chat) ?? emptyView
-      for (const entries of waiting) apply(bufferedAfterRead(shown, entries))
+      // With `added`, a new entry that the read missed still comes; with none (an older server), only those it holds.
+      for (const e of waiting) apply(e.added === undefined ? bufferedAfterRead(shown, e.entries) : e.entries, e.added)
     } else connection.abort()
     await streamed
     if (closed()) return 'wait'
