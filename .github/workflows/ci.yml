@@ -234,7 +234,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        page: [inbox, workspaces, artifacts, toolkit]
+        page: [inbox, workspaces, artifacts, toolkit, settings]
     # With no fidelity input changed, the job only reports; ubuntu-slim does that for less.
     runs-on: ${{ needs.plan.outputs.fidelity == 'false' && 'ubuntu-slim' || 'ubuntu-24.04' }}
     timeout-minutes: 30
@@ -242,6 +242,9 @@ jobs:
       # The pages whose icon sizes the job gates too (--checks icons: no
       # iconSize diff in the position check). A page joins when it has none.
       ICON_GATED_PAGES: '["inbox", "workspaces", "artifacts", "toolkit"]'
+      # The pages with PNG references (d-119): only the rule check runs, and
+      # each frame's committed review.json is the reviewer's gate (--sealed).
+      PNG_PAGES: '["settings"]'
     steps:
       - if: needs.plan.outputs.fidelity == 'false'
         run: echo "::notice::No changed file can change the fidelity result (plan job); the check passes without a run."
@@ -258,7 +261,7 @@ jobs:
       - if: needs.plan.outputs.fidelity != 'false'
         run: pnpm build-storybook
       - if: needs.plan.outputs.fidelity != 'false'
-        run: pnpm fidelity ${{ matrix.page }} --skip-build --checks ${{ contains(fromJSON(env.ICON_GATED_PAGES), matrix.page) && 'text,rules,icons' || 'text,rules' }}
+        run: pnpm fidelity ${{ matrix.page }} --skip-build ${{ contains(fromJSON(env.PNG_PAGES), matrix.page) && '--checks rules --sealed' || contains(fromJSON(env.ICON_GATED_PAGES), matrix.page) && '--checks text,rules,icons' || '--checks text,rules' }}
       - if: ${{ !cancelled() && needs.plan.outputs.fidelity != 'false' }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:

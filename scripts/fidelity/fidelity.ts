@@ -20,7 +20,9 @@
 // A PNG frame that passes with --review saves the reviewer's record as
 // references/<page>/<frameId>/review.json, sealed with the hash of its
 // inputs (reviewSeal.ts); commit it, as `pnpm check:reviews` (CI) fails a
-// built PNG frame without a current one.
+// built PNG frame without a current one. --sealed (CI, which cannot run the
+// reviewer) takes that committed record as the reviewer's gate when its
+// inputs hash is current.
 import { execFileSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
@@ -51,7 +53,14 @@ import {
 } from './references.ts'
 import { comparePngs } from './pixelDiff.ts'
 import { parseReview, pngLabel, pngReviewGate } from './pngReview.ts'
-import { inputsDigest, reviewFileName, reviewInputs, reviewRunProblem, sealReview } from './reviewSeal.ts'
+import {
+  inputsDigest,
+  reviewFileName,
+  reviewInputs,
+  reviewRunProblem,
+  sealedReviewGate,
+  sealReview,
+} from './reviewSeal.ts'
 import { composeSideBySide } from './sideBySide.ts'
 import { serveStatic, stateForFrame, storybookDir, storyForState, storyUrl } from './storyServer.ts'
 
@@ -62,12 +71,13 @@ const { values, positionals } = parseArgs({
     tolerance: { type: 'string' },
     checks: { type: 'string' },
     review: { type: 'string' },
+    sealed: { type: 'boolean', default: false },
   },
 })
 const [page, ...requested] = positionals
 if (page === undefined || !existsSync(join(referencesDir, page))) {
   console.error(
-    'Usage: pnpm fidelity <page> [frameId…] [--skip-build] [--tolerance <px>] [--checks text,rules[,icons]] [--review <file>]',
+    'Usage: pnpm fidelity <page> [frameId…] [--skip-build] [--tolerance <px>] [--checks text,rules[,icons]] [--review <file> | --sealed]',
   )
   console.error(`Pages with references: ${existsSync(referencesDir) ? readdirSync(referencesDir).join(', ') : 'none'}`)
   process.exit(2)
@@ -90,7 +100,12 @@ const frameIds =
   requested.length > 0
     ? requested.map(normaliseFrameId)
     : allFrames.filter((id) => stateForFrame(page, codeOf(id)) !== undefined)
-const reviewProblem = values.review === undefined ? undefined : reviewRunProblem(requested.length, values['skip-build'])
+const reviewProblem =
+  values.review !== undefined && values.sealed
+    ? '--review seals a new record and --sealed reads the committed one; pass one of them'
+    : values.review === undefined
+      ? undefined
+      : reviewRunProblem(requested.length, values['skip-build'])
 if (reviewProblem !== undefined) {
   console.error(reviewProblem)
   process.exit(2)
@@ -251,7 +266,8 @@ async function runPngFrame(b: Browser, origin: string, frameId: string) {
   await shown.context.close()
 
   const rules = checkRules(flat, exceptions, measured)
-  const reviewGate = pngReviewGate(review, sameRender)
+  // --sealed (CI) takes the committed record whose inputs hash is current; else the record given with --review.
+  const reviewGate = values.sealed ? sealedReviewGate(repoRoot, page, frameId) : pngReviewGate(review, sameRender)
   // checksForPng allows only the rule check, and the reviewer's gate always applies, so the gate is the frame's result.
   const ok = rules.ok && reviewGate.ok && errors.length === 0
   const gate = ok
@@ -278,7 +294,11 @@ async function runPngFrame(b: Browser, origin: string, frameId: string) {
     gate,
     pageErrors: errors,
     rules,
-    review: { ...reviewGate, file: reviewFile ?? null, sealed: sealed ?? null },
+    review: {
+      ...reviewGate,
+      file: values.sealed ? join(frameDir(page, frameId), reviewFileName) : (reviewFile ?? null),
+      sealed: sealed ?? null,
+    },
     pixels,
     images: { reference: referencePng, render: renderPng, sideBySide, diff: diffPng },
     note: join(frameDir(page, frameId), 'note.txt'),

@@ -39,6 +39,9 @@ rejects.
   Storybook and refuses `--skip-build`, so it never seals an old render. `pnpm check:reviews`
   (CI) fails a built PNG frame whose record is missing, stale or edited
   (`reviewSeal.ts`). Never write or edit a `review.json` by hand.
+- `--sealed` (CI) takes the committed `review.json` as the reviewer's
+  gate of each PNG frame, only while its inputs hash is current
+  (`sealedReviewGate`). It never seals, and it cannot go with `--review`.
 - The `fidelity-builder` agent's hooks call `pnpm fidelity:check-build`
   (`buildRecord.ts`); change its checks only with that agent in the
   owner's brain (`engine/projects/ncc-1701/toolkit/agents/`, d-040).
