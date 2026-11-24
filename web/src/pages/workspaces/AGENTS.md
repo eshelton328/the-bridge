@@ -357,8 +357,11 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   `dialog: null`, a 404 and a reply the schema refuses draw no card (the
   last is reported as `bad-reply`). A tap posts the contract's
   `AnswerDialogRequest` `{ id, n }` once and turns every option off until
-  the next dialog; a 409 `dialogChanged` shows "The terminal changed —
-  showing the new state" until the next read; another 409 state "Not sent
+  the next dialog. The server lists only the options a tap answers (no
+  free-text ones), so the options keep `n` as given, a long label wraps,
+  and a muted line "Other answers: in the terminal" shows under them.
+  A 409 `dialogChanged` shows "The terminal changed — showing the new
+  state" until the next read; another 409 state "Not sent
   — <state>" with no Retry; any other miss "Not sent — <kind>" with Retry
   for no answer, a 5xx or a 429. A dialog with no sure options shows its
   read text read-only, scrolling when long, with "Answer in the terminal".

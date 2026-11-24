@@ -75,6 +75,23 @@ const sample = {
   ],
   raw: 'Sample step\nGoal: tidy the notes\nSteps: sort, merge\nSend this?\n1. Send structured\n2. Send original',
 }
+/**
+ * The same kind of step as the server sends it: its free-text options left out, so only 1 and 2, the second with its
+ * description joined to its label, long enough to wrap on the phone.
+ */
+const twoOptions = {
+  id: 'd1b2c3d4e5f60718',
+  title: 'Sample step',
+  body: 'Goal: tidy the notes',
+  options: [
+    { n: 1, label: 'Send structured' },
+    {
+      n: 2,
+      label: 'Send original — the notes as typed, with every line and heading kept in the order they were written',
+    },
+  ],
+  raw: 'Sample step\nGoal: tidy the notes\n1. Send structured\n2. Send original\n3. Type something',
+}
 /** The same step after the terminal changed: another read text, so another ID. */
 const changedSample = { ...sample, id: 'b1b2c3d4e5f60718', title: 'Sample step, again' }
 /** A dialog the server could not read for sure: its read text only, long enough to scroll. */
@@ -272,6 +289,30 @@ describe("a chat's terminal dialog (R69)", () => {
       expect(getReports()).toEqual([])
       expect(posted).toEqual([])
     })
+
+  it('draws only the options the server sends, by their own numbers, with a long label wrapped in the card', async () => {
+    const { workspaces } = withChats()
+    workspaces.showDialog(plan, twoOptions)
+    await openChat(phone)
+    await expect.element(card()).toBeVisible()
+    const long = `2 ${twoOptions.options[1]?.label ?? ''}`
+    await expect.element(option('1 Send structured')).toBeEnabled()
+    await expect.element(option(long)).toBeEnabled()
+    expect(card().getByRole('button').elements()).toHaveLength(2)
+    // The answers that are not a tap are in the terminal: one muted line under the options.
+    const other = card().getByText('Other answers: in the terminal', { exact: true })
+    await expect.element(other).toBeVisible()
+    const button = option(long).element()
+    expect(other.element().getBoundingClientRect().top).toBeGreaterThanOrEqual(button.getBoundingClientRect().bottom)
+    // The long label wraps: the option grows to more lines and stays inside the card, with nothing cut.
+    const box = button.getBoundingClientRect()
+    const cardBox = card().element().getBoundingClientRect()
+    expect(box.height).toBeGreaterThan(28)
+    expect(box.right).toBeLessThanOrEqual(cardBox.right)
+    expect(button.scrollWidth).toBeLessThanOrEqual(button.clientWidth)
+    await userEvent.click(option(long))
+    await expect.poll(() => workspaces.dialogAnswers).toEqual([{ chat: plan, body: { id: twoOptions.id, n: 2 } }])
+  })
 
   it('turns every option off while the answer goes, and sends a second tap never', async () => {
     const { workspaces, gate } = withChats()
