@@ -92,6 +92,7 @@ const seekLimitMs = 1200
 /** The attribute on the button's slot in the scroller: a change inside it is not an entry, a press in it not the reader's. */
 export const newestSlot = 'data-newest-slot'
 
+const scrollIdleMs = 150
 const fromEnd = (el: HTMLElement) => el.scrollHeight - el.scrollTop - el.clientHeight
 const atEnd = (el: HTMLElement) => fromEnd(el) <= endSlack
 const toEnd = (el: HTMLElement) => {
@@ -163,12 +164,27 @@ export function usePinnedEnd(
   enabled: boolean,
   key: string,
   last: unknown,
-): { ref: (el: HTMLElement | null) => void; newest: Newest } {
+): { ref: (el: HTMLElement | null) => void; newest: Newest; idle: () => Promise<void> } {
   const [frame, setFrame] = useState<{ scroller: HTMLElement; footer: HTMLElement } | null>(null)
   const scroller = frame?.scroller ?? null
   const footer = frame?.footer ?? null
   const [newest] = useState(newestStore)
   const pinnedRef = useRef(true)
+  // The last scroll event: an older page waits for `idle` (no scroll for `scrollIdleMs`), as iOS drops the pin's
+  // scroll write during its momentum scroll, and the reader would land a page away (the #491 Simulator run).
+  const scrolledRef = useRef(Number.NEGATIVE_INFINITY)
+  const idle = useCallback(
+    () =>
+      new Promise<void>((resolve) => {
+        const check = () => {
+          const left = scrolledRef.current + scrollIdleMs - performance.now()
+          if (left <= 0) resolve()
+          else setTimeout(check, left)
+        }
+        check()
+      }),
+    [],
+  )
   // Marks new entries while the reader is away; set while the pin runs.
   const cameRef = useRef<(() => void) | undefined>(undefined)
   const ref = useCallback((el: HTMLElement | null) => {
@@ -273,6 +289,7 @@ export function usePinnedEnd(
       placeScroll += moved
     }
     const onScroll = () => {
+      scrolledRef.current = performance.now()
       if (atEnd(scroller)) {
         endTop = scroller.scrollTop
         pinnedRef.current = true
@@ -445,5 +462,5 @@ export function usePinnedEnd(
   useLayoutEffect(() => {
     cameRef.current?.()
   }, [last])
-  return { ref, newest }
+  return { ref, newest, idle }
 }

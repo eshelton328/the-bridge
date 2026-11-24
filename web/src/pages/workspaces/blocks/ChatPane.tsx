@@ -183,7 +183,7 @@ export type TranscriptWatch = {
   /** Reads `chat`'s transcript again now: the problem line's Retry. */
   readonly retry: (chat: string) => void
   /** Reads the page before `chat`'s first entry: the earlier line in view, or its Retry; no paging when not set. */
-  readonly older?: ((chat: string) => void) | undefined
+  readonly older?: ((chat: string, idle: () => Promise<void>) => void) | undefined
 }
 
 const body = css({
@@ -509,13 +509,13 @@ export function ChatPane(props: ChatPaneProps) {
     () => (liveChat === undefined || transcripts === undefined ? undefined : transcripts.watch(liveChat)),
     [liveChat, transcripts],
   )
-  const older = transcripts?.older
-  const onOlder = useCallback(() => {
-    if (liveChat !== undefined) older?.(liveChat)
-  }, [liveChat, older])
   // A live chat opens at its newest entry and follows new ones while the reader is at the end.
   const following = liveChat !== undefined || follows === true
-  const { ref: pinRef, newest } = usePinnedEnd(following, chatId, entries.at(-1))
+  const { ref: pinRef, newest, idle } = usePinnedEnd(following, chatId, entries.at(-1))
+  const older = transcripts?.older
+  const onOlder = useCallback(() => {
+    if (liveChat !== undefined) older?.(liveChat, idle)
+  }, [liveChat, older, idle])
   const label = props.label
   const footerRef = useCallback(
     (el: HTMLDivElement | null) => {

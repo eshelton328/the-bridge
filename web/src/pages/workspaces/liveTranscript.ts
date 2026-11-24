@@ -288,7 +288,13 @@ export function bufferedAfterRead(
 }
 
 /** One watched chat: how many panes show it, Retry, the read of an older page and stop. */
-type Session = { watchers: number; readonly retry: () => void; readonly older: () => void; readonly stop: () => void }
+type Session = {
+  watchers: number
+  readonly retry: () => void
+  readonly older: (idle?: Idle) => void
+  readonly stop: () => void
+}
+type Idle = () => Promise<void>
 
 const sessions = new Map<string, Session>()
 
@@ -561,7 +567,7 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
   let olderRead = false
   // Puts the page before the first entry above the entries, one read at a time. A 409 (that entry is gone) reads the
   // newest page again in place of the view; any other miss shows its line with Retry.
-  const older = async () => {
+  const older = async (idle?: Idle) => {
     const shown = views.get(chat)
     const first = shown?.entries[0]
     const room = maxTranscriptEntries - (shown?.entries.length ?? 0)
@@ -582,6 +588,9 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
         return
       }
       const page = answer.value
+      // The page goes in when the reader's scroll rests, one page at a time: this read's flag holds the next.
+      await idle?.()
+      if (closed()) return
       update((view) => {
         // A newest read that replaced the view meanwhile: this page no longer joins it.
         if (view.entries[0]?.id !== first.id) return { ...view, older: undefined }
@@ -650,7 +659,7 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
         current.abort()
       }
     },
-    older: () => void older(),
+    older: (idle) => void older(idle),
     stop: () => {
       endGrace()
       clearTimeout(stall)
@@ -695,8 +704,8 @@ export function watchTranscript(chat: string, deps: TranscriptDeps = {}): () => 
 }
 
 /** Reads the page before `chat`'s first entry, when the server has one: the reader at the top, or its line's Retry. */
-export function loadEarlier(chat: string): void {
-  sessions.get(chat)?.older()
+export function loadEarlier(chat: string, idle?: Idle): void {
+  sessions.get(chat)?.older(idle)
 }
 
 /** Connects and reads `chat`'s transcript again now: the Retry of its line. */

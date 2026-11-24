@@ -149,6 +149,33 @@ describe('a long live chat reads its transcript a page at a time', () => {
     expect(getReports()).toEqual([])
   })
 
+  it('holds an older page that answers while the reader scrolls, and puts it in once the scroll rests, on the phone', async () => {
+    const server = stubLongChats(count, true)
+    view = await openWorkspaces([390, 844])
+    await userEvent.click(page.getByText(title, { exact: true }).first())
+    await markdownShown(100)
+    const chat = page.getByRole('region', { name: title }).element()
+    const scroller = chat.querySelector('.scroll-frame__body')
+    const first = scroller?.querySelector('article')
+    if (!(scroller instanceof HTMLElement) || !(first instanceof HTMLElement)) throw new Error('no transcript')
+    const offset = () => first.getBoundingClientRect().top - scroller.getBoundingClientRect().top
+    scroller.dispatchEvent(new WheelEvent('wheel', { bubbles: true }))
+    scroller.scrollTop = 0
+    const top = offset()
+    // iOS's momentum scroll goes on after the read answers: scroll events every 40 ms for 600 ms.
+    const shown = () => chat.querySelectorAll('.markdown-view').length
+    for (let i = 0; i < 15; i += 1) {
+      scroller.dispatchEvent(new Event('scroll'))
+      await new Promise((resolve) => setTimeout(resolve, 40))
+    }
+    expect(server.readQueries).toEqual([{ limit: '100' }, { limit: '100', before: 'plan-u500' }])
+    expect(shown()).toBe(100)
+    await markdownShown(200)
+    await afterRendering()
+    expect(Math.abs(offset() - top)).toBeLessThanOrEqual(1)
+    expect(server.readQueries).toHaveLength(2)
+  })
+
   it('stays at the end when a short chat at its end loads the older page by itself, on the phone', async () => {
     const server = stubLongChats(count, true)
     // 99 tool calls draw as one group row, so the newest page does not fill the screen and the earlier line is in view.
