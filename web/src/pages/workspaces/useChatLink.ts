@@ -23,10 +23,7 @@ function chatLinkChange(data: WorkspacesData, ui: WorkspacesUi, chat: string): P
   return { ...openChat(data, ui, pane.id), phoneView: 'chat' }
 }
 
-/**
- * Each live chat's server ID (`<liveMachine>/<pane id>`, the ID a link names) with its title, for the mentions in a
- * message (blocks/markdownChats.ts). Empty when the data has no live machine, as a fixture state has none.
- */
+/** Each live chat's server ID (`<machine>/<pane>`) and title, for message mentions; none with no live machine. */
 export function liveChatTitles(data: WorkspacesData): ReadonlyMap<string, string> {
   const machine = data.liveMachine
   if (machine === undefined) return new Map()

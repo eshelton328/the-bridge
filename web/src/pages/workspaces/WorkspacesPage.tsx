@@ -79,7 +79,6 @@ import {
 import { navRoute } from '../../lib/navRoutes.ts'
 import { useSettingsChatWidth, useVisibleNavPages } from '../../state/settingsStore.ts'
 
-/** The mention titles' entries, as `titlesKey` writes them. */
 const titleEntries = z.array(z.tuple([z.string(), z.string()]))
 
 const route = getRouteApi('/workspaces')
@@ -379,8 +378,7 @@ export function WorkspacesPage() {
     drafts,
     readList: () => void router.invalidate(),
   })
-  // The live chats a message can mention (remarkChatMentions.ts); none in a fixture state, which has no live machine.
-  // Keyed by the titles' text, so a list read that changes no title keeps the context, and no message draws again.
+  // The chats a message can mention, keyed by their titles' text, so a read that changes no title draws nothing again.
   const titlesKey = JSON.stringify([...liveChatTitles(data)])
   const mentionChats = useMemo(
     () => ({
