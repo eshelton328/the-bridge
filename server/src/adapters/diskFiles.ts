@@ -4,8 +4,8 @@
 // tracks the one path (with literal pathspecs, so `*` or `:` in a path is
 // no pattern), then reads it only when its real path stays in the root's
 // real path and lstat finds a regular file, so a FIFO or a device is never
-// opened. The size comes from lstat, and the read stops at the cap, as the
-// file can grow. The brain's `_local/` is never listed or read. A fault
+// opened; a symlink's target must be tracked too. The size comes from
+// lstat, and the read stops at the cap, as the file can grow. The brain's `_local/` is never listed or read. A fault
 // keeps only its errno code or git's exit code.
 import { execFile } from 'node:child_process'
 import { lstat, open, realpath } from 'node:fs/promises'
@@ -59,7 +59,14 @@ export function createDiskFiles({ brainDir }: DiskFilesOptions): FileStore {
       if (!tracked.value.includes(path)) return ok('notFound')
       try {
         const [base, real] = await Promise.all([realpath(dir), realpath(join(dir, path))])
-        if (!real.startsWith(base + sep) || hidden(real.slice(base.length + 1))) return ok('notFound')
+        const target = real.slice(base.length + 1)
+        if (!real.startsWith(base + sep) || hidden(target)) return ok('notFound')
+        // A tracked symlink can point at an untracked file in the root, such as `.env`: the target must be tracked too.
+        if (target !== path) {
+          const targetTracked = await gitFiles(dir, [target])
+          if (!targetTracked.ok) return targetTracked
+          if (!targetTracked.value.includes(target)) return ok('notFound')
+        }
         const stat = await lstat(real)
         if (!stat.isFile()) return ok('notFound')
         if (stat.size > max) return ok('tooLarge')

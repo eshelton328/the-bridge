@@ -2,6 +2,7 @@ import { execFileSync } from 'node:child_process'
 import { mkdir, mkdtemp, symlink, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
+import { describe, expect, it } from 'vitest'
 import { createDiskFiles } from './diskFiles.ts'
 import { describeFileStore } from './fileStoreContract.ts'
 
@@ -23,4 +24,23 @@ describeFileStore('disk', async ({ tracked, untracked, linkOut, fifo }) => {
   execFileSync('git', ['init', '-q', brainDir])
   execFileSync('git', ['-C', brainDir, 'add', '--', ...Object.keys(tracked), linkOut, fifo])
   return createDiskFiles({ brainDir })
+})
+
+// The disk store's own faults, which a fake cannot have: a tracked symlink to a file git does not track (review of
+// PR 505), and a path that execFile cannot pass.
+describe('createDiskFiles', () => {
+  async function brainWithEnvLink() {
+    const brainDir = await mkdtemp(join(tmpdir(), 'bridge-files-'))
+    await writeFile(join(brainDir, 'README.md'), '# Brain\n')
+    await writeFile(join(brainDir, '.env'), 'TOKEN=example\n')
+    await symlink('.env', join(brainDir, 'env-link'))
+    execFileSync('git', ['init', '-q', brainDir])
+    execFileSync('git', ['-C', brainDir, 'add', '--', 'README.md', 'env-link'])
+    return createDiskFiles({ brainDir })
+  }
+
+  it('does not read a tracked symlink to an untracked file', async () => {
+    const store = await brainWithEnvLink()
+    expect(await store.read('brain', 'env-link', 1024)).toEqual({ ok: true, value: 'notFound' })
+  })
 })
