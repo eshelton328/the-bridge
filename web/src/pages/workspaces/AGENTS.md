@@ -178,8 +178,14 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   ends `stopped` ("Stopped — the answer ends here") with the text so far, and
   a stop that misses is a quiet "Not stopped — …" line with no report().
   The side chat keeps its unsent question in the page's drafts by its own
-  id (`side:<pane>`), and its transcript follows the answer's end as a
-  live chat's does (ChatPane `follows`). A Codex chat and a shell
+  id (`side:<pane>`), so a close loses none of it, and its transcript
+  follows the answer's end as a live chat's does (ChatPane `follows`).
+  The phone's and the tablet's sheet docks on the keyboard while its box
+  has the focus (`keyboardDock`, library #347) and the main composer
+  stays put; it closes only on ×, a swipe from the grabber, Escape and,
+  on the phone, a tap on the scrim (`closeOn`), never on a press on the
+  chat above the tablet's sheet, a focus or the keyboard (screen review R71,
+  `app/WorkspacesSideChatDock.test.tsx`). A Codex chat and a shell
   have no Side chat (`withCommands`), as the server answers them 409
   `noSession` (`app/WorkspacesLiveSide.test.tsx`; the fake is
   `lib/fakeSideServer.ts`).
