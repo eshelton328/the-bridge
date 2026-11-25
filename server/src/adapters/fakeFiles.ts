@@ -1,6 +1,4 @@
-// The FileStore's fake: the tracked files of one brain in memory. A tracked
-// path that is not a file in the root (a symlink out of it, a FIFO) is a
-// path it lists and never reads.
+// The FileStore's fake: one brain's tracked files in memory; an unreadable path is listed, never read.
 import { ok } from '@bridge/shared'
 import type { FileStore } from '../services/fileStore.ts'
 

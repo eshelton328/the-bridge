@@ -38,13 +38,10 @@ describe('createDiskFiles', () => {
     return createDiskFiles({ brainDir })
   }
 
-  it('does not read a tracked symlink to an untracked file', async () => {
-    const store = await brainWithEnvLink()
-    expect(await store.read('brain', 'env-link', 1024)).toEqual({ ok: true, value: 'notFound' })
-  })
-
-  it('gives notFound for a path with a NUL, with no throw', async () => {
-    const store = await brainWithEnvLink()
-    expect(await store.read('brain', 'README.md\0x', 1024)).toEqual({ ok: true, value: 'notFound' })
+  it.each([
+    ['a tracked symlink to an untracked file', 'env-link'],
+    ['a path with a NUL, with no throw', 'README.md\0x'],
+  ])('does not read %s', async (_, path) => {
+    expect(await (await brainWithEnvLink()).read('brain', path, 1024)).toEqual({ ok: true, value: 'notFound' })
   })
 })

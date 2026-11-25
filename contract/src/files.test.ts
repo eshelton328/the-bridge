@@ -2,12 +2,11 @@ import { describe, expect, it } from 'vitest'
 import { FileRawQuery, FilesQuery, RootFilePath } from './files.ts'
 
 describe('RootFilePath', () => {
-  it.each(['README.md', 'toolkit/rules/writing.md', '.github/ci.yml'])('takes %s', (path) => {
-    expect(RootFilePath.safeParse(path).success).toBe(true)
-  })
-
-  it.each(['', '/etc/hosts', '../x', 'a/../b', 'a//b', './a', 'a/'])('refuses %j', (path) => {
-    expect(RootFilePath.safeParse(path).success).toBe(false)
+  it.each([
+    ...['README.md', 'toolkit/rules/writing.md', '.github/ci.yml'].map((p): [string, boolean] => [p, true]),
+    ...['', '/etc/hosts', '../x', 'a/../b', 'a//b', './a', 'a/'].map((p): [string, boolean] => [p, false]),
+  ])('gives %j %s', (path, valid) => {
+    expect(RootFilePath.safeParse(path).success).toBe(valid)
   })
 })
 

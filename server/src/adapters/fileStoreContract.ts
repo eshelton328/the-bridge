@@ -1,5 +1,4 @@
-// The one contract suite of the FileStore. The disk store and the fake run
-// it, so the fake cannot drift from what it stands for.
+// The FileStore's one contract suite; the disk store and the fake both run it.
 import { ChatId } from '@bridge/contract'
 import { describe, expect, it } from 'vitest'
 import type { FileStore } from '../services/fileStore.ts'

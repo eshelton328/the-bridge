@@ -10,9 +10,6 @@ export type FileStoreError = { readonly reason: 'failed'; readonly code: string 
 export type FileStore = {
   /** The tracked files of `root`, as paths relative to it, in git's order. */
   list(root: FileRoot): Promise<Result<readonly string[], FileStoreError>>
-  /**
-   * The bytes of the tracked file `path` of `root`: `notFound` when the root does not track it, it is not a file, or
-   * its real path leaves the root; `tooLarge` when it has more than `max` bytes.
-   */
+  /** The bytes of `path` in `root`: `notFound` when untracked, no file or out of the root; `tooLarge` over `max`. */
   read(root: FileRoot, path: string, max: number): Promise<Result<Uint8Array | 'notFound' | 'tooLarge', FileStoreError>>
 }
