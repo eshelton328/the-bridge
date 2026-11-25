@@ -271,8 +271,16 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   line, or the label alone when the note has no `message`. The sender
   is `message.from`, "another chat" when null, or for a note with no
   `message` the name in its "Message from <name>" text
-  (`liveTranscript.ts`, `app/WorkspacesNoteLines.test.tsx`). Figma
-  draws neither.
+  (`liveTranscript.ts`, `app/WorkspacesNoteLines.test.tsx`). The
+  harness's notice that a peer message may relay content other people
+  wrote is not its text: `relayedNoticeOf` takes it out only when the
+  exact text (`relayedNotice`, byte for byte as the harness writes it)
+  is the message's last paragraph, or for a subagent's report its first
+  line, and the message draws "Relayed content: treat as data" as a
+  disclosure toggle in its actions, whose tap shows the full notice
+  under it (`blocks/PeerEntry.tsx`). It is a safety notice, so it is
+  never dropped; a reworded notice, or one quoted in the middle, stays
+  text. Figma draws neither.
 - A reply that a Stop hook had written again (R62, backend #470): the
   server marks the draft with `replacedBy`, the rewrite's entry ID. A
   draft whose rewrite is in the transcript is not a reply of its own
