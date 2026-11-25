@@ -65,6 +65,8 @@ const overlay = css({
   insetInlineEnd: '8',
   mt: '12',
   zIndex: '1',
+  // A drag-time layer: the pointer passes through it to the group under it, as it does through a drop zone.
+  pointerEvents: 'none',
 })
 
 export type SidebarGroupProps = {
@@ -167,7 +169,7 @@ export function SidebarGroup(props: SidebarGroupProps) {
         />
       </div>
       {drop === undefined ? null : (
-        <div className={overlay} role="status">
+        <div className={overlay} role="status" data-drag-layer="sidebar-drag">
           {/* Not turned (`tilt`): the text check measures a turned row's clip box unturned and reports its text as cut. */}
           <DragPreview hint={drop.hint}>
             <SidebarChatRow chat={drop.chat} figma="105:960" />

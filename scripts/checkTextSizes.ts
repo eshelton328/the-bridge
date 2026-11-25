@@ -187,7 +187,7 @@ function paintedOnTop(args: {
     for (const [name, selector] of Object.entries(named)) {
       const part = upper.closest(selector)
       if (part === null || part.contains(lower)) continue
-      if (name === 'tabBar' || name === 'resizeReadout' || name === 'paneDropZone')
+      if (name === 'tabBar' || name === 'resizeReadout' || name === 'paneDropZone' || name === 'sidebarDrag')
         return { layer: name, pointerEvents: pointerOf.get(part) ?? getComputedStyle(part).pointerEvents }
     }
     for (let e: Element | null = upper; e !== null; e = e.parentElement) {

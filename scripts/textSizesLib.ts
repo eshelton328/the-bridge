@@ -171,13 +171,14 @@ export type TopRun = { key: string | null; layer: TopLayer; pointerEvents: strin
 
 /**
  * The parts that cover the page by design, named one by one (bridge-coord, 2026-11-25): the tab bar the page scrolls
- * under, and two drag-time layers, which show only while a drag runs and take no pointer: the resize readout and the
- * pane drop zone. Any other box over text counts as an overlap.
+ * under, and three drag-time layers, which show only while a drag runs and take no pointer: the resize readout, the
+ * pane drop zone and the sidebar's dragged chat. Any other box over text counts as an overlap.
  */
 export const namedLayers = {
   tabBar: '.app-shell__tabBar',
   resizeReadout: '[data-drag-layer="resize-readout"]',
   paneDropZone: '[data-drag-layer="pane-drop-zone"]',
+  sidebarDrag: '[data-drag-layer="sidebar-drag"]',
 } as const
 
 /** Whether the layer on top covers the text under it by design. A drag-time layer must take no pointer. */
@@ -189,6 +190,7 @@ export function coversByDesign(top: TopRun): boolean {
       return true
     case 'resizeReadout':
     case 'paneDropZone':
+    case 'sidebarDrag':
       return top.pointerEvents === 'none'
     case 'other':
     case null:

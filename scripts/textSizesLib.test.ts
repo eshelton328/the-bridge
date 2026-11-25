@@ -190,6 +190,8 @@ function run(key: string | null, layer: TopRun['layer'] = null, pointerEvents = 
 void test('a named drag-time layer that takes no pointer covers text by design', () => {
   assert.equal(coversByDesign(run('x', 'resizeReadout', 'none')), true)
   assert.equal(coversByDesign(run('x', 'paneDropZone', 'none')), true)
+  assert.equal(coversByDesign(run('x', 'sidebarDrag', 'none')), true)
+  assert.equal(coversByDesign(run('x', 'sidebarDrag', 'auto')), false)
   assert.equal(coversByDesign(run('x', 'tabBar')), true)
 })
 
