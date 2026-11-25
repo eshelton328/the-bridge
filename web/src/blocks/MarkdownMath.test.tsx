@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { page } from 'vitest/browser'
 import { testRender } from '../lib/testRender.ts'
-import { isNotMath } from './mathPlugins.ts'
+import { escapeLoneDollars } from './mathPlugins.ts'
 import { MarkdownChatsContext } from './markdownChats.ts'
 import { MarkdownText } from './MarkdownText.tsx'
 import { mayHoldMath } from './useMathPlugins.ts'
@@ -40,13 +40,25 @@ describe('prices', () => {
     await expect.element(page.getByText('It costs $5 and $10 now. Price is $3.50 or $4. From $ 5 $ on.')).toBeVisible()
     expect(document.querySelector('[data-math]')).toBeNull()
   })
-  it("follow Pandoc's rules", () => {
-    expect(isNotMath('$5 and $', '1')).toBe(true)
-    expect(isNotMath('$ 5 $', ' ')).toBe(true)
-    expect(isNotMath('$x $', undefined)).toBe(true)
-    expect(isNotMath('$x$', '1')).toBe(true)
-    expect(isNotMath('$x^2$', ' ')).toBe(false)
-    expect(isNotMath('$x$', undefined)).toBe(false)
+  it("escape each $ that Pandoc's rules cannot pair, and only outside code, $$, URLs and HTML", () => {
+    expect(escapeLoneDollars('$5 and $10')).toBe('\\$5 and \\$10')
+    expect(escapeLoneDollars('From $ 5 $ on')).toBe('From \\$ 5 \\$ on')
+    expect(escapeLoneDollars('$x^2$ and $5')).toBe('$x^2$ and \\$5')
+    expect(escapeLoneDollars('$x$1')).toBe('\\$x\\$1')
+    expect(escapeLoneDollars('already \\$5 here')).toBe('already \\$5 here')
+    expect(escapeLoneDollars('`$5` and $$a$b$$ and https://x.example/$5 and <span title="$5">')).toBe(
+      '`$5` and $$a$b$$ and https://x.example/$5 and <span title="$5">',
+    )
+    expect(escapeLoneDollars('```sh\necho $5\n```\n\nCosts $5')).toBe('```sh\necho $5\n```\n\nCosts \\$5')
+    expect(escapeLoneDollars('$5 here\n\nand $10')).toBe('\\$5 here\n\nand \\$10')
+  })
+  it('keep the Markdown between two prices: a link stays a link and bold stays bold', async () => {
+    view = await testRender(
+      <MarkdownText text={'Costs $5 [details](https://example.com) or $10. **Total $5** and $x^2$ too.'} />,
+    )
+    await expect.poll(() => drawn('inline').length).toBe(1)
+    await expect.element(page.getByRole('link', { name: 'details' })).toHaveAttribute('href', 'https://example.com')
+    expect(document.querySelector('strong')?.textContent).toBe('Total $5')
   })
 })
 

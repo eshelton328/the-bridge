@@ -13,8 +13,8 @@ let loaded: MathParts | undefined
 let loading: Promise<MathParts> | undefined
 
 const load = (): Promise<MathParts> => {
-  loading ??= import('./mathPlugins.ts').then(({ mathPlugins }) => {
-    loaded = { plugins: [...mathPlugins], escape: (text) => text }
+  loading ??= import('./mathPlugins.ts').then(({ mathPlugins, escapeLoneDollars }) => {
+    loaded = { plugins: [...mathPlugins], escape: escapeLoneDollars }
     return loaded
   })
   return loading
