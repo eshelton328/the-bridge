@@ -37,6 +37,7 @@ const logMessages = [
   'chat restarted',
   'artifacts store failed',
   'inbox read failed',
+  'files read failed',
 ] as const
 export type LogMessage = (typeof logMessages)[number]
 const listed: ReadonlySet<unknown> = new Set(logMessages)

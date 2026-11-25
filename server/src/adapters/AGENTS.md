@@ -420,4 +420,8 @@ client of a socket or a file sits beside them.
 - A herdr reply that the contract cannot hold is `badReply`, never a
   throw; a status herdr adds later is the chat's `unknown`, logged once
   (`herdrAgents.test.ts`, audit S-2 and S-3).
-- `diskFiles.ts` reads only a tracked file whose real path stays in its root and that lstat finds regular, up to the cap (`fileStoreContract.ts`).
+- `diskFiles.ts` serves the brain root only. It reads a tracked file
+  (and a tracked symlink's tracked target) whose real path stays in the
+  root, opened with no follow and no block, when the open file's stat is
+  a regular file, up to the cap. Git gets only PATH, HOME and LANG of the
+  server's environment (`fileStoreContract.ts`, `diskFiles.test.ts`).

@@ -8,6 +8,7 @@ import { type AppEnv, errorJson, internalMessage, isPlainErrorKind } from './err
 import type { Logger } from './logger.ts'
 import { createRateLimit } from './rateLimit.ts'
 import { artifactsRoutes } from './routes/artifacts.ts'
+import { filesRoutes } from './routes/files.ts'
 import { inboxRoutes } from './routes/inbox.ts'
 import { chatsRoutes } from './routes/chats.ts'
 import { sidesRoutes } from './routes/sides.ts'
@@ -19,6 +20,7 @@ import { uploadsRoutes } from './routes/uploads.ts'
 import { workspacesRoutes } from './routes/workspaces.ts'
 import type { AgentPort } from './services/agentPort.ts'
 import { type Artifacts, createArtifacts } from './services/artifacts.ts'
+import { createFiles, type Files } from './services/files.ts'
 import { createInbox, type Inbox } from './services/inbox.ts'
 import { createLiveEvents, type InboxWatch } from './services/liveEvents.ts'
 import { createPushSeen, type PushSeen, type PushStore } from './services/push.ts'
@@ -43,6 +45,8 @@ export type AppDeps = {
   readonly inbox?: Inbox
   /** Watches the brain's inbox folders while a client of `/api/events` is open; main.ts gives the disk watch. */
   readonly watchInbox?: InboxWatch
+  /** The files a message can link to; with none, each files route answers 500. main.ts gives git's index of the brain. */
+  readonly files?: Files
 }
 
 /** The store of an app with none: each call fails, so an upload answers 500 and is logged. */
@@ -80,6 +84,12 @@ const noInbox = (agents: AgentPort) =>
     },
   })
 
+/** The files of an app with none: its store fails each call. */
+const noFiles = createFiles({
+  list: () => Promise.resolve(err({ reason: 'failed', code: 'no-store' })),
+  read: () => Promise.resolve(err({ reason: 'failed', code: 'no-store' })),
+})
+
 /** The push store of an app with none: each call fails. */
 const noPush: PushStore = {
   keys: () => Promise.resolve(err({ reason: 'failed', code: 'no-store' })),
@@ -99,6 +109,7 @@ export function createApp({
   artifacts = noArtifacts(agents),
   inbox = noInbox(agents),
   watchInbox,
+  files = noFiles,
 }: AppDeps) {
   const live = createLiveEvents(agents, watchInbox)
   return (
@@ -136,6 +147,7 @@ export function createApp({
       .route('/api/push', pushRoutes(push, seen, log, pushChanged))
       .route('/api/artifacts', artifactsRoutes(artifacts, agents, log))
       .route('/api/inbox', inboxRoutes(inbox, log, live.inboxChanged))
+      .route('/api/files', filesRoutes(files, log))
       .route('/api/client-errors', clientErrorsRoutes(log, createRateLimit(60, 60_000)))
       .notFound((c) => errorJson(c, 'not-found', { path: c.req.path, message: 'no route has this path' }))
       // A throw that no route caught: the log gets the error and its causes, the client the request ID.

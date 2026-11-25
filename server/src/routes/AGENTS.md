@@ -200,3 +200,4 @@ Thin Hono sub-apps, one file for each area, named after the area
 - The JSON checks of each POST route are in `jsonBody.ts`.
 - A route takes its services or ports as function arguments; it never
   imports an adapter.
+- `GET /api/files?root=` and `GET /api/files/:file/text?root=`: an unknown, untracked or unreadable file is the same 404; binary is 415, over `maxFileText` 413; a log keeps the root and errno code only (`files.test.ts`).

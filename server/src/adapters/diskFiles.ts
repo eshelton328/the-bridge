@@ -13,6 +13,8 @@ import type { FileStore, FileStoreError } from '../services/fileStore.ts'
 export type DiskFilesOptions = {
   /** The brain folder, a git repository. */
   readonly brainDir: string
+  /** The server's environment; git gets only `gitEnv` of it. */
+  readonly env: Readonly<Record<string, string | undefined>>
 }
 
 const codeOf = (thrown: unknown): string | undefined =>
@@ -23,8 +25,22 @@ const codeOf = (thrown: unknown): string | undefined =>
 /** Paths that are never listed or read in the brain. */
 const hidden = (path: string) => path === '_local' || path.startsWith('_local/')
 
+/** PATH, HOME and LANG only, so no GIT_DIR, GIT_INDEX_FILE or GIT_CONFIG_* sends git to another repository. */
+export function gitEnv(env: Readonly<Record<string, string | undefined>>): Record<string, string> {
+  const kept: Record<string, string> = {}
+  for (const key of ['PATH', 'HOME', 'LANG']) {
+    const value = env[key]
+    if (value !== undefined) kept[key] = value
+  }
+  return kept
+}
+
 /** The NUL-separated paths that `git ls-files -z -- <pathspec>` prints in `dir`. */
-function gitFiles(dir: string, pathspec: readonly string[]): Promise<Result<string[], FileStoreError>> {
+function gitFiles(
+  dir: string,
+  env: Record<string, string>,
+  pathspec: readonly string[],
+): Promise<Result<string[], FileStoreError>> {
   return new Promise((resolve) => {
     // execFile throws, not calls back, for an argument it cannot pass, such as one with a NUL.
     try {
@@ -32,7 +48,7 @@ function gitFiles(dir: string, pathspec: readonly string[]): Promise<Result<stri
       execFile(
         'git',
         args,
-        { cwd: dir, timeout: 5_000, maxBuffer: 64 * 1024 ** 2, encoding: 'utf8' },
+        { cwd: dir, env, timeout: 5_000, maxBuffer: 64 * 1024 ** 2, encoding: 'utf8' },
         (error, stdout) => {
           resolve(
             error === null
@@ -51,18 +67,19 @@ function gitFiles(dir: string, pathspec: readonly string[]): Promise<Result<stri
 const badPath = (path: string) =>
   hidden(path) || path.includes('\0') || path.split('/').some((part) => part === '' || part === '.' || part === '..')
 
-export function createDiskFiles({ brainDir }: DiskFilesOptions): FileStore {
+export function createDiskFiles({ brainDir, env: serverEnv }: DiskFilesOptions): FileStore {
+  const env = gitEnv(serverEnv)
   return {
     // Only the brain for now: a chat root gets its git repository in a later PR.
     async list(root) {
       if (root !== 'brain') return ok([])
-      const listed = await gitFiles(brainDir, [])
+      const listed = await gitFiles(brainDir, env, [])
       return listed.ok ? ok(listed.value.filter((p) => !hidden(p))) : listed
     },
     async read(root, path, max) {
       if (root !== 'brain' || badPath(path)) return ok('notFound')
       const dir = brainDir
-      const tracked = await gitFiles(dir, [path])
+      const tracked = await gitFiles(dir, env, [path])
       if (!tracked.ok) return tracked
       if (!tracked.value.includes(path)) return ok('notFound')
       try {
@@ -71,7 +88,7 @@ export function createDiskFiles({ brainDir }: DiskFilesOptions): FileStore {
         if (!real.startsWith(base + sep) || hidden(target)) return ok('notFound')
         // A tracked symlink can point at an untracked file in the root, such as `.env`: the target must be tracked too.
         if (target !== path) {
-          const targetTracked = await gitFiles(dir, [target])
+          const targetTracked = await gitFiles(dir, env, [target])
           if (!targetTracked.ok) return targetTracked
           if (!targetTracked.value.includes(target)) return ok('notFound')
         }
@@ -90,7 +107,7 @@ export function createDiskFiles({ brainDir }: DiskFilesOptions): FileStore {
         }
       } catch (thrown) {
         const code = codeOf(thrown)
-        return code === 'ENOENT' || code === 'ENOTDIR' || code === 'ELOOP'
+        return ['ENOENT', 'ENOTDIR', 'ELOOP', 'EACCES', 'EPERM'].includes(String(code))
           ? ok('notFound')
           : err({ reason: 'failed', code })
       }
