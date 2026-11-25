@@ -56,14 +56,18 @@ tracing on or off, or change what a trace records.
 - `main.ts` starts it only when `import.meta.env.DEV` is true, and
   imports the trace modules dynamically, so a build has none of them.
 - The trace only reads: it changes no frame, navigation or AppShell
-  behaviour.
+  behaviour. The one exception is the R57 shift (`headerShift.ts`), off
+  unless the traces folder has `SHIFT_TOP`: it moves `#root` down by that
+  many px with `top`, live, to tell a system band from a page one.
 - A trace never records message text, a chat title, a name or a field's
   value (`keyboardChatTrace.test.ts`), and no search param but `state`
   and a short `kb-experiment` key (`keyboardTrace.test.ts`).
 - Both modes also start the chat header dump (`headerTrace.ts`, R57): the
   chat title's and its ancestors' layer and text styles, every 3 s and
-  after events, read in a timer, never inside an event. It records no
-  page text: of the title only its length (`headerTrace.test.ts`).
+  after events, read in a timer, never inside an event, with the page and
+  chat scroll, the orientation and a mark on the return from the
+  background. It records no page text: of the title only its length
+  (`headerTrace.test.ts`).
 - Under automation (`navigator.webdriver`) the switch starts no trace;
   the param still traces, marked `automated` (`keyboardTraceSwitch.test.ts`).
 - Trace fields are additive: add a field, never rename or drop one, and

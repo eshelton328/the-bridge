@@ -134,6 +134,76 @@ describe('chat header dump', () => {
     expect(dump.title.textLength).toBe(SECRET.length)
   })
 
+  it('reads the page scroll, the chat scroll root, the orientation and the top of #root', () => {
+    const root = document.createElement('div')
+    root.id = 'root'
+    root.style.cssText = 'position:fixed;inset:0;top:40px'
+    document.body.append(root)
+    onTestFinished(() => {
+      root.remove()
+    })
+    const { host, title, frame } = mountChat()
+    root.append(host)
+    // No scroll root yet: null.
+    expect(readHeaderDump(title, 'tick').scrollRoot).toBeNull()
+    const body = document.createElement('div')
+    body.className = 'scroll-frame__body'
+    body.style.cssText = 'height:100px;overflow:auto'
+    body.innerHTML = '<div style="height:400px"></div>'
+    frame.append(body)
+    body.scrollTop = 120
+    const dump = readHeaderDump(title, 'tick')
+    expect(dump.scrollY).toBe(window.scrollY)
+    expect(dump.scrollRoot).toEqual({ scrollTop: 120, scrollHeight: 400, clientHeight: 100 })
+    expect(dump.orientation).toBe(screen.orientation.type)
+    expect(dump.rootTop).toBe(40)
+    // The shift reads #root's own top: 40 here, 0 with none.
+    expect(dump.shiftTop).toBe(40)
+    expect(dump.launch).toBe(false)
+    const launch = document.createElement('div')
+    launch.id = 'launch'
+    document.body.append(launch)
+    expect(readHeaderDump(title, 'tick').launch).toBe(true)
+    launch.remove()
+    expect(dump.back).toBeNull()
+    root.style.removeProperty('top')
+    expect(readHeaderDump(title, 'tick').shiftTop).toBe(0)
+    root.id = ''
+    expect(readHeaderDump(title, 'tick').rootTop).toBeNull()
+    expect(readHeaderDump(title, 'tick').shiftTop).toBe(0)
+  })
+
+  it('marks the first dump after the page comes back from the background, with how long it was hidden', async () => {
+    mountChat()
+    const { last } = record(routeAt('/workspaces').route)
+    await expect.poll(() => last()?.samples.length ?? 0).toBeGreaterThan(1)
+    let state: DocumentVisibilityState = 'hidden'
+    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => state })
+    onTestFinished(() => {
+      Reflect.deleteProperty(document, 'visibilityState')
+    })
+    document.dispatchEvent(new Event('visibilitychange'))
+    await new Promise((done) => setTimeout(done, 60))
+    state = 'visible'
+    document.dispatchEvent(new Event('visibilitychange'))
+    const marked = () => last()?.samples.filter((dump) => dump.back !== null) ?? []
+    await expect.poll(() => marked().length).toBe(1)
+    // The first dump after it, a tick or the event's own: `via` names the event.
+    expect(['tick', 'visibilitychange']).toContain(marked()[0]?.type)
+    expect(marked()[0]?.back?.via).toBe('visibilitychange')
+    expect(marked()[0]?.back?.hiddenMs).toBeGreaterThanOrEqual(50)
+    // Only the first dump after the return: the ticks after it are not marked.
+    await new Promise((done) => setTimeout(done, 120))
+    expect(marked().length).toBe(1)
+    // A page shown again from the back-forward cache is marked too; a first load's pageshow is not.
+    window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: false }))
+    await new Promise((done) => setTimeout(done, 60))
+    expect(marked().length).toBe(1)
+    window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }))
+    await expect.poll(() => marked().length).toBe(2)
+    expect(marked()[1]?.back).toEqual({ hiddenMs: null, via: 'pageshow' })
+  })
+
   it('records no text of the page: no title, id, label or class other than component parts', () => {
     const { title } = mountChat()
     const text = JSON.stringify(readHeaderDump(title, 'tick'))

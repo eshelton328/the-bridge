@@ -11,7 +11,7 @@
 import { execFileSync } from 'node:child_process'
 import { randomUUID } from 'node:crypto'
 import { existsSync, readFileSync, realpathSync, statSync } from 'node:fs'
-import { mkdir, rename, rm, stat, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { dirname, join, resolve } from 'node:path'
 
@@ -400,6 +400,50 @@ export function createEnabledHandler({
   return middleware(handle)
 }
 
+/** The R57 shift: the app asks it while it traces and moves itself down by `shiftTop` CSS px (headerShift.ts). */
+export const KEYBOARD_TRACE_SHIFT_PATH = '/__keyboard-trace/shift'
+/** The file in the traces folder that holds the shift: a whole number of CSS px from 0 to 200. */
+export const KEYBOARD_TRACE_SHIFT_FILE = 'SHIFT_TOP'
+/** A shift the file may hold: a whole number from 0 to 200, nothing else. */
+const SHIFT = /^(?:[0-9]|[1-9][0-9]|1[0-9][0-9]|200)$/
+
+/**
+ * The shift (screen review R57): `GET` answers `{ "shiftTop": n }`, the whole number in the traces folder's `SHIFT_TOP`
+ * while `ENABLED` is there too, else `{ "shiftTop": 0 }`, never cached. A missing, empty or odd file means 0. It
+ * takes no input.
+ */
+export function createShiftHandler({
+  traceDir = () => findTraceDir(),
+}: {
+  traceDir?: () => string | undefined
+} = {}): TraceHandler {
+  const shiftTop = async (): Promise<number> => {
+    const dir = traceDir()
+    if (dir === undefined) return 0
+    try {
+      if (!(await stat(join(dir, KEYBOARD_TRACE_SWITCH_FILE))).isFile()) return 0
+      const text = (await readFile(join(dir, KEYBOARD_TRACE_SHIFT_FILE), 'utf8')).trim()
+      return SHIFT.test(text) ? Number(text) : 0
+    } catch {
+      return 0
+    }
+  }
+  const handle = async (req: IncomingMessage, res: ServerResponse): Promise<void> => {
+    res.setHeader('cache-control', 'no-store')
+    if (req.method !== 'GET' && req.method !== 'HEAD') {
+      res.setHeader('allow', 'GET, HEAD')
+      send(res, 405, 'keyboard-trace/shift takes only GET')
+      return
+    }
+    const body = JSON.stringify({ shiftTop: await shiftTop() })
+    res.statusCode = 200
+    res.setHeader('content-type', 'application/json; charset=utf-8')
+    res.setHeader('x-content-type-options', 'nosniff')
+    res.end(req.method === 'HEAD' ? undefined : body)
+  }
+  return middleware(handle)
+}
+
 /** The structural part of Vite's dev server this plugin uses. */
 type DevServer = { middlewares: { use: (path: string, handler: TraceHandler) => unknown } }
 
@@ -425,9 +469,10 @@ export function keyboardTracePlugin(
       viteRoot = config.root
     },
     configureServer(server: DevServer) {
-      // The switch first: connect matches by prefix, so the trace endpoint
-      // would also take `/__keyboard-trace/enabled`.
+      // The switch and the shift first: connect matches by prefix, so the trace
+      // endpoint would also take `/__keyboard-trace/enabled` and `/shift`.
       server.middlewares.use(KEYBOARD_TRACE_ENABLED_PATH, createEnabledHandler({ traceDir }))
+      server.middlewares.use(KEYBOARD_TRACE_SHIFT_PATH, createShiftHandler({ traceDir }))
       server.middlewares.use(KEYBOARD_TRACE_PATH, createTraceHandler(handlerOptions))
     },
   }

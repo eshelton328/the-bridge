@@ -10,10 +10,11 @@
 // switch starts nothing, so a test run's traces never mix with the owner's;
 // the param still traces, and its header says `automated: true`. In both
 // modes it also starts the chat header dump (headerTrace.ts, screen review
-// R57). main.ts calls this only under `import.meta.env.DEV`, and the trace
+// R57) and the R57 shift (headerShift.ts). main.ts calls this only under `import.meta.env.DEV`, and the trace
 // modules are dynamic imports, so a build has none of them.
 import type { ChatTraceOptions, RouteSource } from './keyboardChatTrace.ts'
 import type { HeaderTraceOptions } from './headerTrace.ts'
+import type { ShiftOptions } from './headerShift.ts'
 import type { TraceOptions } from './keyboardTrace.ts'
 
 /** How the trace runs: `overlay` from the URL param, `quiet` from the switch, or `off`. */
@@ -34,6 +35,8 @@ export type SwitchOptions = {
   trace?: Omit<TraceOptions, 'overlay' | 'win'> & Pick<ChatTraceOptions, 'closeDelayMs'>
   /** Passed to the chat header dump; for tests. */
   header?: Omit<HeaderTraceOptions, 'win' | 'route'>
+  /** Passed to the R57 shift; for tests. */
+  shift?: Omit<ShiftOptions, 'win'>
 }
 
 /** Asks the switch; true only for a 200 with `{ "enabled": true }` within the timeout. */
@@ -84,17 +87,22 @@ async function startHeader(options: SwitchOptions, win: Window, route: RouteSour
   })
 }
 
-/** One stop for the keyboard trace and the header dump. */
-const both = (a: { stop: () => void }, b: { stop: () => void }) => ({
+/** One stop for the keyboard trace, the header dump and the shift. */
+const all = (...running: { stop: () => void }[]) => ({
   stop: () => {
-    a.stop()
-    b.stop()
+    for (const each of running) each.stop()
   },
 })
 
+/** The R57 shift (headerShift.ts): it asks the dev server's shift and moves `#root` down while it answers more than 0. */
+async function startShift(options: SwitchOptions, win: Window) {
+  const { startHeaderShift } = await import('./headerShift.ts')
+  return startHeaderShift({ ...options.shift, win })
+}
+
 /**
- * Starts the whole-page trace for the param, or the chat sessions for the switch, each with the chat header dump;
- * undefined when it is off. Returns the function that stops it.
+ * Starts the whole-page trace for the param, or the chat sessions for the switch, each with the chat header dump and
+ * the R57 shift; undefined when it is off. Returns the function that stops it.
  */
 export async function startKeyboardTraceIfOn(options: SwitchOptions = {}): Promise<{ stop: () => void } | undefined> {
   const mode = await keyboardTraceMode(options)
@@ -104,10 +112,14 @@ export async function startKeyboardTraceIfOn(options: SwitchOptions = {}): Promi
   const route = options.route ?? windowRoute(win)
   if (mode === 'overlay') {
     const { startKeyboardTrace } = await import('./keyboardTrace.ts')
-    return both(startKeyboardTrace({ ...trace, win, overlay: true }), await startHeader(options, win, route))
+    return all(
+      startKeyboardTrace({ ...trace, win, overlay: true }),
+      await startHeader(options, win, route),
+      await startShift(options, win),
+    )
   }
   const { startChatKeyboardTrace } = await import('./keyboardChatTrace.ts')
-  return both(
+  return all(
     startChatKeyboardTrace({
       ...trace,
       ...(closeDelayMs === undefined ? {} : { closeDelayMs }),
@@ -115,5 +127,6 @@ export async function startKeyboardTraceIfOn(options: SwitchOptions = {}): Promi
       route,
     }),
     await startHeader(options, win, route),
+    await startShift(options, win),
   )
 }

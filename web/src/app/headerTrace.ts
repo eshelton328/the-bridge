@@ -4,9 +4,10 @@
 //
 // While a chat is open on `/workspaces` (its header's title, the h2 of ChatHead, is in the AppShell detail) it records
 // one dump every 3 s and, at most one each 250 ms and never inside the event, after a scroll, a resize, a focus
-// change, a rotation, a visibility change and a `pageshow`. A dump has, for the title and each ancestor up to `html`, the computed styles that put an
-// element on its own layer or change how its text draws, its scroll offsets, its box and its animations; for the
-// title also its offset inside the header. One session per chat open, with its own `startedAt`, goes to the same
+// change, a rotation, a visibility change and a `pageshow`; the first dump after the page shows again is marked
+// `back`. A dump has, for the title and each ancestor up to `html`, the computed styles that put an element on its own
+// layer or change how its text draws, its scroll offsets, its box and its animations; for the title also its offset
+// inside the header; and the page's scroll, the chat's scroll root, the orientation and `#root`'s top. One session per chat open, with its own `startedAt`, goes to the same
 // endpoint as a keyboard trace (scripts/keyboardTracePlugin.ts) with `trace: 'header'`.
 //
 // A dump never holds text from the page: of the title only its length, and of each element its tag, its `data-figma`
@@ -103,6 +104,23 @@ export type HeaderDump = {
     textLength: number
   }
   chain: DumpElement[]
+  /** `window.scrollY`: 0 while `#root` is fixed, so anything else means the document scrolled. */
+  scrollY: number
+  /** The chat's scroll root, the ScrollFrame body beside the title's header: its scroll offset and sizes; null with none. */
+  scrollRoot: { scrollTop: number; scrollHeight: number; clientHeight: number } | null
+  /** `screen.orientation.type`, such as `portrait-primary`; null where the browser has none. */
+  orientation: string | null
+  /** `#root`'s top in the layout viewport: 0, or the R57 shift (headerShift.ts) while it is on. */
+  rootTop: number | null
+  /** The R57 shift in force (headerShift.ts): `#root`'s own `top` in CSS px, 0 while it is off. */
+  shiftTop: number
+  /** Whether index.html's launch screen, `#launch`, is still on the page (launchEnd.ts removes it after the mount). */
+  launch: boolean
+  /**
+   * Set on the first dump after the page comes back from the background (it was hidden, or a `pageshow` from the
+   * back-forward cache): how long it was hidden, in ms (null when unknown), and the event that showed it. Else null.
+   */
+  back: { hiddenMs: number | null; via: string } | null
   /** The Geist faces the document has: family, weight and load status. */
   fonts: { family: string; weight: string; status: string }[]
 }
@@ -170,6 +188,9 @@ export function readHeaderDump(title: Element, type: string, win: Window = windo
   const header = title.closest('header')
   const headerRect = header === null ? rect : rectOf(header)
   const vv = win.visualViewport
+  const frame = title.closest('.scroll-frame__root')
+  const body = frame === null ? null : frame.querySelector(':scope > .scroll-frame__body')
+  const root = win.document.getElementById('root')
   return {
     t: win.performance.now(),
     at: new Date().toISOString(),
@@ -188,6 +209,16 @@ export function readHeaderDump(title: Element, type: string, win: Window = windo
       textLength: title.textContent.length,
     },
     chain,
+    scrollY: win.scrollY,
+    scrollRoot:
+      body === null
+        ? null
+        : { scrollTop: body.scrollTop, scrollHeight: body.scrollHeight, clientHeight: body.clientHeight },
+    orientation: typeof win.screen.orientation === 'object' ? win.screen.orientation.type : null,
+    rootTop: root === null ? null : root.getBoundingClientRect().y,
+    shiftTop: root === null ? 0 : Number.parseFloat(root.style.top) || 0,
+    launch: win.document.getElementById('launch') !== null,
+    back: null,
     fonts: [...win.document.fonts]
       .filter((face) => face.family.replaceAll('"', '').startsWith('Geist'))
       .map((face) => ({ family: face.family.replaceAll('"', ''), weight: face.weight, status: face.status })),
@@ -233,7 +264,7 @@ const isChatPath = (pathname: string) => pathname === '/workspaces' || pathname 
 const postJson = (endpoint: string, body: string) =>
   fetch(endpoint, { method: 'POST', headers: { 'content-type': 'application/json' }, body })
 
-const EVENTS = ['resize', 'focusin', 'focusout', 'orientationchange', 'pageshow'] as const
+const EVENTS = ['resize', 'focusin', 'focusout', 'orientationchange'] as const
 
 /**
  * Watches the route; on `/workspaces` it checks each `everyMs` and on each event for an open chat, records one session
@@ -279,6 +310,9 @@ export function startHeaderTrace({
     session = undefined
     title = null
   }
+  // The return from the background: the next dump after the page shows again carries it.
+  let back: HeaderDump['back'] = null
+  let hiddenAt: number | null = null
   const dump = (type: string) => {
     const now = chatTitle(doc)
     // A different title element is a different chat open; an old session ends before the endpoint refuses it.
@@ -301,7 +335,8 @@ export function startHeaderTrace({
       }
       type = 'open'
     }
-    session.samples.push(readHeaderDump(now, type, win))
+    session.samples.push({ ...readHeaderDump(now, type, win), back })
+    back = null
     if (session.samples.length > cap) session.samples.shift()
   }
   // Events dump in a timer, never inside the event: a resize or a scroll is when AppShell moves its keyboard dock, and
@@ -325,13 +360,25 @@ export function startHeaderTrace({
     if (doc.visibilityState === 'hidden') {
       dump('visibilitychange')
       send()
-    } else later('visibilitychange')
+      hiddenAt = win.performance.now()
+    } else {
+      back = { hiddenMs: hiddenAt === null ? null : win.performance.now() - hiddenAt, via: 'visibilitychange' }
+      hiddenAt = null
+      later('visibilitychange')
+    }
+  }
+  const onPageShow = (event: Event) => {
+    // `persisted`: the page came back from the back-forward cache.
+    if (event instanceof PageTransitionEvent && event.persisted && back === null)
+      back = { hiddenMs: null, via: 'pageshow' }
+    later('pageshow')
   }
   const options = { capture: true, passive: true }
   let timer: number | undefined
   const listen = (on: boolean) => {
     const method = on ? 'addEventListener' : 'removeEventListener'
     for (const type of EVENTS) win[method](type, onEvent, options)
+    win[method]('pageshow', onPageShow, options)
     win[method]('scroll', onEvent, options)
     doc[method]('visibilitychange', onVisibility)
     win.visualViewport?.[method]('resize', onEvent, options)

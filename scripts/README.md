@@ -113,6 +113,16 @@ input and only checks whether that one file exists. The plugin adds it
 before the trace endpoint, as connect matches `/__keyboard-trace` as a
 prefix of it.
 
+`GET /__keyboard-trace/shift` is the R57 shift (screen review R57, a
+blurred band at the top of the owner's iPad app). It answers
+`{ "shiftTop": n }` with the whole number from 0 to 200 in the traces
+folder's file `SHIFT_TOP`, while `ENABLED` is there too, else
+`{ "shiftTop": 0 }` (no file, an empty or odd file, no `ENABLED`, no
+traces folder), with `Cache-Control: no-store`. It takes only `GET` and
+`HEAD`. The app asks it every 2 s while it traces and moves `#root` down
+by that many CSS px (`web/src/app/headerShift.ts`); write `40` to turn it
+on and delete the file to turn it off, with no reload.
+
 `pnpm keyboard:slide <trace.json>...` checks traces for a moved page: a
 sample with `scrollY`, `scrollTop`, `rootTop` or `vvOffsetTop` off 0 by
 more than 1 px, or an `innerHeight` under the one at the trace's start. It

@@ -189,7 +189,16 @@ imports it dynamically with the trace, so a build has none of it.
 - A dump has `t` (`performance.now()`), `at` (the wall clock, ISO, to
   match a screenshot's time), `type`, `devicePixelRatio`, `innerWidth`,
   `innerHeight`, `visibility`, `visualViewport` (`offsetTop`, `pageTop`,
-  `scale`, `width`, `height`), `title` (its unrounded box, its offset
+  `scale`, `width`, `height`), `scrollY`, `scrollRoot` (the
+  `scrollTop`, `scrollHeight` and `clientHeight` of the ScrollFrame body
+  beside the title's header, or null), `orientation`
+  (`screen.orientation.type`), `rootTop` (`#root`'s top: 0, or the shift
+  below), `shiftTop` (the shift in force: `#root`'s own `top`, 0 while
+  off), `launch` (whether `#launch`, the launch screen, is still on
+  the page), `back` (on the first dump after the page shows again from the
+  background: `hiddenMs`, null when unknown, and `via`,
+  `visibilitychange` or a `pageshow` from the back-forward cache; else
+  null), `title` (its unrounded box, its offset
   inside the header and `textLength`), `fonts` (each Geist face's
   family, weight and load status) and `chain`: the title and each
   ancestor up to `html`, each with its box, `scrollTop`, `scrollLeft`,
@@ -214,6 +223,20 @@ imports it dynamically with the trace, so a build has none of it.
   its newest snapshot and sends it when the POST ends. A chat open for
   12 hours starts a new session, as the endpoint refuses a `startedAt`
   more than a day old.
+
+### Shift
+
+The one part of the trace that changes the page (R57): `headerShift.ts`,
+started with the header dump and imported the same way, so a build has
+none of it. It asks the dev server's `GET /__keyboard-trace/shift`
+(`scripts/README.md`) at once and every 2 s, and sets `#root`'s `top` to
+the `shiftTop` it answers, so the whole app moves down with no reload. It
+sets `top` only, never a transform, which would give the app a layer of
+its own. An answer of 0, a failed or odd answer, and the trace's stop put
+`#root` back. The shift holds for as long as the answer stays, so
+`SHIFT_TOP` can stay in the folder for a set window, and each header dump
+in that window says the shift (`shiftTop`). It is off until the traces folder has both `ENABLED` and
+`SHIFT_TOP` (`headerShift.test.ts`, `keyboardTraceSwitch.test.ts`).
 
 ## Proxy focus
 

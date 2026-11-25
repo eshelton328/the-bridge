@@ -15,11 +15,13 @@ import { dirname, join } from 'node:path'
 import { after, test } from 'node:test'
 import {
   createEnabledHandler,
+  createShiftHandler,
   createTraceHandler,
   findTraceDir,
   KEYBOARD_TRACE_BUILD_DEFINE,
   KEYBOARD_TRACE_ENABLED_PATH,
   KEYBOARD_TRACE_PATH,
+  KEYBOARD_TRACE_SHIFT_PATH,
   keyboardTracePlugin,
   readTraceBuild,
   type TraceHandler,
@@ -63,8 +65,8 @@ void test('the plugin runs only on the dev server, never in a build', () => {
   assert.equal(plugin.apply, 'serve')
   const used: string[] = []
   plugin.configureServer({ middlewares: { use: (path) => used.push(path) } })
-  // The switch comes first, as connect matches the trace endpoint's path as a prefix.
-  assert.deepEqual(used, [KEYBOARD_TRACE_ENABLED_PATH, KEYBOARD_TRACE_PATH])
+  // The switch and the shift come first, as connect matches the trace endpoint's path as a prefix.
+  assert.deepEqual(used, [KEYBOARD_TRACE_ENABLED_PATH, KEYBOARD_TRACE_SHIFT_PATH, KEYBOARD_TRACE_PATH])
 })
 
 /** A repository root with the library's package.json at `version`, or none. */
@@ -130,6 +132,36 @@ void test('the switch answers enabled true while the traces folder has ENABLED, 
   assert.deepEqual(await ask(), { enabled: false })
 })
 
+void test('the shift answers SHIFT_TOP while ENABLED is there, else 0, never cached, and takes only GET', async () => {
+  const dir = tempDir()
+  const url = await serve(createShiftHandler({ traceDir: () => dir }))
+  const ask = async () => {
+    const res = await fetch(url)
+    assert.equal(res.status, 200)
+    assert.equal(res.headers.get('cache-control'), 'no-store')
+    const body: unknown = await res.json()
+    return body
+  }
+  assert.deepEqual(await ask(), { shiftTop: 0 })
+  writeFileSync(join(dir, 'SHIFT_TOP'), '40\n')
+  // No ENABLED: no shift.
+  assert.deepEqual(await ask(), { shiftTop: 0 })
+  writeFileSync(join(dir, 'ENABLED'), '')
+  assert.deepEqual(await ask(), { shiftTop: 40 })
+  for (const odd of ['', '-4', '40px', '201', '1e2', '04', 'x']) {
+    writeFileSync(join(dir, 'SHIFT_TOP'), odd)
+    assert.deepEqual(await ask(), { shiftTop: 0 }, odd)
+  }
+  writeFileSync(join(dir, 'SHIFT_TOP'), '200')
+  assert.deepEqual(await ask(), { shiftTop: 200 })
+  rmSync(join(dir, 'SHIFT_TOP'))
+  assert.deepEqual(await ask(), { shiftTop: 0 })
+  assert.equal((await post(url, trace())).status, 405)
+  const none = await serve(createShiftHandler({ traceDir: () => undefined }))
+  const body: unknown = await (await fetch(none)).json()
+  assert.deepEqual(body, { shiftTop: 0 })
+})
+
 void test('the switch is off with no traces folder, and takes only GET', async () => {
   const off = await serve(createEnabledHandler({ traceDir: () => undefined }))
   const res = await fetch(off)
@@ -168,6 +200,10 @@ void test('the dev server routes the switch to the switch and a POST to the trac
   const body: unknown = await res.json()
   assert.deepEqual(body, { enabled: true })
   assert.equal((await post(`${url}${KEYBOARD_TRACE_ENABLED_PATH}`, trace())).status, 405)
+  writeFileSync(join(dir, 'SHIFT_TOP'), '40')
+  const shift: unknown = await (await fetch(`${url}${KEYBOARD_TRACE_SHIFT_PATH}`)).json()
+  assert.deepEqual(shift, { shiftTop: 40 })
+  rmSync(join(dir, 'SHIFT_TOP'))
   // The keyboard experiment switch is gone (the proxy focus is the app's own path): its old path is the trace
   // endpoint's, which takes only POST, and a file EXPERIMENT is not read.
   writeFileSync(join(dir, 'EXPERIMENT'), 'proxy')
