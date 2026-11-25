@@ -87,18 +87,24 @@ export function DialogCard({ view, onAnswer, onRetry }: DialogCardProps) {
   // The chosen row, kept for this dialog only. Each change of the dialog's ID clears it, also back to an ID shown
   // before (A, B, then A again), so an answer always needs a fresh choice.
   const [chosen, setChosen] = useState<{ id: string; n: number } | undefined>(undefined)
+  // The option the last Send answer sent: Retry sends it again, so it shows only while that row is the chosen one.
+  const [sentN, setSentN] = useState<number | undefined>(undefined)
   const [shownId, setShownId] = useState(dialog.id)
   if (shownId !== dialog.id) {
     setShownId(dialog.id)
     setChosen(undefined)
+    setSentN(undefined)
   }
   const off = phase === 'sending' || phase === 'sent' || phase === 'changed'
   const options = dialog.options ?? []
   const pick = chosen?.id === dialog.id ? chosen.n : undefined
   const { title, question } = heading(dialog)
   const send = () => {
-    if (!off && pick !== undefined) onAnswer(pick)
+    if (off || pick === undefined) return
+    setSentN(pick)
+    onAnswer(pick)
   }
+  const retry = view.retry === true && pick !== undefined && pick === sentN
   const sendLabel = phase === 'sending' ? dialogText.sending : phase === 'sent' ? dialogText.sent : dialogText.send
   return (
     <div data-pane-dialog="" role="group" aria-labelledby={statusId} aria-busy={phase === 'sending'}>
@@ -154,7 +160,7 @@ export function DialogCard({ view, onAnswer, onRetry }: DialogCardProps) {
             </>
           )}
           {phase === 'failed' && view.line !== undefined ? (
-            <TranscriptProblem text={view.line} onRetry={view.retry === true ? onRetry : undefined} />
+            <TranscriptProblem text={view.line} onRetry={retry ? onRetry : undefined} />
           ) : null}
         </Stack>
       </Panel>

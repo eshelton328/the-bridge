@@ -496,6 +496,27 @@ describe("a chat's terminal dialog (R69)", () => {
     ])
   })
 
+  it('offers Retry only while the failed answer is the chosen row, and Send answer sends a new choice', async () => {
+    const { workspaces } = withChats()
+    workspaces.showDialog(plan, sample)
+    await openChat(desktop)
+    workspaces.answerDialogs(() => errorAnswer({ kind: 'herdr-unavailable', message: 'down', requestId: 'r-2' }, 503))
+    await answer('Chat about this')
+    const retry = card().getByRole('button', { name: 'Retry', exact: true })
+    await expect.element(retry).toBeVisible()
+    // Another row chosen: Retry would send the old answer, so it goes; Send answer sends the row shown.
+    await userEvent.click(choice('Send original'))
+    await expect.element(retry).not.toBeInTheDocument()
+    workspaces.answerDialogs(undefined)
+    await userEvent.click(sendButton())
+    await expect
+      .poll(() => workspaces.dialogAnswers.map((a) => a.body))
+      .toEqual([
+        { id: sample.id, n: 4 },
+        { id: sample.id, n: 2 },
+      ])
+  })
+
   for (const device of devices)
     it(`shows a dialog with no sure options read-only, with "Answer in the terminal", on ${device.name}`, async () => {
       const { workspaces } = withChats()

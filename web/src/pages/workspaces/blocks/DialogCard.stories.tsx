@@ -1,7 +1,7 @@
 import type { PaneDialog } from '@bridge/contract'
 import { textSizeClass, type TextSize } from '@eshelton328/component-library-1701'
 import type { Decorator, Meta, StoryObj } from '@storybook/react-vite'
-import { useLayoutEffect, type ReactNode } from 'react'
+import { type ComponentProps, type ReactNode, useLayoutEffect, useState } from 'react'
 import { expect, fn } from 'storybook/test'
 import { css } from '../../../../styled-system/css/index.js'
 import { DialogCard } from './DialogCard.tsx'
@@ -230,13 +230,35 @@ export const Changed: Story = {
 
 // The answer missed: a line with Retry.
 export const Failed: Story = {
-  args: { view: { dialog, phase: 'failed', line: 'Not sent — herdr-unavailable', retry: true } },
+  render: (args) => <FailsOnSend {...args} />,
   play: async ({ canvas, args, userEvent }) => {
+    await userEvent.click(canvas.getByRole('radio', { name: 'Send original' }))
+    await userEvent.click(canvas.getByRole('button', { name: 'Send answer' }))
+    await expect(canvas.getByText('Not sent — herdr-unavailable')).toBeVisible()
+    await expect(canvas.getByRole('radio', { name: 'Send original' })).toBeChecked()
     await userEvent.click(canvas.getByRole('button', { name: 'Retry' }))
     await expect(args.onRetry).toHaveBeenCalledOnce()
+    // Another row chosen: Retry would send the old answer, so it goes.
+    await userEvent.click(canvas.getByRole('radio', { name: 'Send structured' }))
+    await expect(canvas.queryByRole('button', { name: 'Retry' })).toBeNull()
   },
 }
 export const FailedLight: Story = { ...Failed, globals: { mode: 'light' } }
+
+/** The card whose Send answer misses at once: its view goes to `failed`, with Retry, as a 503 leaves it. */
+function FailsOnSend(props: ComponentProps<typeof DialogCard>) {
+  const [view, setView] = useState(props.view)
+  return (
+    <DialogCard
+      {...props}
+      view={view}
+      onAnswer={(n) => {
+        props.onAnswer(n)
+        setView({ dialog: view.dialog, phase: 'failed', line: 'Not sent — herdr-unavailable', retry: true })
+      }}
+    />
+  )
+}
 
 // No sure options: the read text, read-only, with "Answer in the terminal".
 export const ReadOnly: Story = {
