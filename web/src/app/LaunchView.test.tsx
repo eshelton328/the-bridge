@@ -20,7 +20,12 @@ const bare = (dark: boolean) =>
   indexHtml
     .replace(/<script[\s\S]*?<\/script>/g, '')
     .replace(/<html lang="en" class="([^"]*)"/, (tag, classes: string) =>
-      dark ? tag : `<html lang="en" class="${classes.split(' ').filter((name) => name !== 'dark').join(' ')}"`,
+      dark
+        ? tag
+        : `<html lang="en" class="${classes
+            .split(' ')
+            .filter((name) => name !== 'dark')
+            .join(' ')}"`,
     )
 
 const frames: HTMLIFrameElement[] = []
