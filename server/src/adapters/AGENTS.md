@@ -420,3 +420,4 @@ client of a socket or a file sits beside them.
 - A herdr reply that the contract cannot hold is `badReply`, never a
   throw; a status herdr adds later is the chat's `unknown`, logged once
   (`herdrAgents.test.ts`, audit S-2 and S-3).
+- `diskFiles.ts` reads only a tracked file whose real path stays in its root and that lstat finds regular, up to the cap (`fileStoreContract.ts`).

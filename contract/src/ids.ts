@@ -83,6 +83,13 @@ export const ToolkitFileId = z
   .brand<'ToolkitFileId'>()
 export type ToolkitFileId = z.infer<typeof ToolkitFileId>
 
+/** A file that a chat message can link to: 16 hex characters of a sha256 that the server makes of its root and path. */
+export const FileId = z
+  .string()
+  .regex(/^[0-9a-f]{16}$/)
+  .brand<'FileId'>()
+export type FileId = z.infer<typeof FileId>
+
 /** The machine ID and the local part of a workspace, chat, pane or tab ID. */
 export function splitId(id: WorkspaceId | ChatId | PaneId | TabId): { machine: MachineId; local: string } {
   const at = id.indexOf('/')

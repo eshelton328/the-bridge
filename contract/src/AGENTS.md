@@ -150,3 +150,4 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
   and the number, never the text (`paneDialogs.test.ts`).
 - A `ClientErrorReport` holds only its listed fields (a strict object),
   so a report carries no page text or app state (`clientErrors.test.ts`).
+- The file links (`files.ts`): a `FileRoot` index of git's tracked files as `RootFilePath`s, each named by its `FileId`; file text only in `FileTextResponse` (`files.test.ts`).

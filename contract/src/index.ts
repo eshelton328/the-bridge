@@ -1,6 +1,7 @@
 // The package entry. Name each export; no `export *`.
 export {
   ArtifactId,
+  FileId,
   InboxId,
   LocalIdPart,
   ChatId,
@@ -14,6 +15,16 @@ export {
   UploadId,
   WorkspaceId,
 } from './ids.ts'
+export {
+  FileEntry,
+  FileRoot,
+  FilesQuery,
+  FilesResponse,
+  FileTextResponse,
+  maxFileText,
+  maxIndexFiles,
+  RootFilePath,
+} from './files.ts'
 export {
   AddArtifactRequest,
   AddArtifactResponse,
