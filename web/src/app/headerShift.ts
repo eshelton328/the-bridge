@@ -45,8 +45,17 @@ export function startHeaderShift({
     else root.style.setProperty('top', `${String(shift)}px`)
     applied = shift
   }
+  // Asks can overlap on a slow link: an answer older than one already applied is dropped, so an old 40 never moves
+  // the app again after a newer 0.
+  let asked = 0
+  let newest = 0
   const ask = () => {
-    void readShift(fetchShift).then(apply)
+    const n = ++asked
+    void readShift(fetchShift).then((shift) => {
+      if (n < newest) return
+      newest = n
+      apply(shift)
+    })
   }
   ask()
   const timer = win.setInterval(ask, everyMs)

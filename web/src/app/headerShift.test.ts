@@ -55,6 +55,26 @@ describe('R57 shift', () => {
     expect(set).toHaveBeenCalledTimes(1)
   })
 
+  it('drops an answer older than one already applied, so a slow 40 never comes after a newer 0', async () => {
+    const root = mountRoot()
+    const answers: ((body: unknown) => void)[] = []
+    const { fetchShift } = run(
+      () =>
+        new Promise<Response>((done) => {
+          answers.push((body) => {
+            void json(body).then(done)
+          })
+        }),
+    )
+    await expect.poll(() => fetchShift.mock.calls.length).toBeGreaterThan(1)
+    // The second ask answers 0 first; the first ask's 40 arrives after it.
+    answers[1]?.({ shiftTop: 0 })
+    await new Promise((done) => setTimeout(done, 10))
+    answers[0]?.({ shiftTop: 40 })
+    await new Promise((done) => setTimeout(done, 30))
+    expect(root.style.top).toBe('')
+  })
+
   it('takes a failed, odd or out-of-range answer as 0', async () => {
     const root = mountRoot()
     const answers: (() => Promise<Response>)[] = [
