@@ -67,7 +67,9 @@ export function withShownTabs(data: WorkspacesData, ui: WorkspacesUi): { data: W
       ...(isShown ? { focusedPane: focus } : {}),
     }
   }
-  return liveTabs === data.liveTabs && next === ui ? { data, ui } : { data: { ...data, liveTabs }, ui: next }
+  // A ui change alone (a tab drawn around an opened chat) keeps the data object, so nothing that reads only the data
+  // renders again.
+  return { data: liveTabs === data.liveTabs ? data : { ...data, liveTabs }, ui: next }
 }
 
 /**

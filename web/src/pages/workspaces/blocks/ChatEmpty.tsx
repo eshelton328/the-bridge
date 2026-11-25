@@ -11,7 +11,9 @@
 // in it jumped half that far. So the group stays where it is: a first grid row takes the dock, as far as the room
 // under the group goes (`minmax(0, dock)` grows only into the free space), and the group centres in the rest. With
 // room, its centre is the keyboard-closed one; with less, it sits on the composer, and with too little, the parts hide
-// as before. It reads only the frame's public variable: no listener and no measure.
+// as before. It reads only the frame's public variable: no listener and no measure. The group carries
+// `data-keyboard-glide`, so AppShell moves it between those places on the keyboard's curve (R73 part 2, library
+// beta.128) and it never jumps; the page sets no transform on it.
 import { KindMark } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { AgentKind } from '../types.ts'
@@ -64,7 +66,7 @@ export type ChatEmptyProps = {
 export function ChatEmpty({ kind, title: name, text }: ChatEmptyProps) {
   return (
     <div className={box} data-chat-empty="">
-      <div className={group}>
+      <div className={group} data-keyboard-glide="">
         <div className={part}>
           <span className={tile} data-chat-empty-part="mark">
             <KindMark kind={kind} size="20" />
