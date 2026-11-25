@@ -260,11 +260,22 @@ describe('the Workspaces list read back from the background', () => {
       // The route loader's reads answer; once the page draws the list, every read, the event watch's first one too
       // (it starts after the page drew), gets a 502 from the proxy of a server that went down (R43b, the-bridge #476).
       const drawn = () => document.body.textContent.includes('live work')
-      server.answer(() => (drawn() ? new Response('Bad Gateway', { status: 502 }) : answerWith(list)()))
+      // The 502 answers and the time of the first: a slow click can return after the watch's reads, so the case counts
+      // them as they come, not from a read count taken after the click (the-bridge #496 verify, 11375 ms).
+      let missed = 0
+      let firstMiss: number | undefined
+      server.answer(() => {
+        if (!drawn()) return answerWith(list)()
+        missed += 1
+        firstMiss ??= performance.now()
+        return new Response('Bad Gateway', { status: 502 })
+      })
       await tapWorkspaces(device.size)
-      const reads = server.reads()
-      // The watch's read and the app client's two more tries of the 5xx.
-      await renderedUntil(() => server.reads() >= reads + 3)
+      // The watch's read and the app client's two more tries of the 5xx, before the grace's own reload: the wait ends
+      // at the grace, so a page that reads the list only on that reload fails here.
+      await renderedUntil(() => missed >= 3 || (firstMiss !== undefined && performance.now() - firstMiss >= graceMs))
+      expect(missed).toBeGreaterThanOrEqual(3)
+      expect(performance.now() - (firstMiss ?? 0)).toBeLessThan(graceMs)
       await quiet()
       expect(notice().query()).toBeNull()
       await expect.element(page.getByText('live work').first()).toBeVisible()
