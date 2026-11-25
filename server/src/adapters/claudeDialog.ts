@@ -50,14 +50,15 @@ export function dialogOf(screen: string): ScreenDialog | null {
   const id = createHash('sha256').update(text).digest('hex').slice(0, 32)
   const raw = text.slice(0, maxDialogChars)
   if (mark < 0) return { dialog: { id, raw }, picked: undefined }
-  const items: { n: number; label: string; picked: boolean }[] = []
+  const items: { n: number; label: string; detail: string[]; picked: boolean }[] = []
   const head: string[] = []
   for (const line of part) {
     const found = option.exec(line)
     const last = items.at(-1)
-    if (found !== null) items.push({ n: Number(found[2]), label: found[3] ?? '', picked: found[1] !== undefined })
+    if (found !== null)
+      items.push({ n: Number(found[2]), label: found[3] ?? '', detail: [], picked: found[1] !== undefined })
     else if (last === undefined) head.push(line.trim())
-    else if (/^ {5,}\S/.test(line) && !line.trim().startsWith('Submit')) last.label += ` — ${line.trim()}`
+    else if (/^ {5,}\S/.test(line) && !line.trim().startsWith('Submit')) last.detail.push(line.trim())
     else if (line.trim() === 'Submit') last.label = '[ ]'
   }
   const [title = '', ...body] = trimmed(head)
@@ -73,8 +74,14 @@ export function dialogOf(screen: string): ScreenDialog | null {
     items.every((item, at) => item.n === at + 1 && !checkbox.test(item.label)) &&
     !title.includes('✔ Submit')
   const options: DialogOption[] = items
-    .filter((item) => !typed.test(item.label.split(' — ')[0] ?? ''))
-    .map((item) => ({ n: item.n, label: item.label.slice(0, 500) }))
+    .filter((item) => !typed.test(item.label))
+    .map((item) => {
+      // A description that only repeats its label ("Red" under "1. Red") adds nothing to the option; one that wraps
+      // keeps every line, even one that equals the label.
+      const said = item.detail.join(' ')
+      const detail = said.toLowerCase() === item.label.trim().toLowerCase() ? '' : said.slice(0, 500)
+      return { n: item.n, label: item.label.slice(0, 500), ...(detail === '' ? {} : { detail }) }
+    })
   return single && options.length > 0
     ? { dialog: { ...shown, options }, picked: picked[0]?.n }
     : { dialog: shown, picked: undefined }

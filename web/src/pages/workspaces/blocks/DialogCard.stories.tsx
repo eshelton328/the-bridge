@@ -43,6 +43,26 @@ export const Options: Story = {
   },
 }
 
+// An option with a description: the description shows under its label.
+export const Details: Story = {
+  args: {
+    view: {
+      dialog: {
+        ...dialog,
+        options: [
+          { n: 1, label: 'Red', detail: 'Use red for marker-5150.' },
+          { n: 2, label: 'Green' },
+        ],
+      },
+      phase: 'ready',
+    },
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('button', { name: /^1 Red/ })).toHaveTextContent('Use red for marker-5150.')
+    await expect(canvas.getByText('Use red for marker-5150.')).toBeVisible()
+  },
+}
+
 // The answer goes: every option is off.
 export const Sending: Story = {
   args: { view: { dialog, phase: 'sending' } },

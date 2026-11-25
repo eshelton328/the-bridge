@@ -53,6 +53,9 @@ const option = css({
   textAlign: 'start',
   '@media (pointer: coarse)': { minH: 'control.xl' },
 })
+// An option's text: its number and label, and its description (`detail`) on a muted line under them.
+const optionText = css({ display: 'flex', flexDir: 'column', alignItems: 'flex-start' })
+const detailText = css({ color: 'fg.muted' })
 // The line under the options: the answers that are not a tap.
 const otherLine = css({ m: '0', textStyle: 'small', color: 'fg.muted' })
 
@@ -92,7 +95,10 @@ export function DialogCard({ view, onAnswer, onRetry }: DialogCardProps) {
                     if (!off) onAnswer(o.n)
                   }}
                 >
-                  {`${String(o.n)} ${o.label}`}
+                  <span className={optionText}>
+                    <span>{`${String(o.n)} ${o.label}`}</span>
+                    {o.detail === undefined ? null : <span className={detailText}>{o.detail}</span>}
+                  </span>
                 </Button>
               ))}
             </Inline>

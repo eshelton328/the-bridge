@@ -380,7 +380,8 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   `AnswerDialogRequest` `{ id, n }` once and turns every option off until
   the next dialog. The server lists only the options a tap answers (no
   free-text ones), so the options keep `n` as given, a long label wraps,
-  and a muted line "Other answers: in the terminal" shows under them.
+  an option's `detail` (its description) shows in a muted line under its
+  label in the button, and a muted line "Other answers: in the terminal" shows under them.
   A 409 `dialogChanged` shows "The terminal changed — showing the new
   state" until the next read; another 409 state "Not sent
   — <state>" with no Retry; any other miss "Not sent — <kind>" with Retry

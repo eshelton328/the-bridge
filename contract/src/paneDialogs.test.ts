@@ -18,6 +18,14 @@ describe('PaneDialog', () => {
     expect(PaneDialog.parse(dialog)).toEqual(dialog)
   })
 
+  it('takes an option detail of 1 to 500 characters and refuses an empty or longer one', () => {
+    const withDetail = (detail: string) => ({ id, raw, options: [{ n: 1, label: 'Send original', detail }] })
+    expect(PaneDialog.safeParse(withDetail('the notes as typed')).success).toBe(true)
+    expect(PaneDialog.safeParse(withDetail('x'.repeat(500))).success).toBe(true)
+    expect(PaneDialog.safeParse(withDetail('')).success).toBe(false)
+    expect(PaneDialog.safeParse(withDetail('x'.repeat(501))).success).toBe(false)
+  })
+
   it('takes a dialog with its text only, for a shape the server does not read for sure', () => {
     expect(PaneDialog.parse({ id, raw })).toEqual({ id, raw })
   })
