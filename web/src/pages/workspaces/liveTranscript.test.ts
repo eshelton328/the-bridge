@@ -312,6 +312,29 @@ describe('watchTranscript', () => {
     expect(getReports()).toEqual([])
   })
 
+  it("reports the stream's error event at once when the read then gets no answer", async () => {
+    const server = fakeTranscriptServer()
+    server.set(chat, [user('u1', 'go')])
+    // The read waits until the test ends it with no answer.
+    let endRead: (() => void) | undefined
+    server.answerReads(
+      () =>
+        new Promise<Response>((_, reject) => {
+          endRead = () => {
+            reject(new TypeError('Load failed'))
+          }
+        }),
+    )
+    watch(server)
+    await expect.poll(() => endRead).toBeDefined()
+    server.fail(chat, 'internal')
+    endRead?.()
+    await expect.poll(() => view()?.problem).toBe(transcriptText.dropped)
+    expect(getReports().map((r) => r.error.message)).toEqual([
+      'A chat transcript stream missed: ended internal (chat mac-mini/c1)',
+    ])
+  })
+
   it('reads again on the backoff when the read after a 404 stream gets a 5xx', async () => {
     const server = fakeTranscriptServer()
     server.set(chat, [user('u1', 'go')])

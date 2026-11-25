@@ -553,7 +553,18 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
     } else connection.abort()
     await streamed
     if (closed()) return 'wait'
-    if (answered === 'retry' && !seen.gone && lastMiss !== undefined) return 'again'
+    if (answered === 'retry' && !seen.gone) {
+      // The server's own `error` event, or an event the page cannot read, is an answer: its line shows at once, even
+      // when the read then got none (#503 P2).
+      if (seen.errored || seen.unreadable) {
+        const miss: TranscriptMiss = seen.errored
+          ? { part: 'stream', kind: 'ended', errorKind: seen.serverKind }
+          : { part: 'stream', kind: 'bad-event' }
+        fail(transcriptText.dropped, miss)
+        return again(miss)
+      }
+      return 'again'
+    }
     if (seen.gone) {
       // No line, no report and no connecting again: a line left by an earlier drop goes too, as nothing reconnects.
       update((view) => ({ ...view, problem: undefined }))
