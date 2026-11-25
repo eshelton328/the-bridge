@@ -6,9 +6,13 @@ brain's `toolkit/`, read-only. Its Figma frames are `D*` (desktop),
 
 ## Rules
 
-- The page has no store. `ToolkitPage.tsx` keeps the owner's changes to
-  the state's `ui` in React state until another state loads, and writes
-  the clipboard for `onCopyPath` and `onCopyText`.
+- `ToolkitPage.tsx` keeps the owner's changes to the state's `ui` in
+  React state until another state loads, and writes the clipboard for
+  `onCopyPath` and `onCopyText`.
+- While the route loads, `ToolkitPending.tsx` draws the home itself
+  (R58) and keeps the owner's changes in `toolkitStore.ts`; the loaded
+  home starts from them once and empties the store. Both entries write
+  the clipboard the same way (`app/ToolkitPendingFit.test.tsx`).
 - A press that changes the view reports a `ui` change through
   `onUiChange`. Without that prop
   `ToolkitScreen` keeps the changes itself, so a story or a canvas board

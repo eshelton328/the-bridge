@@ -9,8 +9,8 @@ import { resetAllStores } from '../state/resetStores.ts'
 import { pendingTiming } from './router.ts'
 import { routeTree } from './routeTree.gen.ts'
 
-// The loading standard (2026-11-23) for a page with no skeleton of its own: while its route loads, the app's shell
-// draws the nav with the page selected and a skeleton in its place (blocks/LoadingShell.tsx), never an empty screen.
+// The loading standard (2026-11-23): while its route loads, a page draws the nav with the page selected and its own
+// loading layout (R58), never an empty screen.
 // The server never answers here, so the page stays in its loading state.
 
 afterEach(async () => {
