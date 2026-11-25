@@ -107,7 +107,7 @@ export function createDiskFiles({ brainDir, env: serverEnv }: DiskFilesOptions):
         }
       } catch (thrown) {
         const code = codeOf(thrown)
-        return code === 'ENOENT' || code === 'ENOTDIR' || code === 'ELOOP'
+        return ['ENOENT', 'ENOTDIR', 'ELOOP', 'EACCES', 'EPERM'].includes(String(code))
           ? ok('notFound')
           : err({ reason: 'failed', code })
       }

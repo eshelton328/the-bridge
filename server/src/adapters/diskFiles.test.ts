@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process'
-import { mkdir, mkdtemp, symlink, writeFile } from 'node:fs/promises'
+import { chmod, mkdir, mkdtemp, symlink, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { describe, expect, it } from 'vitest'
@@ -34,13 +34,16 @@ describe('createDiskFiles', () => {
     await writeFile(join(brainDir, '.env'), 'TOKEN=example\n')
     await symlink('.env', join(brainDir, 'env-link'))
     execFileSync('git', ['init', '-q', brainDir])
-    execFileSync('git', ['-C', brainDir, 'add', '--', 'README.md', 'env-link'])
+    await writeFile(join(brainDir, 'locked.md'), 'locked\n')
+    execFileSync('git', ['-C', brainDir, 'add', '--', 'README.md', 'env-link', 'locked.md'])
+    await chmod(join(brainDir, 'locked.md'), 0o000)
     return createDiskFiles({ brainDir, env: process.env })
   }
 
   it.each([
     ['a tracked symlink to an untracked file', 'env-link'],
     ['a path with a NUL, with no throw', 'README.md\0x'],
+    ['a tracked file it may not open', 'locked.md'],
   ])('does not read %s', async (_, path) => {
     expect(await (await brainWithEnvLink()).read('brain', path, 1024)).toEqual({ ok: true, value: 'notFound' })
   })
