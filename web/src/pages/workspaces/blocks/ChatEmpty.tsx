@@ -5,6 +5,13 @@
 // a column that wraps: a part that no longer fits wraps to a second column, out of the box and clipped, so a short
 // space hides the line first, then the name, with no measure and no size of its own. Library parts and tokens only;
 // the tile is the Inbox discussion's (LIBRARY_GAPS.md, Empty state with an icon tile). Props only.
+//
+// R73 (the owner: "It's not smooth moving the text and icon with the keyboard"): the keyboard shrinks the transcript
+// by the footer's dock (`--scroll-frame-dock`, ScrollFrame) at an open's end and a close's start, and a group centred
+// in it jumped half that far. So the group stays where it is: a first grid row takes the dock, as far as the room
+// under the group goes (`minmax(0, dock)` grows only into the free space), and the group centres in the rest. With
+// room, its centre is the keyboard-closed one; with less, it sits on the composer, and with too little, the parts hide
+// as before. It reads only the frame's public variable: no listener and no measure.
 import { KindMark } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { AgentKind } from '../types.ts'
@@ -13,14 +20,23 @@ const box = css({
   flex: '1',
   minH: '[0]',
   alignSelf: 'stretch',
+  display: 'grid',
+  gridTemplateRows: '[minmax(0, var(--scroll-frame-dock, 0px)) minmax(auto, 1fr)]',
+  gridTemplateColumns: '[minmax(0, 1fr)]',
+  containerType: 'size',
+  overflow: 'hidden',
+})
+// The parts' column: as high as its parts, at most the box, so a short box wraps the last parts out of view.
+const group = css({
+  gridRow: '2',
+  alignSelf: 'center',
+  maxH: '[100cqh]',
   display: 'flex',
   flexDirection: 'column',
   flexWrap: 'wrap',
-  justifyContent: 'center',
   alignContent: 'flex-start',
   alignItems: 'center',
   rowGap: '10',
-  overflow: 'hidden',
 })
 // Each part is as wide as the box, so a part that wraps lands in a second column past its right edge.
 const part = css({ w: '[100%]', display: 'flex', justifyContent: 'center', textAlign: 'center' })
@@ -48,17 +64,19 @@ export type ChatEmptyProps = {
 export function ChatEmpty({ kind, title: name, text }: ChatEmptyProps) {
   return (
     <div className={box} data-chat-empty="">
-      <div className={part}>
-        <span className={tile} data-chat-empty-part="mark">
-          <KindMark kind={kind} size="20" />
-        </span>
+      <div className={group}>
+        <div className={part}>
+          <span className={tile} data-chat-empty-part="mark">
+            <KindMark kind={kind} size="20" />
+          </span>
+        </div>
+        <p className={`${part} ${title}`} data-chat-empty-part="title">
+          {name}
+        </p>
+        <p className={`${part} ${line}`} data-chat-empty-part="line">
+          {text}
+        </p>
       </div>
-      <p className={`${part} ${title}`} data-chat-empty-part="title">
-        {name}
-      </p>
-      <p className={`${part} ${line}`} data-chat-empty-part="line">
-        {text}
-      </p>
     </div>
   )
 }
