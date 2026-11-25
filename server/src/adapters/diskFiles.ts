@@ -36,7 +36,11 @@ export function gitEnv(env: Readonly<Record<string, string | undefined>>): Recor
 }
 
 /** The NUL-separated paths that `git ls-files -z -- <pathspec>` prints in `dir`. */
-function gitFiles(dir: string, env: Record<string, string>, pathspec: readonly string[]): Promise<Result<string[], FileStoreError>> {
+function gitFiles(
+  dir: string,
+  env: Record<string, string>,
+  pathspec: readonly string[],
+): Promise<Result<string[], FileStoreError>> {
   return new Promise((resolve) => {
     // execFile throws, not calls back, for an argument it cannot pass, such as one with a NUL.
     try {
