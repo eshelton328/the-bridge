@@ -46,6 +46,7 @@ import { readsLive } from '../../lib/dataSource.ts'
 import { useInboxBadge, useInboxStreamHost } from '../../lib/inboxFeed.ts'
 import { workspacesSources } from './loadWorkspacesState.ts'
 import { MarkdownChatsContext } from '../../blocks/markdownChats.ts'
+import { MarkdownFeaturesContext } from '../../blocks/markdownFeatures.ts'
 import { createDraftBook } from './blocks/draftBook.ts'
 import { openMoved } from './blocks/moveToWorkspace.ts'
 import { layoutsSeenOf, switchTo, withLoadedLayouts } from './blocks/workspaceLayout.ts'
@@ -77,7 +78,7 @@ import {
   type WorkspacesStateKey,
 } from './workspacesStore.ts'
 import { navRoute } from '../../lib/navRoutes.ts'
-import { useSettingsChatWidth, useVisibleNavPages } from '../../state/settingsStore.ts'
+import { useSettingsChatWidth, useSettingsRichText, useVisibleNavPages } from '../../state/settingsStore.ts'
 
 const titleEntries = z.array(z.tuple([z.string(), z.string()]))
 
@@ -111,6 +112,9 @@ export function WorkspacesPage() {
   const state = route.useLoaderData()
   const navPages = useVisibleNavPages()
   const chatWidth = useSettingsChatWidth()
+  // The rich text features of Settings (Rich text): each message draws only the ones that are on, and draws again
+  // when one changes, with no reload.
+  const richText = useSettingsRichText()
   const search = route.useSearch()
   const navigate = route.useNavigate()
   const edits = useWorkspacesUi(search.state)
@@ -388,87 +392,89 @@ export function WorkspacesPage() {
     [titlesKey, router],
   )
   return (
-    <MarkdownChatsContext value={mentionChats}>
-      <WorkspacesScreen
-        // The app always shows the Settings gear and the drawer's Settings row (d-119); a Figma state's story does not.
-        settingsEntry
-        navPages={navPages}
-        data={screenData}
-        ui={shownUi}
-        viewport="desktop"
-        drafts={drafts}
-        layoutWrites={layoutWrites}
-        edits={workspaceEdits}
-        onUiChange={changeUi}
-        onRetry={() => void router.invalidate()}
-        transcripts={transcripts}
-        chatWidth={chatWidth}
-        skillLists={skillLists}
-        onCopy={copyReply}
-        onSend={onSend}
-        newChat={newChat}
-        onSideAsk={
-          sides === undefined
-            ? undefined
-            : (chat, question) => {
-                const pane = data.panes.find((p) => p.id === chat)
-                return pane?.type === 'chat' && pane.liveChat !== undefined && pane.takesCommands !== undefined
-                  ? sides.ask(pane.liveChat, question)
-                  : Promise.resolve(false)
-              }
-        }
-        onSideStop={
-          sides === undefined
-            ? undefined
-            : (chat) => {
-                const pane = data.panes.find((p) => p.id === chat)
-                return pane?.type === 'chat' && pane.liveChat !== undefined
-                  ? sides.stop(pane.liveChat)
-                  : Promise.resolve(false)
-              }
-        }
-        filesOf={(chat) => files.filesOf(chat, liveChatOf(chat))}
-        pendingOf={(chat) => pendings.pendingOf(liveChatOf(chat))}
-        dialogOf={(chat) => dialogs(liveChatOf(chat))}
-        effortOf={(chat) => {
-          const pane = data.panes.find((p) => p.id === chat)
-          const head = pane?.type === 'chat' ? pane.head : undefined
-          const effort = efforts.of(chat, liveChatOf(chat), head?.effortLevel)
-          return effort === undefined
-            ? undefined
-            : { ...effort, model: models.of(chat, liveChatOf(chat), head?.modelId) }
-        }}
-        onStop={(chat) => {
-          const liveChat = liveChatOf(chat)
-          return liveChat === undefined
-            ? Promise.resolve(false)
-            : once(`stop:${chat}`, () => viaLive((m) => m.stopChat(liveChat)))
-        }}
-        onCommand={(chat, request) => {
-          const liveChat = liveChatOf(chat)
-          return liveChat === undefined
-            ? Promise.resolve(false)
-            : once(`command:${chat}`, () =>
-                viaLive((m) => m.sendCommand(liveChat, request)).then((answer) => {
-                  // The server sends no event when the cleared chat gets its new ID: read the list until it shows.
-                  if (answer === true && request.command === 'clear')
-                    void import('./liveWorkspaces.ts').then((m) => m.readAfterClear(liveChat))
-                  return answer
-                }),
-              )
-        }}
-        onNavigate={(page) => {
-          // The desktop rail's More goes to Toolkit (d-105); the tablet's and the phone's open the drawer (d-119).
-          // Only the pages that have a route go somewhere; the others wait for theirs.
-          const to = page === 'more' ? '/toolkit' : navRoute(page)
-          if (to !== undefined) void navigate({ to })
-        }}
-      />
-      <ModelRestartFailed
-        session={models.failed}
-        onClose={models.dismissFailed}
-        onCopy={(text) => copyReply(text).then((copied) => copied.ok)}
-      />
-    </MarkdownChatsContext>
+    <MarkdownFeaturesContext value={richText}>
+      <MarkdownChatsContext value={mentionChats}>
+        <WorkspacesScreen
+          // The app always shows the Settings gear and the drawer's Settings row (d-119); a Figma state's story does not.
+          settingsEntry
+          navPages={navPages}
+          data={screenData}
+          ui={shownUi}
+          viewport="desktop"
+          drafts={drafts}
+          layoutWrites={layoutWrites}
+          edits={workspaceEdits}
+          onUiChange={changeUi}
+          onRetry={() => void router.invalidate()}
+          transcripts={transcripts}
+          chatWidth={chatWidth}
+          skillLists={skillLists}
+          onCopy={copyReply}
+          onSend={onSend}
+          newChat={newChat}
+          onSideAsk={
+            sides === undefined
+              ? undefined
+              : (chat, question) => {
+                  const pane = data.panes.find((p) => p.id === chat)
+                  return pane?.type === 'chat' && pane.liveChat !== undefined && pane.takesCommands !== undefined
+                    ? sides.ask(pane.liveChat, question)
+                    : Promise.resolve(false)
+                }
+          }
+          onSideStop={
+            sides === undefined
+              ? undefined
+              : (chat) => {
+                  const pane = data.panes.find((p) => p.id === chat)
+                  return pane?.type === 'chat' && pane.liveChat !== undefined
+                    ? sides.stop(pane.liveChat)
+                    : Promise.resolve(false)
+                }
+          }
+          filesOf={(chat) => files.filesOf(chat, liveChatOf(chat))}
+          pendingOf={(chat) => pendings.pendingOf(liveChatOf(chat))}
+          dialogOf={(chat) => dialogs(liveChatOf(chat))}
+          effortOf={(chat) => {
+            const pane = data.panes.find((p) => p.id === chat)
+            const head = pane?.type === 'chat' ? pane.head : undefined
+            const effort = efforts.of(chat, liveChatOf(chat), head?.effortLevel)
+            return effort === undefined
+              ? undefined
+              : { ...effort, model: models.of(chat, liveChatOf(chat), head?.modelId) }
+          }}
+          onStop={(chat) => {
+            const liveChat = liveChatOf(chat)
+            return liveChat === undefined
+              ? Promise.resolve(false)
+              : once(`stop:${chat}`, () => viaLive((m) => m.stopChat(liveChat)))
+          }}
+          onCommand={(chat, request) => {
+            const liveChat = liveChatOf(chat)
+            return liveChat === undefined
+              ? Promise.resolve(false)
+              : once(`command:${chat}`, () =>
+                  viaLive((m) => m.sendCommand(liveChat, request)).then((answer) => {
+                    // The server sends no event when the cleared chat gets its new ID: read the list until it shows.
+                    if (answer === true && request.command === 'clear')
+                      void import('./liveWorkspaces.ts').then((m) => m.readAfterClear(liveChat))
+                    return answer
+                  }),
+                )
+          }}
+          onNavigate={(page) => {
+            // The desktop rail's More goes to Toolkit (d-105); the tablet's and the phone's open the drawer (d-119).
+            // Only the pages that have a route go somewhere; the others wait for theirs.
+            const to = page === 'more' ? '/toolkit' : navRoute(page)
+            if (to !== undefined) void navigate({ to })
+          }}
+        />
+        <ModelRestartFailed
+          session={models.failed}
+          onClose={models.dismissFailed}
+          onCopy={(text) => copyReply(text).then((copied) => copied.ok)}
+        />
+      </MarkdownChatsContext>
+    </MarkdownFeaturesContext>
   )
 }

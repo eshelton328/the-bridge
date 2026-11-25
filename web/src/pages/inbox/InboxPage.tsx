@@ -26,7 +26,8 @@ import { inboxSources } from './loadInboxState.ts'
 import { InboxScreen } from './screens/InboxScreen.tsx'
 import { withNewBoxes } from './screens/listView.ts'
 import { navRoute } from '../../lib/navRoutes.ts'
-import { useVisibleNavPages } from '../../state/settingsStore.ts'
+import { useSettingsRichText, useVisibleNavPages } from '../../state/settingsStore.ts'
+import { MarkdownFeaturesContext } from '../../blocks/markdownFeatures.ts'
 import { useLiveItem } from './useLiveItem.ts'
 import { watchLiveInbox } from './liveInbox.ts'
 
@@ -102,81 +103,85 @@ export function InboxPage() {
     liveData === undefined || liveItem.listLine === undefined
       ? state.data
       : { ...state.data, live: { ...liveData, line: liveItem.listLine } }
+  // The rich text features of Settings (Rich text): a brain item's text draws only the ones that are on.
+  const richText = useSettingsRichText()
   return (
-    <InboxScreen
-      // The app always shows the Settings gear and the drawer's Settings row (d-119); a Figma state's story does not.
-      settingsEntry
-      navPages={navPages}
-      data={data}
-      liveOpen={liveItem.open}
-      onLiveAct={
-        liveData === undefined
-          ? undefined
-          : (id, to) => {
-              setUi(search.state, { snoozeOpen: false, actionsFor: null })
-              liveItem.act(id, to)
-            }
-      }
-      onOpenChat={(id) => {
-        const chat = ChatId.safeParse(liveData?.items.find((i) => i.id === id)?.chat)
-        if (chat.success) void navigate({ to: '/workspaces', search: { chat: chat.data } })
-      }}
-      drafts={{
-        values: draftValues,
-        onChange: (field, value) => {
-          setDraft(itemId, field, value)
-        },
-      }}
-      onNavigate={(page) => {
-        // The desktop rail's More goes to Toolkit (d-105); the tablet's and the phone's open the drawer (d-119).
-        // Only the pages that have a route go somewhere; the others wait for theirs.
-        const to = page === 'more' ? '/toolkit' : navRoute(page)
-        if (to !== undefined && to !== '/inbox') void navigate({ to })
-      }}
-      ui={ui}
-      viewport="desktop"
-      query={query}
-      onGroupOpenChange={setGroupOpen}
-      onBack={() => {
-        setItemOpen(search.state, false)
-      }}
-      onSelectItem={() => {
-        setItemOpen(search.state, true)
-      }}
-      onPromptOpenChange={(open) => {
-        setPromptOpen(search.state, open)
-      }}
-      onCopyCode={copyCode}
-      onCopyPrompt={(text) => {
-        // copyText copies nothing, and throws nothing, on a page with no clipboard or one that refuses the write;
-        // a refusal that is not the browser's NotAllowedError is a fault, so it goes to the reporter.
-        void copyText(text, { report: reportCopy })
-      }}
-      onRemoveOpenChange={(open) => {
-        setRemoveOpen(search.state, open)
-      }}
-      onQueryChange={(next) => {
-        setQuery(search.state, next)
-      }}
-      onUiChange={(change) => {
-        setUi(search.state, change)
-      }}
-      // A discussion's Send goes to the store's send; a failed send is reported, and the box keeps the draft (L-3).
-      onSend={(text) =>
-        send(itemId, text).then(
-          () => {
-            markSent(search.state, state.ui.sent, itemId, text)
-            return true
+    <MarkdownFeaturesContext value={richText}>
+      <InboxScreen
+        // The app always shows the Settings gear and the drawer's Settings row (d-119); a Figma state's story does not.
+        settingsEntry
+        navPages={navPages}
+        data={data}
+        liveOpen={liveItem.open}
+        onLiveAct={
+          liveData === undefined
+            ? undefined
+            : (id, to) => {
+                setUi(search.state, { snoozeOpen: false, actionsFor: null })
+                liveItem.act(id, to)
+              }
+        }
+        onOpenChat={(id) => {
+          const chat = ChatId.safeParse(liveData?.items.find((i) => i.id === id)?.chat)
+          if (chat.success) void navigate({ to: '/workspaces', search: { chat: chat.data } })
+        }}
+        drafts={{
+          values: draftValues,
+          onChange: (field, value) => {
+            setDraft(itemId, field, value)
           },
-          (error: unknown) => {
-            report(error, 'handler')
-            return false
-          },
-        )
-      }
-      onFilterChange={(filter) => {
-        void navigate({ search: (prev) => ({ ...prev, filter }) })
-      }}
-    />
+        }}
+        onNavigate={(page) => {
+          // The desktop rail's More goes to Toolkit (d-105); the tablet's and the phone's open the drawer (d-119).
+          // Only the pages that have a route go somewhere; the others wait for theirs.
+          const to = page === 'more' ? '/toolkit' : navRoute(page)
+          if (to !== undefined && to !== '/inbox') void navigate({ to })
+        }}
+        ui={ui}
+        viewport="desktop"
+        query={query}
+        onGroupOpenChange={setGroupOpen}
+        onBack={() => {
+          setItemOpen(search.state, false)
+        }}
+        onSelectItem={() => {
+          setItemOpen(search.state, true)
+        }}
+        onPromptOpenChange={(open) => {
+          setPromptOpen(search.state, open)
+        }}
+        onCopyCode={copyCode}
+        onCopyPrompt={(text) => {
+          // copyText copies nothing, and throws nothing, on a page with no clipboard or one that refuses the write;
+          // a refusal that is not the browser's NotAllowedError is a fault, so it goes to the reporter.
+          void copyText(text, { report: reportCopy })
+        }}
+        onRemoveOpenChange={(open) => {
+          setRemoveOpen(search.state, open)
+        }}
+        onQueryChange={(next) => {
+          setQuery(search.state, next)
+        }}
+        onUiChange={(change) => {
+          setUi(search.state, change)
+        }}
+        // A discussion's Send goes to the store's send; a failed send is reported, and the box keeps the draft (L-3).
+        onSend={(text) =>
+          send(itemId, text).then(
+            () => {
+              markSent(search.state, state.ui.sent, itemId, text)
+              return true
+            },
+            (error: unknown) => {
+              report(error, 'handler')
+              return false
+            },
+          )
+        }
+        onFilterChange={(filter) => {
+          void navigate({ search: (prev) => ({ ...prev, filter }) })
+        }}
+      />
+    </MarkdownFeaturesContext>
   )
 }

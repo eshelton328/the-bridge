@@ -5,6 +5,7 @@ import { answerLateServerReads } from '../lib/lateServerReads.ts'
 import { setViewport } from '../lib/rendering.ts'
 import { unmountRendered } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
+import { settingsStore } from '../state/settingsStore.ts'
 import { devices, openInbox, request, shown, withServer } from './inboxLiveHelpers.ts'
 
 // Chat rich text (2026-11-25): a brain item's record with a fenced code block and inline code, on the owner's path:
@@ -64,4 +65,23 @@ describe("a brain record's code (chat rich text)", () => {
       await expect.element(context.getByText('Copied', { exact: true })).toBeVisible()
       expect(getReports()).toEqual([])
     })
+
+  // Settings → Rich text → Code highlighting off (as its switch sets the store): the same block, label and Copy, with
+  // the whole code and no colours.
+  it('draws the code with no colours when Code highlighting is off', async () => {
+    settingsStore.getState().actions.setRichText('code', false)
+    withServer([request], { details: { [request.id]: { source: 'brain', body } } })
+    await openInbox(devices[0])
+    await expect.poll(shown).toContain(request.title)
+    await userEvent.click(page.getByRole('region', { name: 'Inbox list' }).getByText(request.title, { exact: true }))
+    const context = page.getByRole('region', { name: 'Context' })
+    await expect.element(context.getByText('yaml', { exact: true })).toBeVisible()
+    const block = context.element().querySelector('[data-language="yaml"]')
+    if (block === null) throw new Error('no code block')
+    expect(block.querySelector('pre')?.textContent).toBe(code)
+    await expect.element(context.getByRole('button', { name: 'Copy code' })).toBeVisible()
+    // The highlighter would colour the comment within the first test's wait; none comes.
+    await new Promise((resolve) => setTimeout(resolve, 1500))
+    expect(block.querySelector('[data-kind]')).toBeNull()
+  })
 })
