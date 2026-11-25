@@ -21,9 +21,11 @@ import { resetAllStores } from '../state/resetStores.ts'
 import { stubLiveServer } from './liveServerStub.ts'
 import { routeTree } from './routeTree.gen.ts'
 
-// Review R43: a server restart ends every live stream. A stream that ends with no `error` event and connects again
-// within the grace (10 s) shows no line and reports nothing; a miss after it shows the line and reports once. Owner
-// path (no URL parameters, Workspaces, the chat) on the contract-checked fakes; while down, every request answers 502.
+// Review R43, R70: a server restart ends every live stream. The transcript connects again on the backoff and says
+// "Reconnecting…" with no report; the line and one report come only with a miss 10 s or more after the first, with 4
+// in a row (at 10 s it tries at once). The list and the event stream keep R43's 10 s grace. Owner path (no URL
+// parameters, Workspaces, the chat) on the contract-checked fakes; while down, every request answers 502. The backoff
+// waits half of each step (`Math.random` 0.5): 0.25, 0.5, 1, 2, 4 s.
 document.documentElement.classList.add('dark')
 document.documentElement.dataset.pandaTheme = 'viewscreen'
 
@@ -61,6 +63,7 @@ const before = [user('u1', 'Sketch the quiet reconnect'), reply('a1', 'Here is a
 
 /** The fakes as the server; `restart()` takes it down (each stream ends, each request answers 502), `up()` back. */
 function withServer() {
+  vi.spyOn(Math, 'random').mockReturnValue(0.5)
   const chats = fakeTranscriptServer()
   chats.set(plan, before)
   const workspaces = fakeWorkspacesServer(chats, list)
@@ -160,28 +163,31 @@ async function pass(ms: number, step = 250) {
 /** Whether the page shows a line that matches `text`, checked now, with no poll. */
 const shows = (text: RegExp) => [...document.querySelectorAll('body *')].some((e) => text.test(e.textContent))
 
-describe('a server restart (review R43)', () => {
+describe('a server restart (R70, in place of review R43)', () => {
   for (const device of devices)
-    it(`reconnects quietly within the grace and shows the entry written meanwhile, on ${device.name}`, async () => {
+    it(`says "Reconnecting…" with no line and no report through a 7 s outage, then shows the entry written meanwhile, on ${device.name}`, async () => {
       const server = withServer()
       await openPlan(server, device.size)
       const reads = server.chats.reads.length
       const release = holdTimers()
       server.restart()
-      // Down for 9 s: the page tries again on the retry time and gets 502s, with no line and no report.
+      // Down for 7 s: tries at 0.25, 0.75, 1.75, 3.75 s get 502s, 4 misses in a row with the first at 0, and no line.
       await pass(4000)
       server.chats.set(plan, [...before, reply('a2', 'Written while the server restarted.')])
-      await pass(5000)
+      await pass(3000)
+      expect(shows(/^Reconnecting…$/)).toBe(true)
       expect(shows(outageLine)).toBe(false)
       expect(shows(eventsLine)).toBe(false)
       expect(getReports()).toEqual([])
       server.up()
+      // The next try, at 7.75 s, connects.
       await pass(1000)
       await renderedUntil(() => server.chats.reads.length > reads && server.chats.openStreams().includes(plan))
       release()
       // The read after the reconnect brings the entry written while the stream was down.
       await expect.element(page.getByText('Written while the server restarted.')).toBeVisible()
       await expect.element(page.getByText('Here is a first sketch.')).toBeVisible()
+      await expect.element(page.getByText('Reconnecting…')).not.toBeInTheDocument()
       await expect.element(page.getByText(outageLine)).not.toBeInTheDocument()
       await expect.element(page.getByText(eventsLine)).not.toBeInTheDocument()
       await expect.element(page.getByRole('button', { name: 'Retry' })).not.toBeInTheDocument()
@@ -192,26 +198,26 @@ describe('a server restart (review R43)', () => {
     })
 
   for (const device of devices)
-    it(`shows the line and reports once when the reconnect still misses after the grace, on ${device.name}`, async () => {
+    it(`shows the line and reports once when a 12 s outage passes 10 s after 4 misses, on ${device.name}`, async () => {
       const server = withServer()
       await openPlan(server, device.size)
       const release = holdTimers()
       server.restart()
       await pass(9500)
+      expect(shows(/^Reconnecting…$/)).toBe(true)
       expect(shows(outageLine)).toBe(false)
-      expect(shows(eventsLine)).toBe(false)
       expect(getReports()).toEqual([])
-      // Past the window, the next miss shows the line, and report() gets it once however often it misses again.
-      await pass(6000)
+      // At 10 s the page tries at once; that miss shows the line, and report() gets it once however often it misses.
+      await pass(2500)
       await renderedUntil(() => shows(/^Transcript updates lost — connecting again$/))
-      // The desktop's status bar says the event stream is lost too; it is not reported.
+      // The desktop's status bar says the event stream is lost too, after its own 10 s grace; it is not reported.
       if (device.size[0] >= 700) await renderedUntil(() => shows(eventsLine))
       expect(getReports().map((r) => r.error.message)).toEqual([
         'A chat transcript stream missed: status 502 (chat mac-mini/c1)',
       ])
-      // Once the server is back, the next try connects, and the lines go. The held clock moves the retry time.
+      // Once the server is back, the next try connects (the miss at 10 s waits 15 s, to 25 s), and the line goes.
       server.up()
-      await pass(1000)
+      await pass(13_500, 1000)
       await renderedUntil(() => !shows(outageLine) && !shows(eventsLine))
       release()
       await expect.element(page.getByText('Here is a first sketch.')).toBeVisible()

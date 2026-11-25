@@ -56,7 +56,8 @@ function stubFetch(server: FakeTranscriptServer, readDelayMs: number) {
 const stops: (() => void)[] = []
 const watch = (server: FakeTranscriptServer, readDelayMs = 0) => {
   stubFetch(server, readDelayMs)
-  const stop = watchTranscript(chat, { retryMs: 50 })
+  // The fake's stream asked for 100 ms before R70 ignored its `retry` field: the same wait, fixed. No banner floor.
+  const stop = watchTranscript(chat, { retryMs: 100, floorMs: 0 })
   stops.push(stop)
   return stop
 }
@@ -67,6 +68,7 @@ afterEach(() => {
   for (const stop of stops.splice(0)) stop()
   vi.useRealTimers()
   vi.unstubAllGlobals()
+  vi.restoreAllMocks()
   clearReports()
   // The views kept for chats opened again go, so each test starts with none.
   resetAllStores()
@@ -285,6 +287,110 @@ describe('watchTranscript', () => {
     ])
   })
 
+  it('says Reconnecting… on the backoff, reports nothing before 10 s, and connects at once when online again', async () => {
+    // Each wait is 99 % of its step: 0.495, 0.99, 1.98, 3.96, then 7.92 s.
+    vi.spyOn(Math, 'random').mockReturnValue(0.99)
+    const server = fakeTranscriptServer()
+    server.set(chat, [user('u1', 'go')])
+    stubFetch(server, 0)
+    stops.push(watchTranscript(chat))
+    await expect.poll(ids).toEqual(['u1'])
+    const opened = server.opens.length
+    server.answerStreams(() => new Response('', { status: 502 }))
+    server.drop(chat)
+    await expect.poll(() => view()?.problem).toBe(transcriptText.reconnecting)
+    // 5 misses in a row by 3.5 s: still "Reconnecting…" and no report, as 10 s have not passed (the R43 grace).
+    await expect.poll(() => server.opens.length - opened, { timeout: 8000 }).toBe(4)
+    expect(view()?.problem).toBe(transcriptText.reconnecting)
+    expect(getReports()).toEqual([])
+    // The 5th miss waits 7.92 s: the online event ends that wait at once.
+    server.answerStreams(undefined)
+    server.set(chat, [user('u1', 'go'), reply('a1', 'back online')])
+    window.dispatchEvent(new Event('online'))
+    await expect.poll(ids, { timeout: 1000 }).toEqual(['u1', 'a1'])
+    expect(view()?.problem).toBeUndefined()
+    expect(getReports()).toEqual([])
+  })
+
+  it('does not connect again while the page hid during a backoff wait, then at once when it shows', async () => {
+    const server = fakeTranscriptServer()
+    server.set(chat, [user('u1', 'go')])
+    stubFetch(server, 0)
+    stops.push(watchTranscript(chat, { retryMs: 300, floorMs: 0 }))
+    await expect.poll(ids).toEqual(['u1'])
+    const opened = server.opens.length
+    const setHidden = (hidden: boolean) => {
+      Object.defineProperty(document, 'visibilityState', {
+        configurable: true,
+        get: () => (hidden ? 'hidden' : 'visible'),
+      })
+      Object.defineProperty(document, 'hidden', { configurable: true, get: () => hidden })
+      document.dispatchEvent(new Event('visibilitychange'))
+    }
+    try {
+      server.drop(chat)
+      await expect.poll(() => view()?.problem).toBe(transcriptText.reconnecting)
+      setHidden(true)
+      await new Promise((resolve) => setTimeout(resolve, 900))
+      expect(server.opens.length).toBe(opened)
+      setHidden(false)
+      await expect.poll(() => server.opens.length).toBe(opened + 1)
+    } finally {
+      Reflect.deleteProperty(document, 'visibilityState')
+      Reflect.deleteProperty(document, 'hidden')
+    }
+  })
+
+  it("reports the stream's error event at once when the read then gets no answer", async () => {
+    const server = fakeTranscriptServer()
+    server.set(chat, [user('u1', 'go')])
+    // The read waits until the test ends it with no answer.
+    let endRead: (() => void) | undefined
+    server.answerReads(
+      () =>
+        new Promise<Response>((_, reject) => {
+          endRead = () => {
+            reject(new TypeError('Load failed'))
+          }
+        }),
+    )
+    watch(server)
+    await expect.poll(() => endRead).toBeDefined()
+    server.fail(chat, 'internal')
+    endRead?.()
+    await expect.poll(() => view()?.problem).toBe(transcriptText.dropped)
+    expect(getReports().map((r) => r.error.message)).toEqual([
+      'A chat transcript stream missed: ended internal (chat mac-mini/c1)',
+    ])
+  })
+
+  it('reads again on the backoff when the read after a 404 stream gets a 5xx', async () => {
+    const server = fakeTranscriptServer()
+    server.set(chat, [user('u1', 'go')])
+    server.answerStreams(() => new Response('', { status: 404 }))
+    server.answerReads(() => new Response('', { status: 502 }))
+    watch(server)
+    await expect.poll(() => view()?.problem).toBe(transcriptText.reconnecting)
+    server.answerReads(undefined)
+    await expect.poll(ids).toEqual(['u1'])
+    expect(view()?.problem).toBeUndefined()
+  })
+
+  it('shows the line again after Retry when the outage goes on', async () => {
+    const server = fakeTranscriptServer()
+    server.set(chat, [user('u1', 'go')])
+    watch(server)
+    await expect.poll(ids).toEqual(['u1'])
+    server.answerStreams(() => new Response('', { status: 502 }))
+    server.drop(chat)
+    await expect.poll(() => view()?.problem).toBe(transcriptText.dropped)
+    retryTranscript(chat)
+    expect(view()?.problem).toBeUndefined()
+    // A new row: "Reconnecting…", then the line again at its 4th miss.
+    await expect.poll(() => view()?.problem).toBe(transcriptText.reconnecting)
+    await expect.poll(() => view()?.problem).toBe(transcriptText.dropped)
+  })
+
   it("reports a second outage inside report()'s repeat window once: the screen line still shows it", async () => {
     // Date stands still, so the second outage comes within the repeat window.
     vi.useFakeTimers({ toFake: ['Date'] })
@@ -327,7 +433,7 @@ describe('watchTranscript', () => {
         return answer === undefined ? Promise.reject(new TypeError(`no stub for ${url}`)) : Promise.resolve(answer)
       }),
     )
-    stops.push(watchTranscript(chat, { retryMs: 50, openMs: 100 }))
+    stops.push(watchTranscript(chat, { retryMs: 50, openMs: 100, floorMs: 0 }))
     await expect.poll(() => view()?.problem).toBe(transcriptText.dropped)
     expect(getReports().map((r) => r.error.message)).toEqual([
       'A chat transcript stream missed: timeout (chat mac-mini/c1)',

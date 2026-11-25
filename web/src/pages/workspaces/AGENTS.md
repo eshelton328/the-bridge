@@ -224,17 +224,21 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   each outage of a shown chat, with the miss kind, the HTTP status and
   the chat ID only, never transcript text, a tool target or the server's
   message (`liveTranscript.test.ts`, `app/WorkspacesLiveTranscript.test.tsx`;
-  the server fake is `lib/fakeTranscriptServer.ts`). A server restart
-  ends every stream with no `error` event (review R43): a stream that
-  read the transcript and then ends or drops so starts a 10 s grace
-  (`reconnectGraceMs`), and until it passes that end and each miss of
-  the reconnects (no answer, a 5xx) show no line and report nothing. The
-  first read that answers ends it and shows the entries written
-  meanwhile; a miss after the window shows the line and reports once.
-  An `error` event (a failed watch, review R35), an event the page
-  cannot read, a refusal and a read that missed show at once. The event
-  stream's "Live updates lost" in the desktop status bar waits for the
-  same window (`app/WorkspacesQuietReconnect.test.tsx`). A list read with
+  the server fake is `lib/fakeTranscriptServer.ts`). A stream that ends
+  or drops, a stream or read with no answer in 8 s and a 5xx connect again
+  on one backoff with full jitter (R70, `lib/reconnectBackoff.ts`): a
+  random wait below 0.5, 1, 2, 4, 8, 16 s, then 30 s at most; the
+  stream's `retry` field is ignored. The misses say "Reconnecting…" with
+  Retry and report nothing until there are 4 in a row while the page
+  shows and 10 s have passed since the first (R43's grace): at 10 s the
+  page tries at once, and a miss from then on shows its line and reports
+  once. A read that answers, the
+  page back at the front and the network's `online` event start the
+  steps again, and the last two connect at once. An `error` event (a
+  failed watch, review R35), an event the page cannot read, a refusal and
+  a 4xx read show at once. The event stream's "Live updates lost" in the
+  desktop status bar keeps R43's 10 s grace
+  (`app/WorkspacesQuietReconnect.test.tsx`). A list read with
   no answer (no status, a timeout, a 5xx with no error body) after the
   page showed a list keeps that list and its cached layouts, with no
   notice, for the same window; a miss after it shows the notice, and a
@@ -245,8 +249,8 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   stream of a page in the background: a stream that ends or drops, or a
   stream or read with no answer, while the page is hidden, after it hid
   during the connection or within 5 s after it showed again, gives no
-  line and no report (`lib/pageResume.ts`). Hidden, the page connects again
-  after the retry time; shown, at once. A visible page takes one such
+  line and no report (`lib/pageResume.ts`). Hidden, the page does not
+  connect again until it shows (R70); shown, at once. A visible page takes one such
   quiet miss for each trip to the background, none if a miss came while
   hidden, and an answer from the server is never quiet
   (`app/WorkspacesLiveTranscript.test.tsx`, `lib/pageResume.test.ts`). A prompt sent

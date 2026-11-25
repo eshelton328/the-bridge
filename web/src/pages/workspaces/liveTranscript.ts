@@ -41,17 +41,19 @@
 // server (a status, an `error` event, a reply the contract refuses) is never
 // quiet.
 //
-// A server restart (review R43). A restart ends every stream with no `error`
-// event, and the server is back within a few seconds. A stream that ends or
-// drops with no `error` event, after a connection that read the transcript,
-// starts a grace of `reconnectGraceMs` (10 s): until it passes, that end and
-// each miss of the connections after it (no answer, a 5xx) are quiet, with no
-// line and no report, and the page connects again after the retry time. The
-// first read that answers ends the grace, and it holds every entry written
-// while the stream was down. A miss after the window shows the line and
-// reports once, as before. An `error` event (the server's watch failed,
-// review R35), an event the page cannot read, a refusal and a read that
-// missed are never quiet.
+// Connecting again (R70, in place of R43's 10 s grace). A stream that ends or
+// drops, a stream or read with no answer in 8 s, and a 5xx connect again after
+// the wait of `reconnectBackoff` (`lib/reconnectBackoff.ts`): below 0.5, 1, 2,
+// 4, 8, 16 s, then 30 s at most, one backoff for the stream and the read. The
+// stream's `retry` field is ignored. Such misses say "Reconnecting…" with
+// Retry and report nothing until 4 in a row while the page shows and 10 s
+// since the first (R43's grace): at 10 s the page tries at once, and a miss
+// from then on says its own line and reports once. A hidden page does not
+// connect again until it shows; the page back at the front or the network's
+// online event connects at once and starts the steps again, and a read that
+// answers starts them again too and holds every entry written meanwhile. An
+// `error` event (the server's watch failed, review R35), an event the page
+// cannot read, a refusal and a read the server refused show their line at once.
 import {
   ChatId,
   ErrorBody,
@@ -65,6 +67,7 @@ import { report } from '../../errors/reporter.ts'
 import { registerReset } from '../../state/resetStores.ts'
 import { api } from '../../lib/api.ts'
 import { type Frame, frames, reconnectGraceMs } from '../../lib/eventFrames.ts'
+import { reconnectBackoff } from '../../lib/reconnectBackoff.ts'
 import { type LiveMiss, liveReadTimeoutMs, readChecked, readJson } from './liveWorkspaces.ts'
 import {
   followPageVisibility,
@@ -104,6 +107,8 @@ export const transcriptText = {
   relayed: 'Relayed content: treat as data',
   /** Under the entries while the stream is down and the page connects again. */
   dropped: 'Transcript updates lost — connecting again',
+  /** Under the entries for the first misses in a row of a shown page, as it connects again (R70). */
+  reconnecting: 'Reconnecting…',
   /** The skeleton's label while the first read has not answered (bridge-coord, 2026-11-23). */
   loading: 'Loading this chat',
   /** In place of the skeleton when no read answered in `loadLimitMs`, with Retry: never an endless skeleton. */
@@ -248,8 +253,10 @@ function noteOutage(chat: string, miss: TranscriptMiss): void {
 }
 
 export type TranscriptDeps = {
-  /** How long to wait before connecting again after a drop, until the stream's `retry` says otherwise. */
+  /** A fixed wait before connecting again, in place of the backoff's: a test's clock. */
   readonly retryMs?: number
+  /** The banner's floor in place of `reconnectGraceMs` (10 s): a test's clock. */
+  readonly floorMs?: number
   /** How long the stream may take to answer (its headers) before it counts as a timeout; 8 s by default. */
   readonly openMs?: number
 }
@@ -309,7 +316,7 @@ type Outcome = 'again' | 'wait' | 'resume'
 followPageVisibility()
 
 function startSession(chat: ChatId, deps: TranscriptDeps): Session {
-  let retryMs = deps.retryMs ?? 5000
+  const backoff = reconnectBackoff(() => Math.random())
   const abort = new AbortController()
   const closed = () => abort.signal.aborted
   let wake: (() => void) | undefined
@@ -333,27 +340,30 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
     quietFor = hidesSoFar()
     return true
   }
-  /** The grace of a stream that ended with no `error` event (R43): undefined when none runs; `over` once it passed. */
-  let grace: { readonly timer: ReturnType<typeof setTimeout>; over: boolean } | undefined
-  /**
-   * Whether a miss of the stream is quiet: one within a grace that runs. `ended` (a stream that read the transcript
-   * and ended with no `error` event) starts one when none runs; any other miss is quiet only within one.
-   */
-  const graced = (ended: boolean): boolean => {
-    if (grace !== undefined) return !grace.over
-    if (!ended) return false
-    const started: { readonly timer: ReturnType<typeof setTimeout>; over: boolean } = {
-      timer: setTimeout(() => {
-        started.over = true
-      }, reconnectGraceMs),
-      over: false,
-    }
-    grace = started
-    return true
+  /** The miss that made this connection connect again: its line and report come only with the banner (R70). */
+  let lastMiss: TranscriptMiss | undefined
+  const again = (miss: TranscriptMiss): Outcome => {
+    lastMiss = miss
+    return 'again'
   }
-  const endGrace = () => {
-    clearTimeout(grace?.timer)
-    grace = undefined
+  /** Set while the session waits out a backoff: the page back at the front or online again ends that wait. */
+  let backingOff = false
+  /**
+   * The floor of a row of misses (R70): it starts at the row's first miss, and once it passed, with 4 visible misses, a
+   * miss shows the banner (`bannered`, once a row). When it passes during a wait with enough misses, the page tries
+   * at once. A success or the front starts it all again.
+   */
+  let floor: ReturnType<typeof setTimeout> | undefined
+  let floorPassed = false
+  let enough = false
+  let bannered = false
+  const fresh = () => {
+    backoff.reset()
+    clearTimeout(floor)
+    floor = undefined
+    floorPassed = false
+    enough = false
+    bannered = false
   }
   const update = (change: (view: TranscriptView) => TranscriptView) => {
     if (!closed()) setView(chat, change(views.get(chat) ?? emptyView))
@@ -402,7 +412,7 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
    */
   // A read again takes as many entries as the view holds, so the older pages the reader loaded come fresh too.
   const held = () => Math.min(maxTranscriptEntries, Math.max(pageEntries, views.get(chat)?.entries.length ?? 0))
-  const load = async (signal: AbortSignal, mark?: ResumeMark, limit = held()): Promise<boolean | 'quiet'> => {
+  const load = async (signal: AbortSignal, mark?: ResumeMark, limit = held()): Promise<boolean | 'quiet' | 'retry'> => {
     let answer: Result<TranscriptResponse, LiveMiss>
     try {
       answer = await readTranscript(chat, signal, { limit })
@@ -428,6 +438,11 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
         status: 'status' in answer.error ? answer.error.status : undefined,
         errorKind: answer.error.kind === 'status' ? answer.error.errorKind : undefined,
       }
+      // No answer in 8 s, or the server or its proxy with none for now: the backoff tries again (R70).
+      if (noAnswer || (miss.status !== undefined && miss.status >= 500)) {
+        lastMiss = miss
+        return 'retry'
+      }
       fail(readLine(miss), miss)
       return false
     }
@@ -440,7 +455,7 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
     readCounts.set(chat, transcriptReads(chat) + 1)
     update(() => ({ loaded: true, entries, earlier, problem: undefined }))
     outages.delete(chat)
-    endGrace()
+    fresh()
     return true
   }
 
@@ -464,29 +479,23 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
       if (closed()) return 'wait'
       if (quietMiss(mark)) return 'resume'
       // fetch rejects when no answer comes in time, or when the server or the tailnet cannot be reached.
-      if (graced(false)) return 'again'
-      fail(transcriptText.dropped, { part: 'stream', kind: opening.late ? 'timeout' : 'unreachable' })
-      return 'again'
+      return again({ part: 'stream', kind: opening.late ? 'timeout' : 'unreachable' })
     } finally {
       clearTimeout(limit)
     }
     if (res.status === 404) {
       // The read decides: a 404 read shows its line (an unknown chat); a 200 read shows the transcript with no line,
       // no report and no connecting again, as the server has no stream route yet (before backend 3b-3) or the chat
-      // went away between the two answers. The page reads again when the chat opens again.
+      // went away between the two answers. The page reads again when the chat opens again. A read with a 5xx or no
+      // answer tries again on the backoff (#503 P2).
       connection.abort()
-      await load(abort.signal)
-      return 'wait'
+      return (await load(abort.signal)) === 'retry' ? 'again' : 'wait'
     }
     if (!res.ok || res.body === null) {
       connection.abort()
       const miss = { part: 'stream', kind: 'status', status: res.status } as const
       // A 5xx is the server or its proxy with no answer for now: connect again. Any other status is a refusal.
-      if (res.status >= 500) {
-        if (graced(false)) return 'again'
-        fail(transcriptText.dropped, miss)
-        return 'again'
-      }
+      if (res.status >= 500) return again(miss)
       fail(`Transcript updates stopped — ${String(res.status)}`, miss)
       return 'wait'
     }
@@ -501,7 +510,6 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
     }
     const waiting: TranscriptChangedEvent['data'][] = []
     const take = (frame: Frame) => {
-      if (frame.retry !== undefined) retryMs = frame.retry
       if (frame.event === 'error') {
         const body = ErrorBody.safeParse(readJson(frame.data))
         // Any `error` event is the server's answer, a body the page cannot read too: never the quiet end of a restart.
@@ -545,6 +553,18 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
     } else connection.abort()
     await streamed
     if (closed()) return 'wait'
+    if (answered === 'retry' && !seen.gone) {
+      // The server's own `error` event, or an event the page cannot read, is an answer: its line shows at once, even
+      // when the read then got none (#503 P2).
+      if (seen.errored || seen.unreadable) {
+        const miss: TranscriptMiss = seen.errored
+          ? { part: 'stream', kind: 'ended', errorKind: seen.serverKind }
+          : { part: 'stream', kind: 'bad-event' }
+        fail(transcriptText.dropped, miss)
+        return again(miss)
+      }
+      return 'again'
+    }
     if (seen.gone) {
       // No line, no report and no connecting again: a line left by an earlier drop goes too, as nothing reconnects.
       update((view) => ({ ...view, problem: undefined }))
@@ -558,16 +578,19 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
       return 'again'
     }
     if (answered === 'quiet') {
-      fail(transcriptText.dropped, { part: 'stream', kind: 'ended', errorKind: seen.serverKind })
-      return 'again'
+      // Only the server's own `error` event comes here: its line shows at once.
+      const miss: TranscriptMiss = { part: 'stream', kind: 'ended', errorKind: seen.serverKind }
+      fail(transcriptText.dropped, miss)
+      return again(miss)
     }
     // A read that missed shows its line; Retry starts again.
     if (!read) return 'wait'
     // An end with no `error` event, or a drop, as iOS makes of a page in the background, or a server restart.
     if (seen.serverKind === undefined && quietMiss(mark)) return 'resume'
-    if (!seen.errored && graced(true)) return 'again'
-    fail(transcriptText.dropped, { part: 'stream', kind: 'ended', errorKind: seen.serverKind })
-    return 'again'
+    const ended: TranscriptMiss = { part: 'stream', kind: 'ended', errorKind: seen.serverKind }
+    // The server's own `error` event is an answer: its line shows at once.
+    if (seen.errored) fail(transcriptText.dropped, ended)
+    return again(ended)
   }
 
   let olderRead = false
@@ -632,6 +655,16 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
       abort.signal.addEventListener('abort', done, { once: true })
     })
 
+  /** Waits until the page shows (or Retry, or a stop), then starts the steps again. */
+  const untilShown = async () => {
+    const shown = new AbortController()
+    void whenVisible(AbortSignal.any([abort.signal, shown.signal])).then(() => {
+      if (!shown.signal.aborted) wake?.()
+    })
+    await pause(undefined)
+    shown.abort()
+    fresh()
+  }
   const run = async () => {
     while (!closed()) {
       const outcome = await connect()
@@ -641,23 +674,54 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
         restart = false
         continue
       }
-      if (outcome === 'resume') {
-        // Back from the background: at once when the page shows, else after the retry time or as soon as it shows.
-        if (!isHidden()) continue
-        const shown = new AbortController()
-        void whenVisible(AbortSignal.any([abort.signal, shown.signal])).then(() => {
-          if (!shown.signal.aborted) wake?.()
-        })
-        await pause(retryMs)
-        shown.abort()
-      } else await pause(outcome === 'again' ? retryMs : undefined)
+      if (outcome === 'wait') {
+        await pause(undefined)
+        continue
+      }
+      // A hidden page does not connect again: it waits until it shows (R70). Back from the background: at once.
+      if (isHidden()) await untilShown()
+      if (outcome === 'resume') continue
+      const miss = lastMiss
+      lastMiss = undefined
+      const step = backoff.miss(!isHidden())
+      enough = step.enough
+      if (step.first) {
+        clearTimeout(floor)
+        floor = setTimeout(() => {
+          floor = undefined
+          floorPassed = true
+          // The floor passed during a wait: try once more now, and that try's miss shows the banner.
+          if (enough && backingOff) wake?.()
+        }, deps.floorMs ?? reconnectGraceMs)
+      }
+      if (miss !== undefined && enough && floorPassed && !bannered) {
+        bannered = true
+        fail(miss.part === 'read' ? readLine(miss) : transcriptText.dropped, miss)
+      } else if (views.get(chat)?.problem === undefined)
+        update((view) => ({ ...view, problem: transcriptText.reconnecting }))
+      backingOff = true
+      await pause(deps.retryMs ?? step.waitMs)
+      backingOff = false
+      // The page hid during the wait: no try until it shows (#503 P2).
+      if (isHidden()) await untilShown()
     }
   }
+  // The page back at the front, or the network online again, connects at once and starts the steps again (R70).
+  const view = document.defaultView ?? window
+  const onFront = () => {
+    if (isHidden()) return
+    fresh()
+    if (backingOff) wake?.()
+  }
+  view.addEventListener('online', onFront)
+  document.addEventListener('visibilitychange', onFront)
   void run()
   return {
     watchers: 0,
     retry: () => {
       update((view) => ({ ...view, problem: undefined }))
+      // The owner's Retry starts a new row: its misses say "Reconnecting…" again, then the line once more (#503 P1).
+      fresh()
       armStall()
       // Between connections Retry ends the wait; during one (a stream or a read with no answer yet) it ends that
       // connection and starts a new one.
@@ -669,8 +733,10 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
     },
     older: (idle) => void older(idle),
     stop: () => {
-      endGrace()
       clearTimeout(stall)
+      fresh()
+      view.removeEventListener('online', onFront)
+      document.removeEventListener('visibilitychange', onFront)
       abort.abort()
     },
   }
