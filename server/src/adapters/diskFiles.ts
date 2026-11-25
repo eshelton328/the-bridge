@@ -28,26 +28,28 @@ function gitFiles(dir: string, pathspec: readonly string[]): Promise<Result<stri
   return new Promise((resolve) => {
     // execFile throws, not calls back, for an argument it cannot pass, such as one with a NUL.
     try {
-      run()
+      const args = ['--literal-pathspecs', 'ls-files', '-z', '--', ...pathspec]
+      execFile(
+        'git',
+        args,
+        { cwd: dir, timeout: 5_000, maxBuffer: 64 * 1024 ** 2, encoding: 'utf8' },
+        (error, stdout) => {
+          resolve(
+            error === null
+              ? ok(stdout.split('\0').filter((p) => p !== ''))
+              : err({ reason: 'failed', code: codeOf(error) }),
+          )
+        },
+      )
     } catch (thrown) {
       resolve(err({ reason: 'failed', code: codeOf(thrown) }))
     }
-    function run() {
-      execFile(
-        'git',
-        ['--literal-pathspecs', 'ls-files', '-z', '--', ...pathspec],
-        { cwd: dir, timeout: 5_000, maxBuffer: 64 * 1024 ** 2, encoding: 'utf8' },
-        (error, stdout) => {
-          if (error !== null) {
-            resolve(err({ reason: 'failed', code: codeOf(error) }))
-            return
-          }
-          resolve(ok(stdout.split('\0').filter((p) => p !== '')))
-        },
-      )
-    }
   })
 }
+
+/** A path that is no tracked path of a root: hidden, with a NUL, or with an empty, `.` or `..` part. */
+const badPath = (path: string) =>
+  hidden(path) || path.includes('\0') || path.split('/').some((part) => part === '' || part === '.' || part === '..')
 
 export function createDiskFiles({ brainDir }: DiskFilesOptions): FileStore {
   return {
@@ -58,13 +60,7 @@ export function createDiskFiles({ brainDir }: DiskFilesOptions): FileStore {
       return listed.ok ? ok(listed.value.filter((p) => !hidden(p))) : listed
     },
     async read(root, path, max) {
-      if (
-        root !== 'brain' ||
-        hidden(path) ||
-        path.includes('\0') ||
-        path.split('/').some((part) => part === '' || part === '.' || part === '..')
-      )
-        return ok('notFound')
+      if (root !== 'brain' || badPath(path)) return ok('notFound')
       const dir = brainDir
       const tracked = await gitFiles(dir, [path])
       if (!tracked.ok) return tracked

@@ -21,17 +21,14 @@ describe('FilesQuery', () => {
 })
 
 describe('FileRawQuery', () => {
-  it('takes a root and a path, or an absolute path', () => {
-    expect(FileRawQuery.safeParse({ root: 'brain', path: 'images/a.png' }).success).toBe(true)
-    expect(FileRawQuery.safeParse({ path: '/tmp/a.png' }).success).toBe(true)
-  })
-
   it.each([
-    ['a relative path with no root', { path: 'images/a.png' }],
-    ['an absolute path with a root', { root: 'brain', path: '/tmp/a.png' }],
-    ['a path with a NUL', { path: '/tmp/a\0.png' }],
-    ['another key', { path: '/tmp/a.png', type: 'png' }],
-  ])('refuses %s', (_, query) => {
-    expect(FileRawQuery.safeParse(query).success).toBe(false)
+    [true, { root: 'brain', path: 'images/a.png' }],
+    [true, { path: '/tmp/a.png' }],
+    [false, { path: 'images/a.png' }],
+    [false, { root: 'brain', path: '/tmp/a.png' }],
+    [false, { path: '/tmp/a\0.png' }],
+    [false, { path: '/tmp/a.png', type: 'png' }],
+  ])('gives %s for %j', (valid, query) => {
+    expect(FileRawQuery.safeParse(query).success).toBe(valid)
   })
 })
