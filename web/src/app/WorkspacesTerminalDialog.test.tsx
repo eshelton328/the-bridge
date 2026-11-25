@@ -23,6 +23,7 @@ import { resetAllStores } from '../state/resetStores.ts'
 import { markApp } from './appMarker.ts'
 import { stubLiveServer } from './liveServerStub.ts'
 import { routeTree } from './routeTree.gen.ts'
+import { applyTextSize } from './textSize.ts'
 
 // R69: a chat that needs the owner on a dialog its transcript does not hold
 // (a skill's numbered step) shows the dialog as a card after the entries,
@@ -415,6 +416,29 @@ describe("a chat's terminal dialog (R69)", () => {
     await expect.element(card()).not.toBeInTheDocument()
     expect(workspaces.dialogAnswers).toEqual([{ chat: plan, body: { id: sample.id, n: 1 } }])
   })
+
+  // R72 at 390: "Sending…" is narrower than "Send answer", and the quiet line moved up beside it, so the card got
+  // about 32 shorter and the transcript above it jumped.
+  for (const size of ['default', 'large'] as const)
+    it(`keeps the card's height while the answer goes, on the phone at ${size} text`, async () => {
+      applyTextSize(size)
+      onTestFinished(() => {
+        applyTextSize('small')
+      })
+      const { workspaces, gate } = withChats()
+      workspaces.showDialog(plan, sample)
+      await openChat(phone)
+      await userEvent.click(choice('Send structured'))
+      await expect.element(sendButton()).toBeEnabled()
+      const selected = card().element().getBoundingClientRect().height
+      gate.hold = true
+      await userEvent.click(sendButton())
+      await expect.element(card().getByRole('button', { name: 'Sending…', exact: true })).toBeDisabled()
+      expect(Math.abs(card().element().getBoundingClientRect().height - selected)).toBeLessThanOrEqual(1)
+      gate.hold = false
+      gate.release()
+      await expect.element(card()).not.toBeInTheDocument()
+    })
 
   it('keeps the options of a dialog read while an answer goes off until that answer ends', async () => {
     const { workspaces, gate } = withChats()

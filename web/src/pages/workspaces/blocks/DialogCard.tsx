@@ -12,7 +12,8 @@
 // finger sends nothing. The server lists only the options a tap can
 // answer, with their own numbers (free-text ones such as "Type something"
 // stay out); the number is not shown, and a quiet line says "Other answers:
-// in the terminal". While an answer goes, after it went and after a 409
+// in the terminal". The button keeps the width of "Send answer" while it
+// says "Sending…" or "Sent", so the card keeps its height. While an answer goes, after it went and after a 409
 // `dialogChanged` the rows and the button are off; a 409 shows a quiet note
 // until the next read; another miss shows a line, with Retry when it may
 // work later. A dialog the server could not read for sure (no `options`)
@@ -64,6 +65,12 @@ const rawBox = css({ maxH: 'shell.pickerHeight', overflowY: 'auto' })
 const quietLine = css({ m: '0', textStyle: 'small', color: 'fg.muted' })
 // Send answer keeps to the end of the row, also on its own line when the row wraps on a phone.
 const atEnd = css({ ml: 'auto' })
+// The button's label sits over a hidden copy of "Send answer", its widest label, so the button keeps one width while
+// it turns into "Sending…" and "Sent": the footer wraps the same way in every state and the card keeps its height. The
+// copy is aria-hidden, so the button's name is its label alone.
+const sendLabelBox = css({ display: 'inline-grid', justifyItems: 'center', alignItems: 'center' })
+const widestLabel = css({ gridArea: '1 / 1', visibility: 'hidden' })
+const sendLabelText = css({ gridArea: '1 / 1', display: 'inline-flex', alignItems: 'center', gap: '6' })
 
 /** The question of `dialog`, and its title when the title says more than the question. */
 function heading(dialog: PaneDialog): { title: string | undefined; question: string | undefined } {
@@ -153,8 +160,15 @@ export function DialogCard({ view, onAnswer, onRetry }: DialogCardProps) {
                   disabled={off || pick === undefined}
                   onClick={send}
                 >
-                  {phase === 'sent' ? <CheckIcon /> : null}
-                  {sendLabel}
+                  <span className={sendLabelBox}>
+                    <span className={widestLabel} aria-hidden="true">
+                      {dialogText.send}
+                    </span>
+                    <span className={sendLabelText}>
+                      {phase === 'sent' ? <CheckIcon /> : null}
+                      {sendLabel}
+                    </span>
+                  </span>
                 </Button>
               </Inline>
             </>
