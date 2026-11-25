@@ -312,6 +312,18 @@ describe('watchTranscript', () => {
     expect(getReports()).toEqual([])
   })
 
+  it('reads again on the backoff when the read after a 404 stream gets a 5xx', async () => {
+    const server = fakeTranscriptServer()
+    server.set(chat, [user('u1', 'go')])
+    server.answerStreams(() => new Response('', { status: 404 }))
+    server.answerReads(() => new Response('', { status: 502 }))
+    watch(server)
+    await expect.poll(() => view()?.problem).toBe(transcriptText.reconnecting)
+    server.answerReads(undefined)
+    await expect.poll(ids).toEqual(['u1'])
+    expect(view()?.problem).toBeUndefined()
+  })
+
   it('shows the line again after Retry when the outage goes on', async () => {
     const server = fakeTranscriptServer()
     server.set(chat, [user('u1', 'go')])

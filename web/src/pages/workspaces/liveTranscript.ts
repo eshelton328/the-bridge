@@ -486,10 +486,10 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
     if (res.status === 404) {
       // The read decides: a 404 read shows its line (an unknown chat); a 200 read shows the transcript with no line,
       // no report and no connecting again, as the server has no stream route yet (before backend 3b-3) or the chat
-      // went away between the two answers. The page reads again when the chat opens again.
+      // went away between the two answers. The page reads again when the chat opens again. A read with a 5xx or no
+      // answer tries again on the backoff (#503 P2).
       connection.abort()
-      await load(abort.signal)
-      return 'wait'
+      return (await load(abort.signal)) === 'retry' ? 'again' : 'wait'
     }
     if (!res.ok || res.body === null) {
       connection.abort()
