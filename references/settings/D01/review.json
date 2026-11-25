@@ -1,8 +1,8 @@
 {
   "frameId": "D01",
-  "inputs": "e0317bd640498defad4fc64316867c0f3cdd98c916783cfe4e69ec5bd84e18d7",
+  "inputs": "1c1d8c18d242a3523c8dc9472ad9ca2f5ca70e74ad3f361b9507ff639c67c05f",
   "library": "1.0.0-beta.128",
-  "recordSha256": "59be959b3ece17d3a84f1d2199bdd58ddc05e1aa9149f9f97c08670a045cab4a",
+  "recordSha256": "611a416178825765fb6d93933bf41cfe7be53f26a218cd2ef04dde41cde6a353",
   "record": {
     "verdict": "match",
     "viewport": "desktop 1512x982, Dark",
@@ -12,7 +12,7 @@
       "render": "reports/fidelity/settings/D01.sideBySide.png",
       "reference_side": "left"
     },
-    "summary": "Apart from the accepted deviations, the render matches the reference: the rail, heading, Appearance card and visible Navigation rows have the same content, states, sizes and alignment.",
+    "summary": "Apart from the accepted deviations, the render matches the reference. The page header, rail and Appearance card are the same, and the new Chat width row and Rich text card follow the reference's styles and spacing.",
     "findings": [],
     "accepted_deviations": [
       {
@@ -20,40 +20,47 @@
         "as_given": "Text size: the control is enabled, with Default selected as in the reference, and the line under it says \"Scales the text of the whole app. Small is the size of the designs.\" in place of \"Scales the whole app: Small 87.5 %, Default 100 %, Large 112.5 %.\" (d-122 and d-131). The line has a different length, so on a narrow screen it can take one more or one less text line than the reference, and every section below it then sits that much lower or higher.",
         "status": "as-described",
         "finding": null,
-        "note": "The control is enabled with Default selected. The new line is one text line, as in the reference (y about 398 in both 1:1 crops)."
+        "note": "The new line is on one text line at y about 398 in the 1:1 crop, the same as the reference."
       },
       {
         "id": "A2",
         "as_given": "A new \"NOTIFICATIONS\" section with one \"Notifications\" switch (off) sits between the Navigation section and the New chat defaults section. So New chat defaults sits lower, or below the bottom edge.",
         "status": "not-seen",
         "finding": null,
-        "note": "The Navigation card goes past the bottom edge of the 982 px render, so the Notifications section is not in the frame. New chat defaults is below the bottom edge, which the description allows."
+        "note": "Navigation and the sections below it are under the bottom edge of the render, so this section is not in the frame."
       },
       {
         "id": "A3",
         "as_given": "The Notifications switch moved to that section: the desktop rail no longer has the \"Notifications / Blocked in Settings\" switch at its bottom, and the More drawer no longer has the \"Notifications / Blocked in Settings\" row at its end. So the drawer is shorter and its top edge sits lower.",
         "status": "as-described",
         "finding": null,
-        "note": "The rail bottom has no switch, and nothing else is there. The More drawer is closed in this frame, so the drawer part cannot be checked."
+        "note": "The bottom of the rail is empty in the render. The More drawer is closed in both pictures."
       },
       {
         "id": "A4",
         "as_given": "The Navigation list has a new last row, \"Settings\", with the line \"Always shown: in the bar or under More.\" under it and up and down buttons but no switch (the owner's decision: Settings is an entry of the bar order that cannot be hidden). So Toolkit's down button is now enabled, the Navigation card is taller, and every section below it sits lower or below the bottom edge.",
-        "status": "as-described",
+        "status": "not-seen",
         "finding": null,
-        "note": "Toolkit's down button is enabled and the card continues past the bottom edge. The Settings row itself is below the bottom edge and is not in the frame."
+        "note": "The Navigation card is under the bottom edge of the render."
       },
       {
         "id": "A5",
         "as_given": "Appearance has a new last row, \"Chat width\", under Text size: a three-way control \"Full\", \"Wide\", \"Narrow\" with Full selected, and a line under it. On the desktop and the tablet the control is enabled and the line says \"The messages and the message box of a Workspaces chat, centred.\"; on the phone the control is disabled (muted labels) and the line says \"Phone: always full\". So the Appearance card is taller, and every section below it sits lower (about one row) or below the bottom edge.",
         "status": "as-described",
         "finding": null,
-        "note": "Chat width is enabled with Full selected, and the line under it reads as given. The Appearance card ends at y about 519 (reference: about 419), and the Navigation card moves down by the same 100 px."
+        "note": "Chat width is enabled with Full selected, and the line under it is the desktop text. The card is about one row taller."
+      },
+      {
+        "id": "A6",
+        "as_given": "Rich text: a new \"RICH TEXT\" section sits between Appearance and Navigation, with the line \"Off shows the plain Markdown. No text is hidden.\" and six switches, all on: Callouts, Code highlighting, Chat links (with the line \"Chat bubbles in messages\" under it), Mermaid diagrams, Math and Images (bridge-coord, 2026-11-25, the owner's request). So Navigation and every section below it sit lower, or below the bottom edge.",
+        "status": "as-described",
+        "finding": null,
+        "note": "All six switches are on and the text is as given. The rows are 60 px apart, the same as the reference Navigation rows. Navigation is pushed below the bottom edge."
       }
     ],
     "limits": [
-      "The render shows only the top 982 px, so the Settings row in Navigation, the Notifications section and New chat defaults are below the bottom edge and could not be checked.",
-      "The More drawer is closed in this frame, so the drawer part of A3 could not be checked."
+      "The Navigation, Notifications and New chat defaults sections are below the bottom edge of the render, so they could not be compared.",
+      "The More drawer is closed in both pictures, so the drawer part of A3 could not be checked."
     ]
   }
 }
