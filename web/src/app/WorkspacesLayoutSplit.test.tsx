@@ -16,7 +16,8 @@ import { type FakeWorkspacesServer, fakeWorkspacesServer } from '../lib/fakeWork
 import { answerLateServerReads } from '../lib/lateServerReads.ts'
 import { placed } from '../lib/popoverPlaced.ts'
 import { queryClient } from '../lib/queryClient.ts'
-import { afterRendering, setViewport } from '../lib/rendering.ts'
+import { clickNow, holdTimers } from '../lib/holdTimers.ts'
+import { afterRendering, renderedUntil, setViewport } from '../lib/rendering.ts'
 import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { markApp } from './appMarker.ts'
@@ -158,6 +159,11 @@ const actionsButton = (title: string) => page.getByRole('button', { name: `${tit
 const quiet = (ms = 400) => new Promise((resolve) => setTimeout(resolve, ms))
 const writesOf = (fakes: Fakes) => fakes.list.writes.map((w) => ({ chat: w.chat, action: w.action, body: w.body }))
 const valueOf = (handle: Element) => Number(handle.getAttribute('aria-valuenow'))
+/** Presses `key` on `target` with DOM key events, which move no held clock, as a Vitest key press does (`holdTimers`). */
+function keyNow(target: Element, key: string): void {
+  for (const type of ['keydown', 'keyup'])
+    target.dispatchEvent(new KeyboardEvent(type, { key, bubbles: true, cancelable: true }))
+}
 
 async function pickInMenu(title: string, label: string) {
   await userEvent.click(actionsButton(title))
@@ -386,9 +392,19 @@ describe('ratio (W2c)', () => {
     await showPanes()
     const columns = handle('Resize columns')
     if (columns instanceof HTMLElement) columns.focus()
-    for (let i = 0; i < 3; i += 1) await userEvent.keyboard('{ArrowLeft}')
-    await expect.poll(() => valueOf(columns)).toBeLessThan(50)
+    // The pause is the app's 400 ms timer on a held clock: a Vitest key press is a round trip that a busy runner
+    // can stretch past 400 ms (CI run 45554796848: 517 ms), which is a pause, and the app sent after the first key.
+    const release = holdTimers()
+    // Each key moves the handle from the size the last one drew, so the test waits for that render.
+    for (let i = 1; i <= 3; i += 1) {
+      keyNow(columns, 'ArrowLeft')
+      await renderedUntil(() => valueOf(columns) === 50 - i)
+    }
+    vi.advanceTimersByTime(399)
+    await afterRendering()
     expect(writesOf(fakes)).toEqual([])
+    vi.advanceTimersByTime(1)
+    release()
     await expect.poll(() => writesOf(fakes)).toHaveLength(1)
     expect(writesOf(fakes)[0]).toMatchObject({ action: 'ratio', body: { tab, path: [], ratio: 0.47 } })
     await quiet(800)
@@ -400,8 +416,16 @@ describe('ratio (W2c)', () => {
     await showPanes()
     const columns = handle('Resize columns')
     if (columns instanceof HTMLElement) columns.focus()
-    for (let i = 0; i < 2; i += 1) await userEvent.keyboard('{ArrowRight}')
-    await userEvent.click(page.getByRole('tab', { name: /solo work/ }))
+    const release = holdTimers()
+    for (let i = 1; i <= 2; i += 1) {
+      keyNow(columns, 'ArrowRight')
+      await renderedUntil(() => valueOf(columns) === 50 + i)
+    }
+    clickNow(page.getByRole('tab', { name: /solo work/ }).element())
+    await afterRendering()
+    expect(writesOf(fakes)).toEqual([])
+    vi.advanceTimersByTime(400)
+    release()
     await expect.poll(() => writesOf(fakes)).toHaveLength(1)
     expect(writesOf(fakes)[0]).toMatchObject({ chat: live, action: 'ratio', body: { tab, path: [], ratio: 0.52 } })
   })
