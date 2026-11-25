@@ -140,6 +140,7 @@ describe('/api/files', () => {
     const bodies: unknown[] = []
     for (const query of [
       'path=%2Fetc%2Fhosts',
+      `path=${encodeURIComponent('/opt/elsewhere/.ssh/id_ed25519')}`,
       'root=brain&path=notes/outside.md',
       'root=brain&path=images/gone.png',
     ]) {
@@ -149,7 +150,8 @@ describe('/api/files', () => {
       expect(JSON.stringify(error)).not.toContain('hosts')
       bodies.push({ ...error, requestId: '' })
     }
-    expect(bodies).toEqual([bodies[0], bodies[0], bodies[0]])
+    expect(bodies).toEqual(bodies.map(() => bodies[0]))
+    expect(JSON.stringify(bodies)).not.toContain('id_ed25519')
     expect((await get('/api/files/raw?root=brain&path=../x.png')).status).toBe(400)
   })
 

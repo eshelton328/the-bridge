@@ -49,6 +49,25 @@ describe('createDiskFiles', () => {
   })
 })
 
+describe('locate on the disk', () => {
+  it.each([
+    ['/etc/hosts', () => Promise.resolve('/etc/hosts')],
+    [
+      'a real file beside the brain, as a path under the home folder outside it',
+      async (parent: string) => {
+        await writeFile(join(parent, 'id_ed25519'), 'secret\n')
+        return join(parent, 'id_ed25519')
+      },
+    ],
+  ])('finds no root for %s', async (_, outside) => {
+    const parent = await mkdtemp(join(tmpdir(), 'bridge-home-'))
+    const brainDir = join(parent, 'brain')
+    await mkdir(brainDir)
+    const store = createDiskFiles({ brainDir, env: process.env })
+    expect(await store.locate(await outside(parent))).toEqual({ ok: true, value: 'notFound' })
+  })
+})
+
 describe('gitEnv', () => {
   it('keeps PATH, HOME and LANG only, never a GIT_ variable', () => {
     const env = { PATH: '/bin', HOME: '/h', LANG: 'C', GIT_DIR: '/other', GIT_CONFIG_COUNT: '1', TOKEN: 'x' }
