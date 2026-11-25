@@ -10,6 +10,7 @@
 import { Button, ExternalLinkIcon, Inline, MarkdownView, Panel, Stack } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import { DetailFrame } from '../../../blocks/DetailFrame.tsx'
+import type { CopyCode } from '../../../blocks/MarkdownCodeFence.tsx'
 import { MarkdownText } from '../../../blocks/MarkdownText.tsx'
 import { BlockBoundary } from '../../../errors/BlockBoundary.tsx'
 import type { Viewport } from '../../../lib/screenState.ts'
@@ -60,9 +61,11 @@ export type LiveDetailProps = {
   onBack?: (() => void) | undefined
   /** Open chat: the chat item's chat in Workspaces. */
   onOpenChat?: (() => void) | undefined
+  /** Copies a code block's code in the record's text (the page's copyText); without it a code block has no copy button. */
+  onCopyCode?: CopyCode | undefined
 }
 
-export function LiveDetail({ row, open, layout, snooze, onBack, onOpenChat }: LiveDetailProps) {
+export function LiveDetail({ row, open, layout, snooze, onBack, onOpenChat, onCopyCode }: LiveDetailProps) {
   const phone = layout === 'phone'
   const head = headOf(row, open)
   const back =
@@ -110,8 +113,8 @@ export function LiveDetail({ row, open, layout, snooze, onBack, onOpenChat }: Li
         {open.read === 'read' && open.source === 'brain' && open.body !== undefined && open.body.trim() !== '' ? (
           <DetailSection title="Context">
             <BlockBoundary contentKey={row.id}>
-              <MarkdownView size="sm" padding="none">
-                <MarkdownText text={open.body} size="sm" />
+              <MarkdownView size="sm" padding="none" inlineCode="badge">
+                <MarkdownText text={open.body} size="sm" onCopyCode={onCopyCode} />
               </MarkdownView>
             </BlockBoundary>
           </DetailSection>

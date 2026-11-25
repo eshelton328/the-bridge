@@ -14,11 +14,17 @@
 // size of its MarkdownView. A GitHub alert (`> [!NOTE]`) is the library's
 // Callout (`remarkCallout.ts`, `MarkdownQuote.tsx`). A live chat's name
 // becomes a mention that opens the chat (remarkChatMentions.ts), with the
-// chats from MarkdownChatsContext. The caller wraps it in a BlockBoundary.
+// chats from MarkdownChatsContext. A fenced code block is the library's
+// MarkdownCodeBlock (`MarkdownCodeFence.tsx`: its label, syntax colours,
+// sideways scroll, a diff's tints, a fold and Copy with `onCopyCode`). The
+// plugins are one list and the element overrides one map per size, so a
+// later plugin (math, diagrams) adds an entry to each. The caller wraps it
+// in a BlockBoundary.
 import { use, useMemo, type ReactNode } from 'react'
 import Markdown, { type Components, type ExtraProps, type Options } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { ChatMention } from './ChatMention.tsx'
+import { CopyCodeContext, type CopyCode, MarkdownCodeFence } from './MarkdownCodeFence.tsx'
 import { MarkdownChatsContext } from './markdownChats.ts'
 import { MarkdownQuote } from './MarkdownQuote.tsx'
 import { type MarkdownSize, markdownTableParts } from './markdownTableParts.ts'
@@ -61,6 +67,7 @@ const inline: Components = {
     )
   },
   img: ({ alt }) => alt ?? null,
+  pre: MarkdownCodeFence,
   // remark-gfm writes a task list's box with no label (axe: label); the box is read-only, so its name is its state.
   input: ({ type, checked, disabled }) => (
     <input
@@ -104,9 +111,11 @@ export type MarkdownTextProps = {
   text: string
   /** The size of the MarkdownView around it, for a table's text: `md` (the default) or `sm`. */
   size?: MarkdownSize | undefined
+  /** Copies a code block's code (the page's copyText); without it a code block has no copy button. */
+  onCopyCode?: CopyCode | undefined
 }
 
-export function MarkdownText({ text, size = 'md' }: MarkdownTextProps) {
+export function MarkdownText({ text, size = 'md', onCopyCode }: MarkdownTextProps) {
   const { chats } = use(MarkdownChatsContext)
   const plugins = useMemo(
     (): NonNullable<Options['remarkPlugins']> =>
@@ -114,8 +123,10 @@ export function MarkdownText({ text, size = 'md' }: MarkdownTextProps) {
     [chats],
   )
   return (
-    <Markdown remarkPlugins={plugins} components={components[size]}>
-      {text}
-    </Markdown>
+    <CopyCodeContext value={onCopyCode}>
+      <Markdown remarkPlugins={plugins} components={components[size]}>
+        {text}
+      </Markdown>
+    </CopyCodeContext>
   )
 }

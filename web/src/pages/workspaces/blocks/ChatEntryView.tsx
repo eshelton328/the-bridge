@@ -50,7 +50,7 @@ export const ChatEntryView = memo(function ChatEntryView({ entry, figma, onAct, 
       const bubble =
         entry.text === '' && entry.files !== undefined ? null : (
           <Message from="user">
-            <EntryText text={entry.text} />
+            <EntryText text={entry.text} onCopyCode={onCopy} />
           </Message>
         )
       const cut = entry.cut === undefined ? null : <span className={cutLine}>{entry.cut}</span>
@@ -101,7 +101,7 @@ export const ChatEntryView = memo(function ChatEntryView({ entry, figma, onAct, 
     case 'peer':
       // A message from another chat (R55): the library's peer message with its Markdown text, or its label alone
       // when the server sent no text, and the relayed-content note; never the owner's bubble.
-      return <PeerEntry entry={entry} figma={figma} />
+      return <PeerEntry entry={entry} figma={figma} onCopy={onCopy} />
     case 'assistant':
       // A reply, with its Copy and, when a Stop hook had it written again, its note and drafts (R62).
       return <ReplyEntry entry={entry} figma={figma} onCopy={onCopy} />

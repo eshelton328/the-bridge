@@ -48,6 +48,7 @@ import { InboxDetail } from './InboxDetail.tsx'
 import { InboxListPane } from './InboxListPane.tsx'
 import { listView } from './listView.ts'
 import { LiveDetail } from './LiveDetail.tsx'
+import type { CopyCode } from '../../../blocks/MarkdownCodeFence.tsx'
 import { startView } from './startView.ts'
 
 // The live item fills the desktop's detail pane as an item does (InboxDetail).
@@ -75,6 +76,8 @@ export type InboxScreenProps = {
   onPromptOpenChange?: ((open: boolean) => void) | undefined
   /** Copy in the whole prompt's dialog or sheet, with the prompt's text; the page entry copies it. */
   onCopyPrompt?: ((text: string) => void) | undefined
+  /** Copy on a code block in a live item's text, with its code; the page entry copies it and says whether it did. */
+  onCopyCode?: CopyCode | undefined
   /** The text the owner typed in the search field; without it the field shows the state's query. */
   query?: string | undefined
   onQueryChange?: ((query: string) => void) | undefined
@@ -115,6 +118,7 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
     onBack,
     onPromptOpenChange,
     onCopyPrompt,
+    onCopyCode,
     onRemoveOpenChange,
     onUiChange,
     onSend,
@@ -273,6 +277,7 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
           },
         }}
         onBack={closeRow}
+        onCopyCode={onCopyCode}
         onOpenChat={
           onOpenChat === undefined
             ? undefined

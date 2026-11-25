@@ -1,5 +1,7 @@
-import { afterEach, describe, expect, it } from 'vitest'
-import { page } from 'vitest/browser'
+import '../index.css'
+import { err, ok } from '@bridge/shared'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { page, userEvent } from 'vitest/browser'
 import { testRender } from '../lib/testRender.ts'
 import { MarkdownText } from './MarkdownText.tsx'
 
@@ -60,5 +62,44 @@ describe('an explicit link whose text is its www. address', () => {
     await expect
       .element(page.getByRole('link', { name: 'www.example.org' }))
       .toHaveAttribute('href', 'https://www.example.org')
+  })
+})
+
+// Chat rich text (2026-11-25): a fenced block is the library's MarkdownCodeBlock, with its label, syntax colours once
+// the highlighter loads, and Copy only when the caller gives one. The code is made up.
+const tsFence = ['```ts', 'const total = sum(2, "x")', '// a sample note', '```'].join('\n')
+
+describe('a fenced code block', () => {
+  it('shows its label and colours its code, keeping the text whole', async () => {
+    view = await testRender(<MarkdownText text={tsFence} />)
+    await expect.element(page.getByText('ts', { exact: true })).toBeVisible()
+    const block = document.querySelector('[data-language="ts"]')
+    if (block === null) throw new Error('no code block')
+    // The first load of the highlighter in a test run compiles highlight.js, which can take some seconds.
+    await expect
+      .poll(() => block.querySelector('[data-kind="keyword"]')?.textContent, { timeout: 10_000 })
+      .toBe('const')
+    expect(block.querySelector('[data-kind="comment"]')?.textContent).toBe('// a sample note')
+    expect(block.querySelector('pre')?.textContent).toBe('const total = sum(2, "x")\n// a sample note')
+    // No copy button without a copy.
+    expect(page.getByRole('button', { name: 'Copy code' }).query()).toBeNull()
+  })
+
+  it('draws a label the chat does not colour plain, and loads nothing for it', async () => {
+    view = await testRender(<MarkdownText text={['```rust', 'fn main() {}', '```'].join('\n')} />)
+    await expect.element(page.getByText('rust', { exact: true })).toBeVisible()
+    expect(document.querySelector('.markdown-code-block [data-kind]')).toBeNull()
+  })
+
+  it("copies the block's whole code and says Copied, or Copy failed when the copy missed", async () => {
+    const copy = vi.fn((code: string) => Promise.resolve(code === '' ? err('refused' as const) : ok(undefined)))
+    view = await testRender(<MarkdownText text={tsFence} onCopyCode={copy} />)
+    await userEvent.click(page.getByRole('button', { name: 'Copy code' }))
+    expect(copy).toHaveBeenCalledWith('const total = sum(2, "x")\n// a sample note')
+    await expect.element(page.getByRole('status')).toHaveTextContent('Copied')
+    await view.unmount()
+    view = await testRender(<MarkdownText text={tsFence} onCopyCode={() => Promise.resolve(err('refused' as const))} />)
+    await userEvent.click(page.getByRole('button', { name: 'Copy code' }))
+    await expect.element(page.getByRole('status')).toHaveTextContent('Copy failed')
   })
 })
