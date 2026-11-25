@@ -426,6 +426,14 @@ describe("a live chat's transcript (slice 3b)", () => {
         expect(inside(mark)).toBe(true)
         expect(inside(title)).toBe(shows.title)
         expect(inside(line)).toBe(shows.line)
+        // A hidden part wraps whole into the next column, past the box's right edge, so none of its glyphs is drawn:
+        // it is never cut through.
+        for (const [el, shown] of [
+          [title, shows.title],
+          [line, shows.line],
+        ] as const)
+          if (!shown)
+            expect(el.getBoundingClientRect().left).toBeGreaterThanOrEqual(empty.getBoundingClientRect().right - 0.5)
       }
       // The keyboard closes: all three show again.
       field.blur()
