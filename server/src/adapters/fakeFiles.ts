@@ -19,9 +19,9 @@ export function createFakeFiles({ tracked, unreadable = [] }: FakeFilesOptions):
     if (text !== undefined) bytes.set(path, new TextEncoder().encode(text))
   }
   return {
-    list: () => Promise.resolve(ok(listed)),
-    read: (_root, path, max) => {
-      const found = bytes.get(path)
+    list: (root) => Promise.resolve(ok(root === 'brain' ? listed : [])),
+    read: (root, path, max) => {
+      const found = root === 'brain' ? bytes.get(path) : undefined
       const value: Uint8Array | 'notFound' | 'tooLarge' =
         found === undefined ? 'notFound' : found.length > max ? 'tooLarge' : found
       return Promise.resolve(ok(value))

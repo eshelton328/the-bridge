@@ -50,12 +50,15 @@ function gitFiles(dir: string, pathspec: readonly string[]): Promise<Result<stri
 
 export function createDiskFiles({ brainDir }: DiskFilesOptions): FileStore {
   return {
-    async list() {
+    // Only the brain for now: a chat root gets its git repository in a later PR.
+    async list(root) {
+      if (root !== 'brain') return ok([])
       const listed = await gitFiles(brainDir, [])
       return listed.ok ? ok(listed.value.filter((p) => !hidden(p))) : listed
     },
-    async read(_root, path, max) {
+    async read(root, path, max) {
       if (
+        root !== 'brain' ||
         hidden(path) ||
         path.includes('\0') ||
         path.split('/').some((part) => part === '' || part === '.' || part === '..')

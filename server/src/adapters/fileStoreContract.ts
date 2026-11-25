@@ -1,5 +1,6 @@
 // The one contract suite of the FileStore. The disk store and the fake run
 // it, so the fake cannot drift from what it stands for.
+import { ChatId } from '@bridge/contract'
 import { describe, expect, it } from 'vitest'
 import type { FileStore } from '../services/fileStore.ts'
 
@@ -58,6 +59,13 @@ export function describeFileStore(name: string, makeStore: (fixture: FileStoreFi
     ])('does not read %s', async (_, path) => {
       const store = await makeStore(fixture)
       expect(await store.read('brain', path, 1024)).toEqual({ ok: true, value: 'notFound' })
+    })
+
+    it('serves no root but the brain: a chat root lists nothing and reads nothing', async () => {
+      const store = await makeStore(fixture)
+      const chat = ChatId.parse('test-mac/chat-a')
+      expect(await store.list(chat)).toEqual({ ok: true, value: [] })
+      expect(await store.read(chat, 'README.md', 1024)).toEqual({ ok: true, value: 'notFound' })
     })
 
     it('does not read a file over the size it is given', async () => {
