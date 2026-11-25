@@ -174,15 +174,11 @@ export function openChat(data: WorkspacesData, ui: WorkspacesUi, chat: string): 
 }
 
 /**
- * The shown-tab change that a row's chat needs (R74; `openChat`, and the phone's and the tablet's list): the workbench shows the herdr tab that holds `chat`. A chat in
+ * The shown-tab change that a row's chat needs (R74): the workbench shows the herdr tab that holds `chat`. A chat in
  * herdr's active tab drops the workspace's shown tab, so herdr's active tab shows; a chat in another tab shows that tab
- * in its place, as a moved chat does (`shownTabs.ts`). The page sends herdr no focus for it. With no layout read of
- * the workspace, or a chat no tab holds, nothing changes.
+ * in its place, as a moved chat does (`shownTabs.ts`). The page sends herdr no focus for it. Undefined with no layout
+ * read of the workspace, or for a chat no tab holds.
  */
-export const rowTab = (data: WorkspacesData, ui: WorkspacesUi, chat: string): Partial<WorkspacesUi> =>
-  liveTabChange(data, ui, chat) ?? {}
-
-/** `rowTab`'s change, or undefined when no herdr tab the page read holds `chat`. */
 function liveTabChange(data: WorkspacesData, ui: WorkspacesUi, chat: string): Partial<WorkspacesUi> | undefined {
   const workspace = ownerOf(data, chat)?.id
   if (workspace === undefined) return undefined

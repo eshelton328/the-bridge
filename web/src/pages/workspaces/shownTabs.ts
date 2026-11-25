@@ -8,7 +8,10 @@
 // `active` (what the workbench draws, zooms and resizes) and keeps herdr's
 // own in `herdrActive` (what a focus needs). The page shows herdr's active
 // tab again once herdr's active tab changes (a header tap, Focus in
-// terminal, the terminal) or the shown tab closes.
+// terminal, the terminal) or the shown tab closes. A chat the owner opens
+// in herdr's active tab that the page's drawn panes leave out (a tab of more
+// than `maxPanes`) draws that tab around it, as herdr's layout read does
+// around its focused pane (R74).
 import { layoutOfLiveTab } from './liveLayout.ts'
 import type { LiveTab, WorkspacesData, WorkspacesUi } from './types.ts'
 
@@ -44,10 +47,13 @@ export function followTab(
 export function withShownTabs(data: WorkspacesData, ui: WorkspacesUi): { data: WorkspacesData; ui: WorkspacesUi } {
   let liveTabs = data.liveTabs
   let next = ui
-  for (const [workspace, shown] of Object.entries(ui.shownTabs ?? {})) {
-    const tabs = data.liveTabs?.[workspace]
-    const tab = holding(tabs, shown)
-    if (tabs === undefined || tab === undefined) continue
+  for (const [workspace, tabs] of Object.entries(data.liveTabs ?? {})) {
+    const isShown = (next.workspace ?? data.current) === workspace
+    const tab = holding(tabs, ui.shownTabs?.[workspace])
+    if (tab === undefined) {
+      next = isShown ? aroundOpened(tabs, workspace, next) : next
+      continue
+    }
     const focus = tab.chats.includes(next.focusedPane) ? next.focusedPane : tab.focused
     const layout = layoutOfLiveTab(tab, focus)
     if (layout === undefined) continue
@@ -55,12 +61,28 @@ export function withShownTabs(data: WorkspacesData, ui: WorkspacesUi): { data: W
       ...liveTabs,
       [workspace]: tabs.map((t) => ({ ...t, active: t === tab, herdrActive: t.active })),
     }
-    const isShown = (next.workspace ?? data.current) === workspace
     next = {
       ...next,
       layouts: { ...next.layouts, [workspace]: { ...layout, sideChatOpen: next.layouts?.[workspace]?.sideChatOpen } },
       ...(isShown ? { focusedPane: focus } : {}),
     }
   }
-  return liveTabs === data.liveTabs ? { data, ui } : { data: { ...data, liveTabs }, ui: next }
+  return liveTabs === data.liveTabs && next === ui ? { data, ui } : { data: { ...data, liveTabs }, ui: next }
+}
+
+/**
+ * The shown workspace's ui with herdr's active tab drawn around the chat the owner opened (R74, a row or a `?chat=`
+ * link), when that tab holds it but its drawn panes, at most `maxPanes` of a larger tab, leave it out.
+ */
+function aroundOpened(tabs: readonly LiveTab[], workspace: string, ui: WorkspacesUi): WorkspacesUi {
+  const active = tabs.find((t) => t.active)
+  const drawn = ui.layouts?.[workspace]?.panes
+  if (active === undefined || drawn === undefined || !active.chats.includes(ui.focusedPane)) return ui
+  if (drawn.includes(ui.focusedPane)) return ui
+  const layout = layoutOfLiveTab(active, ui.focusedPane)
+  if (layout === undefined) return ui
+  return {
+    ...ui,
+    layouts: { ...ui.layouts, [workspace]: { ...layout, sideChatOpen: ui.layouts?.[workspace]?.sideChatOpen } },
+  }
 }

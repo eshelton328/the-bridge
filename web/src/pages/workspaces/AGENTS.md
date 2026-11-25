@@ -611,9 +611,13 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   reads), so its splits, swaps and ratios work as in herdr's active tab.
   It shows herdr's active tab again once that tab changes or the shown
   tab closes. A row's tap and a `?chat=` link show the chat's own tab
-  the same way (R74, `workspaceLayout.ts` `rowTab`): herdr's active tab
+  the same way (R74, `workspaceLayout.ts` `openChat`): herdr's active tab
   for a chat in it, else the chat's tab in its place, in that tab's own
-  layout, with no focus sent to herdr (`app/WorkspacesNewChat.test.tsx`). Move stays off while the chosen pane has left the tab.
+  layout, with no focus sent to herdr (`app/WorkspacesNewChat.test.tsx`). A chat of herdr's active tab
+  that its drawn panes leave out (a tab of more than four) draws that tab
+  around it (`withShownTabs`). The phone's and the tablet's row opens
+  its chat through `openChat` too, which selects the chat's workspace, so
+  a tab shown in another workspace never takes its focus. Move stays off while the chosen pane has left the tab.
   409 sameTab reads the layout again quietly, 409 zoomedTab with
   "Not moved — that tab is zoomed", a 404 reads the list, and any other
   miss says "Not moved — <kind>" in the status bar

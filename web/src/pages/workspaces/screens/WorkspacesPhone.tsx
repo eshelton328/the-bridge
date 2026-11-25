@@ -85,7 +85,7 @@ import { liveSkillList } from '../blocks/useSkillRows.ts'
 import { isChatCommand, withCommands } from '../blocks/chatCommands.ts'
 import { type LayoutWrites, tabOf, withLayoutActions } from '../blocks/layoutActions.ts'
 import { modelText } from '../blocks/modelText.ts'
-import { rowTab } from '../blocks/workspaceLayout.ts'
+import { openChat } from '../blocks/workspaceLayout.ts'
 import { type NewChatStarter, startOf } from '../blocks/newChatStart.ts'
 import type { PhoneText, WorkspaceEdits, WorkspacesData, WorkspacesUi } from '../types.ts'
 import type { ComposerAnswer } from '../blocks/useComposerActions.ts'
@@ -704,7 +704,7 @@ export function WorkspacesPhone({
               edits={edits}
               loading={loading}
               onOpenChat={(chat) => {
-                onUiChange({ ...rowTab(data, ui, chat), focusedPane: chat, phoneView: 'chat' })
+                onUiChange({ ...openChat(data, ui, chat), phoneView: 'chat' })
               }}
             />
           </SlotBoundary>

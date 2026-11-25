@@ -57,12 +57,17 @@ type Fakes = { list: FakeWorkspacesServer; chats: FakeTranscriptServer }
 
 /**
  * The fakes; with `hold`, each start's answer waits for it, with `noLayout` each layout read answers 502, and with
- * `tabs` the workspace's herdr tabs (one tab of both chats when not set).
+ * `tabs` the workspace's herdr tabs (one tab of both chats when not set); `workspaceList` is the server's list.
  */
-function withChats(hold?: Promise<void>, noLayout = false, tabs?: FakeWorkspacesOptions['tabs']): Fakes {
+function withChats(
+  hold?: Promise<void>,
+  noLayout = false,
+  tabs?: FakeWorkspacesOptions['tabs'],
+  workspaceList: typeof list = list,
+): Fakes {
   const chats = fakeTranscriptServer()
-  for (const c of [plan, review]) chats.set(c, [])
-  const workspaces = fakeWorkspacesServer(chats, list, tabs === undefined ? {} : { tabs })
+  for (const w of workspaceList.workspaces) for (const c of w.chats) chats.set(c.id, [])
+  const workspaces = fakeWorkspacesServer(chats, workspaceList, tabs === undefined ? {} : { tabs })
   vi.stubGlobal(
     'fetch',
     vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
@@ -221,6 +226,53 @@ describe('a row after a new chat (R74)', () => {
     await expect.element(page.getByRole('button', { name: 'Maximise notes' })).toBeVisible()
     expect(page.getByRole('button', { name: 'Maximise tab-three' }).elements()).toHaveLength(0)
     await expect.poll(() => router.state.location.search).toEqual({})
+    expect(getReports()).toEqual([])
+  })
+
+  it('opens a row’s chat that a five-pane tab leaves out of its drawn panes, on the desktop', async () => {
+    const more = ['c3', 'c4', 'c5'].map((c) => summary(`mac-mini/${c}`, `chat ${c}`))
+    const five = {
+      ...list,
+      workspaces: [
+        { id: live, label: 'live work', chats: [summary(plan, 'plan the slice'), ...more, summary(review, 'notes')] },
+      ],
+    }
+    withChats(undefined, false, { [live]: [[plan, ...more.map((c) => c.id), review]] }, five)
+    await tapWorkspaces(desktop)
+    await userEvent.click(page.getByRole('button', { name: 'Hide the workspace sidebar' }))
+    // herdr's focused plan and its neighbours fill the four panes; the notes, fifth, are not drawn.
+    await expect.element(page.getByRole('button', { name: 'Maximise chat c5' })).toBeVisible()
+    expect(page.getByRole('button', { name: 'Maximise notes' }).elements()).toHaveLength(0)
+    await userEvent.click(page.getByRole('button', { name: 'Show the workspace sidebar' }))
+    await userEvent.click(page.getByText('notes', { exact: true }).first())
+    await expect.element(page.getByRole('heading', { name: 'notes' })).toBeVisible()
+    await userEvent.click(page.getByRole('button', { name: 'Hide the workspace sidebar' }))
+    await expect.element(page.getByRole('button', { name: 'Maximise notes' })).toBeVisible()
+    expect(getReports()).toEqual([])
+  })
+
+  it('opens a chat of another workspace on the phone after a row showed another tab', async () => {
+    const other = 'mac-mini/w-other'
+    const elsewhere = 'mac-mini/c9'
+    const two = {
+      ...list,
+      workspaces: [...list.workspaces, { id: other, label: 'side work', chats: [summary(elsewhere, 'far chat')] }],
+    }
+    withChats(undefined, false, twoTabs, two)
+    await tapWorkspaces(phone)
+    await openPhoneForm()
+    await fill('fresh-start', '')
+    await expect.element(page.getByRole('heading', { name: 'fresh-start' })).toBeVisible()
+    await userEvent.click(back())
+    // The notes' tab is not herdr's active one, so the row shows it.
+    await userEvent.click(page.getByText('notes', { exact: true }).first())
+    await expect.element(page.getByRole('heading', { name: 'notes' })).toBeVisible()
+    await userEvent.click(back())
+    await userEvent.click(page.getByText('far chat', { exact: true }).first())
+    await expect.element(page.getByRole('heading', { name: 'far chat' })).toBeVisible()
+    expect(page.getByRole('heading', { name: 'notes' }).elements()).toHaveLength(0)
+    await quiet()
+    await expect.element(page.getByRole('heading', { name: 'far chat' })).toBeVisible()
     expect(getReports()).toEqual([])
   })
 })
