@@ -17,6 +17,7 @@ import {
   useSettingsNav,
   useSettingsChatWidth,
   useSettingsPushPreview,
+  useSettingsRichText,
   useSettingsTextSize,
 } from '../../state/settingsStore.ts'
 import { SettingsScreen } from './screens/SettingsScreen.tsx'
@@ -35,6 +36,7 @@ export function SettingsPage() {
   const mode = useSettingsMode()
   const textSize = useSettingsTextSize()
   const chatWidth = useSettingsChatWidth()
+  const richText = useSettingsRichText()
   const nav = useSettingsNav()
   const chat = useSettingsChatDefaults()
   const actions = useSettingsActions()
@@ -44,7 +46,7 @@ export function SettingsPage() {
   const railBadge = useInboxBadge(state.data.railBadge, import.meta.env.DEV && own && search.source === undefined)
   const [changed, setChanged] = useState<Changed>({ of: search.state, ui: {} })
   const ui = { ...state.ui, ...(changed.of === search.state ? changed.ui : {}) }
-  const settings = own ? { mode, textSize, chatWidth, nav: [...nav], chat, pushPreview } : state.data.settings
+  const settings = own ? { mode, textSize, chatWidth, richText, nav: [...nav], chat, pushPreview } : state.data.settings
   return (
     <SettingsScreen
       data={{ ...state.data, railBadge, settings }}
@@ -62,6 +64,7 @@ export function SettingsPage() {
       onModeChange={actions.setMode}
       onTextSizeChange={actions.setTextSize}
       onChatWidthChange={actions.setChatWidth}
+      onRichTextChange={actions.setRichText}
       // Settings has no switch, so no page on screen can be hidden here; only the last-page rule can refuse.
       onNavVisibleChange={(page, visible) => actions.setNavPageVisible(page, visible, undefined) === undefined}
       onNavMove={actions.moveNavPage}

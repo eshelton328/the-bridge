@@ -30,6 +30,14 @@ export function hasShownImage(node: ExtraProps['node']): boolean {
   return node?.children.some(shown) ?? false
 }
 
+const anyImage = (child: Child): boolean =>
+  child.type === 'element' && (child.tagName === 'img' || child.children.some(anyImage))
+
+/** Whether the element `node` holds, at any depth, an image of any kind. */
+export function holdsImage(node: ExtraProps['node']): boolean {
+  return node?.children.some(anyImage) ?? false
+}
+
 /** The text of `node` as a reader sees it, with each image as its alt text. */
 export function textWithAlts(node: ExtraProps['node']): string {
   const text = (child: Child): string => {

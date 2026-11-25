@@ -18,15 +18,21 @@ export default meta
 type Story = StoryObj<typeof meta>
 type Canvas = Parameters<NonNullable<Story['play']>>[0]['canvas']
 
-/** What every state shows: the title, the four sections and Text size waiting for step D. */
+/** What every state shows: the title, the five sections, Text size on and every rich text switch on. */
 async function expectSections(canvas: Canvas) {
   await expect(canvas.getByRole('heading', { name: 'Settings' })).toBeVisible()
   // Each section's title; Notifications is also the switch's label, so the title is the first match.
-  for (const section of ['Appearance', 'Navigation', 'Notifications', 'New chat defaults'])
+  for (const section of ['Appearance', 'Rich text', 'Navigation', 'Notifications', 'New chat defaults'])
     await expect(canvas.getAllByText(section, { exact: true })[0]).toBeVisible()
   await expect(canvas.getByText('Scales the text of the whole app. Small is the size of the designs.')).toBeVisible()
   await expect(canvas.getByRole('radio', { name: 'Large' })).toBeEnabled()
   await expect(canvas.getByRole('switch', { name: 'Notifications' })).not.toBeChecked()
+  await expect(canvas.getByText('Off shows the plain Markdown. No text is hidden.')).toBeVisible()
+  for (const feature of ['Callouts', 'Code highlighting', 'Chat links', 'Mermaid diagrams', 'Math', 'Images'])
+    await expect(canvas.getByRole('switch', { name: feature })).toBeChecked()
+  await expect(canvas.getByRole('switch', { name: 'Chat links' })).toHaveAccessibleDescription(
+    'Chat bubbles in messages',
+  )
 }
 
 export const SettingsDesktop: Story = {

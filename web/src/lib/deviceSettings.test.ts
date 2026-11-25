@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  allRichText,
   checkNav,
   defaultSettings,
   defaultVisiblePages,
@@ -41,6 +42,17 @@ describe('parseStoredSettings', () => {
     expect(parseSettings({ chatWidth: 'narrow' }).chatWidth).toBe('narrow')
     expect(parseSettings({ chatWidth: 'wide' }).chatWidth).toBe('wide')
     expect(parseSettings({ chatWidth: 'huge' }).chatWidth).toBe('full')
+  })
+
+  it('reads the rich text features, each on by default and for a value that is not a boolean', () => {
+    expect(defaultSettings.richText).toEqual(allRichText)
+    expect(Object.values(allRichText).every((on) => on)).toBe(true)
+    expect(parseSettings({ richText: { mermaid: false, math: 'no' } }).richText).toEqual({
+      ...allRichText,
+      mermaid: false,
+    })
+    for (const richText of ['off', null, [false], 3]) expect(parseSettings({ richText }).richText).toEqual(allRichText)
+    expect(parseSettings({}).richText).toEqual(allRichText)
   })
 
   it('keeps the default nav for a stored nav that breaks the rules', () => {

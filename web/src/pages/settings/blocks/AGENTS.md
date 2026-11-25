@@ -4,7 +4,7 @@ Props-only blocks that only the Settings page draws. Make one with
 `pnpm new block <Name> --page settings`; a block a second page needs
 moves to `web/src/blocks/`.
 
-- One block per section: `AppearanceSection`, `NavigationSection`,
+- One block per section: `AppearanceSection`, `RichTextSection`, `NavigationSection`,
   `NotificationsSection`, `ChatDefaultsSection`; `settingsParts.ts` holds
   their shared styles.
 - `NotificationsSwitch` (d-118) moved here from `web/src/blocks/` when the

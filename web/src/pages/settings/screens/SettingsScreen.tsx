@@ -3,8 +3,8 @@
 // selected; on a tablet or phone the tab bar, with the Settings tab selected
 // when the owner moved Settings into the bar, else More, which opens the More
 // drawer with Settings in it (M3). The page is one column of
-// sections: Appearance, Navigation, Notifications (d-118) and New chat
-// defaults. The bars show the pages `data.settings.nav` shows, in its order,
+// sections: Appearance, Rich text, Navigation, Notifications (d-118) and New
+// chat defaults. The bars show the pages `data.settings.nav` shows, in its order,
 // so a change on the page shows in them at once. A state's data and ui are its
 // props; the callbacks are optional, so a story or a canvas board needs none.
 import { AppShell, Backdrop, PageHeader } from '@eshelton328/component-library-1701'
@@ -22,6 +22,7 @@ import {
   type Mode,
   type NavPage,
   navLayout,
+  type RichTextFeature,
   type TextSize,
   visibleNavPages,
 } from '../../../lib/deviceSettings.ts'
@@ -31,6 +32,7 @@ import { AppearanceSection } from '../blocks/AppearanceSection.tsx'
 import { ChatDefaultsSection } from '../blocks/ChatDefaultsSection.tsx'
 import { NavigationSection } from '../blocks/NavigationSection.tsx'
 import { NotificationsSection } from '../blocks/NotificationsSection.tsx'
+import { RichTextSection } from '../blocks/RichTextSection.tsx'
 import type { SettingsData, SettingsUi } from '../types.ts'
 
 // One readable column, centred, as the lab page draws it (references/settings/).
@@ -57,6 +59,8 @@ export type SettingsScreenProps = {
   onModeChange?: ((mode: Mode) => void) | undefined
   onTextSizeChange?: ((textSize: TextSize) => void) | undefined
   onChatWidthChange?: ((chatWidth: ChatWidth) => void) | undefined
+  /** Turns one rich text feature of a message on or off. */
+  onRichTextChange?: ((feature: RichTextFeature, on: boolean) => void) | undefined
   /** Shows or hides a nav page; returns false when the nav rules refuse it (the last page besides Home). */
   onNavVisibleChange?: ((page: NavPage, visible: boolean) => boolean) | undefined
   onNavMove?: ((page: BarPage, by: -1 | 1) => void) | undefined
@@ -73,6 +77,7 @@ export function SettingsScreen({
   onModeChange,
   onTextSizeChange,
   onChatWidthChange,
+  onRichTextChange,
   onNavVisibleChange,
   onNavMove,
   onChatDefaultsChange,
@@ -135,6 +140,7 @@ export function SettingsScreen({
                       onTextSizeChange={onTextSizeChange}
                       onChatWidthChange={onChatWidthChange}
                     />
+                    <RichTextSection richText={data.settings.richText} onChange={onRichTextChange} />
                     <NavigationSection
                       nav={data.settings.nav}
                       notice={ui.navNotice}

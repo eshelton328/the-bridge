@@ -1,4 +1,4 @@
-// The owner's settings on this device (d-119): mode, text size, chat width, the nav
+// The owner's settings on this device (d-119): mode, text size, chat width, the rich text features, the nav
 // pages' order and visibility (d-038), the new chat defaults and whether a
 // push shows a preview line. They live in this browser's localStorage under
 // one key, and each device keeps its own on purpose. Only `pushPreview` goes
@@ -36,6 +36,25 @@ export type TextSize = (typeof textSizes)[number]
 export const chatWidths = ['full', 'wide', 'narrow'] as const
 export type ChatWidth = (typeof chatWidths)[number]
 
+/**
+ * The rich text features of a message (Settings → Rich text, bridge-coord, 2026-11-25). Each is on by default; one
+ * that is off draws its plain Markdown and hides no text (blocks/markdownFeatures.ts): a callout is a quote, code is a
+ * plain mono block, a chat mention is its name, a Mermaid diagram is its source, math is its TeX and an image is a link.
+ */
+export const richTextFeatures = ['callouts', 'code', 'chatLinks', 'mermaid', 'math', 'images'] as const
+export type RichTextFeature = (typeof richTextFeatures)[number]
+export type RichTextFeatures = Readonly<Record<RichTextFeature, boolean>>
+
+/** Every rich text feature on: the default, and what a message draws with no setting. */
+export const allRichText: RichTextFeatures = {
+  callouts: true,
+  code: true,
+  chatLinks: true,
+  mermaid: true,
+  math: true,
+  images: true,
+}
+
 export const chatModels = ['fable', 'opus', 'sonnet', 'haiku'] as const
 export const chatEfforts = ['low', 'medium', 'high', 'xhigh', 'max'] as const
 export const chatPermissions = ['default', 'auto', 'plan'] as const
@@ -54,17 +73,20 @@ export type DeviceSettings = {
   readonly mode: Mode
   readonly textSize: TextSize
   readonly chatWidth: ChatWidth
+  /** Which rich text features a message draws; an off one draws its plain Markdown. */
+  readonly richText: RichTextFeatures
   readonly nav: readonly NavEntry[]
   readonly chat: ChatDefaults
   /** "Show message preview": a push to this browser holds one line of what the chat did or waits on. */
   readonly pushPreview: boolean
 }
 
-/** Today's look: Dark, default text, full-width chats, every page shown in the default order, Settings last. */
+/** Today's look: Dark, default text, full-width chats, all rich text on, every page shown in the default order, Settings last. */
 export const defaultSettings: DeviceSettings = {
   mode: 'dark',
   textSize: 'default',
   chatWidth: 'full',
+  richText: allRichText,
   nav: barPages.map((page) => ({ page, visible: true })),
   chat: { model: 'opus', effort: 'high', permission: 'default' },
   pushPreview: true,
@@ -100,6 +122,7 @@ const stored = z.object({
   mode: z.unknown(),
   textSize: z.unknown(),
   chatWidth: z.unknown(),
+  richText: z.unknown(),
   nav: z.unknown(),
   chat: z.unknown(),
   pushPreview: z.unknown(),
@@ -124,9 +147,29 @@ export function parseSettings(value: unknown): DeviceSettings {
     mode: mode.success ? mode.data : defaultSettings.mode,
     textSize: textSize.success ? textSize.data : defaultSettings.textSize,
     chatWidth: chatWidth.success ? chatWidth.data : defaultSettings.chatWidth,
+    richText: parseRichText(data.richText),
     nav: checked?.ok === true ? checked.value : defaultSettings.nav,
     chat: chat.success ? chat.data : defaultSettings.chat,
     pushPreview: pushPreview.success ? pushPreview.data : defaultSettings.pushPreview,
+  }
+}
+
+/** The rich text features in a stored value: each one that is not a boolean stays on. Never throws. */
+function parseRichText(value: unknown): RichTextFeatures {
+  const fields = z.record(z.string(), z.unknown()).safeParse(value)
+  if (!fields.success) return allRichText
+  const { data } = fields
+  const on = (feature: RichTextFeature): boolean => {
+    const flag = z.boolean().safeParse(data[feature])
+    return flag.success ? flag.data : true
+  }
+  return {
+    callouts: on('callouts'),
+    code: on('code'),
+    chatLinks: on('chatLinks'),
+    mermaid: on('mermaid'),
+    math: on('math'),
+    images: on('images'),
   }
 }
 

@@ -24,6 +24,12 @@ second page needs it.
   stops passing it).
 - Wrap rich content that can fail to render (markdown, code, charts) in
   `BlockBoundary` from `errors/`.
+- `MarkdownText` draws only the rich text features that are on
+  (Settings → Rich text): its `features` prop, or else
+  `MarkdownFeaturesContext` (`markdownFeatures.ts`), every feature with
+  no provider. A feature that is off draws its plain Markdown and hides no
+  text; `MarkdownFeatures.test.tsx` has one case for each feature. Read
+  the context with its Consumer, never `use`: the canvas runs React 18.
 - A detail pane uses `DetailFrame` (d-107). On a tablet or phone it must
   be the AppShell detail's own child, so its sticky footer lifts above
   the tab bar.

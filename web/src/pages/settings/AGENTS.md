@@ -17,8 +17,8 @@ folder is for and the rules of every page.
   last entry in this device's tab bar; the bar has no More when every
   shown entry fits (5 on the phone, 6 on the iPad,
   `app/NavBarLimitRoute.test.tsx`).
-- Four sections: Appearance, Navigation, Notifications and New chat
-  defaults. The Notifications section (bridge-coord, 2026-11-23) is the
+- Five sections: Appearance, Rich text, Navigation, Notifications and New
+  chat defaults. The Notifications section (bridge-coord, 2026-11-23) is the
   one place of the d-118 switch; the rail and the drawer no longer draw it.
   Below it, "Show message preview" (on by default) is a device setting
   that goes to the server with the subscription, again at each change
@@ -33,6 +33,12 @@ folder is for and the rules of every page.
   d-122) sets the library's class on `<html>` at once: Small is the
   designs' size and needs no class (`app/textSize.ts`,
   `app/TextSizeRoute.test.tsx`). The fidelity frames stay at Small.
+- Rich text (bridge-coord, 2026-11-25) has one switch per rich text
+  feature of a message (`richTextFeatures`, `lib/deviceSettings.ts`), all
+  on by default. An off feature draws its plain Markdown and hides no text
+  (`blocks/markdownFeatures.ts`); a feature that no message draws yet has
+  no switch. Chat links' hint, "Chat bubbles in messages", is the owner's
+  word for the chat mentions.
 - `app/SettingsRoute.test.tsx` and `app/PushSwitchRoute.test.tsx` test the
   page on the owner's path at 390, 744 and 1512 px.
 
