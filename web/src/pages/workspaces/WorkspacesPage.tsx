@@ -37,6 +37,7 @@
 // Claude chat's Fork is one of those edits (backend #443), and its new chat opens once the list shows it
 // (useForkedChat.ts), and so is New workspace (W4), whose workspace opens once the list shows it. A live Claude chat's Side chat asks its questions of a copy of the chat's session and streams
 // each answer (useSideChats.ts, backend #460): the page draws the side chat of `ui.sideChatFor` in `data.sideChat`.
+import { z } from 'zod'
 import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { report } from '../../errors/reporter.ts'
@@ -77,6 +78,9 @@ import {
 } from './workspacesStore.ts'
 import { navRoute } from '../../lib/navRoutes.ts'
 import { useSettingsChatWidth, useVisibleNavPages } from '../../state/settingsStore.ts'
+
+/** The mention titles' entries, as `titlesKey` writes them. */
+const titleEntries = z.array(z.tuple([z.string(), z.string()]))
 
 const route = getRouteApi('/workspaces')
 
@@ -376,12 +380,14 @@ export function WorkspacesPage() {
     readList: () => void router.invalidate(),
   })
   // The live chats a message can mention (remarkChatMentions.ts); none in a fixture state, which has no live machine.
+  // Keyed by the titles' text, so a list read that changes no title keeps the context, and no message draws again.
+  const titlesKey = JSON.stringify([...liveChatTitles(data)])
   const mentionChats = useMemo(
     () => ({
-      chats: liveChatTitles(data),
+      chats: new Map(titleEntries.parse(JSON.parse(titlesKey))),
       open: (chat: string) => void router.navigate({ to: '/workspaces', search: { chat } }),
     }),
-    [data, router],
+    [titlesKey, router],
   )
   return (
     <MarkdownChatsContext value={mentionChats}>
