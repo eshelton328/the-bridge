@@ -29,7 +29,9 @@
     "highlight.js": "catalog:",
     "lowlight": "catalog:",
     "mermaid": "catalog:",
+    "katex": "catalog:",
     "react-markdown": "catalog:",
+    "remark-math": "catalog:",
     "remark-gfm": "catalog:",
     "zod": "catalog:",
     "zustand": "catalog:"
