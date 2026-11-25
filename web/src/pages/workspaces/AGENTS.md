@@ -737,7 +737,14 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   shows the reason and the source; "Show source" shows the text
   (`WorkspacesMermaid.test.tsx`). Mermaid loads a node's image
   (`A@{ img: "<url>" }`) itself as it draws, so a source that may name one
-  does not draw (`mayLoadImage`). A table's elements
+  does not draw (`mayLoadImage`). TeX (`$…$` inline, `$$…$$` a block)
+  draws with KaTeX (`../../blocks/useMathPlugins.ts`, `MathFormula.tsx`,
+  `lib/katexRender.ts`): remark-math, KaTeX and its CSS and fonts load only
+  for a text with a `$`, `trust` is off, and a price such as "$5 to $10"
+  stays text with its Markdown, as a `$` that Pandoc's rules cannot pair is
+  escaped before the parse (`mathPlugins.ts`). A formula that does not
+  parse shows its source, and a wide display formula scrolls in its own
+  box, which takes the focus (`WorkspacesMath.test.tsx`). A table's elements
   come from `../../blocks/markdownTableParts.ts`
   (`app/WorkspacesMarkdownTables.test.tsx`). Inline code is a mono
   badge (MarkdownView `inlineCode="badge"`) and a fenced block the

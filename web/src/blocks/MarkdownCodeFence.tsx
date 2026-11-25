@@ -10,7 +10,8 @@
 // without the text. It is a prop, never a context, as the Claude Design
 // canvas runs React 18, which has no `use` (Codex review of #511). A `pre` that is not
 // a fence (a code element with text alone) draws as it was. A `mermaid` fence
-// is a diagram (MermaidDiagram.tsx), with the code block until its code loads.
+// is a diagram (MermaidDiagram.tsx), with the code block until its code loads;
+// a `math` fence (`$…$`) is a KaTeX formula (MathFormula.tsx).
 // Props only.
 import { type CodeSegment, MarkdownCodeBlock } from '@eshelton328/component-library-1701'
 import { lazy, type ReactNode, Suspense, useEffect, useMemo, useState } from 'react'
@@ -19,6 +20,7 @@ import { report } from '../errors/reporter.ts'
 import type { CopyTextResult } from '../lib/copyText.ts'
 import { grammarOf, type CodeGrammar } from './codeLanguages.ts'
 import { fenceOf } from './fence.ts'
+import { MathFormula } from './MathFormula.tsx'
 
 // A `mermaid` fence draws as a diagram (MermaidDiagram.tsx). Its code (DiagramFrame, the draw queue, Mermaid) loads on
 // the first such fence, so the first chat paint does not carry it; until then the fence shows as its code block.
@@ -87,6 +89,8 @@ export function MarkdownCodeFence({ node, children, onCopy: copy }: MarkdownCode
     [copy],
   )
   if (fence === undefined) return <pre>{children}</pre>
+  // Display math (`$…$`, or a fence labelled math, as GitHub draws it) is a KaTeX formula.
+  if (fence.language === 'math') return <MathFormula tex={fence.code} display />
   const block = <MarkdownCodeBlock code={fence.code} language={fence.language} segments={segments} onCopy={onCopy} />
   if (fence.language !== 'mermaid') return block
   return (

@@ -18,7 +18,8 @@
 // MarkdownCodeBlock (`MarkdownCodeFence.tsx`: its label, syntax colours,
 // sideways scroll, a diff's tints, a fold and Copy with `onCopyCode`). The
 // plugins are one list and the element overrides one map per size, so a
-// later plugin (math, diagrams) adds an entry to each. The caller wraps it
+// later plugin (math, diagrams) adds an entry to each. TeX (`$…$`, `$$…$$`)
+// draws with KaTeX (`useMathPlugins.ts`, `MathFormula.tsx`). The caller wraps it
 // in a BlockBoundary.
 import type { ReactNode } from 'react'
 import Markdown, { type Components, type ExtraProps, type Options } from 'react-markdown'
@@ -26,10 +27,13 @@ import remarkGfm from 'remark-gfm'
 import { ChatMention } from './ChatMention.tsx'
 import { type CopyCode, MarkdownCodeFence } from './MarkdownCodeFence.tsx'
 import { MarkdownChatsContext } from './markdownChats.ts'
+import { MathFormula } from './MathFormula.tsx'
+import { codeOf } from './fence.ts'
 import { MarkdownQuote } from './MarkdownQuote.tsx'
 import { type MarkdownSize, markdownTableParts } from './markdownTableParts.ts'
 import { remarkCallout } from './remarkCallout.ts'
 import { remarkChatMentions } from './remarkChatMentions.ts'
+import { useMathPlugins } from './useMathPlugins.ts'
 
 const remarkPlugins: NonNullable<Options['remarkPlugins']> = [remarkGfm, remarkCallout]
 
@@ -68,6 +72,15 @@ const inline: Components = {
   },
   img: ({ alt }) => alt ?? null,
   pre: ({ node, children }) => <MarkdownCodeFence node={node}>{children}</MarkdownCodeFence>,
+  // Inline math (remark-math, for a text with a $) is a code element labelled math; any other code stays code.
+  code: ({ node, children, ...props }) => {
+    const code = codeOf(node)
+    return code?.language === 'math' ? (
+      <MathFormula tex={code.code} display={false} />
+    ) : (
+      <code {...props}>{children}</code>
+    )
+  },
   // remark-gfm writes a task list's box with no label (axe: label); the box is read-only, so its name is its state.
   input: ({ type, checked, disabled }) => (
     <input
@@ -135,24 +148,39 @@ export type MarkdownTextProps = {
   onCopyCode?: CopyCode | undefined
 }
 
-/** The plugins for a chats map, one array per map, so a render with the same map keeps them. */
-const pluginsByChats = new WeakMap<ReadonlyMap<string, string>, NonNullable<Options['remarkPlugins']>>()
-const pluginsFor = (chats: ReadonlyMap<string, string>): NonNullable<Options['remarkPlugins']> => {
-  if (chats.size === 0) return remarkPlugins
-  const known = pluginsByChats.get(chats)
+type PluginList = NonNullable<Options['remarkPlugins']>
+
+/** The base plugins with the math plugins, one array per math list, so a render with the same list keeps it. */
+const withMath = new WeakMap<PluginList, PluginList>()
+/** The plugins for a chats map, one array per base list and map, so a render with the same map keeps them. */
+const pluginsByChats = new WeakMap<PluginList, WeakMap<ReadonlyMap<string, string>, PluginList>>()
+
+/** Math first (remark-math is a syntax extension), then the mentions, so a formula is never a mention. */
+const pluginsFor = (chats: ReadonlyMap<string, string>, math: PluginList): PluginList => {
+  let base = remarkPlugins
+  if (math.length > 0) {
+    base = withMath.get(math) ?? [...remarkPlugins, ...math]
+    withMath.set(math, base)
+  }
+  if (chats.size === 0) return base
+  const byChats = pluginsByChats.get(base) ?? new WeakMap<ReadonlyMap<string, string>, PluginList>()
+  pluginsByChats.set(base, byChats)
+  const known = byChats.get(chats)
   if (known !== undefined) return known
-  const plugins: NonNullable<Options['remarkPlugins']> = [...remarkPlugins, [remarkChatMentions, chats]]
-  pluginsByChats.set(chats, plugins)
+  const plugins: PluginList = [...base, [remarkChatMentions, chats]]
+  byChats.set(chats, plugins)
   return plugins
 }
 
 // The context is read with its Consumer, not `use` or useContext: the canvas runs React 18, which has no `use`.
+// useMathPlugins uses only hooks React 18 has.
 export function MarkdownText({ text, size = 'md', onCopyCode }: MarkdownTextProps) {
+  const math = useMathPlugins(text)
   return (
     <MarkdownChatsContext.Consumer>
       {({ chats }) => (
-        <Markdown remarkPlugins={pluginsFor(chats)} components={componentsFor(size, onCopyCode)}>
-          {text}
+        <Markdown remarkPlugins={pluginsFor(chats, math.plugins)} components={componentsFor(size, onCopyCode)}>
+          {math.text}
         </Markdown>
       )}
     </MarkdownChatsContext.Consumer>
