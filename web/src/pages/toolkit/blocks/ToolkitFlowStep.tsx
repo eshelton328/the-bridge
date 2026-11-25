@@ -26,7 +26,8 @@ type Step = Pick<
 
 // D8 458:25: 196 × 82, the top row 11 in, the lines 3 under it and 3 apart. The library's FlowDiagram card pads 12
 // at the sides; 10 keeps each line on one line in the 196 px card (Figma 11) at Small. At Default and Large (d-122)
-// a line wraps in the card, which stays 196 wide and grows taller: no line is cut.
+// a line wraps in the card, which stays 196 wide and grows taller: no line is cut. At Small a line stays on one
+// line, as Figma draws it, also in a narrower card (D13).
 const card = css.raw({
   display: 'flex',
   flexDirection: 'column',
@@ -59,8 +60,14 @@ const top = {
   md: css({ display: 'flex', alignItems: 'center', gap: '8', pb: '2' }),
   sm: css({ display: 'flex', alignItems: 'center', gap: '6' }),
 }
+// One line at Small (Figma), wrapped at Default and Large.
+const oneLineAtSmall = {
+  whiteSpace: 'nowrap',
+  _textDefault: { whiteSpace: 'normal' },
+  _textLarge: { whiteSpace: 'normal' },
+} as const
 const title = {
-  md: css({ textStyle: 'label', color: 'fg.default' }),
+  md: css({ textStyle: 'label', color: 'fg.default', ...oneLineAtSmall }),
   sm: css({ textStyle: 'labelXs', color: 'fg.default', whiteSpace: 'nowrap' }),
 }
 const amber = css({ color: 'status.needsYou.fg' })
@@ -86,13 +93,13 @@ const select = css({
   [focusRing]: { _after: { outlineWidth: 'strong', outlineStyle: 'solid', outlineColor: 'border.focus' } },
 })
 const note = {
-  md: css({ textStyle: 'small', color: 'fg.muted' }),
+  md: css({ textStyle: 'small', color: 'fg.muted', ...oneLineAtSmall }),
   sm: css({ textStyle: 'smallXs', color: 'fg.muted' }),
 }
 const uses = {
   md: {
-    code: css({ textStyle: 'mono', color: 'fg.accent' }),
-    agent: css({ textStyle: 'mono', color: 'kind.agent' }),
+    code: css({ textStyle: 'mono', color: 'fg.accent', ...oneLineAtSmall }),
+    agent: css({ textStyle: 'mono', color: 'kind.agent', ...oneLineAtSmall }),
   },
   sm: {
     code: css({ textStyle: 'monoSm', color: 'fg.accent' }),
