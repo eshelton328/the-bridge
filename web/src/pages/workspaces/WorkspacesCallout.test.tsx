@@ -61,8 +61,8 @@ describe('GitHub alerts in a reply', () => {
     await page.viewport(1024, 1366)
     const { ui } = workspacesStates.phoneTapChat
     view = await testRender(<WorkspacesScreen data={chatWithReply(reply)} ui={ui} viewport="tablet" />)
-    const row = page.getByRole('button', { name: 'bridge themes', exact: true })
-    if (row.elements().length > 0) await userEvent.click(row)
+    // The tablet shows the list beside the open chat; the owner taps the chat's row.
+    await userEvent.click(page.getByRole('button', { name: 'bridge themes', exact: true }))
     await expectCallouts()
   })
 })
