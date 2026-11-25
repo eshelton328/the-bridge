@@ -78,6 +78,13 @@ density="compact"` and `leading`): 36 of 43 layers pass, against 23.
   and the screen corners are not drawn (d-089); the checks measure the
   render 29 px shorter, under Figma's status bar (d-102).
 
+- Card height (R77, the owner: "Artifact cards should always be the same
+  height"): every card's description takes two lines (`Card`
+  `descriptionLines={2}`, library 1.0.0-beta.132), where Figma draws one, so
+  each card is about 16 px taller. The second card row's title and
+  description (407:1433, 407:1434 and 407:1457) now sit under the pinned tab bar and show on
+  scroll; `exceptions.json` excepts those three layers only.
+
 ## Values picked (d-100)
 
 - Sheet: the library `BottomSheet` (13 px inset in its 1 px border, the

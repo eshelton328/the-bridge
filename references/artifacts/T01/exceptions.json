@@ -9,6 +9,21 @@
       "text": "Research report: versioning, changelogs and release automation",
       "layers": ["405:303"],
       "reason": "This description (y 1141) is under Figma's tab bar (y 1081), and frame.png does not show it. The render scrolls the row under the tab bar the same way."
+    },
+    {
+      "text": "the-bridge theme ideas",
+      "layers": ["405:278"],
+      "reason": "R77: two-line description slot (Erik: cards same height); row under the tab bar, reachable by scroll"
+    },
+    {
+      "text": "Viewscreen, Captain’s Log, Engineering and Console",
+      "layers": ["405:279"],
+      "reason": "R77: two-line description slot (Erik: cards same height); row under the tab bar, reachable by scroll"
+    },
+    {
+      "text": "Application versioning and releases",
+      "layers": ["405:302"],
+      "reason": "R77: two-line description slot (Erik: cards same height); row under the tab bar, reachable by scroll"
     }
   ],
   "rules": [
