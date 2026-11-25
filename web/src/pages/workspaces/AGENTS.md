@@ -717,7 +717,10 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   and a `www.` link (to https) are links, only an http, https or mailto
   link is a link and it opens in a new tab (review R56,
   `app/WorkspacesMarkdownLinks.test.tsx`), and an image shows its alt
-  text. A table's elements
+  text. A GitHub alert (`> [!NOTE]`, TIP, IMPORTANT, WARNING, CAUTION)
+  is the library's `Callout` of that tone at the MarkdownView's size
+  (`../../blocks/remarkCallout.ts`, `../../blocks/MarkdownQuote.tsx`,
+  `WorkspacesCallout.test.tsx`); any other quote stays a quote. A table's elements
   come from `../../blocks/markdownTableParts.ts`
   (`app/WorkspacesMarkdownTables.test.tsx`).
 - The chat width (Settings → Appearance, `settingsStore` `chatWidth`):

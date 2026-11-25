@@ -11,14 +11,17 @@
 // its alt text, so the text loads nothing from another site. A task list's
 // box is named by its state ("Task done", "Task not done"). A table is the
 // library's Table part (`markdownTableParts.ts`) at the caller's `size`, the
-// size of its MarkdownView. The caller wraps it in a BlockBoundary. Props
-// only.
+// size of its MarkdownView. A GitHub alert (`> [!NOTE]`) is the library's
+// Callout (`remarkCallout.ts`, `MarkdownQuote.tsx`). The caller wraps it in a
+// BlockBoundary. Props only.
 import type { ReactNode } from 'react'
 import Markdown, { type Components, type ExtraProps } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { MarkdownQuote } from './MarkdownQuote.tsx'
 import { type MarkdownSize, markdownTableParts } from './markdownTableParts.ts'
+import { remarkCallout } from './remarkCallout.ts'
 
-const remarkPlugins = [remarkGfm]
+const remarkPlugins = [remarkGfm, remarkCallout]
 
 /** The length of the Markdown source a link came from, or undefined when the parser gave no position. */
 const sourceLength = (node: ExtraProps['node']): number | undefined => {
@@ -67,8 +70,24 @@ const inline: Components = {
 }
 
 const components: Record<MarkdownSize, Components> = {
-  md: { ...inline, ...markdownTableParts.md },
-  sm: { ...inline, ...markdownTableParts.sm },
+  md: {
+    ...inline,
+    ...markdownTableParts.md,
+    blockquote: ({ node, children }) => (
+      <MarkdownQuote node={node} size="md">
+        {children}
+      </MarkdownQuote>
+    ),
+  },
+  sm: {
+    ...inline,
+    ...markdownTableParts.sm,
+    blockquote: ({ node, children }) => (
+      <MarkdownQuote node={node} size="sm">
+        {children}
+      </MarkdownQuote>
+    ),
+  },
 }
 
 export type MarkdownTextProps = {
