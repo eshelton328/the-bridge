@@ -4,7 +4,7 @@
 import { z } from 'zod'
 import { ChatId, FileId } from './ids.ts'
 
-/** The most characters of one file's text in a response, as the Toolkit's (`maxToolkitFileText`). */
+/** The most UTF-8 bytes of one file that a text read takes; the Toolkit's `maxToolkitFileText` is the same number. */
 export const maxFileText = 262_144
 
 /** The most files of one root's index; a root with more lists the first ones in git's order and sets `cut`. */
