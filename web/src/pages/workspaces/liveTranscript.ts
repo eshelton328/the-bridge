@@ -707,6 +707,8 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
     watchers: 0,
     retry: () => {
       update((view) => ({ ...view, problem: undefined }))
+      // The owner's Retry starts a new row: its misses say "Reconnecting…" again, then the line once more (#503 P1).
+      fresh()
       armStall()
       // Between connections Retry ends the wait; during one (a stream or a read with no answer yet) it ends that
       // connection and starts a new one.

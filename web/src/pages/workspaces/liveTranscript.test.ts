@@ -312,6 +312,21 @@ describe('watchTranscript', () => {
     expect(getReports()).toEqual([])
   })
 
+  it('shows the line again after Retry when the outage goes on', async () => {
+    const server = fakeTranscriptServer()
+    server.set(chat, [user('u1', 'go')])
+    watch(server)
+    await expect.poll(ids).toEqual(['u1'])
+    server.answerStreams(() => new Response('', { status: 502 }))
+    server.drop(chat)
+    await expect.poll(() => view()?.problem).toBe(transcriptText.dropped)
+    retryTranscript(chat)
+    expect(view()?.problem).toBeUndefined()
+    // A new row: "Reconnecting…", then the line again at its 4th miss.
+    await expect.poll(() => view()?.problem).toBe(transcriptText.reconnecting)
+    await expect.poll(() => view()?.problem).toBe(transcriptText.dropped)
+  })
+
   it("reports a second outage inside report()'s repeat window once: the screen line still shows it", async () => {
     // Date stands still, so the second outage comes within the repeat window.
     vi.useFakeTimers({ toFake: ['Date'] })
