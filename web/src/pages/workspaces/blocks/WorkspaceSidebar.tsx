@@ -9,6 +9,7 @@ import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { SidebarLayers, SidebarText, Workspace, WorkspacesUi } from '../types.ts'
 import { SidebarGroup } from './SidebarGroup.tsx'
+import { WorkspaceGroupSkeleton } from './WorkspaceGroupSkeleton.tsx'
 
 // The list slot is a flex column; the sidebar fills it.
 const slot = css({ display: 'flex', flexDirection: 'column', flex: '1', minH: '[0]' })
@@ -30,6 +31,11 @@ export type WorkspaceSidebarProps = {
   onSelect?: ((chat: string) => void) | undefined
   /** + opens New workspace (the live page, W4); + draws only when not set. */
   onNewWorkspace?: (() => void) | undefined
+  /**
+   * The page waits for its first list (R58): the workspaces that load take the groups' place, and the toggle and +
+   * are off in their own boxes.
+   */
+  loading?: boolean | undefined
 }
 
 const fill = (template: string, values: Record<string, string>) =>
@@ -46,10 +52,13 @@ export function WorkspaceSidebar({
   notice,
   onSelect = (chat) => onUiChange?.({ focusedPane: chat }),
   onNewWorkspace,
+  loading = false,
 }: WorkspaceSidebarProps) {
   const collapsed = ui.collapsed ?? []
   const dragged = workspaces.flatMap((w) => w.chats ?? []).find((c) => c.id === ui.drag?.chat)
-  const groups = (
+  const groups = loading ? (
+    <WorkspaceGroupSkeleton />
+  ) : (
     <Stack gap="4">
       {workspaces.map((w) => (
         <SidebarGroup
@@ -90,6 +99,7 @@ export function WorkspaceSidebar({
             // to the nearest token, border.selected, not the pressed border.active.
             pressedBorder="selected"
             aria-label={text.hide}
+            disabled={loading}
             data-figma={layers?.toggle ?? '158:6'}
             onClick={() => onUiChange?.({ sidebar: false })}
           >
@@ -100,6 +110,7 @@ export function WorkspaceSidebar({
           <Button
             size="sm"
             aria-label={text.newWorkspace}
+            disabled={loading}
             data-figma={layers?.newWorkspace ?? '105:617'}
             onClick={onNewWorkspace}
           >

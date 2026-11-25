@@ -10,8 +10,7 @@ import workspacesScreen from '../pages/workspaces/screens/WorkspacesScreen.tsx?r
 // the page's place. This reads each page's pending component and fails when one draws LoadingShell (its
 // DetailBodySkeleton lines) or a DetailBodySkeleton of its own. The pages not moved yet are listed, and the list
 // must only shrink: a page that left LoadingShell fails here until it leaves the list.
-// The Workspaces pending component draws its screen with `loading`, whose desktop layout still draws LoadingShell until
-// its own skeleton comes (R58 step 4b), so the check reads both.
+// The Workspaces pending component draws its screen with `loading`, so the check reads both.
 const sources: Readonly<Record<string, string>> = {
   artifacts,
   inbox,
@@ -22,8 +21,8 @@ const sources: Readonly<Record<string, string>> = {
 // Every pending component in the pages, so a new one must join `sources`.
 const found = import.meta.glob('../pages/*/*Pending.tsx', { eager: true })
 
-/** R58 steps 3 and 4 (bridge-coord, 2026-11-23): Toolkit and Workspaces move next. */
-const notYet = new Set(['toolkit', 'workspaces'])
+/** R58 step 3 (bridge-coord, 2026-11-23): Toolkit moves next. */
+const notYet = new Set(['toolkit'])
 
 const pageOf = (path: string) => /\.\.\/pages\/([^/]+)\//.exec(path)?.[1] ?? path
 const generic = (source: string) => /\bLoadingShell\b|\bDetailBodySkeleton\b/.test(source)
