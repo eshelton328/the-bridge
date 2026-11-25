@@ -312,6 +312,35 @@ describe('watchTranscript', () => {
     expect(getReports()).toEqual([])
   })
 
+  it('does not connect again while the page hid during a backoff wait, then at once when it shows', async () => {
+    const server = fakeTranscriptServer()
+    server.set(chat, [user('u1', 'go')])
+    stubFetch(server, 0)
+    stops.push(watchTranscript(chat, { retryMs: 300, floorMs: 0 }))
+    await expect.poll(ids).toEqual(['u1'])
+    const opened = server.opens.length
+    const setHidden = (hidden: boolean) => {
+      Object.defineProperty(document, 'visibilityState', {
+        configurable: true,
+        get: () => (hidden ? 'hidden' : 'visible'),
+      })
+      Object.defineProperty(document, 'hidden', { configurable: true, get: () => hidden })
+      document.dispatchEvent(new Event('visibilitychange'))
+    }
+    try {
+      server.drop(chat)
+      await expect.poll(() => view()?.problem).toBe(transcriptText.reconnecting)
+      setHidden(true)
+      await new Promise((resolve) => setTimeout(resolve, 900))
+      expect(server.opens.length).toBe(opened)
+      setHidden(false)
+      await expect.poll(() => server.opens.length).toBe(opened + 1)
+    } finally {
+      Reflect.deleteProperty(document, 'visibilityState')
+      Reflect.deleteProperty(document, 'hidden')
+    }
+  })
+
   it("reports the stream's error event at once when the read then gets no answer", async () => {
     const server = fakeTranscriptServer()
     server.set(chat, [user('u1', 'go')])

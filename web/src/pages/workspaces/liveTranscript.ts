@@ -655,6 +655,16 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
       abort.signal.addEventListener('abort', done, { once: true })
     })
 
+  /** Waits until the page shows (or Retry, or a stop), then starts the steps again. */
+  const untilShown = async () => {
+    const shown = new AbortController()
+    void whenVisible(AbortSignal.any([abort.signal, shown.signal])).then(() => {
+      if (!shown.signal.aborted) wake?.()
+    })
+    await pause(undefined)
+    shown.abort()
+    fresh()
+  }
   const run = async () => {
     while (!closed()) {
       const outcome = await connect()
@@ -668,18 +678,8 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
         await pause(undefined)
         continue
       }
-      // A hidden page does not connect again: it waits until it shows (R70).
-      if (isHidden()) {
-        const shown = new AbortController()
-        void whenVisible(AbortSignal.any([abort.signal, shown.signal])).then(() => {
-          if (!shown.signal.aborted) wake?.()
-        })
-        await pause(undefined)
-        shown.abort()
-        fresh()
-        if (outcome === 'resume') continue
-      }
-      // Back from the background: at once.
+      // A hidden page does not connect again: it waits until it shows (R70). Back from the background: at once.
+      if (isHidden()) await untilShown()
       if (outcome === 'resume') continue
       const miss = lastMiss
       lastMiss = undefined
@@ -702,6 +702,8 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
       backingOff = true
       await pause(deps.retryMs ?? step.waitMs)
       backingOff = false
+      // The page hid during the wait: no try until it shows (#503 P2).
+      if (isHidden()) await untilShown()
     }
   }
   // The page back at the front, or the network online again, connects at once and starts the steps again (R70).
