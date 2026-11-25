@@ -1,10 +1,11 @@
 // The FileStore on disk: git's index of the brain. Git runs with fixed
 // arguments and literal pathspecs, no shell and a 5 s timeout, on each
 // request. A read needs the path and its symlink target tracked, a real
-// path in the root and a regular file (lstat, so no FIFO), and stops at the
-// cap. `_local/` and a path with a NUL are never read; a fault is its code.
+// path in the root and a regular file (the open file's stat), and stops
+// at the cap. `_local/` and a path with a NUL are never read; a fault is its code.
 import { execFile } from 'node:child_process'
-import { lstat, open, realpath } from 'node:fs/promises'
+import { constants } from 'node:fs'
+import { open, realpath } from 'node:fs/promises'
 import { join, sep } from 'node:path'
 import { err, ok, type Result } from '@bridge/shared'
 import type { FileStore, FileStoreError } from '../services/fileStore.ts'
@@ -78,21 +79,24 @@ export function createDiskFiles({ brainDir }: DiskFilesOptions): FileStore {
           if (!targetTracked.ok) return targetTracked
           if (!targetTracked.value.includes(target)) return ok('notFound')
         }
-        const stat = await lstat(real)
-        if (!stat.isFile()) return ok('notFound')
-        if (stat.size > max) return ok('tooLarge')
-        const file = await open(real, 'r')
+        // No follow and no block: a swap after the realpath gives no link out of the root and no FIFO that waits.
+        const file = await open(real, constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK)
         try {
-          // One byte past the cap tells a file that grew past it since the lstat.
+          const stat = await file.stat()
+          if (!stat.isFile()) return ok('notFound')
+          if (stat.size > max) return ok('tooLarge')
+          // One byte past the cap tells a file that grew past it since the stat.
           const bytes = new Uint8Array(max + 1)
-          const { bytesRead } = await file.read(bytes, 0, max + 1, 0)
+          const { bytesRead } = await file.read(bytes, 0, bytes.length, 0)
           return bytesRead > max ? ok('tooLarge') : ok(bytes.slice(0, bytesRead))
         } finally {
           await file.close()
         }
       } catch (thrown) {
         const code = codeOf(thrown)
-        return code === 'ENOENT' || code === 'ENOTDIR' ? ok('notFound') : err({ reason: 'failed', code })
+        return code === 'ENOENT' || code === 'ENOTDIR' || code === 'ELOOP'
+          ? ok('notFound')
+          : err({ reason: 'failed', code })
       }
     },
   }
