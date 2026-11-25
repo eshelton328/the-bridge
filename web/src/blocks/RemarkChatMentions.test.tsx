@@ -51,28 +51,17 @@ describe('remarkChatMentions', () => {
     ])
   })
 
-  it('links a one-word title only with @', async () => {
-    expect(await mentions('The routing rule; ask @routing.')).toEqual(['m1/p2=@routing'])
-  })
-
-  it('leaves an unknown name, a shared title and a name after a word as text', async () => {
-    expect(await mentions('@backend-coord and twin-chat and x@bridge-coord')).toEqual([])
-  })
-
-  it('leaves code, a link and a path as text', async () => {
-    const text = [
-      '`bridge-coord` in code, [bridge-coord](https://example.com) in a link,',
-      'bridge-coord.md and x/bridge-coord in a path',
-      '',
-      '```',
-      'bridge-coord',
-      '```',
-    ].join('\n')
-    expect(await mentions(text)).toEqual([])
-  })
-
-  it('finds a mention in emphasis and a list item', async () => {
-    expect(await mentions('- **bridge-coord** owns it')).toEqual(['m1/p1=bridge-coord'])
+  it.each([
+    ['a one-word title only with @', 'The routing rule; ask @routing.', ['m1/p2=@routing']],
+    ['no unknown name, shared title or name after a word', '@backend-coord and twin-chat and x@bridge-coord', []],
+    [
+      'no code, link or path',
+      '`bridge-coord`, [bridge-coord](https://example.com), bridge-coord.md, x/bridge-coord\n\n```\nbridge-coord\n```',
+      [],
+    ],
+    ['a mention in emphasis and a list item', '- **bridge-coord** owns it', ['m1/p1=bridge-coord']],
+  ])('links %s', async (_, text, want) => {
+    expect(await mentions(text)).toEqual(want)
   })
 })
 
