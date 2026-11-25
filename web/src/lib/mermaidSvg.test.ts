@@ -65,6 +65,32 @@ describe('drawMermaid', () => {
     expect(result.ok).toBe(false)
     if (!result.ok) expect(result.reason.length).toBeGreaterThan(0)
   })
+  it('leaves nothing in the page after a source that does not parse', async () => {
+    await drawMermaid('flowchart LR\n  A -->', colours, true)
+    expect(
+      document.querySelectorAll('[id^="bridge-mermaid"], [id^="dbridge-mermaid"], [id^="ibridge-mermaid"]'),
+    ).toHaveLength(0)
+  })
+})
+
+describe('a node with an image', () => {
+  // A same-site path that does not exist: a request for it shows as a resource entry, and nothing leaves the machine.
+  const requested = (path: string) =>
+    performance.getEntriesByType('resource').some((entry) => entry.name.endsWith(path))
+  it('does not draw, and Mermaid requests no image, also when the key is written as a YAML escape', async () => {
+    const sources = ['plain', 'escaped'].map((kind) => {
+      const path = `/mermaid-image-probe-${kind}-${String(Date.now())}.png`
+      const key = kind === 'plain' ? 'img' : '"\\x69mg"'
+      return { path, source: `flowchart LR\n  A@{ ${key}: "${path}", h: 40, w: 40 }\n  A --> B` }
+    })
+    for (const { path, source } of sources) {
+      const result = await drawMermaid(source, colours, true)
+      expect(result.ok).toBe(false)
+      if (!result.ok) expect(result.reason).toContain('image')
+      await new Promise((resolve) => setTimeout(resolve, 300))
+      expect(requested(path)).toBe(false)
+    }
+  })
 })
 
 describe('a page with no token CSS', () => {

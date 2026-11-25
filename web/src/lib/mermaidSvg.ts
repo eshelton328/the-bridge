@@ -4,7 +4,9 @@
 // Safety: securityLevel 'strict' turns off click handlers and encodes the
 // labels' HTML, htmlLabels false keeps every label as SVG text (no
 // foreignObject), and the caller shows the SVG only through an <img> with a
-// blob: URL, where a browser runs no script and loads nothing else. The
+// blob: URL, where a browser runs no script and loads nothing else. Mermaid
+// itself loads a node's image (`A@{ img: "<url>" }`) while it draws, before
+// that <img>: a source that may name such a node does not draw (`mayLoadImage`). The
 // colours come from the library's tokens as the page has them now (the
 // `dark` class on <html>, d-119): Mermaid's 'base' theme with the token
 // values as its theme variables. An <img> cannot use the page's Geist font,
@@ -54,6 +56,8 @@ function withoutEmpty(colours: Record<string, string>): Record<string, string> {
 function mermaidConfig(colours: DiagramColours, dark: boolean) {
   return {
     startOnLoad: false,
+    // A source that does not parse throws, with no error diagram left in the page.
+    suppressErrorRendering: true,
     securityLevel: 'strict',
     htmlLabels: false,
     flowchart: { htmlLabels: false },
@@ -129,6 +133,23 @@ export function sizedSvg(svg: string, parser: DOMParser = new DOMParser()): Draw
   }
 }
 
+/**
+ * Whether a source may name a node image, which Mermaid loads from its URL as
+ * it draws. A node's image is the `img` key of its `@{ ... }` metadata,
+ * which Mermaid reads as YAML, and a YAML key can spell `img` only with those
+ * letters, an escape (`\\`) or an alias (`&`, `*`, `<<`), or by a tag (`!`)
+ * or a complex key (`?`). Mermaid gives no public API for the parsed nodes,
+ * so a source with `@{` and any of those does not draw.
+ */
+export function mayLoadImage(source: string): boolean {
+  return source.includes('@{') && /img|[\\&*!?]|<</i.test(source)
+}
+
+/** Removes what Mermaid adds to the page for a draw, which a failed draw can leave. */
+function removeDrawElements(id: string): void {
+  for (const each of [id, `d${id}`, `i${id}`]) document.getElementById(each)?.remove()
+}
+
 // Mermaid's settings are global, so draws run one after another: each sets
 // its theme, then draws.
 let queue: Promise<unknown> = Promise.resolve()
@@ -136,12 +157,16 @@ let count = 0
 
 /** Draws `source` with Mermaid in the given colours. It never throws: a parse error comes back as the reason. */
 export function drawMermaid(source: string, colours: DiagramColours, dark: boolean): Promise<DrawResult> {
+  let id: string | undefined
   const run = async (): Promise<DrawResult> => {
     try {
+      if (mayLoadImage(source))
+        return { ok: false, reason: 'a node may load an image from a URL, which a message may not do' }
       const { default: mermaid } = await import('mermaid')
       mermaid.initialize(mermaidConfig(colours, dark))
       count += 1
-      const { svg } = await mermaid.render(`bridge-mermaid-${String(count)}`, source)
+      id = `bridge-mermaid-${String(count)}`
+      const { svg } = await mermaid.render(id, source)
       const sized = sizedSvg(svg)
       return sized === undefined ? { ok: false, reason: 'the diagram has no size' } : { ok: true, diagram: sized }
     } catch (error) {
@@ -149,6 +174,8 @@ export function drawMermaid(source: string, colours: DiagramColours, dark: boole
         ok: false,
         reason: error instanceof Error ? (error.message.split('\n')[0] ?? error.message) : 'the diagram did not parse',
       }
+    } finally {
+      if (id !== undefined) removeDrawElements(id)
     }
   }
   const next = queue.then(run, run)

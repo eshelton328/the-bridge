@@ -728,7 +728,9 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   `<img>` of a blob: URL, so no script in it runs and it loads nothing. It
   draws again when the colour mode changes; a block that does not parse
   shows the reason and the source; "Show source" shows the text
-  (`WorkspacesMermaid.test.tsx`). A table's elements
+  (`WorkspacesMermaid.test.tsx`). Mermaid loads a node's image
+  (`A@{ img: "<url>" }`) itself as it draws, so a source that may name one
+  does not draw (`mayLoadImage`). A table's elements
   come from `../../blocks/markdownTableParts.ts`
   (`app/WorkspacesMarkdownTables.test.tsx`). Inline code is a mono
   badge (MarkdownView `inlineCode="badge"`) and a fenced block the
