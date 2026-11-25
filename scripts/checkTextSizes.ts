@@ -19,6 +19,7 @@ import { isStateFile } from './genRegistry.ts'
 import {
   addCounts,
   layoutOf,
+  namedLayers,
   newProblems,
   overlapPairs,
   overlapsOf,
@@ -26,6 +27,7 @@ import {
   type SizeCounts,
   type TextMeasure,
   type TextProblem,
+  type TopRun,
   windows,
 } from './textSizesLib.ts'
 
@@ -127,7 +129,8 @@ function measureText(): TextMeasure[] {
   // Form fields: their placeholder or value is no text node, so measure the line against the content box.
   for (const field of document.querySelectorAll('input, textarea')) {
     if (!(field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement)) continue
-    if (field instanceof HTMLInputElement && !['text', 'search', 'email', 'url', 'password', ''].includes(field.type)) continue
+    if (field instanceof HTMLInputElement && !['text', 'search', 'email', 'url', 'password', ''].includes(field.type))
+      continue
     const shown = field.value !== '' ? field.value : field.placeholder
     const s = getComputedStyle(field)
     if (shown.trim() === '' || s.visibility === 'hidden' || s.display === 'none') continue
@@ -151,12 +154,16 @@ function measureText(): TextMeasure[] {
 }
 
 /**
- * For each overlapping pair, the key of the holder painted on top at the centre of the shared box: the first of the
- * two that the hit test meets. Null when an element with its own background is on top of both there, or when the
- * run on top is in a dialog, a sheet, a menu or a bar placed over the page (fixed, sticky or absolute) and the other
- * is not: the page under an open layer or a bar is behind it by design.
+ * For each overlapping pair, the run painted on top at the centre of the shared box (the first of the two that the
+ * hit test meets; null when an element with its own background covers both there), the layer that holds it and not
+ * the other run, and that layer's pointer-events (see TopRun). A named drag-time layer takes no pointer, so the hit
+ * test would pass through it: while this runs, only those named layers take the hit.
  */
-function paintedOnTop(pairs: { a: string; b: string; x: number; y: number }[]): (string | null)[] {
+function paintedOnTop(args: {
+  pairs: { a: string; b: string; x: number; y: number }[]
+  named: Record<string, string>
+}): TopRun[] {
+  const { pairs, named } = args
   const byPath = (key: string): Element | null => {
     let el: Element = document.body
     for (const part of key.split('/')) {
@@ -166,33 +173,46 @@ function paintedOnTop(pairs: { a: string; b: string; x: number; y: number }[]): 
     }
     return el
   }
-  return pairs.map(({ a, b, x, y }) => {
+  const drag = Object.entries(named).filter(([name]) => name !== 'tabBar')
+  const pointerOf = new Map<Element, string>()
+  for (const [, selector] of drag)
+    for (const el of document.querySelectorAll(selector)) pointerOf.set(el, getComputedStyle(el).pointerEvents)
+  const hits = document.createElement('style')
+  hits.textContent = `${drag.map(([, selector]) => selector).join(', ')} { pointer-events: auto !important; }`
+  document.head.append(hits)
+  const open = '[role="dialog"], [role="alertdialog"], [role="menu"], [role="listbox"], [aria-modal="true"]'
+  const layerOf = (upper: Element, lower: Element): Pick<TopRun, 'layer' | 'pointerEvents'> => {
+    const dialog = upper.closest(open)
+    if (dialog !== null && !dialog.contains(lower)) return { layer: 'open', pointerEvents: 'auto' }
+    for (const [name, selector] of Object.entries(named)) {
+      const part = upper.closest(selector)
+      if (part === null || part.contains(lower)) continue
+      if (name === 'tabBar' || name === 'resizeReadout' || name === 'paneDropZone')
+        return { layer: name, pointerEvents: pointerOf.get(part) ?? getComputedStyle(part).pointerEvents }
+    }
+    for (let e: Element | null = upper; e !== null; e = e.parentElement) {
+      if (e.contains(lower)) break
+      const p = getComputedStyle(e).position
+      if (p === 'fixed' || p === 'sticky') return { layer: 'pinned', pointerEvents: 'auto' }
+      if (p === 'absolute') return { layer: 'other', pointerEvents: getComputedStyle(e).pointerEvents }
+    }
+    return { layer: null, pointerEvents: 'auto' }
+  }
+  const out = pairs.map(({ a, b, x, y }): TopRun => {
     const ea = byPath(a)
     const eb = byPath(b)
-    if (ea === null || eb === null) return null
-    const layer = '[role="dialog"], [role="alertdialog"], [role="menu"], [role="listbox"], [aria-modal="true"]'
-    // A bar placed over the page (fixed, sticky or absolute, as the tab bar is): the page scrolls under it by design.
-    const pinned = (el: Element): Element | null => {
-      for (let e: Element | null = el; e !== null; e = e.parentElement) {
-        const p = getComputedStyle(e).position
-        if (p === 'fixed' || p === 'sticky' || p === 'absolute') return e
-      }
-      return null
-    }
-    const onTop = (upper: Element, lower: Element, key: string): string | null => {
-      const open = upper.closest(layer)
-      if (open !== null && !open.contains(lower)) return null
-      const bar = pinned(upper)
-      return bar !== null && !bar.contains(lower) ? null : key
-    }
+    const none: TopRun = { key: null, layer: null, pointerEvents: 'auto' }
+    if (ea === null || eb === null) return none
     for (const hit of document.elementsFromPoint(x, y)) {
-      if (ea === hit || ea.contains(hit) || hit.contains(ea)) return onTop(ea, eb, a)
-      if (eb === hit || eb.contains(hit) || hit.contains(eb)) return onTop(eb, ea, b)
+      if (ea === hit || ea.contains(hit) || hit.contains(ea)) return { key: a, ...layerOf(ea, eb) }
+      if (eb === hit || eb.contains(hit) || hit.contains(eb)) return { key: b, ...layerOf(eb, ea) }
       const s = getComputedStyle(hit)
-      if (s.backgroundColor !== 'rgba(0, 0, 0, 0)' && s.backgroundColor !== 'transparent') return null
+      if (s.backgroundColor !== 'rgba(0, 0, 0, 0)' && s.backgroundColor !== 'transparent') return none
     }
-    return null
+    return none
   })
+  hits.remove()
+  return out
 }
 
 /**
@@ -213,7 +233,7 @@ async function openAt(
   await tab.addInitScript((name) => {
     // The init script runs before <html> exists: set the class as soon as the parser adds it.
     const apply = (): boolean => {
-      const root = document.documentElement
+      const root = document.querySelector('html')
       if (root === null) return false
       root.classList.remove('text-default', 'text-large')
       if (name !== null) root.classList.add(name)
@@ -265,8 +285,11 @@ try {
         })
         const measured = await tab.evaluate(measureText)
         const pairs = overlapPairs(measured)
-        const onTop = await tab.evaluate(paintedOnTop, pairs.map((p) => ({ a: p.a.key, b: p.b.key, x: p.x, y: p.y })))
-        const found = [...problemsOf(measured), ...overlapsOf(pairs, onTop)]
+        const tops = await tab.evaluate(paintedOnTop, {
+          pairs: pairs.map((p) => ({ a: p.a.key, b: p.b.key, x: p.x, y: p.y })),
+          named: namedLayers,
+        })
+        const found = [...problemsOf(measured), ...overlapsOf(pairs, tops)]
         await tab.close()
         if (size === 'small') small = found
         else {

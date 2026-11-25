@@ -8,11 +8,13 @@ import {
   outBy,
   overlapBy,
   overlapPairs,
+  coversByDesign,
   overlapsOf,
   shownBox,
   problemsOf,
   type SizeCounts,
   type TextMeasure,
+  type TopRun,
 } from './textSizesLib.ts'
 
 const edges = (left: number, top: number, right: number, bottom: number) => ({ left, top, right, bottom })
@@ -127,28 +129,35 @@ void test('a run painted over text is an overlap, keyed by the run on top, once'
   const line = measure({ key: 'div:0/p:1', text: 'The workbench suits long', box: edges(0, 100, 300, 120) })
   const chip = measure({ key: 'div:0/div:2/span:0', text: '60 : 40', box: edges(280, 102, 400, 118) })
   const pairs = overlapPairs([line, chip])
-  assert.deepEqual(pairs.map((p) => [p.by, p.x, p.y]), [[16, 290, 110]])
-  assert.deepEqual(overlapsOf(pairs, ['div:0/div:2/span:0']), [
+  assert.deepEqual(
+    pairs.map((p) => [p.by, p.x, p.y]),
+    [[16, 290, 110]],
+  )
+  assert.deepEqual(overlapsOf(pairs, [run('div:0/div:2/span:0')]), [
     { key: 'div:0/div:2/span:0', text: '60 : 40 over The workbench suits long', kind: 'overlap', by: 16 },
   ])
   const second = measure({ key: 'div:0/p:3', text: 'line two', box: edges(280, 104, 320, 118) })
   const three = overlapPairs([line, chip, second])
-  const onTop = three.map((p) => (p.a.key === 'div:0/p:1' && p.b.key === 'div:0/p:3' ? null : 'div:0/div:2/span:0'))
+  const onTop = three.map((p) => run(p.a.key === 'div:0/p:1' && p.b.key === 'div:0/p:3' ? null : 'div:0/div:2/span:0'))
   assert.equal(three.length, 3)
   assert.equal(overlapsOf(three, onTop).length, 1)
-  assert.deepEqual(overlapsOf(three, ['div:9/span:0', 'div:9/span:0', 'div:9/span:0']), [])
+  assert.deepEqual(overlapsOf(three, [run('div:9/span:0'), run('div:9/span:0'), run('div:9/span:0')]), [])
 })
 
 void test('a pair that a third element covers, as an open menu does, is no overlap', () => {
   const line = measure({ key: 'div:0/p:1', box: edges(0, 100, 300, 120) })
   const other = measure({ key: 'div:0/p:2', box: edges(0, 104, 300, 124) })
-  assert.deepEqual(overlapsOf(overlapPairs([line, other]), [null]), [])
+  assert.deepEqual(overlapsOf(overlapPairs([line, other]), [run(null)]), [])
 })
 
 void test('the same run on top at Small makes the overlap not new, wherever the text under it moved', () => {
   const chip = measure({ key: 'menu:0/span:0', text: 'Side chat', box: edges(0, 100, 100, 120) })
-  const small = overlapsOf(overlapPairs([chip, measure({ key: 'p:1', box: edges(0, 100, 300, 120) })]), ['menu:0/span:0'])
-  const large = overlapsOf(overlapPairs([chip, measure({ key: 'p:2', box: edges(0, 100, 300, 120) })]), ['menu:0/span:0'])
+  const small = overlapsOf(overlapPairs([chip, measure({ key: 'p:1', box: edges(0, 100, 300, 120) })]), [
+    run('menu:0/span:0'),
+  ])
+  const large = overlapsOf(overlapPairs([chip, measure({ key: 'p:2', box: edges(0, 100, 300, 120) })]), [
+    run('menu:0/span:0'),
+  ])
   assert.equal(small.length, 1)
   assert.deepEqual(newProblems(small, large), [])
 })
@@ -157,7 +166,10 @@ void test('touching line boxes, nested holders, fields and ellipsis text make no
   const a = measure({ key: 'div:0/p:1', box: edges(0, 100, 300, 120) })
   assert.deepEqual(overlapPairs([a, measure({ key: 'div:0/p:2', box: edges(0, 118, 300, 138) })]), [])
   assert.deepEqual(overlapPairs([a, measure({ key: 'div:0/p:1/b:0', box: edges(10, 100, 50, 120) })]), [])
-  assert.deepEqual(overlapPairs([a, measure({ key: 'div:0/input:3', box: edges(0, 100, 300, 120), fieldShort: 0 })]), [])
+  assert.deepEqual(
+    overlapPairs([a, measure({ key: 'div:0/input:3', box: edges(0, 100, 300, 120), fieldShort: 0 })]),
+    [],
+  )
   assert.deepEqual(overlapPairs([a, measure({ key: 'div:0/p:4', box: edges(0, 100, 300, 120), truncated: true })]), [])
 })
 
@@ -169,4 +181,35 @@ void test('only the shown part of a run counts: text scrolled out of view or cli
   const half = measure({ key: 'main:1/p:1', box: edges(0, 10, 300, 40), scroller: edges(0, 15, 400, 800) })
   assert.deepEqual(shownBox(half), edges(0, 15, 300, 40))
   assert.equal(overlapPairs([header, half]).length, 1)
+})
+/** The run on top in a layer of the page's own flow, unless a test names the layer. */
+function run(key: string | null, layer: TopRun['layer'] = null, pointerEvents = 'auto'): TopRun {
+  return { key, layer, pointerEvents }
+}
+
+void test('a named drag-time layer that takes no pointer covers text by design', () => {
+  assert.equal(coversByDesign(run('x', 'resizeReadout', 'none')), true)
+  assert.equal(coversByDesign(run('x', 'paneDropZone', 'none')), true)
+  assert.equal(coversByDesign(run('x', 'tabBar')), true)
+})
+
+void test('a planted overlay over text that is no named drag-time layer still counts', () => {
+  const chip = measure({ key: 'div:0/div:4/span:0', text: 'Saved', box: edges(0, 100, 80, 120) })
+  const line = measure({ key: 'div:0/p:1', text: 'the pane text', box: edges(0, 100, 300, 120) })
+  const pairs = overlapPairs([chip, line])
+  // A toast placed over the page that takes no pointer, as the readout does, but not named.
+  assert.deepEqual(
+    overlapsOf(pairs, [run(chip.key, 'other', 'none')]).map((p) => p.kind),
+    ['overlap'],
+  )
+  // The readout's own part that takes the pointer is no drag-time layer: it would stay over the text.
+  assert.deepEqual(
+    overlapsOf(pairs, [run(chip.key, 'resizeReadout', 'auto')]).map((p) => p.kind),
+    ['overlap'],
+  )
+  assert.deepEqual(
+    overlapsOf(pairs, [run(chip.key, 'paneDropZone', 'auto')]).map((p) => p.kind),
+    ['overlap'],
+  )
+  assert.deepEqual(overlapsOf(pairs, [run(chip.key, 'resizeReadout', 'none')]), [])
 })

@@ -126,7 +126,12 @@ export function PaneDropZone({ edge, chat, target, drop, placement = 'chat', fig
   return (
     <>
       {placement === 'pane' && edge === 'middle' ? <div className={scrim} /> : null}
-      <div data-figma={layers.zone} role="status" className={cx(zone, edges[placement][edge])}>
+      <div
+        data-figma={layers.zone}
+        data-drag-layer="pane-drop-zone"
+        role="status"
+        className={cx(zone, edges[placement][edge])}
+      >
         <div className={half} />
         <div className={middle}>
           {drop.icon === false ? null : (

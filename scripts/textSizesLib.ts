@@ -120,7 +120,12 @@ const overlapTolerance = 3
 export function shownBox(m: TextMeasure): Edges | null {
   let b = m.box
   for (const c of m.scroller === undefined ? m.clippers : [...m.clippers, m.scroller]) {
-    b = { left: Math.max(b.left, c.left), top: Math.max(b.top, c.top), right: Math.min(b.right, c.right), bottom: Math.min(b.bottom, c.bottom) }
+    b = {
+      left: Math.max(b.left, c.left),
+      top: Math.max(b.top, c.top),
+      right: Math.min(b.right, c.right),
+      bottom: Math.min(b.bottom, c.bottom),
+    }
   }
   return b.right > b.left && b.bottom > b.top ? b : null
 }
@@ -155,16 +160,55 @@ export function overlapPairs(measures: readonly TextMeasure[]): OverlapPair[] {
 }
 
 /**
- * The overlap problems, from the pairs and the key of the run painted on top of each (null when a third element
- * covers both, as an open menu does). A problem is keyed by the run on top only: a menu, a drawer or a chip that
- * covers text at Small too is the design, and newProblems drops it however the text under it moved. A chip that
- * covers text only at a larger size (the Workspaces resize hint) is new.
+ * The layer that holds the run on top and not the run under it, as the browser found it: an open dialog, sheet or
+ * menu (`open`), a fixed or sticky bar (`pinned`), or one of the parts named in `namedLayers`; `other` for any other
+ * box placed over the page; null when the two runs share their layer.
  */
-export function overlapsOf(pairs: readonly OverlapPair[], onTop: readonly (string | null)[]): TextProblem[] {
+export type TopLayer = 'open' | 'pinned' | keyof typeof namedLayers | 'other' | null
+
+/** The run painted on top of a pair (null when a third element covers both), its layer and that layer's pointer-events. */
+export type TopRun = { key: string | null; layer: TopLayer; pointerEvents: string }
+
+/**
+ * The parts that cover the page by design, named one by one (bridge-coord, 2026-11-25): the tab bar the page scrolls
+ * under, and two drag-time layers, which show only while a drag runs and take no pointer: the resize readout and the
+ * pane drop zone. Any other box over text counts as an overlap.
+ */
+export const namedLayers = {
+  tabBar: '.app-shell__tabBar',
+  resizeReadout: '[data-drag-layer="resize-readout"]',
+  paneDropZone: '[data-drag-layer="pane-drop-zone"]',
+} as const
+
+/** Whether the layer on top covers the text under it by design. A drag-time layer must take no pointer. */
+export function coversByDesign(top: TopRun): boolean {
+  switch (top.layer) {
+    case 'open':
+    case 'pinned':
+    case 'tabBar':
+      return true
+    case 'resizeReadout':
+    case 'paneDropZone':
+      return top.pointerEvents === 'none'
+    case 'other':
+    case null:
+      return false
+  }
+}
+
+/**
+ * The overlap problems, from the pairs and the run painted on top of each. A pair is no problem when a third element
+ * covers both or when the layer on top covers the page by design (coversByDesign). A problem is keyed by the run on
+ * top only: a chip that covers text at Small too is the design, and newProblems drops it however the text under it
+ * moved; one that covers text only at a larger size is new.
+ */
+export function overlapsOf(pairs: readonly OverlapPair[], tops: readonly TopRun[]): TextProblem[] {
   const out: TextProblem[] = []
   const seen = new Set<string>()
   pairs.forEach((p, i) => {
-    const top = onTop[i]
+    const run = tops[i]
+    if (run === undefined || coversByDesign(run)) return
+    const top = run.key
     if (top !== p.a.key && top !== p.b.key) return
     const [upper, lower] = top === p.a.key ? [p.a, p.b] : [p.b, p.a]
     if (seen.has(upper.key)) return
