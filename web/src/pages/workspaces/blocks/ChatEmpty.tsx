@@ -64,7 +64,7 @@ export type ChatEmptyProps = {
 export function ChatEmpty({ kind, title: name, text }: ChatEmptyProps) {
   return (
     <div className={box} data-chat-empty="">
-      <div className={group}>
+      <div className={group} data-keyboard-glide="">
         <div className={part}>
           <span className={tile} data-chat-empty-part="mark">
             <KindMark kind={kind} size="20" />
