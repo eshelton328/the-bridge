@@ -2,6 +2,7 @@ import '@fontsource-variable/geist'
 import '@fontsource-variable/geist-mono'
 import '../index.css'
 import type { TranscriptEntry } from '@bridge/contract'
+import { appShellDockEvent } from '@eshelton328/component-library-1701'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
@@ -381,6 +382,16 @@ describe("a live chat's transcript (slice 3b)", () => {
         top: mark.getBoundingClientRect().top,
         footer: composer.getBoundingClientRect().height,
         lineBottom: line.getBoundingClientRect().bottom,
+        t: performance.now(),
+      })
+      // Each dock event starts a glide from where the group is drawn to that event's end place (R73 part 2). The first
+      // open of a portrait keyboard docks twice, to the expected keyboard and then to the measured one; on the iPad mini
+      // both give the group the same end place, so the group can end its travel while the composer still moves.
+      const docks: number[] = []
+      const onDock = () => docks.push(performance.now())
+      shell.addEventListener(appShellDockEvent, onDock)
+      onTestFinished(() => {
+        shell.removeEventListener(appShellDockEvent, onDock)
       })
       const at = read()
       const steps: ReturnType<typeof read>[] = []
@@ -411,23 +422,35 @@ describe("a live chat's transcript (slice 3b)", () => {
       expect(Math.abs(down.top - at.top + (down.footer - at.footer) / 2)).toBeLessThanOrEqual(1)
       // The open and the close move the group as far as the keyboard-open place, in step with the composer.
       expect(Math.abs(up.top - down.top)).toBeGreaterThan(device === 'iPhone' ? 50 : 4)
-      // The group's travel for each px of the composer's move with the keyboard.
-      const ratio = Math.abs((up.top - down.top) / (up.composerTop - down.composerTop))
-      // In each frame the group moves at most that ratio of the composer's move, + 1 px. In the frame the composer grows
-      // from one row or goes back to it (R39), it moves half that growth too, as it stays centred above the composer;
-      // that frame can come late on a slow machine. A jump of the group in one frame (R73 part 1) is more.
+      // Each step's move of the group and of the composer, with the composer's growth taken out in the step it leaves or
+      // takes one row (R39): the group stays centred above the composer, so it moves half that growth. That step can
+      // come late on a slow machine.
       const oneRow = (s: { footer: number }) => Math.abs(s.footer - at.footer) < 0.5
-      const jumps = steps.slice(1).map((s, i) => {
+      const moves = steps.slice(1).map((s, i) => {
         const before = steps[i] ?? s
-        const grow = s.footer - before.footer
-        const allowed =
-          oneRow(before) !== oneRow(s)
-            ? Math.abs(grow) / 2 + Math.abs(s.composerTop - before.composerTop + grow) * ratio
-            : Math.abs(s.composerTop - before.composerTop) * ratio
-        return Math.abs(s.top - before.top) - allowed
+        const grow = oneRow(before) !== oneRow(s) ? s.footer - before.footer : 0
+        return {
+          glide: docks.filter((time) => time <= s.t).length,
+          group: s.top - before.top + grow / 2,
+          composer: s.composerTop - before.composerTop + grow,
+        }
       })
+      // Each glide moves the group by one ratio of the composer's move: its travel over the composer's in that glide.
+      // In each step the group moves at most that ratio of the composer's move, + 1 px. A jump of the group in one step
+      // (R73 part 1) is more.
+      const ratioOf = (glide: number) => {
+        const own = moves.filter((move) => move.glide === glide)
+        const composer = own.reduce((sum, move) => sum + move.composer, 0)
+        const group = own.reduce((sum, move) => sum + move.group, 0)
+        return Math.abs(composer) < 1 ? 0 : Math.abs(group / composer)
+      }
+      const jumps = moves.map((move) => Math.abs(move.group) - Math.abs(move.composer) * ratioOf(move.glide))
+      const worst = jumps.indexOf(Math.max(...jumps))
       expect(steps.length).toBeGreaterThan(10)
-      expect(Math.max(...jumps)).toBeLessThanOrEqual(1)
+      expect(
+        Math.max(...jumps),
+        `step ${String(worst + 1)} of ${JSON.stringify(steps.map((s) => [Math.round(s.t), s.composerTop, s.top, s.footer]))}, docks ${JSON.stringify(docks.map(Math.round))}`,
+      ).toBeLessThanOrEqual(1)
       expect(Math.max(...steps.map((s) => s.lineBottom - s.composerTop))).toBeLessThanOrEqual(0.5)
       expect(getReports()).toEqual([])
     })
