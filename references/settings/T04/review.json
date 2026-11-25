@@ -1,8 +1,8 @@
 {
   "frameId": "T04",
-  "inputs": "e960ad7a103ac3382e369ab1e4a2fbee50c76099e1dfcdefb2f6eedcc2170fa1",
-  "library": "1.0.0-beta.128",
-  "recordSha256": "8f8916952f298f081f83fb2bbb6c8db8db49bb464a3b0a9a6bda1a6b71f535ef",
+  "inputs": "a88bbe45aa73f4d5160d4157e719c667ef57bad51c0a031425dd481f05700771",
+  "library": "1.0.0-beta.131",
+  "recordSha256": "6a13e347d1d3dfee6f5ceef5bb839fb18e54588e1d850c65ed64f52a786fd08f",
   "record": {
     "verdict": "match",
     "viewport": "1180x820 iPad landscape, Light (tablet layout)",
@@ -12,7 +12,7 @@
       "render": "reports/fidelity/settings/T04.sideBySide.png",
       "reference_side": "left"
     },
-    "summary": "The render matches the reference apart from the accepted deviations: the new Text size line, the new Chat width row and the new Rich text section, which push Navigation below the bottom edge.",
+    "summary": "The render matches the reference. The only differences are the accepted Text size line, the Chat width row and the Rich text section, and these push Navigation below the tab bar.",
     "findings": [],
     "accepted_deviations": [
       {
@@ -20,53 +20,54 @@
         "as_given": "Text size: the control is enabled, with Default selected as in the reference, and the line under it says \"Scales the text of the whole app. Small is the size of the designs.\" in place of \"Scales the whole app: Small 87.5 %, Default 100 %, Large 112.5 %.\" (d-122 and d-131). The line has a different length, so on a narrow screen it can take one more or one less text line than the reference, and every section below it then sits that much lower or higher.",
         "status": "as-described",
         "finding": null,
-        "note": "Default is selected, the control is enabled and the new line takes one text line, as in the reference."
+        "note": "The control is enabled with Default selected. The new line fits on one line, the same as in the reference."
       },
       {
         "id": "A2",
         "as_given": "A new \"NOTIFICATIONS\" section with one \"Notifications\" switch (off) sits between the Navigation section and the New chat defaults section. So New chat defaults sits lower, or below the bottom edge.",
         "status": "not-seen",
         "finding": null,
-        "note": "This part of the page is below the bottom edge in this frame."
+        "note": "This section is below the visible area, under the tab bar."
       },
       {
         "id": "A3",
         "as_given": "The Notifications switch moved to that section: the desktop rail no longer has the \"Notifications / Blocked in Settings\" switch at its bottom, and the More drawer no longer has the \"Notifications / Blocked in Settings\" row at its end. So the drawer is shorter and its top edge sits lower.",
         "status": "not-seen",
         "finding": null,
-        "note": "The frame shows the tablet tab bar. It does not show the rail or the More drawer."
+        "note": "The tablet layout has no rail, and the More drawer is closed in both pictures."
       },
       {
         "id": "A4",
         "as_given": "The Navigation list has a new last row, \"Settings\", with the line \"Always shown: in the bar or under More.\" under it and up and down buttons but no switch (the owner's decision: Settings is an entry of the bar order that cannot be hidden). So Toolkit's down button is now enabled, the Navigation card is taller, and every section below it sits lower or below the bottom edge.",
         "status": "not-seen",
         "finding": null,
-        "note": "The Navigation section is below the bottom edge in the render."
+        "note": "In the render, Rich text pushes the Navigation card below the visible area."
       },
       {
         "id": "A5",
         "as_given": "On the phone and the tablet only: a thin rule line with the text \"Under More on this device\" under it sits after the last page that the tab bar shows (Projects on the phone, Artifacts on the tablet), so the rows after it sit lower by about 40 px.",
         "status": "not-seen",
         "finding": null,
-        "note": "The Navigation list is below the bottom edge in the render."
+        "note": "The Navigation list is below the visible area in the render."
       },
       {
         "id": "A6",
         "as_given": "Appearance has a new last row, \"Chat width\", under Text size: a three-way control \"Full\", \"Wide\", \"Narrow\" with Full selected, and a line under it. On the desktop and the tablet the control is enabled and the line says \"The messages and the message box of a Workspaces chat, centred.\"; on the phone the control is disabled (muted labels) and the line says \"Phone: always full\". So the Appearance card is taller, and every section below it sits lower (about one row) or below the bottom edge.",
         "status": "as-described",
         "finding": null,
-        "note": "Chat width shows Full selected, the control is enabled and it has the tablet line. The Appearance card ends about 100 px lower."
+        "note": "Chat width shows Full selected and the control is enabled. The line says \"The messages and the message box of a Workspaces chat, centred.\" The Appearance card is about 100 px taller."
       },
       {
         "id": "A7",
         "as_given": "Rich text: a new \"RICH TEXT\" section sits between Appearance and Navigation, with the line \"Off shows the plain Markdown. No text is hidden.\" and six switches, all on: Callouts, Code highlighting, Chat links (with the line \"Chat bubbles in messages\" under it), Mermaid diagrams, Math and Images (bridge-coord, 2026-11-25, the owner's request). So Navigation and every section below it sit lower, or below the bottom edge.",
         "status": "as-described",
         "finding": null,
-        "note": "The heading, the line, and Callouts and Code highlighting (both on) show. Chat links is cut by the tab bar at the bottom edge because the page scrolls. The other rows are below the bottom edge."
+        "note": "The section heading, its line and the Callouts, Code highlighting and Chat links switches (all on) show above the tab bar. Chat links meets the tab bar, as the reference's last row does. The other switches are below the visible area."
       }
     ],
     "limits": [
-      "Everything below the tab bar edge (y about 743 in the 1:1 crops) is not visible. The rest of the Rich text section, the Navigation section and all the sections below it could not be compared."
+      "The page below the tab bar is not in either picture. This includes the Navigation list (A4, A5), the Notifications section (A2) and the rest of Rich text, so those parts could not be checked.",
+      "The More drawer is closed and the tablet layout has no rail, so A3 could not be checked."
     ]
   }
 }

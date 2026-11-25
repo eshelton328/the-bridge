@@ -1,8 +1,8 @@
 {
   "frameId": "M01",
-  "inputs": "7ed33e9b0520f1e594d519d8a5cb3b155cc7f47528f42370871de2fbcc88c5af",
-  "library": "1.0.0-beta.128",
-  "recordSha256": "a2828e42798ee61128a321e5dd92dd1ec5c266aedadd67f2ab1ebf04f3119d63",
+  "inputs": "f22d40ca754914d6b3420f83eaaf9ee0f220d0232254dfd9727a6ad5a5e9612c",
+  "library": "1.0.0-beta.131",
+  "recordSha256": "1e55969ed555db5d08257684800f4341b65b61523b7469b18410eda727935b96",
   "record": {
     "verdict": "match",
     "viewport": "390x844 phone, Dark",
@@ -12,7 +12,7 @@
       "render": "reports/fidelity/settings/M01.sideBySide.png",
       "reference_side": "left"
     },
-    "summary": "Apart from the accepted deviations, the render matches the reference: the header, the Appearance rows, the card styling and the tab bar with More selected are all the same.",
+    "summary": "The render matches the reference; the only differences are the accepted Text size line, the disabled Chat width row and the new Rich text section, which push Navigation below the tab bar.",
     "findings": [],
     "accepted_deviations": [
       {
@@ -20,21 +20,21 @@
         "as_given": "Text size: the control is enabled, with Default selected as in the reference, and the line under it says \"Scales the text of the whole app. Small is the size of the designs.\" in place of \"Scales the whole app: Small 87.5 %, Default 100 %, Large 112.5 %.\" (d-122 and d-131). The line has a different length, so on a narrow screen it can take one more or one less text line than the reference, and every section below it then sits that much lower or higher.",
         "status": "as-described",
         "finding": null,
-        "note": "Enabled, with Default selected. The new line takes two lines, the same as the reference."
+        "note": "Control enabled with Default selected; the new line takes two lines, the same as the reference."
       },
       {
         "id": "A2",
         "as_given": "A new \"NOTIFICATIONS\" section with one \"Notifications\" switch (off) sits between the Navigation section and the New chat defaults section. So New chat defaults sits lower, or below the bottom edge.",
         "status": "not-seen",
         "finding": null,
-        "note": "Below the bottom edge of this frame."
+        "note": "The section is below the bottom edge in this frame."
       },
       {
         "id": "A3",
         "as_given": "The Notifications switch moved to that section: the desktop rail no longer has the \"Notifications / Blocked in Settings\" switch at its bottom, and the More drawer no longer has the \"Notifications / Blocked in Settings\" row at its end. So the drawer is shorter and its top edge sits lower.",
         "status": "not-seen",
         "finding": null,
-        "note": "This phone frame has no rail and the More drawer is closed."
+        "note": "This phone frame shows neither the desktop rail nor the open More drawer."
       },
       {
         "id": "A4",
@@ -55,18 +55,19 @@
         "as_given": "Appearance has a new last row, \"Chat width\", under Text size: a three-way control \"Full\", \"Wide\", \"Narrow\" with Full selected, and a line under it. On the desktop and the tablet the control is enabled and the line says \"The messages and the message box of a Workspaces chat, centred.\"; on the phone the control is disabled (muted labels) and the line says \"Phone: always full\". So the Appearance card is taller, and every section below it sits lower (about one row) or below the bottom edge.",
         "status": "as-described",
         "finding": null,
-        "note": "Chat width shows Full selected and the labels muted, with \"Phone: always full\" under it."
+        "note": "Phone variant: Full selected, labels muted, line \"Phone: always full\"; Appearance card is about 100 px taller."
       },
       {
         "id": "A7",
         "as_given": "Rich text: a new \"RICH TEXT\" section sits between Appearance and Navigation, with the line \"Off shows the plain Markdown. No text is hidden.\" and six switches, all on: Callouts, Code highlighting, Chat links (with the line \"Chat bubbles in messages\" under it), Mermaid diagrams, Math and Images (bridge-coord, 2026-11-25, the owner's request). So Navigation and every section below it sit lower, or below the bottom edge.",
         "status": "as-described",
         "finding": null,
-        "note": "Shows the section heading, the line, and the Callouts, Code highlighting and Chat links switches, all on. The tab bar covers the rest of the section, the same way it covers the Projects row in the reference."
+        "note": "Heading, line and the Callouts, Code highlighting and Chat links switches (on) are visible; the rest of the section continues under the tab bar."
       }
     ],
     "limits": [
-      "Only the first screen of the page is shown, so the Navigation list, the Notifications section, New chat defaults and the parts of the Rich text section below Chat links cannot be compared."
+      "Everything below about y=770 is under the tab bar or off-screen in the render, so this frame does not show the rest of Rich text, Navigation, Notifications or New chat defaults.",
+      "Differences under about 2 px were not checked beyond the 1:1 half crops."
     ]
   }
 }
