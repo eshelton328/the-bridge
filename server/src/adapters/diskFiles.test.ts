@@ -18,9 +18,9 @@ describeFileStore('disk', async ({ tracked, untracked, linkOut, fifo }) => {
   for (const [path, text] of Object.entries({ ...tracked, ...untracked })) await put(path, text)
   await writeFile(join(top, 'outside.md'), 'outside the brain\n')
   await symlink(join(top, 'outside.md'), join(brainDir, linkOut))
-  // A FIFO cannot be tracked, so a tracked symlink in the root points at one; an open would wait for a writer.
+  // A FIFO cannot be tracked, so a tracked symlink points at one in the root; git does not track its target.
   execFileSync('mkfifo', [join(top, 'brain', '.pipe')])
-  await symlink('.pipe', join(brainDir, fifo))
+  await symlink('../.pipe', join(brainDir, fifo))
   execFileSync('git', ['init', '-q', brainDir])
   execFileSync('git', ['-C', brainDir, 'add', '--', ...Object.keys(tracked), linkOut, fifo])
   return createDiskFiles({ brainDir })
