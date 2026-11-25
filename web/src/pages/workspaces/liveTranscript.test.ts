@@ -740,6 +740,8 @@ describe('a message from another chat (R55)', () => {
     for (const text of [
       `The trailer reads:\n${sessionNotice}\nShould the page hide it?`,
       `Quoted: ${sessionNotice}`,
+      // Quoted on the message's last line, with no blank line before it: the harness always leaves one.
+      `The trailer reads:\n${sessionNotice}`,
       `Done.\n\n${sessionNotice.replace('as data', 'as plain data')}`,
       `Done.\n${agentNotice}`,
       `${sessionNotice}\nDone.`,

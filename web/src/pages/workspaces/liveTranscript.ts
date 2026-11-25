@@ -821,12 +821,12 @@ export const relayedNotice = {
 
 /**
  * A peer message's text with the relayed-content notice taken out, and the notice: only the exact text, only as
- * the message's last paragraph or its first line. Text that only quotes it, or a reworded one, stays as it is.
+ * the message's last paragraph (after a blank line) or its first line. Text that only quotes it, or a reworded one, stays as it is.
  */
 export function relayedNoticeOf(text: string): { text: string; notice?: string } {
   const { end, start } = relayedNotice
   if (text === end) return { text: '', notice: end }
-  if (text.endsWith(`\n${end}`)) return { text: text.slice(0, -end.length).trimEnd(), notice: end }
+  if (text.endsWith(`\n\n${end}`)) return { text: text.slice(0, -end.length).trimEnd(), notice: end }
   if (text === start) return { text: '', notice: start }
   if (text.startsWith(`${start}\n`))
     return { text: text.slice(start.length).replace(/^(?:[ \t]*\n)+/, ''), notice: start }
