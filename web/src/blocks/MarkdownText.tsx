@@ -14,12 +14,12 @@
 // size of its MarkdownView. A GitHub alert (`> [!NOTE]`) is the library's
 // Callout (`remarkCallout.ts`, `MarkdownQuote.tsx`). A live chat's name
 // becomes a mention that opens the chat (remarkChatMentions.ts), with the
-// chats from MarkdownChats. The caller wraps it in a BlockBoundary.
+// chats from MarkdownChatsContext. The caller wraps it in a BlockBoundary.
 import { use, useMemo, type ReactNode } from 'react'
 import Markdown, { type Components, type ExtraProps, type Options } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { ChatMention } from './ChatMention.tsx'
-import { MarkdownChats } from './markdownChats.ts'
+import { MarkdownChatsContext } from './markdownChats.ts'
 import { MarkdownQuote } from './MarkdownQuote.tsx'
 import { type MarkdownSize, markdownTableParts } from './markdownTableParts.ts'
 import { remarkCallout } from './remarkCallout.ts'
@@ -107,7 +107,7 @@ export type MarkdownTextProps = {
 }
 
 export function MarkdownText({ text, size = 'md' }: MarkdownTextProps) {
-  const { chats } = use(MarkdownChats)
+  const { chats } = use(MarkdownChatsContext)
   const plugins = useMemo(
     (): NonNullable<Options['remarkPlugins']> =>
       chats.size === 0 ? remarkPlugins : [...remarkPlugins, [remarkChatMentions, chats]],

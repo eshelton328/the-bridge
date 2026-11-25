@@ -12,4 +12,4 @@ export type MarkdownMentions = {
   readonly open: (chat: string) => void
 }
 
-export const MarkdownChats = createContext<MarkdownMentions>({ chats: new Map(), open: () => undefined })
+export const MarkdownChatsContext = createContext<MarkdownMentions>({ chats: new Map(), open: () => undefined })

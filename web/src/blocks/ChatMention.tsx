@@ -1,12 +1,12 @@
 // A chat mention as MarkdownText draws it (remarkChatMentions.ts): the
 // library's MentionChip, a link to `/workspaces?chat=<ChatId>`. A plain
-// press opens the chat in the same tab through MarkdownChats' `open`, as a
+// press opens the chat in the same tab through MarkdownChatsContext' `open`, as a
 // tap on its row would; a press with a modifier key keeps the browser's
 // own action on the link. The R56 rules are for the links a text writes,
 // not for this one. Props only.
 import { MentionChip } from '@eshelton328/component-library-1701'
 import { use, type MouseEvent, type ReactNode } from 'react'
-import { MarkdownChats } from './markdownChats.ts'
+import { MarkdownChatsContext } from './markdownChats.ts'
 
 export type ChatMentionProps = {
   /** The chat's server ID, from the plugin's node. */
@@ -18,7 +18,7 @@ export type ChatMentionProps = {
 }
 
 export function ChatMention({ chat, name, children }: ChatMentionProps) {
-  const { open } = use(MarkdownChats)
+  const { open } = use(MarkdownChatsContext)
   if (typeof chat !== 'string' || typeof name !== 'string') return children
   const onClick = (event: MouseEvent<HTMLAnchorElement>) => {
     if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return

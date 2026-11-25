@@ -32,14 +32,11 @@ afterEach(async () => {
 /** The mentions `text` draws, as `chat=text`. */
 async function mentions(text: string): Promise<string[]> {
   view = await testRender(
-    <Markdown
-      remarkPlugins={[remarkGfm, [remarkChatMentions, chats]]}
-      components={{ ...mentionParts, p: 'p' }}
-    >
+    <Markdown remarkPlugins={[remarkGfm, [remarkChatMentions, chats]]} components={{ ...mentionParts, p: 'p' }}>
       {text}
     </Markdown>,
   )
-  const out = [...document.querySelectorAll('mark')].map((m) => `${m.dataset['chat'] ?? ''}=${m.textContent}`)
+  const out = [...document.querySelectorAll('mark')].map((m) => `${m.dataset.chat ?? ''}=${m.textContent}`)
   await view.unmount()
   view = undefined
   return out
