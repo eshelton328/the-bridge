@@ -4,7 +4,8 @@
 // that is not listed has no ID and no text. A text read is `binary` (415)
 // for a NUL byte in the first 8 KiB or bad UTF-8, and `tooLarge` (413)
 // over `maxFileText` bytes, never a cut text. An image read takes its type
-// from the file's first bytes only (PNG, JPEG, GIF, WebP; never SVG).
+// from the extension's allowlist, and the file's first bytes must match it
+// (PNG, JPEG, GIF, WebP; never SVG).
 import { createHash } from 'node:crypto'
 import {
   type FileRawQuery,
@@ -43,7 +44,20 @@ export type ImageType = 'image/png' | 'image/jpeg' | 'image/gif' | 'image/webp'
 const startsWith = (bytes: Uint8Array, head: readonly number[], at = 0) => head.every((b, i) => bytes[at + i] === b)
 const ascii = (text: string) => Array.from(new TextEncoder().encode(text))
 
-/** The image type of `bytes` from their first bytes, never from a file name; undefined for any other type. */
+/** The image type each allowed extension names; any other extension is no image. */
+const typeByExtension: Readonly<Record<string, ImageType>> = {
+  png: 'image/png',
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  gif: 'image/gif',
+  webp: 'image/webp',
+}
+
+/** The image type the extension of `path` names, from the allowlist; undefined for any other extension. */
+const extensionTypeOf = (path: string): ImageType | undefined =>
+  typeByExtension[/\.([a-z]+)$/i.exec(path)?.[1]?.toLowerCase() ?? '']
+
+/** The image type of `bytes` from their first bytes; undefined for any other type. */
 export function imageTypeOf(bytes: Uint8Array): ImageType | undefined {
   if (startsWith(bytes, [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])) return 'image/png'
   if (startsWith(bytes, [0xff, 0xd8, 0xff])) return 'image/jpeg'
@@ -110,12 +124,13 @@ export function createFiles(store: FileStore): Files {
       if (at.value === 'notFound') return ok('notFound')
       const listed = await paths(at.value.root)
       if (!listed.ok) return listed
-      if (!listed.value.includes(at.value.path)) return ok('notFound')
+      if (!listed.value.slice(0, maxIndexFiles).includes(at.value.path)) return ok('notFound')
       const read = await store.read(at.value.root, at.value.path, maxImageBytes)
       if (!read.ok) return read
       if (typeof read.value === 'string') return ok(read.value)
-      const type = imageTypeOf(read.value)
-      return ok(type === undefined ? 'unsupported' : { bytes: read.value, type })
+      // The type comes from the extension's allowlist, and the first bytes must be that type too.
+      const type = extensionTypeOf(at.value.path)
+      return ok(type !== undefined && imageTypeOf(read.value) === type ? { bytes: read.value, type } : 'unsupported')
     },
   }
 }

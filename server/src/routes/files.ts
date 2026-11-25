@@ -27,7 +27,7 @@ export function filesRoutes(files: Files, log: Logger) {
         if (index.value === 'notFound') return notFound(c)
         return c.json(FilesResponse.parse(index.value), 200)
       })
-      // An image for a message (bridge-richtext): its type from its bytes, sent so a browser neither sniffs it nor runs
+      // An image for a message (bridge-richtext): its type from its extension and bytes, sent so a browser neither sniffs it nor runs
       // it. An absolute path in the query never goes in the response or the log.
       .get('/raw', queryOf(FileRawQuery), async (c) => {
         const query = c.req.valid('query')

@@ -67,6 +67,9 @@ function gitFiles(
 const badPath = (path: string) =>
   hidden(path) || path.includes('\0') || path.split('/').some((part) => part === '' || part === '.' || part === '..')
 
+/** The errno codes of a path that is missing, loops or may not be opened: each is the same notFound. */
+const notFoundCodes = ['ENOENT', 'ENOTDIR', 'ELOOP', 'EACCES', 'EPERM']
+
 export function createDiskFiles({ brainDir, env: serverEnv }: DiskFilesOptions): FileStore {
   const env = gitEnv(serverEnv)
   return {
@@ -83,7 +86,7 @@ export function createDiskFiles({ brainDir, env: serverEnv }: DiskFilesOptions):
         return ok({ root: 'brain', path: real.slice(base.length + 1) })
       } catch (thrown) {
         const code = codeOf(thrown)
-        return code === 'ENOENT' || code === 'ENOTDIR' ? ok('notFound') : err({ reason: 'failed', code })
+        return notFoundCodes.includes(String(code)) ? ok('notFound') : err({ reason: 'failed', code })
       }
     },
     async read(root, path, max) {
@@ -117,9 +120,7 @@ export function createDiskFiles({ brainDir, env: serverEnv }: DiskFilesOptions):
         }
       } catch (thrown) {
         const code = codeOf(thrown)
-        return ['ENOENT', 'ENOTDIR', 'ELOOP', 'EACCES', 'EPERM'].includes(String(code))
-          ? ok('notFound')
-          : err({ reason: 'failed', code })
+        return notFoundCodes.includes(String(code)) ? ok('notFound') : err({ reason: 'failed', code })
       }
     },
   }

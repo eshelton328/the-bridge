@@ -30,6 +30,7 @@ describe('createFiles', () => {
     const files = createFiles({
       list: () => Promise.resolve(ok(paths)),
       read: () => Promise.resolve(ok(new Uint8Array())),
+      locate: () => Promise.resolve(ok('notFound')),
     })
     expect(await files.text('brain', fileIdOf('brain', `notes/${String(maxIndexFiles)}.md`))).toEqual({
       ok: true,
@@ -61,5 +62,32 @@ describe('imageTypeOf', () => {
     ['no bytes', bytes()],
   ])('finds no image type in %s', (_, head) => {
     expect(imageTypeOf(head)).toBeUndefined()
+  })
+})
+
+describe('the image read', () => {
+  const png = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
+  const imageStore = (paths: string[], bytes: Uint8Array): FileStore => ({
+    list: () => Promise.resolve(ok(paths)),
+    read: () => Promise.resolve(ok(bytes)),
+    locate: () => Promise.resolve(ok('notFound')),
+  })
+  const image = (paths: string[], path: string, bytes = png) =>
+    createFiles(imageStore(paths, bytes)).image({ root: 'brain', path })
+
+  it('sends a PNG whose extension and first bytes agree', async () => {
+    expect(await image(['a.png'], 'a.png')).toEqual({ ok: true, value: { bytes: png, type: 'image/png' } })
+  })
+
+  it.each([
+    ['PNG bytes with no image extension', 'a.md'],
+    ['PNG bytes with a JPEG extension', 'a.jpg'],
+  ])('calls %s unsupported', async (_, path) => {
+    expect(await image([path], path)).toEqual({ ok: true, value: 'unsupported' })
+  })
+
+  it('reads no image past the index cut', async () => {
+    const paths = Array.from({ length: maxIndexFiles + 1 }, (_, i) => `img/${String(i)}.png`)
+    expect(await image(paths, `img/${String(maxIndexFiles)}.png`)).toEqual({ ok: true, value: 'notFound' })
   })
 })

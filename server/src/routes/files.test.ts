@@ -22,8 +22,7 @@ const tracked = {
   'toolkit/rules/writing.md': 'Twelve marker-5150 patterns.\n',
   'notes/binary.bin': 'a\0b',
   'notes/big.md': 'x'.repeat(maxFileText + 1),
-  // A PNG named .jpg: the type comes from the bytes.
-  'images/chart.jpg': new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3]),
+  'images/chart.png': new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3]),
   'images/logo.svg': '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>',
   'images/huge.png': new Uint8Array(maxImageBytes + 1).fill(0x89, 0, 1),
 }
@@ -88,7 +87,7 @@ describe('/api/files', () => {
     for (const path of [
       `/api/files?root=${chat}`,
       `/api/files/${id}/text?root=${chat}`,
-      `/api/files/raw?root=${chat}&path=images/chart.jpg`,
+      `/api/files/raw?root=${chat}&path=images/chart.png`,
     ])
       expect((await get(path)).status, path).toBe(404)
   })
@@ -107,13 +106,13 @@ describe('/api/files', () => {
     for (const path of [
       '/api/files?root=brain',
       textOf('toolkit/rules/writing.md'),
-      '/api/files/raw?root=brain&path=images/chart.jpg',
+      '/api/files/raw?root=brain&path=images/chart.png',
     ])
       expect((await get(path, other)).status).toBe(403)
   })
 
-  it('sends an image by its bytes with headers that stop sniffing and script', async () => {
-    const res = await setup().get('/api/files/raw?root=brain&path=images/chart.jpg')
+  it('sends a PNG with headers that stop sniffing and script', async () => {
+    const res = await setup().get('/api/files/raw?root=brain&path=images/chart.png')
     expect(res.status).toBe(200)
     expect(res.headers.get('Content-Type')).toBe('image/png')
     expect(res.headers.get('X-Content-Type-Options')).toBe('nosniff')
@@ -124,9 +123,9 @@ describe('/api/files', () => {
 
   it('reads an image by an absolute path in the brain, and logs no path', async () => {
     const { get, logger } = setup()
-    const res = await get(`/api/files/raw?path=${encodeURIComponent('/fake/brain/images/chart.jpg')}`)
+    const res = await get(`/api/files/raw?path=${encodeURIComponent('/fake/brain/images/chart.png')}`)
     expect(res.status).toBe(200)
-    expect(JSON.stringify(logger.lines())).not.toContain('chart.jpg')
+    expect(JSON.stringify(logger.lines())).not.toContain('chart.png')
   })
 
   it('answers 415 for SVG and text, and 413 for an image over the cap', async () => {
