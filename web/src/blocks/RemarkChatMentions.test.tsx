@@ -11,8 +11,8 @@ const chats = new Map([
   ['m1/p1', 'bridge-coord'],
   ['m1/p2', 'routing'],
   ['m1/p3', 'The-bridge review chat'],
-  ['m1/p4', 'twin-chat'],
-  ['m1/p5', 'Twin-Chat'],
+  ['m1/p4', 'bridge-coord team'],
+  ['m1/p5', 'Bridge-coord Team'],
 ])
 
 // The plugin's element as a plain mark; `Components` has no key for it, so it is spread in.
@@ -53,7 +53,7 @@ describe('remarkChatMentions', () => {
 
   it.each([
     ['a one-word title only with @', 'The routing rule; ask @routing.', ['m1/p2=@routing']],
-    ['no unknown name, shared title or name after a word', '@backend-coord and twin-chat and x@bridge-coord', []],
+    ['no unknown, shared or glued name', '@backend-coord and bridge-coord team and x@bridge-coord', []],
     [
       'no code, link or path',
       '`bridge-coord`, [bridge-coord](https://example.com), bridge-coord.md, x/bridge-coord, bridge-coord/.git/config, bridge-coord/\n\n```\nbridge-coord\n```',

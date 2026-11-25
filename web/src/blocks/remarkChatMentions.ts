@@ -48,7 +48,7 @@ export function mentionIndex(chats: ReadonlyMap<string, string>): ReadonlyMap<st
   return out
 }
 
-/** The pattern of a mention: group 1 is `@` or empty, group 2 the title. Longer titles first, so the whole name wins. */
+/** A mention's pattern: group 1 is `@` or empty, group 2 a title. Longer first, so a whole (even shared) title wins. */
 function mentionPattern(titles: readonly string[]): RegExp | undefined {
   if (titles.length === 0) return undefined
   const names = [...titles].sort((a, b) => b.length - a.length).map(escape)
@@ -85,7 +85,7 @@ function walk(node: MdNode, pattern: RegExp, index: ReadonlyMap<string, string>)
 /** The plugin, for `remarkPlugins`: `[remarkChatMentions, chats]`, where `chats` maps each chat ID to its title. */
 export function remarkChatMentions(chats: ReadonlyMap<string, string>) {
   const index = mentionIndex(chats)
-  const pattern = mentionPattern([...index.keys()])
+  const pattern = mentionPattern([...new Set([...chats.values()].map((t) => t.trim().toLowerCase()))].filter(Boolean))
   return (tree: MdNode) => {
     if (pattern !== undefined) walk(tree, pattern, index)
   }
