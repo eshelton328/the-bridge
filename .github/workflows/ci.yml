@@ -155,19 +155,21 @@ jobs:
   # (in a 2-CPU container it held 167-191 % for a whole shard; the Vitest
   # node process about 8 %). VITEST_SHARD adds --shard to the script, and
   # the sequencer in scripts/testSequencer.ts splits the files by their CI
-  # times, here from runs 44625576662, 44624538189 and 44623880932 (801 s
-  # of files). In those runs two shards took 480 to 594 s a job (8 to 10
-  # billed minutes, 18 to 20 in all). Three shards (PR 252, run 44631056239) took
-  # 403 to 426 s a job, 21 billed minutes in all: each file also pays a
-  # start-up cost, so a third shard costs more and gives a file no more CPU.
+  # times, here from runs 45515660455, 45515536505 and 45514763740 (1931 s
+  # of files). In those runs two shards took 548 to 638 s a job; the old
+  # times file had no time for half the files, so the split was uneven.
+  # Three shards (PR 252, run 44631056239) took 403 to 426 s a job, 21
+  # billed minutes in all: each file also pays a start-up cost. Four shards
+  # (bridge-coord, from the CI time audit of 2026-11-25) shorten the
+  # critical path for about 2 more runner minutes a run.
   test-unit-shard:
-    name: test-unit (${{ matrix.shard }}/2)
+    name: test-unit (${{ matrix.shard }}/4)
     needs: plan
     if: ${{ !cancelled() && needs.plan.outputs.skip != 'true' }}
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2]
+        shard: [1, 2, 3, 4]
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
@@ -183,7 +185,7 @@ jobs:
       # (the-bridge #322). Local runs keep Vitest's default.
       - run: pnpm test:unit
         env:
-          VITEST_SHARD: ${{ matrix.shard }}/2
+          VITEST_SHARD: ${{ matrix.shard }}/4
           VITEST_MAX_WORKERS: "2"
 
   # The required check: it passes only when every test:unit shard passed.
