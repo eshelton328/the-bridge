@@ -76,6 +76,16 @@ export function createDiskFiles({ brainDir, env: serverEnv }: DiskFilesOptions):
       const listed = await gitFiles(brainDir, env, [])
       return listed.ok ? ok(listed.value.filter((p) => !hidden(p))) : listed
     },
+    async locate(absolute) {
+      try {
+        const [base, real] = await Promise.all([realpath(brainDir), realpath(absolute)])
+        if (!real.startsWith(base + sep)) return ok('notFound')
+        return ok({ root: 'brain', path: real.slice(base.length + 1) })
+      } catch (thrown) {
+        const code = codeOf(thrown)
+        return code === 'ENOENT' || code === 'ENOTDIR' ? ok('notFound') : err({ reason: 'failed', code })
+      }
+    },
     async read(root, path, max) {
       if (root !== 'brain' || badPath(path)) return ok('notFound')
       const dir = brainDir

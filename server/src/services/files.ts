@@ -3,14 +3,17 @@
 // text of one listed file by its ID. The index is the boundary: a file
 // that is not listed has no ID and no text. A text read is `binary` (415)
 // for a NUL byte in the first 8 KiB or bad UTF-8, and `tooLarge` (413)
-// over `maxFileText` bytes, never a cut text.
+// over `maxFileText` bytes, never a cut text. An image read takes its type
+// from the file's first bytes only (PNG, JPEG, GIF, WebP; never SVG).
 import { createHash } from 'node:crypto'
 import {
+  type FileRawQuery,
   FileId,
   type FileRoot,
   type FilesResponse,
   type FileTextResponse,
   maxFileText,
+  maxImageBytes,
   maxIndexFiles,
   RootFilePath,
 } from '@bridge/contract'
@@ -34,6 +37,21 @@ function textOf(bytes: Uint8Array): string | undefined {
   }
 }
 
+/** The image types an image read sends, by their first bytes; never SVG, which can run script. */
+export type ImageType = 'image/png' | 'image/jpeg' | 'image/gif' | 'image/webp'
+
+const startsWith = (bytes: Uint8Array, head: readonly number[], at = 0) => head.every((b, i) => bytes[at + i] === b)
+const ascii = (text: string) => Array.from(new TextEncoder().encode(text))
+
+/** The image type of `bytes` from their first bytes, never from a file name; undefined for any other type. */
+export function imageTypeOf(bytes: Uint8Array): ImageType | undefined {
+  if (startsWith(bytes, [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])) return 'image/png'
+  if (startsWith(bytes, [0xff, 0xd8, 0xff])) return 'image/jpeg'
+  if (startsWith(bytes, ascii('GIF87a')) || startsWith(bytes, ascii('GIF89a'))) return 'image/gif'
+  if (startsWith(bytes, ascii('RIFF')) && startsWith(bytes, ascii('WEBP'), 8)) return 'image/webp'
+  return undefined
+}
+
 export type Files = {
   /** The root's index: its listed files with their IDs, at most `maxIndexFiles`; `notFound` for a chat root. */
   index(root: FileRoot): Promise<Result<FilesResponse | 'notFound', FileStoreError>>
@@ -42,6 +60,19 @@ export type Files = {
     root: FileRoot,
     id: FileId,
   ): Promise<Result<FileTextResponse | 'notFound' | 'tooLarge' | 'binary', FileStoreError>>
+  /**
+   * The bytes and type of an image that the root's index lists, by a root and path or an absolute path in a root:
+   * `notFound` as a text read, `unsupported` for any type but PNG, JPEG, GIF and WebP, and `tooLarge` over
+   * `maxImageBytes`.
+   */
+  image(
+    query: FileRawQuery,
+  ): Promise<
+    Result<
+      { readonly bytes: Uint8Array; readonly type: ImageType } | 'notFound' | 'unsupported' | 'tooLarge',
+      FileStoreError
+    >
+  >
 }
 
 /** The roots the store serves: the brain only, until a chat root has its git repository (B1c). */
@@ -72,6 +103,19 @@ export function createFiles(store: FileStore): Files {
       if (typeof read.value === 'string') return ok(read.value)
       const text = textOf(read.value)
       return ok(text === undefined ? 'binary' : { id, path, text })
+    },
+    async image(query) {
+      const at = 'root' in query ? ok({ root: query.root, path: query.path }) : await store.locate(query.path)
+      if (!at.ok) return at
+      if (at.value === 'notFound') return ok('notFound')
+      const listed = await paths(at.value.root)
+      if (!listed.ok) return listed
+      if (!listed.value.includes(at.value.path)) return ok('notFound')
+      const read = await store.read(at.value.root, at.value.path, maxImageBytes)
+      if (!read.ok) return read
+      if (typeof read.value === 'string') return ok(read.value)
+      const type = imageTypeOf(read.value)
+      return ok(type === undefined ? 'unsupported' : { bytes: read.value, type })
     },
   }
 }

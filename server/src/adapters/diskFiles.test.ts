@@ -23,7 +23,7 @@ describeFileStore('disk', async ({ tracked, untracked, linkOut, fifo }) => {
   await symlink('../.pipe', join(brainDir, fifo))
   execFileSync('git', ['init', '-q', brainDir])
   execFileSync('git', ['-C', brainDir, 'add', '--', ...Object.keys(tracked), linkOut, fifo])
-  return createDiskFiles({ brainDir, env: process.env })
+  return { store: createDiskFiles({ brainDir, env: process.env }), dir: brainDir }
 })
 
 // Disk faults a fake cannot have: a tracked symlink to an untracked file, and a path execFile cannot pass.
