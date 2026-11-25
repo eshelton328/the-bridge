@@ -11,6 +11,7 @@ import {
   chatWidths,
   modes,
   navPages,
+  richTextFeatures,
   textSizes,
 } from '../../lib/deviceSettings.ts'
 
@@ -20,6 +21,7 @@ export const SettingsValues = z.object({
   mode: z.enum(modes),
   textSize: z.enum(textSizes),
   chatWidth: z.enum(chatWidths),
+  richText: z.record(z.enum(richTextFeatures), z.boolean()),
   nav: z.array(NavEntry),
   chat: z.object({ model: z.enum(chatModels), effort: z.enum(chatEfforts), permission: z.enum(chatPermissions) }),
   pushPreview: z.boolean(),
