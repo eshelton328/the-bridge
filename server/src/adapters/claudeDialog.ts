@@ -58,10 +58,8 @@ export function dialogOf(screen: string): ScreenDialog | null {
     if (found !== null)
       items.push({ n: Number(found[2]), label: found[3] ?? '', detail: [], picked: found[1] !== undefined })
     else if (last === undefined) head.push(line.trim())
-    else if (/^ {5,}\S/.test(line) && !line.trim().startsWith('Submit')) {
-      // A description that only repeats its label ("Red" under "1. Red") adds nothing to the option.
-      if (line.trim().toLowerCase() !== last.label.trim().toLowerCase()) last.detail.push(line.trim())
-    } else if (line.trim() === 'Submit') last.label = '[ ]'
+    else if (/^ {5,}\S/.test(line) && !line.trim().startsWith('Submit')) last.detail.push(line.trim())
+    else if (line.trim() === 'Submit') last.label = '[ ]'
   }
   const [title = '', ...body] = trimmed(head)
   const shown = {
@@ -78,7 +76,10 @@ export function dialogOf(screen: string): ScreenDialog | null {
   const options: DialogOption[] = items
     .filter((item) => !typed.test(item.label))
     .map((item) => {
-      const detail = item.detail.join(' ').slice(0, 500)
+      // A description that only repeats its label ("Red" under "1. Red") adds nothing to the option; one that wraps
+      // keeps every line, even one that equals the label.
+      const said = item.detail.join(' ')
+      const detail = said.toLowerCase() === item.label.trim().toLowerCase() ? '' : said.slice(0, 500)
       return { n: item.n, label: item.label.slice(0, 500), ...(detail === '' ? {} : { detail }) }
     })
   return single && options.length > 0

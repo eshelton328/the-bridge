@@ -32,6 +32,18 @@ describe('dialogOf', () => {
     ])
   })
 
+  it('keeps each line of a wrapped description, even one that equals the label, case aside', () => {
+    const screen = questionScreen(1).replace(
+      'Use red for marker-5150.',
+      'Never deploy to\r\n     red\r\n     without approval.',
+    )
+    expect(dialogOf(screen)?.dialog.options?.[0]).toEqual({
+      n: 1,
+      label: 'Red',
+      detail: 'Never deploy to red without approval.',
+    })
+  })
+
   it('keeps the question and the options when "Chat about this", under an edge, is marked', () => {
     const shown = dialogOf(questionScreen(1).replace('❯ 1.', '  1.').replace('  5. Chat', '❯ 5. Chat'))
     expect([shown?.picked, shown?.dialog.title, shown?.dialog.options?.length]).toEqual([5, 'Colour', 3])
