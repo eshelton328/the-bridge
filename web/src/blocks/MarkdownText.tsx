@@ -14,11 +14,17 @@
 // size of its MarkdownView. A GitHub alert (`> [!NOTE]`) is the library's
 // Callout (`remarkCallout.ts`, `MarkdownQuote.tsx`). A live chat's name
 // becomes a mention that opens the chat (remarkChatMentions.ts), with the
-// chats from MarkdownChatsContext. The caller wraps it in a BlockBoundary.
+// chats from MarkdownChatsContext. A fenced code block is the library's
+// MarkdownCodeBlock (`MarkdownCodeFence.tsx`: its label, syntax colours,
+// sideways scroll, a diff's tints, a fold and Copy with `onCopyCode`). The
+// plugins are one list and the element overrides one map per size, so a
+// later plugin (math, diagrams) adds an entry to each. The caller wraps it
+// in a BlockBoundary.
 import { use, useMemo, type ReactNode } from 'react'
 import Markdown, { type Components, type ExtraProps, type Options } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { ChatMention } from './ChatMention.tsx'
+import { type CopyCode, MarkdownCodeFence } from './MarkdownCodeFence.tsx'
 import { MarkdownChatsContext } from './markdownChats.ts'
 import { MarkdownQuote } from './MarkdownQuote.tsx'
 import { type MarkdownSize, markdownTableParts } from './markdownTableParts.ts'
@@ -61,6 +67,7 @@ const inline: Components = {
     )
   },
   img: ({ alt }) => alt ?? null,
+  pre: ({ node, children }) => <MarkdownCodeFence node={node}>{children}</MarkdownCodeFence>,
   // remark-gfm writes a task list's box with no label (axe: label); the box is read-only, so its name is its state.
   input: ({ type, checked, disabled }) => (
     <input
@@ -99,14 +106,36 @@ const components: Record<MarkdownSize, Components> = {
   },
 }
 
+// The maps with a Copy, one pair per copy callback: a page passes one stable callback, so each code block keeps its
+// component across renders. The Copy is a prop, never a context, as the Claude Design canvas runs React 18 (Codex
+// review of #511).
+const withCopy = new WeakMap<CopyCode, Record<MarkdownSize, Components>>()
+
+function componentsFor(size: MarkdownSize, onCopy: CopyCode | undefined): Components {
+  if (onCopy === undefined) return components[size]
+  let maps = withCopy.get(onCopy)
+  if (maps === undefined) {
+    const pre: Components['pre'] = ({ node, children }) => (
+      <MarkdownCodeFence node={node} onCopy={onCopy}>
+        {children}
+      </MarkdownCodeFence>
+    )
+    maps = { md: { ...components.md, pre }, sm: { ...components.sm, pre } }
+    withCopy.set(onCopy, maps)
+  }
+  return maps[size]
+}
+
 export type MarkdownTextProps = {
   /** The text, as Markdown. */
   text: string
   /** The size of the MarkdownView around it, for a table's text: `md` (the default) or `sm`. */
   size?: MarkdownSize | undefined
+  /** Copies a code block's code (the page's copyText); without it a code block has no copy button. */
+  onCopyCode?: CopyCode | undefined
 }
 
-export function MarkdownText({ text, size = 'md' }: MarkdownTextProps) {
+export function MarkdownText({ text, size = 'md', onCopyCode }: MarkdownTextProps) {
   const { chats } = use(MarkdownChatsContext)
   const plugins = useMemo(
     (): NonNullable<Options['remarkPlugins']> =>
@@ -114,7 +143,7 @@ export function MarkdownText({ text, size = 'md' }: MarkdownTextProps) {
     [chats],
   )
   return (
-    <Markdown remarkPlugins={plugins} components={components[size]}>
+    <Markdown remarkPlugins={plugins} components={componentsFor(size, onCopyCode)}>
       {text}
     </Markdown>
   )

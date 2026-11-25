@@ -34,6 +34,9 @@ const reportCopy = (error: unknown) => {
   report(error, 'handler')
 }
 
+/** A code block's Copy in a live item's text: says whether it copied, and reports a fault without the code. */
+const copyCode = (code: string) => copyText(code, { report: reportCopy })
+
 const route = getRouteApi('/inbox')
 
 export function InboxPage() {
@@ -143,6 +146,7 @@ export function InboxPage() {
       onPromptOpenChange={(open) => {
         setPromptOpen(search.state, open)
       }}
+      onCopyCode={copyCode}
       onCopyPrompt={(text) => {
         // copyText copies nothing, and throws nothing, on a page with no clipboard or one that refuses the write;
         // a refusal that is not the browser's NotAllowedError is a fault, so it goes to the reporter.

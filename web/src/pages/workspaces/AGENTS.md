@@ -722,7 +722,15 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   (`../../blocks/remarkCallout.ts`, `../../blocks/MarkdownQuote.tsx`,
   `WorkspacesCallout.test.tsx`); any other quote stays a quote. A table's elements
   come from `../../blocks/markdownTableParts.ts`
-  (`app/WorkspacesMarkdownTables.test.tsx`).
+  (`app/WorkspacesMarkdownTables.test.tsx`). Inline code is a mono
+  badge (MarkdownView `inlineCode="badge"`) and a fenced block the
+  library's MarkdownCodeBlock (`../../blocks/MarkdownCodeFence.tsx`):
+  its label, one line each with sideways scroll, a diff's tints, a fold
+  after 20 lines, and syntax colours for the labels in
+  `../../blocks/codeLanguages.ts` (lowlight, loaded the first time such
+  a fence shows). Its Copy goes through the screen's `onCopy`, as a
+  reply's Copy does, with no code in a report
+  (`app/WorkspacesMarkdownCode.test.tsx`).
 - The chat width (Settings → Appearance, `settingsStore` `chatWidth`):
   `WorkspacesPage` passes it down to each `ChatPane`. Wide and Narrow
   centre the transcript and the composer in one column of the library's

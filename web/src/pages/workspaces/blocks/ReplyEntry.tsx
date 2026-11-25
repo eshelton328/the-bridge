@@ -65,7 +65,7 @@ export function ReplyEntry({ entry, figma, onCopy }: ReplyEntryProps) {
           )
         }
       >
-        <EntryText text={entry.text} />
+        <EntryText text={entry.text} onCopyCode={onCopy} />
       </Message>
       {entry.cut === undefined ? null : <span className={cutLine}>{entry.cut}</span>}
       {rewritten === undefined || !open ? null : (
@@ -73,7 +73,7 @@ export function ReplyEntry({ entry, figma, onCopy }: ReplyEntryProps) {
           {rewritten.drafts.map((draft) => (
             <div key={draft.id}>
               <Message kind={entry.kind} name={draft.name}>
-                <EntryText text={draft.text} />
+                <EntryText text={draft.text} onCopyCode={onCopy} />
               </Message>
               {draft.cut === undefined ? null : <span className={cutLine}>{draft.cut}</span>}
             </div>

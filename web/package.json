@@ -26,6 +26,8 @@
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-error-boundary": "catalog:",
+    "highlight.js": "catalog:",
+    "lowlight": "catalog:",
     "react-markdown": "catalog:",
     "remark-gfm": "catalog:",
     "zod": "catalog:",

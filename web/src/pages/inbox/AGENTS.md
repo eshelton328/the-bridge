@@ -59,6 +59,10 @@ in `references/inbox/`.
   Mark done and Dismiss go to the server; a brain item is read-only and
   shows none of them. A miss shows one short line, and report() gets only
   the step, kind and status (`InboxMissError`).
+- A brain item's text draws inline code as a badge and a fenced block
+  as the library's MarkdownCodeBlock with Copy, which goes through the
+  page's `copyText` (`onCopyCode`), as the chat's code does
+  (`app/InboxMarkdownCode.test.tsx`).
 - The live tests run on the owner's path with `lib/fakeInboxServer.ts`
   (`app/InboxLive.test.tsx`, `app/InboxLiveActions.test.tsx`).
 - The route tests are in `app/` (`InboxRoute.test.tsx`,

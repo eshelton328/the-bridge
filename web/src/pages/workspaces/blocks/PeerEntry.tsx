@@ -11,6 +11,7 @@
 import { Button, Message, WarningIcon } from '@eshelton328/component-library-1701'
 import { useId, useState } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
+import type { CopyCode } from '../../../blocks/MarkdownCodeFence.tsx'
 import type { ChatEntry } from '../types.ts'
 import { EntryText } from './EntryText.tsx'
 
@@ -23,9 +24,11 @@ export type PeerEntryProps = {
   entry: Extract<ChatEntry, { type: 'peer' }>
   /** The Figma layer the entry stands for, for the fidelity checks. */
   figma?: string | undefined
+  /** Copies a code block's code in the message (the page's copyText); without it a code block has no copy button. */
+  onCopy?: CopyCode | undefined
 }
 
-export function PeerEntry({ entry, figma }: PeerEntryProps) {
+export function PeerEntry({ entry, figma, onCopy }: PeerEntryProps) {
   const [open, setOpen] = useState(false)
   const noticeId = useId()
   const { relayed } = entry
@@ -50,7 +53,7 @@ export function PeerEntry({ entry, figma }: PeerEntryProps) {
   return (
     <div data-figma={figma}>
       <Message from="peer" name={entry.name} actions={note}>
-        {entry.text === undefined ? null : <EntryText text={entry.text} />}
+        {entry.text === undefined ? null : <EntryText text={entry.text} onCopyCode={onCopy} />}
       </Message>
       {entry.cut === undefined ? null : <span className={cutLine}>{entry.cut}</span>}
       {relayed === undefined || !open ? null : (
