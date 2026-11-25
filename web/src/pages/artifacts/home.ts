@@ -12,6 +12,9 @@
 // phone's field; D1's longer words are cut there. It is not a Figma state:
 // it lives outside states/, so it has no frame, story, board or fidelity
 // check.
+// One card, Inbox task lifecycle, has a description longer than D1's, so at
+// 1512 it is cut at the end of its two lines (R77) and its tooltip has a
+// path to test (app/ArtifactsHomeOpen.test.tsx).
 import type { ScreenState } from '../../lib/screenState.ts'
 import { addLink } from './states/addLink.ts'
 import { addLinkPhone } from './states/addLinkPhone.ts'
@@ -21,11 +24,20 @@ import { libraryTablet } from './states/libraryTablet.ts'
 import { sortOpen } from './states/sortOpen.ts'
 import type { ArtifactsData, ArtifactsUi } from './types.ts'
 
+const lifecycleLong =
+  'How a task moves from Next step to Running to Done: who moves it, what the Inbox shows the owner at each step, and what happens to a task that a chat closes on its own'
+
 export const artifactsHome = {
   title: 'Artifacts as the app opens',
   frames: [],
   data: {
     ...library.data,
+    groups: library.data.groups.map((group) => ({
+      ...group,
+      cards: group.cards.map((card) =>
+        card.id === 'inbox-task-lifecycle' ? { ...card, description: lifecycleLong } : card,
+      ),
+    })),
     searchPlaceholder: libraryTablet.data.searchPlaceholder,
     filterMenu: libraryTablet.data.filterMenu,
     sorts: sortOpen.data.sorts,
