@@ -13,7 +13,9 @@ directly; there is no build.
 - No React, no browser or Node globals: web, the server, hooks and
   scripts all import this package.
 - No local path in a schema. A path stays inside the server's adapters.
-  The one exception is `AbsoluteFilePath`, the request input of `GET /api/files/raw`: never in a response, error body, header or log (backend-coord, 2026-11-24).
+  The one exception is `AbsoluteFilePath`, the request input of
+  `GET /api/files/raw`: never in a response, error body, header or log
+  (backend-coord, 2026-11-24).
 - The terms are the app's, not herdr's: no herdr pane or terminal ID, key
   press or terminal text (d-110). A chat's `pane` is an opaque ID that
   the server makes, stable for the pane's life.
