@@ -3,7 +3,7 @@ import '@fontsource-variable/geist-mono'
 import '../index.css'
 import type { TranscriptEntry } from '@bridge/contract'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
-import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest'
+import { afterEach, describe, expect, it, onTestFailed, onTestFinished, vi } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
 import { ErrorTray } from '../errors/ErrorTray.tsx'
 import { clearReports, getReports } from '../errors/reporter.ts'
@@ -248,13 +248,37 @@ describe('a live chat while its transcript loads', () => {
       // transcript comes.
       await afterRendering()
       const loadedFrom = skeleton()?.getBoundingClientRect().bottom ?? Number.NaN
+      // A CI runner timed out in the wait for the newest entry below (#515, #526) and this Mac never did. Each check of
+      // that wait keeps what it saw, and a failure prints the last of it, so the next one shows which value differs
+      // (flakes.md). The test's end unmounts the page before onTestFailed runs, so the hook only adds it to the error.
+      const releasedAt = performance.now()
+      const seen: Record<string, unknown> = { device: device.name, loadedFrom, checks: 0 }
+      onTestFailed(({ task }) => {
+        for (const error of task.result?.errors ?? [])
+          error.message += `\ntranscript-loading probe ${JSON.stringify(seen)}`
+      })
       server.release()
       await expect.element(page.getByText('Looking at the build now.')).toBeVisible()
       await expect.element(loading()).not.toBeInTheDocument()
       expect(skeleton()).toBeNull()
       // The newest entry lands where the skeleton ended: no jump.
       const newest = rowOf(page.getByText('Looking at the build now.').element(), body)
-      await renderedUntil(() => Math.abs(newest.getBoundingClientRect().bottom - loadedFrom) <= 1)
+      await renderedUntil(() => {
+        const text = page.getByText('Looking at the build now.').query()
+        // The wait goes on after a timed-out test unmounts the page; keep only what a mounted page showed.
+        if (body.isConnected)
+          Object.assign(seen, {
+            checks: Number(seen.checks) + 1,
+            msSinceRelease: Math.round(performance.now() - releasedAt),
+            rowConnected: newest.isConnected,
+            rowBottom: newest.getBoundingClientRect().bottom,
+            rowNowSame: text === null ? null : rowOf(text, body) === newest,
+            listBottom: listBox(body).bottom,
+            scrollTop: body.scrollTop,
+            messageBoxHeight: messageBox().query()?.getBoundingClientRect().height ?? null,
+          })
+        return Math.abs(newest.getBoundingClientRect().bottom - loadedFrom) <= 1
+      })
       expect(Math.abs(newest.getBoundingClientRect().bottom - loadedFrom)).toBeLessThanOrEqual(1)
       await expect.element(messageBox()).toHaveValue('a draft while it loads')
       expect(getReports()).toEqual([])
