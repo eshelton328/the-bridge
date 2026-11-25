@@ -15,6 +15,7 @@ import type { ExtraProps } from 'react-markdown'
 import { report } from '../errors/reporter.ts'
 import type { CopyTextResult } from '../lib/copyText.ts'
 import { grammarOf, type CodeGrammar } from './codeLanguages.ts'
+import { fenceOf } from './fence.ts'
 
 /** Writes a code block's code to the clipboard and says whether it did (the page's copyText). */
 export type CopyCode = (code: string) => Promise<CopyTextResult>
@@ -60,24 +61,6 @@ function useHighlighter(grammar: CodeGrammar | undefined): Highlighter | undefin
     }
   }, [grammar, highlighter])
   return highlighter
-}
-
-type Fence = { readonly code: string; readonly language: string | undefined }
-
-/** The fence a `pre` holds: one `code` element of text alone, its label from its `language-<label>` class. */
-function fenceOf(node: ExtraProps['node']): Fence | undefined {
-  const [code, ...rest] = node?.children ?? []
-  if (code === undefined || rest.length > 0 || code.type !== 'element' || code.tagName !== 'code') return undefined
-  let text = ''
-  for (const child of code.children) {
-    if (child.type !== 'text') return undefined
-    text += child.value
-  }
-  const className = code.properties.className
-  const label = Array.isArray(className)
-    ? className.map(String).find((name) => name.startsWith('language-'))
-    : undefined
-  return { code: text.endsWith('\n') ? text.slice(0, -1) : text, language: label?.slice('language-'.length) }
 }
 
 export type MarkdownCodeFenceProps = ExtraProps & { readonly children?: ReactNode }
