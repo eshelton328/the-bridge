@@ -9,14 +9,20 @@
 // shows only with `onCopy`: the page's copyText, which reports a refusal
 // without the text. It is a prop, never a context, as the Claude Design
 // canvas runs React 18, which has no `use` (Codex review of #511). A `pre` that is not
-// a fence (a code element with text alone) draws as it was. Props only.
+// a fence (a code element with text alone) draws as it was. A `mermaid` fence
+// is a diagram (MermaidDiagram.tsx), with the code block until its code loads.
+// Props only.
 import { type CodeSegment, MarkdownCodeBlock } from '@eshelton328/component-library-1701'
-import { type ReactNode, useEffect, useMemo, useState } from 'react'
+import { lazy, type ReactNode, Suspense, useEffect, useMemo, useState } from 'react'
 import type { ExtraProps } from 'react-markdown'
 import { report } from '../errors/reporter.ts'
 import type { CopyTextResult } from '../lib/copyText.ts'
 import { grammarOf, type CodeGrammar } from './codeLanguages.ts'
 import { fenceOf } from './fence.ts'
+
+// A `mermaid` fence draws as a diagram (MermaidDiagram.tsx). Its code (DiagramFrame, the draw queue, Mermaid) loads on
+// the first such fence, so the first chat paint does not carry it; until then the fence shows as its code block.
+const MermaidDiagram = lazy(() => import('./MermaidDiagram.tsx').then((module) => ({ default: module.MermaidDiagram })))
 
 /** Writes a code block's code to the clipboard and says whether it did (the page's copyText). */
 export type CopyCode = (code: string) => Promise<CopyTextResult>
@@ -81,5 +87,11 @@ export function MarkdownCodeFence({ node, children, onCopy: copy }: MarkdownCode
     [copy],
   )
   if (fence === undefined) return <pre>{children}</pre>
-  return <MarkdownCodeBlock code={fence.code} language={fence.language} segments={segments} onCopy={onCopy} />
+  const block = <MarkdownCodeBlock code={fence.code} language={fence.language} segments={segments} onCopy={onCopy} />
+  if (fence.language !== 'mermaid') return block
+  return (
+    <Suspense fallback={block}>
+      <MermaidDiagram source={fence.code} />
+    </Suspense>
+  )
 }

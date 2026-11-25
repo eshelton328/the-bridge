@@ -103,3 +103,14 @@ describe('a fenced code block', () => {
     await expect.element(page.getByRole('status')).toHaveTextContent('Copy failed')
   })
 })
+
+describe('a mermaid block', () => {
+  it('that does not parse shows the reason and its source, with no diagram', async () => {
+    const source = 'flowchart LR\n  A --> '
+    view = await testRender(<MarkdownText text={['```mermaid', source, '```'].join('\n')} />)
+    const figure = page.getByRole('figure', { name: 'Mermaid' })
+    await expect.element(figure.getByText(/did not draw/), { timeout: 15000 }).toBeVisible()
+    expect(figure.element().querySelector('pre code')?.textContent).toBe(source)
+    expect(figure.element().querySelector('img')).toBeNull()
+  })
+})
