@@ -27,10 +27,27 @@ export type TextMeasure = {
   truncated: boolean
   /** Whether that ellipsis or clamp hides text now (its box scrolls wider or taller than it shows). */
   truncatedCuts: boolean
+  /**
+   * How many words of the text break inside the word across two lines ("Opu/s"), as overflow-wrap: anywhere does
+   * in a box too narrow for the word. A break after a hyphen or a slash does not count.
+   */
+  brokenWords?: number | undefined
+  /**
+   * For a form field (input or textarea): how many px its line is taller than the field's content box, so the
+   * placeholder or value is cut at the top or bottom. 0 when the line fits.
+   */
+  fieldShort?: number | undefined
+  /** The box of the first ancestor that scrolls, if any: text past its edge is scrolled out of view. */
+  scroller?: Edges | undefined
 }
 
 /** A text run the page cuts or lets spill out of its box. */
-export type TextProblem = { key: string; text: string; kind: 'clipped' | 'overflow' | 'truncated'; by: number }
+export type TextProblem = {
+  key: string
+  text: string
+  kind: 'clipped' | 'overflow' | 'truncated' | 'broken-word' | 'field-clipped' | 'overlap'
+  by: number
+}
 
 /** The window for each layout: the owner's phone, an iPad in portrait and the MacBook Pro. */
 export const windows = {
@@ -69,6 +86,11 @@ const tolerance = 1
 export function problemsOf(measures: readonly TextMeasure[]): TextProblem[] {
   const out: TextProblem[] = []
   for (const m of measures) {
+    if ((m.fieldShort ?? 0) > tolerance) {
+      out.push({ key: m.key, text: m.text, kind: 'field-clipped', by: Math.round(m.fieldShort ?? 0) })
+      continue
+    }
+    if ((m.brokenWords ?? 0) > 0) out.push({ key: m.key, text: m.text, kind: 'broken-word', by: m.brokenWords ?? 0 })
     if (m.truncated) {
       if (m.truncatedCuts) out.push({ key: m.key, text: m.text, kind: 'truncated', by: 0 })
       continue
@@ -81,6 +103,74 @@ export function problemsOf(measures: readonly TextMeasure[]): TextProblem[] {
     const spill = m.holderVisible ? Math.max(0, m.box.right - m.holder.right, m.holder.left - m.box.left) : 0
     if (spill > tolerance) out.push({ key: m.key, text: m.text, kind: 'overflow', by: Math.round(spill) })
   }
+  return out
+}
+
+/** How many px two boxes share on their smaller axis (0 when they do not meet). */
+export function overlapBy(a: Edges, b: Edges): number {
+  const x = Math.min(a.right, b.right) - Math.max(a.left, b.left)
+  const y = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top)
+  return x > 0 && y > 0 ? Math.min(x, y) : 0
+}
+
+/** Overlap smaller than this is the touching of line boxes, not one text drawn over another. */
+const overlapTolerance = 3
+
+/** The part of a run's box that shows: inside its clippers and its scroll box. Null when none of it shows. */
+export function shownBox(m: TextMeasure): Edges | null {
+  let b = m.box
+  for (const c of m.scroller === undefined ? m.clippers : [...m.clippers, m.scroller]) {
+    b = { left: Math.max(b.left, c.left), top: Math.max(b.top, c.top), right: Math.min(b.right, c.right), bottom: Math.min(b.bottom, c.bottom) }
+  }
+  return b.right > b.left && b.bottom > b.top ? b : null
+}
+
+/** Two text runs whose boxes share more than a few px, and the centre of the shared box. */
+export type OverlapPair = { a: TextMeasure; b: TextMeasure; by: number; x: number; y: number }
+
+/**
+ * Text over other text: two runs in different holders, neither inside the other, whose boxes share more than a few
+ * px. The browser then says which run is painted on top at the centre of the shared box (see overlapsOf).
+ */
+export function overlapPairs(measures: readonly TextMeasure[]): OverlapPair[] {
+  const out: OverlapPair[] = []
+  const shown = measures.filter((m) => !m.truncated && m.fieldShort === undefined)
+  for (let i = 0; i < shown.length; i++) {
+    for (let j = i + 1; j < shown.length; j++) {
+      const a = shown[i]
+      const b = shown[j]
+      if (a === undefined || b === undefined) continue
+      if (a.key === b.key || a.key.startsWith(`${b.key}/`) || b.key.startsWith(`${a.key}/`)) continue
+      const sa = shownBox(a)
+      const sb = shownBox(b)
+      if (sa === null || sb === null) continue
+      const by = overlapBy(sa, sb)
+      if (by <= overlapTolerance) continue
+      const x = (Math.max(sa.left, sb.left) + Math.min(sa.right, sb.right)) / 2
+      const y = (Math.max(sa.top, sb.top) + Math.min(sa.bottom, sb.bottom)) / 2
+      out.push({ a, b, by, x, y })
+    }
+  }
+  return out
+}
+
+/**
+ * The overlap problems, from the pairs and the key of the run painted on top of each (null when a third element
+ * covers both, as an open menu does). A problem is keyed by the run on top only: a menu, a drawer or a chip that
+ * covers text at Small too is the design, and newProblems drops it however the text under it moved. A chip that
+ * covers text only at a larger size (the Workspaces resize hint) is new.
+ */
+export function overlapsOf(pairs: readonly OverlapPair[], onTop: readonly (string | null)[]): TextProblem[] {
+  const out: TextProblem[] = []
+  const seen = new Set<string>()
+  pairs.forEach((p, i) => {
+    const top = onTop[i]
+    if (top !== p.a.key && top !== p.b.key) return
+    const [upper, lower] = top === p.a.key ? [p.a, p.b] : [p.b, p.a]
+    if (seen.has(upper.key)) return
+    seen.add(upper.key)
+    out.push({ key: upper.key, text: `${upper.text} over ${lower.text}`, kind: 'overlap', by: Math.round(p.by) })
+  })
   return out
 }
 

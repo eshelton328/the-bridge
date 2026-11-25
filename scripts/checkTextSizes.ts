@@ -20,6 +20,8 @@ import {
   addCounts,
   layoutOf,
   newProblems,
+  overlapPairs,
+  overlapsOf,
   problemsOf,
   type SizeCounts,
   type TextMeasure,
@@ -79,6 +81,7 @@ function measureText(): TextMeasure[] {
     let truncated = false
     let truncatedCuts = false
     const clippers: TextMeasure['clippers'] = []
+    let scroller: TextMeasure['scroller']
     for (let a: Element | null = holder; a !== null && a !== document.documentElement; a = a.parentElement) {
       const s = getComputedStyle(a)
       const ellipsis = s.textOverflow === 'ellipsis'
@@ -89,14 +92,31 @@ function measureText(): TextMeasure[] {
         if (clamp && a.scrollHeight > a.clientHeight + 1) truncatedCuts = true
       }
       const scrolls = [s.overflowX, s.overflowY].some((o) => o === 'auto' || o === 'scroll')
-      if (scrolls) break
+      if (scrolls) {
+        scroller = box(a.getBoundingClientRect())
+        break
+      }
       if ([s.overflowX, s.overflowY].some((o) => o === 'hidden' || o === 'clip'))
         clippers.push(box(a.getBoundingClientRect()))
+    }
+    // A word that breaks across lines (see TextMeasure.brokenWords). A break after a hyphen or a slash is a normal
+    // break point, so those split the words. A long path that Small already breaks is the design's, as newProblems
+    // keeps only the holders that break a word at a larger size and not at Small.
+    let brokenWords = 0
+    const source = node.textContent ?? ''
+    for (const match of source.matchAll(/[^\s\-/]+/g)) {
+      const word = document.createRange()
+      word.setStart(node, match.index)
+      word.setEnd(node, match.index + match[0].length)
+      const tops = new Set([...word.getClientRects()].filter((r) => r.width > 0).map((r) => Math.round(r.top)))
+      if (tops.size > 1) brokenWords += 1
     }
     out.push({
       key: path(holder),
       text: text.slice(0, 60),
       box: box(rect),
+      brokenWords,
+      scroller,
       holder: box(holder.getBoundingClientRect()),
       holderVisible: style.overflowX === 'visible' && style.overflowY === 'visible',
       clippers,
@@ -104,7 +124,75 @@ function measureText(): TextMeasure[] {
       truncatedCuts,
     })
   }
+  // Form fields: their placeholder or value is no text node, so measure the line against the content box.
+  for (const field of document.querySelectorAll('input, textarea')) {
+    if (!(field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement)) continue
+    if (field instanceof HTMLInputElement && !['text', 'search', 'email', 'url', 'password', ''].includes(field.type)) continue
+    const shown = field.value !== '' ? field.value : field.placeholder
+    const s = getComputedStyle(field)
+    if (shown.trim() === '' || s.visibility === 'hidden' || s.display === 'none') continue
+    const rect = field.getBoundingClientRect()
+    if (rect.width === 0 || rect.height === 0) continue
+    const content = field.clientHeight - parseFloat(s.paddingTop) - parseFloat(s.paddingBottom)
+    const line = s.lineHeight === 'normal' ? parseFloat(s.fontSize) * 1.2 : parseFloat(s.lineHeight)
+    out.push({
+      key: path(field),
+      text: shown.trim().slice(0, 60),
+      box: box(rect),
+      holder: box(rect),
+      holderVisible: false,
+      clippers: [],
+      truncated: false,
+      truncatedCuts: false,
+      fieldShort: Math.max(0, line - content),
+    })
+  }
   return out
+}
+
+/**
+ * For each overlapping pair, the key of the holder painted on top at the centre of the shared box: the first of the
+ * two that the hit test meets. Null when an element with its own background is on top of both there, or when the
+ * run on top is in a dialog, a sheet, a menu or a bar placed over the page (fixed, sticky or absolute) and the other
+ * is not: the page under an open layer or a bar is behind it by design.
+ */
+function paintedOnTop(pairs: { a: string; b: string; x: number; y: number }[]): (string | null)[] {
+  const byPath = (key: string): Element | null => {
+    let el: Element = document.body
+    for (const part of key.split('/')) {
+      const child = el.children.item(Number(part.split(':')[1]))
+      if (child === null) return null
+      el = child
+    }
+    return el
+  }
+  return pairs.map(({ a, b, x, y }) => {
+    const ea = byPath(a)
+    const eb = byPath(b)
+    if (ea === null || eb === null) return null
+    const layer = '[role="dialog"], [role="alertdialog"], [role="menu"], [role="listbox"], [aria-modal="true"]'
+    // A bar placed over the page (fixed, sticky or absolute, as the tab bar is): the page scrolls under it by design.
+    const pinned = (el: Element): Element | null => {
+      for (let e: Element | null = el; e !== null; e = e.parentElement) {
+        const p = getComputedStyle(e).position
+        if (p === 'fixed' || p === 'sticky' || p === 'absolute') return e
+      }
+      return null
+    }
+    const onTop = (upper: Element, lower: Element, key: string): string | null => {
+      const open = upper.closest(layer)
+      if (open !== null && !open.contains(lower)) return null
+      const bar = pinned(upper)
+      return bar !== null && !bar.contains(lower) ? null : key
+    }
+    for (const hit of document.elementsFromPoint(x, y)) {
+      if (ea === hit || ea.contains(hit) || hit.contains(ea)) return onTop(ea, eb, a)
+      if (eb === hit || eb.contains(hit) || hit.contains(eb)) return onTop(eb, ea, b)
+      const s = getComputedStyle(hit)
+      if (s.backgroundColor !== 'rgba(0, 0, 0, 0)' && s.backgroundColor !== 'transparent') return null
+    }
+    return null
+  })
 }
 
 /** Puts the class of one text size on <html>, as the app does, and waits for the layout to settle. */
@@ -151,7 +239,10 @@ try {
       const fresh: { default: TextProblem[]; large: TextProblem[] } = { default: [], large: [] }
       for (const [size, className] of sizes) {
         await useSize(tab, className)
-        const found = problemsOf(await tab.evaluate(measureText))
+        const measured = await tab.evaluate(measureText)
+        const pairs = overlapPairs(measured)
+        const onTop = await tab.evaluate(paintedOnTop, pairs.map((p) => ({ a: p.a.key, b: p.b.key, x: p.x, y: p.y })))
+        const found = [...problemsOf(measured), ...overlapsOf(pairs, onTop)]
         if (size === 'small') small = found
         else {
           fresh[size] = newProblems(small, found)
