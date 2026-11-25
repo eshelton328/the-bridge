@@ -33,6 +33,12 @@ describe('remarkCallout', () => {
     expect(found.map((q) => q.tone)).toEqual(['note', 'tip'])
     expect(found[1]?.html).toBe('')
   })
+  it('reads a marker line that ends in CRLF or a lone CR, as CommonMark does', async () => {
+    const found = await quotes('> [!NOTE]\r\n> Windows line.\r\n\r\n> [!TIP]\r> Old Mac line.')
+    expect(found.map((q) => q.tone)).toEqual(['note', 'tip'])
+    expect(found.map((q) => q.html.includes('[!'))).toEqual([false, false])
+  })
+
   it('keeps formatting on the line after the marker, and a hard break after it', async () => {
     const found = await quotes('> [!WARNING]\n> **Bold** start.\n\n> [!CAUTION]  \n> After a hard break.')
     expect(found[0]?.html).toContain('<strong>Bold</strong> start.')

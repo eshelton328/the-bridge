@@ -19,7 +19,7 @@ type MdNode = {
   data?: { hProperties?: Record<string, unknown> } & Record<string, unknown>
 }
 
-const marker = /^\[!(note|tip|important|warning|caution)\][ \t]*(?:\r?\n|$)/i
+const marker = /^\[!(note|tip|important|warning|caution)\][ \t]*(?:\r\n|\r|\n|$)/i
 
 const isTone = (value: string): value is CalloutKind => calloutTones.some((tone) => tone === value)
 
@@ -32,9 +32,9 @@ function takeMarker(quote: MdNode): CalloutKind | undefined {
   const found = marker.exec(text.value)
   const tone = found?.[1]?.toLowerCase()
   if (found === null || tone === undefined || !isTone(tone)) return undefined
-  // The marker's line ends at a line break in the text, at a hard break (two spaces), or at the paragraph's end.
+  // The marker's line ends at a line break in the text (LF, CRLF or a lone CR, as CommonMark reads each), at a hard break (two spaces), or at the paragraph's end.
   const rest = text.value.slice(found[0].length)
-  const endsLine = found[0].endsWith('\n') || after === undefined || after.type === 'break'
+  const endsLine = /[\r\n]$/.test(found[0]) || after === undefined || after.type === 'break'
   if (!endsLine) return undefined
   const kept = [
     ...(rest === '' ? [] : [{ ...text, value: rest }]),
