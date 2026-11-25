@@ -6,7 +6,7 @@
 // `bridge-coord`, so a one-word title such as "routing" stays a word in
 // plain prose. A title two chats share links nothing, as it names no one
 // chat. Code, inline code and the text of a link stay as they are; a name
-// inside a longer word or a path (`bridge-coord.md`, `x/bridge-coord`)
+// inside a longer word or a path (`bridge-coord.md`, `bridge-coord/`)
 // stays text. The match ignores case.
 
 /** The parts of an mdast node the plugin reads and writes. */
@@ -52,7 +52,7 @@ export function mentionIndex(chats: ReadonlyMap<string, string>): ReadonlyMap<st
 function mentionPattern(titles: readonly string[]): RegExp | undefined {
   if (titles.length === 0) return undefined
   const names = [...titles].sort((a, b) => b.length - a.length).map(escape)
-  return new RegExp(`(?<![\\w@./-])(@?)(${names.join('|')})(?![\\w-]|[./]\\w)`, 'giu')
+  return new RegExp(`(?<![\\w@./-])(@?)(${names.join('|')})(?![\\w/-]|\\.\\w)`, 'giu')
 }
 
 function splitText(value: string, pattern: RegExp, index: ReadonlyMap<string, string>): MdNode[] | undefined {

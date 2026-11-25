@@ -56,7 +56,7 @@ describe('remarkChatMentions', () => {
     ['no unknown name, shared title or name after a word', '@backend-coord and twin-chat and x@bridge-coord', []],
     [
       'no code, link or path',
-      '`bridge-coord`, [bridge-coord](https://example.com), bridge-coord.md, x/bridge-coord\n\n```\nbridge-coord\n```',
+      '`bridge-coord`, [bridge-coord](https://example.com), bridge-coord.md, x/bridge-coord, bridge-coord/.git/config, bridge-coord/\n\n```\nbridge-coord\n```',
       [],
     ],
     ['a mention in emphasis and a list item', '- **bridge-coord** owns it', ['m1/p1=bridge-coord']],
