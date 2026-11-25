@@ -104,3 +104,4 @@ from the outside world.
   after each `chat.status` and `workspaces.changed`, after each owner's mark (`inboxChanged`) and
   on each change that the Inbox watch tells; it opens that watch with the
   first client and closes it with the last (`liveEvents.test.ts`).
+- `fileStore.ts` is the port of git's tracked files in a root; `files.ts` gives each an ID and reads text only from the index (`files.test.ts`).

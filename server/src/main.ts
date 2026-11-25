@@ -8,6 +8,7 @@ import { serve } from '@hono/node-server'
 import { createClaudeArtifactFinder } from './adapters/claudeArtifacts.ts'
 import { claudeSideRunner, claudeVersion } from './adapters/claudeSide.ts'
 import { createDiskArtifactStore } from './adapters/diskArtifacts.ts'
+import { createDiskFiles } from './adapters/diskFiles.ts'
 import { createBrainRequests, createDiskInboxMarks, watchBrainInbox } from './adapters/diskInbox.ts'
 import { createDiskPushStore } from './adapters/diskPush.ts'
 import { createDiskUploads } from './adapters/diskUploads.ts'
@@ -21,6 +22,7 @@ import { createLogger, dailyFiles, type LogSink, teeSinks } from './logger.ts'
 import { formatEntry, parseLine } from './logs.ts'
 import { handleProcessErrors } from './processErrors.ts'
 import { createArtifacts } from './services/artifacts.ts'
+import { createFiles } from './services/files.ts'
 import { createInbox } from './services/inbox.ts'
 import { createPushSeen } from './services/push.ts'
 import { createPushNotifier } from './services/pushNotifier.ts'
@@ -94,6 +96,7 @@ const server = serve(
       artifacts,
       inbox,
       watchInbox: watchBrainInbox(config.value.brainDir),
+      files: createFiles(createDiskFiles({ brainDir: config.value.brainDir })),
     }).fetch,
     port,
     hostname: '127.0.0.1',
