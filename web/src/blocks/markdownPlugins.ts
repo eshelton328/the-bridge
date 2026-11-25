@@ -3,9 +3,9 @@
 // not parse again. remark-gfm always runs. The callout plugin runs only
 // with `callouts` on (off, an alert stays the quote it is written as, with
 // its [!NOTE] line). Math (remark-math, a syntax extension) comes before
-// the mentions, so a formula is never a mention; useMathPlugins gives no
-// math plugins with `math` off. The mention plugin runs only with
-// `chatLinks` on and a chat to match (off, a chat's name is its text).
+// the mentions, so a formula is never a mention. It also runs with `math`
+// off, so a formula is not read as Markdown (`\{` stays `\{`). The
+// mention plugin runs only with `chatLinks` on and a chat to match (off, a chat's name is its text).
 import type { Options } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import type { RichTextFeatures } from '../lib/deviceSettings.ts'

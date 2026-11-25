@@ -1,8 +1,8 @@
 // MarkdownText's render once the rich text features are known: react-markdown
 // with the plugins (`markdownPlugins.ts`) and the element maps
 // (`markdownComponents.tsx`) for those features, the chats a text may
-// mention and the math plugins. Math loads only with `math` on and a `$` in
-// the text. MarkdownText is the entry; this file only draws. Props only.
+// mention and the math plugins. The math parse loads for a text with a `$`,
+// also with `math` off, so a formula keeps its TeX (markdownComponents.ts). MarkdownText is the entry; this file only draws. Props only.
 import Markdown, { defaultUrlTransform, type Options } from 'react-markdown'
 import type { RichTextFeatures } from '../lib/deviceSettings.ts'
 import type { CopyCode } from './MarkdownCodeFence.tsx'
@@ -27,7 +27,7 @@ export type MarkdownMarkupProps = {
 // The chats are read with the Consumer, not `use` or useContext: the canvas runs React 18, which has no `use`.
 // useMathPlugins uses only hooks React 18 has.
 export function MarkdownMarkup({ text, size, onCopyCode, features }: MarkdownMarkupProps) {
-  const math = useMathPlugins(text, features.math)
+  const math = useMathPlugins(text)
   return (
     <MarkdownChatsContext.Consumer>
       {({ chats }) => (

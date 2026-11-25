@@ -25,12 +25,9 @@ const none: PluggableList = []
 /** Whether a text may hold math: it has a `$`. */
 export const mayHoldMath = (text: string): boolean => text.includes('$')
 
-/**
- * The math plugins and the text to parse with them; no plugins and the text as it is until they load, with no `$`, or
- * with `on` false (the math feature off, markdownFeatures.ts), when nothing loads.
- */
-export function useMathPlugins(text: string, on = true): { plugins: PluggableList; text: string } {
-  const wanted = on && mayHoldMath(text)
+/** The math plugins and the text to parse with them; no plugins and the text as it is until they load, or with no `$`. */
+export function useMathPlugins(text: string): { plugins: PluggableList; text: string } {
+  const wanted = mayHoldMath(text)
   const [parts, setParts] = useState<MathParts | undefined>(() => (wanted ? loaded : undefined))
   useEffect(() => {
     if (!wanted || parts !== undefined) return

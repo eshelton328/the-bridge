@@ -76,11 +76,14 @@ function build(size: MarkdownSize, onCopy: CopyCode | undefined, features: RichT
         children,
       ),
     // Inline math (remark-math, for a text with a $) is a code element labelled math; any other code stays code.
+    // With `math` off it is its source as text: the TeX as written, in the `$` or `$$` it had (Codex review of #532).
     code: ({ node, children, ...props }) => {
       const code = codeOf(node)
-      return code?.language === 'math' && features.math
-        ? createElement(MathFormula, { tex: code.code, display: false })
-        : createElement('code', props, children)
+      if (code?.language !== 'math') return createElement('code', props, children)
+      if (features.math) return createElement(MathFormula, { tex: code.code, display: false })
+      const length = sourceLength(node)
+      const dollars = length !== undefined && length - code.code.length >= 4 ? '$$' : '$'
+      return `${dollars}${code.code}${dollars}`
     },
     // remark-gfm writes a task list's box with no label (axe: label); the box is read-only, so its name is its state.
     input: ({ type, checked, disabled }) =>

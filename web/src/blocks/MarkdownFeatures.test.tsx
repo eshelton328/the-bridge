@@ -80,6 +80,13 @@ describe('math off', () => {
     expect(document.querySelector('[data-language="math"] pre')?.textContent).toBe('\\sum_{i=1}^{n} i')
     expect(document.querySelector('.katex, [data-math]')).toBeNull()
   })
+
+  it('keeps the TeX as written: a backslash escape is not read as Markdown', async () => {
+    view = await testRender(<MarkdownText text={'The set $\\{x\\}$ and $$\\{y\\}$$ here.'} features={off('math')} />)
+    await settle()
+    expect(text()).toContain('The set $\\{x\\}$ and $$\\{y\\}$$ here.')
+    expect(document.querySelector('.katex, [data-math]')).toBeNull()
+  })
 })
 
 describe('images off', () => {
