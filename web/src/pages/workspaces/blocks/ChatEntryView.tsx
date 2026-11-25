@@ -18,6 +18,7 @@ import type { CopyTextResult } from '../../../lib/copyText.ts'
 import type { ChatEntry } from '../types.ts'
 import { EntryText } from './EntryText.tsx'
 import { NoteLine } from './NoteLine.tsx'
+import { PeerEntry } from './PeerEntry.tsx'
 import { ReplyEntry } from './ReplyEntry.tsx'
 import { SentFileChip } from './SentFileChip.tsx'
 import { ToolRow } from './ToolRow.tsx'
@@ -99,15 +100,8 @@ export const ChatEntryView = memo(function ChatEntryView({ entry, figma, onAct, 
       return <NoteLine kind={entry.kind} label={entry.label} text={entry.text} figma={figma} />
     case 'peer':
       // A message from another chat (R55): the library's peer message with its Markdown text, or its label alone
-      // when the server sent no text; never the owner's bubble.
-      return (
-        <div data-figma={figma}>
-          <Message from="peer" name={entry.name}>
-            {entry.text === undefined ? null : <EntryText text={entry.text} />}
-          </Message>
-          {entry.cut === undefined ? null : <span className={cutLine}>{entry.cut}</span>}
-        </div>
-      )
+      // when the server sent no text, and the relayed-content note; never the owner's bubble.
+      return <PeerEntry entry={entry} figma={figma} />
     case 'assistant':
       // A reply, with its Copy and, when a Stop hook had it written again, its note and drafts (R62).
       return <ReplyEntry entry={entry} figma={figma} onCopy={onCopy} />

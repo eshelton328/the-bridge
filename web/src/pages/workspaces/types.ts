@@ -156,7 +156,9 @@ export const ChatEntry = z.discriminatedUnion('type', [
   /**
    * A message from another chat, never the owner's (R55): a SendMessage peer message or a prompt that another chat
    * typed in an `<agent-prompt>` wrapper. It draws as the library's `Message from="peer"`: an amber bar and "From
-   * <name>". `text` is its Markdown, none when the server sent only the note; `cut` as for `user`.
+   * <name>". `text` is its Markdown, none when the server sent only the note; `cut` as for `user`. `relayed` is the
+   * harness's notice that the message may relay content other people wrote, taken out of the text: a muted note
+   * whose tap shows its full text (`label`, then `text`), never dropped.
    */
   z.object({
     type: z.literal('peer'),
@@ -164,6 +166,7 @@ export const ChatEntry = z.discriminatedUnion('type', [
     name: z.string(),
     text: z.string().optional(),
     cut: z.string().optional(),
+    relayed: z.object({ label: z.string(), text: z.string() }).optional(),
   }),
   /** Lines of an agent's progress, in mono. */
   z.object({ type: z.literal('progress'), lines: z.array(z.string()) }),
