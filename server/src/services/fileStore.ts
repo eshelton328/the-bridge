@@ -1,9 +1,6 @@
-// The FileStore: the files that git tracks in a root, such as the brain,
-// for the file links of a chat message. A path is relative to its root.
-// The store reads only a tracked file whose real path stays in the root,
-// so an ignored file (such as `.env`) and a symlink out of the root are not
-// there; the brain's `_local/` is not in it either. Its contract suite is
-// adapters/fileStoreContract.ts.
+// The FileStore: git's tracked files in a root, such as the brain, for a
+// message's file links. It reads only a tracked file whose real path stays
+// in the root; `_local/` is not in it. Suite: adapters/fileStoreContract.ts.
 import type { FileRoot } from '@bridge/contract'
 import type { Result } from '@bridge/shared'
 

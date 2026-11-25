@@ -1,13 +1,8 @@
-// The FileStore on disk: git's index of the brain, its one root for now.
-// `list` runs `git ls-files -z` in the root, with fixed arguments, no shell and a 5 s
-// timeout, on each request (d-112: no timer). `read` asks git whether it
-// tracks the one path (with literal pathspecs, so `*` or `:` in a path is
-// no pattern), then reads it only when its real path stays in the root's
-// real path and lstat finds a regular file, so a FIFO or a device is never
-// opened; a symlink's target must be tracked too. The size comes from
-// lstat, and the read stops at the cap, as the file can grow. The brain's
-// `_local/` is never listed or read, and a path with a NUL is never asked
-// for. A fault keeps only its errno code or git's exit code.
+// The FileStore on disk: git's index of the brain. Git runs with fixed
+// arguments and literal pathspecs, no shell and a 5 s timeout, on each
+// request. A read needs the path and its symlink target tracked, a real
+// path in the root and a regular file (lstat, so no FIFO), and stops at the
+// cap. `_local/` and a path with a NUL are never read; a fault is its code.
 import { execFile } from 'node:child_process'
 import { lstat, open, realpath } from 'node:fs/promises'
 import { join, sep } from 'node:path'

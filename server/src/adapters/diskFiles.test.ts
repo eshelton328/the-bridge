@@ -26,8 +26,7 @@ describeFileStore('disk', async ({ tracked, untracked, linkOut, fifo }) => {
   return createDiskFiles({ brainDir })
 })
 
-// The disk store's own faults, which a fake cannot have: a tracked symlink to a file git does not track (review of
-// PR 505), and a path that execFile cannot pass.
+// Disk faults a fake cannot have: a tracked symlink to an untracked file, and a path execFile cannot pass.
 describe('createDiskFiles', () => {
   async function brainWithEnvLink() {
     const brainDir = await mkdtemp(join(tmpdir(), 'bridge-files-'))

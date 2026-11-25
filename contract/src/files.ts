@@ -1,7 +1,6 @@
-// The files a chat message can link to (bridge-coord's rich-text task): the
-// files that git tracks in a root, as paths relative to that root, never a
-// local path. The brain's `_local/` is not in its index. A URL names a file
-// by its `FileId`, and its text goes only in the text read's 200 body.
+// The files a chat message can link to: git's tracked files in a root, as
+// root-relative paths. A URL names a file by its `FileId`; its text goes
+// only in the text read's 200 body.
 import { z } from 'zod'
 import { ChatId, FileId } from './ids.ts'
 
@@ -27,10 +26,7 @@ export const RootFilePath = z
 /** The most bytes of an image that `GET /api/files/raw` sends. */
 export const maxImageBytes = 20 * 1024 ** 2
 
-/**
- * A local absolute path, as a message's text writes it: the one request input that may hold a local path
- * (contract/AGENTS.md). It never goes in a response, an error body, a header or a log.
- */
+/** A local absolute path: request input only, never in a response, error, header or log (contract/AGENTS.md). */
 export const AbsoluteFilePath = z
   .string()
   .min(2)
