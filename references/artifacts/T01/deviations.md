@@ -80,6 +80,13 @@ Checked again 2026-11-19 with library 1.0.0-beta.69 (card `tone`, Sort's
   marks in the meta line are 16 px against Figma's 14 (d-100: 14 ties
   12 and 16 on the 4 px icon scale, and the tie takes 16). They were 12.
 
+- Card height (R77, the owner: "Artifact cards should always be the same
+  height"): every card's description takes two lines (`Card`
+  `descriptionLines={2}`, library 1.0.0-beta.132), where Figma draws one, so
+  each card is about 16 px taller. The second card row's title and
+  description (405:278, 405:279 and 405:302) now sit under the pinned tab bar and show on
+  scroll; `exceptions.json` excepts those three layers only.
+
 ## Values picked (d-100)
 
 - Page sides: 20 (Figma 22, on the 4 px grid; 24 left the cards' text

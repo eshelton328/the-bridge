@@ -58,12 +58,13 @@ function descriptionLine(text: string): number {
 describe('the Artifacts skeleton (R58)', () => {
   // Most artifacts have no description (the served library on 2026-11-24): a card with none is the case to fit.
   const cases = [
-    // A card with a description keeps its top and grows by that line as it loads (the page owner, 2026-11-24).
+    // R77: an artifact card keeps two description lines with or without text, so a card with a description lands on
+    // its skeleton's place and height as every other block does; it no longer grows by that line as it loads.
     ...devices.map((device) => ({
       device,
       artifacts: [chart, plan],
-      with: device.item === 'artifact card' ? ', with cards that grow by their description' : '',
-      grows: device.item === 'artifact card',
+      with: device.item === 'artifact card' ? ', with cards that have a description' : '',
+      grows: false,
     })),
     ...devices
       .filter((device) => device.item === 'artifact card')

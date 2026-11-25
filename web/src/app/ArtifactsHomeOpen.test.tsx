@@ -54,12 +54,26 @@ describe('opening an artifact from the Artifacts home', () => {
     await page.viewport(1512, 982)
     view = await renderAt('/artifacts?source=fixtures')
     await expect.poll(() => card('Hono server spike')).not.toBeNull()
-    // The pointer rests on the card (its title button covers it), so the cut description's tooltip opens; the click
+    // The pointer rests on a card (its title button covers it), so a cut description's tooltip opens. R77: the
+    // description takes two lines, so only a longer one is cut; home.ts gives Inbox task lifecycle such a description.
+    const lifecycle = cardButton('Inbox task lifecycle')
+    if (!(lifecycle instanceof HTMLElement)) throw new Error('no card button')
+    await userEvent.hover(page.elementLocator(lifecycle))
+    await expect
+      .element(page.getByRole('tooltip').filter({ hasText: 'what happens to a task that a chat closes' }))
+      .toBeVisible()
+    // Hono server spike's description fits in its two lines: it shows whole, and a hover opens no tooltip; the click
     // still opens the card.
     const hono = cardButton('Hono server spike')
     if (!(hono instanceof HTMLElement)) throw new Error('no card button')
     await userEvent.hover(page.elementLocator(hono))
-    await expect.element(page.getByRole('tooltip').filter({ hasText: 'Routes, the RPC client' })).toBeVisible()
+    const honoText = card('Hono server spike')?.querySelector('.card__description .truncated-text')
+    if (!(honoText instanceof HTMLElement)) throw new Error('no description')
+    expect(honoText.textContent).toBe('Routes, the RPC client and the owner check over Tailscale')
+    expect(honoText.scrollHeight - honoText.clientHeight).toBeLessThanOrEqual(1)
+    await expect
+      .element(page.getByRole('tooltip').filter({ hasText: 'Routes, the RPC client' }))
+      .not.toBeInTheDocument()
     await press(cardButton('Hono server spike'))
     await expect.poll(() => query('[data-figma="library list"]')).not.toBeNull()
     expect(rowButton('Hono server spike')?.getAttribute('aria-current')).toBe('true')
