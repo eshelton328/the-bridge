@@ -3,8 +3,9 @@
 // off draws its plain Markdown and hides no text: a callout is a quote,
 // code is a code block with no colours, a chat mention is its name, a
 // Mermaid diagram is its source, math is its TeX and an image is a link
-// (`markdownComponents.ts`, `markdownPlugins.ts`). The app root gives the
-// owner's settings; with no provider, as on the canvas, every feature is on.
+// (`markdownComponents.ts`, `markdownPlugins.ts`). The page entries
+// (Workspaces, Inbox) give the owner's settings; with no provider, as on
+// the canvas, every feature is on.
 // It is read with its Consumer, never `use`: the canvas runs React 18.
 import { createContext } from 'react'
 import { allRichText, type RichTextFeatures, richTextFeatures } from '../lib/deviceSettings.ts'
