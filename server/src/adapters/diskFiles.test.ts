@@ -43,4 +43,9 @@ describe('createDiskFiles', () => {
     const store = await brainWithEnvLink()
     expect(await store.read('brain', 'env-link', 1024)).toEqual({ ok: true, value: 'notFound' })
   })
+
+  it('gives notFound for a path with a NUL, with no throw', async () => {
+    const store = await brainWithEnvLink()
+    expect(await store.read('brain', 'README.md\0x', 1024)).toEqual({ ok: true, value: 'notFound' })
+  })
 })

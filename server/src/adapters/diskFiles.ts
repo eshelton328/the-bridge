@@ -1,12 +1,13 @@
-// The FileStore on disk: git's index of the brain, its one root for now. `list` runs `git
-// ls-files -z` in the root, with fixed arguments, no shell and a 5 s
+// The FileStore on disk: git's index of the brain, its one root for now.
+// `list` runs `git ls-files -z` in the root, with fixed arguments, no shell and a 5 s
 // timeout, on each request (d-112: no timer). `read` asks git whether it
 // tracks the one path (with literal pathspecs, so `*` or `:` in a path is
 // no pattern), then reads it only when its real path stays in the root's
 // real path and lstat finds a regular file, so a FIFO or a device is never
 // opened; a symlink's target must be tracked too. The size comes from
-// lstat, and the read stops at the cap, as the file can grow. The brain's `_local/` is never listed or read. A fault
-// keeps only its errno code or git's exit code.
+// lstat, and the read stops at the cap, as the file can grow. The brain's
+// `_local/` is never listed or read, and a path with a NUL is never asked
+// for. A fault keeps only its errno code or git's exit code.
 import { execFile } from 'node:child_process'
 import { lstat, open, realpath } from 'node:fs/promises'
 import { join, sep } from 'node:path'
@@ -29,18 +30,26 @@ const hidden = (path: string) => path === '_local' || path.startsWith('_local/')
 /** The NUL-separated paths that `git ls-files -z -- <pathspec>` prints in `dir`. */
 function gitFiles(dir: string, pathspec: readonly string[]): Promise<Result<string[], FileStoreError>> {
   return new Promise((resolve) => {
-    execFile(
-      'git',
-      ['--literal-pathspecs', 'ls-files', '-z', '--', ...pathspec],
-      { cwd: dir, timeout: 5_000, maxBuffer: 64 * 1024 ** 2, encoding: 'utf8' },
-      (error, stdout) => {
-        if (error !== null) {
-          resolve(err({ reason: 'failed', code: codeOf(error) }))
-          return
-        }
-        resolve(ok(stdout.split('\0').filter((p) => p !== '')))
-      },
-    )
+    // execFile throws, not calls back, for an argument it cannot pass, such as one with a NUL.
+    try {
+      run()
+    } catch (thrown) {
+      resolve(err({ reason: 'failed', code: codeOf(thrown) }))
+    }
+    function run() {
+      execFile(
+        'git',
+        ['--literal-pathspecs', 'ls-files', '-z', '--', ...pathspec],
+        { cwd: dir, timeout: 5_000, maxBuffer: 64 * 1024 ** 2, encoding: 'utf8' },
+        (error, stdout) => {
+          if (error !== null) {
+            resolve(err({ reason: 'failed', code: codeOf(error) }))
+            return
+          }
+          resolve(ok(stdout.split('\0').filter((p) => p !== '')))
+        },
+      )
+    }
   })
 }
 
@@ -51,7 +60,11 @@ export function createDiskFiles({ brainDir }: DiskFilesOptions): FileStore {
       return listed.ok ? ok(listed.value.filter((p) => !hidden(p))) : listed
     },
     async read(_root, path, max) {
-      if (hidden(path) || path.split('/').some((part) => part === '' || part === '.' || part === '..'))
+      if (
+        hidden(path) ||
+        path.includes('\0') ||
+        path.split('/').some((part) => part === '' || part === '.' || part === '..')
+      )
         return ok('notFound')
       const dir = brainDir
       const tracked = await gitFiles(dir, [path])
