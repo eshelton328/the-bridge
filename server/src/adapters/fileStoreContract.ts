@@ -27,7 +27,14 @@ const fixture: FileStoreFixture = {
 
 const text = (bytes: Uint8Array) => new TextDecoder().decode(bytes)
 
-export function describeFileStore(name: string, makeStore: (fixture: FileStoreFixture) => Promise<FileStore>): void {
+/** A store, and the absolute path of its brain folder for `locate`. */
+export type FileStoreSetup = { readonly store: FileStore; readonly dir: string }
+
+export function describeFileStore(
+  name: string,
+  makeSetup: (fixture: FileStoreFixture) => Promise<FileStoreSetup>,
+): void {
+  const makeStore = async (f: FileStoreFixture) => (await makeSetup(f)).store
   describe(`FileStore contract: ${name}`, () => {
     it("lists the brain's tracked files without _local/ and without untracked files", async () => {
       const store = await makeStore(fixture)
@@ -65,6 +72,16 @@ export function describeFileStore(name: string, makeStore: (fixture: FileStoreFi
       const chat = ChatId.parse('test-mac/chat-a')
       expect(await store.list(chat)).toEqual({ ok: true, value: [] })
       expect(await store.read(chat, 'README.md', 1024)).toEqual({ ok: true, value: 'notFound' })
+    })
+
+    it('locates an absolute path in the brain, and nothing outside it', async () => {
+      const { store, dir } = await makeSetup(fixture)
+      expect(await store.locate(`${dir}/toolkit/rules/writing.md`)).toEqual({
+        ok: true,
+        value: { root: 'brain', path: 'toolkit/rules/writing.md' },
+      })
+      expect(await store.locate(`${dir}/notes/gone.md`)).toEqual({ ok: true, value: 'notFound' })
+      expect(await store.locate(`${dir}/../outside.md`)).toEqual({ ok: true, value: 'notFound' })
     })
 
     it('does not read a file over the size it is given', async () => {

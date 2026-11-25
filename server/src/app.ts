@@ -88,6 +88,7 @@ const noInbox = (agents: AgentPort) =>
 const noFiles = createFiles({
   list: () => Promise.resolve(err({ reason: 'failed', code: 'no-store' })),
   read: () => Promise.resolve(err({ reason: 'failed', code: 'no-store' })),
+  locate: () => Promise.resolve(err({ reason: 'failed', code: 'no-store' })),
 })
 
 /** The push store of an app with none: each call fails. */

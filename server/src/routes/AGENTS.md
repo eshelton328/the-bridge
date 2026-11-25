@@ -201,3 +201,4 @@ Thin Hono sub-apps, one file for each area, named after the area
 - A route takes its services or ports as function arguments; it never
   imports an adapter.
 - `GET /api/files?root=` and `GET /api/files/:file/text?root=`: an unknown, untracked or unreadable file is the same 404; binary is 415, over `maxFileText` 413; a log keeps the root and errno code only (`files.test.ts`).
+- `GET /api/files/raw` (`?root=&path=` or `?path=<absolute>`): only an indexed PNG, JPEG, GIF or WebP whose extension and first bytes agree, with nosniff, a sandbox CSP and a private cache; else 404, 415 or 413, and no path in a body or a log (`files.test.ts`).

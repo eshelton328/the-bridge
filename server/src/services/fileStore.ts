@@ -12,4 +12,11 @@ export type FileStore = {
   list(root: FileRoot): Promise<Result<readonly string[], FileStoreError>>
   /** The bytes of `path` in `root`: `notFound` when untracked, no file or out of the root; `tooLarge` over `max`. */
   read(root: FileRoot, path: string, max: number): Promise<Result<Uint8Array | 'notFound' | 'tooLarge', FileStoreError>>
+  /**
+   * The root and root-relative path of the local absolute path `absolute`, after realpath: `notFound` when it is
+   * missing or its real path is in no root. It does not say whether the root tracks the path; `read` does.
+   */
+  locate(
+    absolute: string,
+  ): Promise<Result<{ readonly root: FileRoot; readonly path: string } | 'notFound', FileStoreError>>
 }
