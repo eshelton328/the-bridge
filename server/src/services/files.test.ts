@@ -25,6 +25,6 @@ describe('createFiles', () => {
 
   it('leaves out a listed path that the contract cannot carry', async () => {
     const index = await createFiles(storeOf(new Uint8Array())).index('brain')
-    expect(index.ok && index.value.files.map((f) => f.path)).toEqual(['notes/a.md'])
+    expect(index.ok && index.value !== 'notFound' && index.value.files.map((f) => f.path)).toEqual(['notes/a.md'])
   })
 })

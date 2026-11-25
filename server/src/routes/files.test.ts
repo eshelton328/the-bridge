@@ -1,6 +1,6 @@
 // API tests of /api/files, in process with the fake agents and a fake brain
 // of made-up files.
-import { ErrorBody, FilesResponse, FileTextResponse, MachineId, maxFileText } from '@bridge/contract'
+import { ChatId, ErrorBody, FilesResponse, FileTextResponse, MachineId, maxFileText } from '@bridge/contract'
 import { err } from '@bridge/shared'
 import { describe, expect, it } from 'vitest'
 import { createFakeAgents } from '../adapters/fakeAgents.ts'
@@ -67,6 +67,14 @@ describe('/api/files', () => {
     const { get } = setup()
     expect((await get(textOf('notes/binary.bin'))).status).toBe(415)
     expect((await get(textOf('notes/big.md'))).status).toBe(413)
+  })
+
+  it('gives 404 on each route for a chat root, which the store does not serve yet', async () => {
+    const { get } = setup()
+    const chat = encodeURIComponent('test-mac/chat-a')
+    const id = fileIdOf(ChatId.parse('test-mac/chat-a'), 'toolkit/rules/writing.md')
+    for (const path of [`/api/files?root=${chat}`, `/api/files/${id}/text?root=${chat}`])
+      expect((await get(path)).status, path).toBe(404)
   })
 
   it('answers 400 for a root it does not know', async () => {

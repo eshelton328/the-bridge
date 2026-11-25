@@ -23,6 +23,7 @@ export function filesRoutes(files: Files, log: Logger) {
       const { root } = c.req.valid('query')
       const index = await files.index(root)
       if (!index.ok) return failed(c, root, index.error)
+      if (index.value === 'notFound') return notFound(c)
       return c.json(FilesResponse.parse(index.value), 200)
     })
     .get('/:file/text', queryOf(FilesQuery), async (c) => {

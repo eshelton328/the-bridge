@@ -35,8 +35,8 @@ function textOf(bytes: Uint8Array): string | undefined {
 }
 
 export type Files = {
-  /** The root's index: its listed files with their IDs, at most `maxIndexFiles`. */
-  index(root: FileRoot): Promise<Result<FilesResponse, FileStoreError>>
+  /** The root's index: its listed files with their IDs, at most `maxIndexFiles`; `notFound` for a chat root. */
+  index(root: FileRoot): Promise<Result<FilesResponse | 'notFound', FileStoreError>>
   /** The text of the file `id` of `root`. */
   text(
     root: FileRoot,
@@ -44,14 +44,19 @@ export type Files = {
   ): Promise<Result<FileTextResponse | 'notFound' | 'tooLarge' | 'binary', FileStoreError>>
 }
 
+/** The roots the store serves: the brain only, until a chat root has its git repository (B1c). */
+const served = (root: FileRoot) => root === 'brain'
+
 export function createFiles(store: FileStore): Files {
-  /** The listed paths that the contract can carry, in the store's order. */
+  /** The listed paths that the contract can carry, in the store's order; none for a root it does not serve. */
   const paths = async (root: FileRoot) => {
+    if (!served(root)) return ok([])
     const listed = await store.list(root)
     return listed.ok ? ok(listed.value.filter((p) => RootFilePath.safeParse(p).success)) : listed
   }
   return {
     async index(root) {
+      if (!served(root)) return ok('notFound')
       const listed = await paths(root)
       if (!listed.ok) return listed
       const files = listed.value.slice(0, maxIndexFiles).map((path) => ({ id: fileIdOf(root, path), path }))
