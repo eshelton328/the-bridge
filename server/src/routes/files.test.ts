@@ -27,7 +27,7 @@ const tracked = {
   'images/huge.png': new Uint8Array(maxImageBytes + 1).fill(0x89, 0, 1),
 }
 
-function setup(store = createFakeFiles({ tracked, unreadable: ['notes/outside.md'] })) {
+function setup(store = createFakeFiles({ tracked, unreadable: ['notes/outside.md', 'images/locked.png'] })) {
   const logger = memoryLogger()
   const app = createApp({
     agents: createFakeAgents(MachineId.parse('test-mac')),
@@ -141,7 +141,7 @@ describe('/api/files', () => {
     for (const query of [
       'path=%2Fetc%2Fhosts',
       `path=${encodeURIComponent('/opt/elsewhere/.ssh/id_ed25519')}`,
-      'root=brain&path=notes/outside.md',
+      'root=brain&path=images/locked.png',
       'root=brain&path=images/gone.png',
     ]) {
       const res = await get(`/api/files/raw?${query}`)

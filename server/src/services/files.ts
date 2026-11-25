@@ -125,12 +125,13 @@ export function createFiles(store: FileStore): Files {
       const listed = await paths(at.value.root)
       if (!listed.ok) return listed
       if (!listed.value.slice(0, maxIndexFiles).includes(at.value.path)) return ok('notFound')
+      // The type comes from the extension's allowlist, before any read, and the first bytes must be that type too.
+      const type = extensionTypeOf(at.value.path)
+      if (type === undefined) return ok('unsupported')
       const read = await store.read(at.value.root, at.value.path, maxImageBytes)
       if (!read.ok) return read
       if (typeof read.value === 'string') return ok(read.value)
-      // The type comes from the extension's allowlist, and the first bytes must be that type too.
-      const type = extensionTypeOf(at.value.path)
-      return ok(type !== undefined && imageTypeOf(read.value) === type ? { bytes: read.value, type } : 'unsupported')
+      return ok(imageTypeOf(read.value) === type ? { bytes: read.value, type } : 'unsupported')
     },
   }
 }

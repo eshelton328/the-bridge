@@ -86,6 +86,23 @@ describe('the image read', () => {
     expect(await image([path], path)).toEqual({ ok: true, value: 'unsupported' })
   })
 
+  it('calls a file with no image extension unsupported before it reads the file', async () => {
+    let reads = 0
+    const store: FileStore = {
+      list: () => Promise.resolve(ok(['notes/big.md'])),
+      read: () => {
+        reads += 1
+        return Promise.resolve(ok(png))
+      },
+      locate: () => Promise.resolve(ok('notFound')),
+    }
+    expect(await createFiles(store).image({ root: 'brain', path: 'notes/big.md' })).toEqual({
+      ok: true,
+      value: 'unsupported',
+    })
+    expect(reads).toBe(0)
+  })
+
   it('reads no image past the index cut', async () => {
     const paths = Array.from({ length: maxIndexFiles + 1 }, (_, i) => `img/${String(i)}.png`)
     expect(await image(paths, `img/${String(maxIndexFiles)}.png`)).toEqual({ ok: true, value: 'notFound' })
