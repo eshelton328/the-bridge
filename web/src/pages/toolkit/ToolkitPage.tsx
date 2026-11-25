@@ -4,7 +4,7 @@
 // until another state loads, and passes everything to the props-only screen.
 // The open item's copy button writes its path to the clipboard here.
 import { getRouteApi } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { report } from '../../errors/reporter.ts'
 import { copyText } from '../../lib/copyText.ts'
 import { useInboxBadge } from '../../lib/inboxFeed.ts'
@@ -12,6 +12,7 @@ import { ToolkitScreen } from './screens/ToolkitScreen.tsx'
 import type { ToolkitUi } from './types.ts'
 import { navRoute } from '../../lib/navRoutes.ts'
 import { useVisibleNavPages } from '../../state/settingsStore.ts'
+import { useToolkitActions, useToolkitPendingUi } from './toolkitStore.ts'
 
 const route = getRouteApi('/toolkit')
 
@@ -32,7 +33,14 @@ export function ToolkitPage() {
   )
   const navPages = useVisibleNavPages()
   const navigate = route.useNavigate()
-  const [changed, setChanged] = useState<Changed>({ of: state.ui, ui: {} })
+  // The home starts from what the owner changed while the route loaded (ToolkitPending, R58), taken once.
+  const pendingUi = useToolkitPendingUi()
+  const { clearPending } = useToolkitActions()
+  const home = search.state === undefined
+  const [changed, setChanged] = useState<Changed>(() => ({ of: state.ui, ui: home ? pendingUi : {} }))
+  useEffect(() => {
+    clearPending()
+  }, [clearPending])
   const own = changed.of === state.ui ? changed.ui : {}
   return (
     <ToolkitScreen

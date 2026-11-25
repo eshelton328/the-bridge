@@ -2,8 +2,8 @@ import '@fontsource-variable/geist'
 import '@fontsource-variable/geist-mono'
 import '../index.css'
 import { createMemoryHistory, createRootRoute, createRouter, RouterProvider } from '@tanstack/react-router'
-import { afterEach, describe, expect, it } from 'vitest'
-import { page } from 'vitest/browser'
+import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
+import { page, userEvent } from 'vitest/browser'
 import { afterRendering, setViewport } from '../lib/rendering.ts'
 import { testRender, unmountRendered } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
@@ -51,6 +51,26 @@ function moved(pending: Map<string, Box>, loaded: Map<string, Box>): string[] {
   return out
 }
 
+/** Renders the route's pending component alone, in a router of its own for its navigate. */
+async function renderPending() {
+  const pending = toolkitRoute.options.pendingComponent
+  if (pending === undefined) throw new Error('the Toolkit route has no pending component')
+  const pendingRouter = createRouter({
+    routeTree: createRootRoute({ component: pending }),
+    history: createMemoryHistory({ initialEntries: ['/'] }),
+  })
+  const view = await testRender(<RouterProvider router={pendingRouter} />)
+  await expect.element(page.getByRole('heading', { name: 'Toolkit', level: 1 })).toBeVisible()
+  return view
+}
+
+/** Renders the loaded Toolkit home from the real route tree. */
+async function renderLoaded() {
+  const router = createRouter({ routeTree, history: createMemoryHistory({ initialEntries: ['/toolkit'] }) })
+  await testRender(<RouterProvider router={router} />)
+  await expect.element(page.getByRole('heading', { name: 'Toolkit', level: 1 })).toBeVisible()
+}
+
 afterEach(async () => {
   await unmountRendered()
   resetAllStores()
@@ -67,23 +87,50 @@ describe('the Toolkit while its route loads (R58)', () => {
   for (const device of devices)
     it(`draws the loaded home, every layer within 2 px, on ${device.name}`, async () => {
       await setViewport(device.size[0], device.size[1])
-      // The route's pending component alone, in a router of its own for its navigate.
-      const pending = toolkitRoute.options.pendingComponent
-      if (pending === undefined) throw new Error('the Toolkit route has no pending component')
-      const pendingRouter = createRouter({
-        routeTree: createRootRoute({ component: pending }),
-        history: createMemoryHistory({ initialEntries: ['/'] }),
-      })
-      const pendingView = await testRender(<RouterProvider router={pendingRouter} />)
-      await expect.element(page.getByRole('heading', { name: 'Toolkit', level: 1 })).toBeVisible()
+      const pendingView = await renderPending()
       await afterRendering()
       const boxes = layerBoxes()
       expect(boxes.size).toBeGreaterThan(10)
       await pendingView.unmount()
-      const router = createRouter({ routeTree, history: createMemoryHistory({ initialEntries: ['/toolkit'] }) })
-      await testRender(<RouterProvider router={router} />)
-      await expect.element(page.getByRole('heading', { name: 'Toolkit', level: 1 })).toBeVisible()
+      await renderLoaded()
       await afterRendering()
       expect(moved(boxes, layerBoxes())).toEqual([])
     })
+})
+
+// The Codex review of #515: what the owner does while the route loads is kept, and the pending view's copy works.
+describe('the owner on the Toolkit while its route loads (R58)', () => {
+  it('keeps the search typed while it loads on the loaded home, then starts empty next time', async () => {
+    await setViewport(1512, 982)
+    const pendingView = await renderPending()
+    await userEvent.fill(page.getByRole('searchbox', { name: 'Search the toolkit' }).first(), 'writer')
+    await pendingView.unmount()
+    await renderLoaded()
+    await expect.element(page.getByRole('searchbox', { name: 'Search the toolkit' }).first()).toHaveValue('writer')
+    await unmountRendered()
+    await renderLoaded()
+    await expect.element(page.getByRole('searchbox', { name: 'Search the toolkit' }).first()).toHaveValue('')
+  })
+
+  it('copies the open item’s path from the pending view', async () => {
+    const copied: string[] = []
+    const { clipboard } = navigator
+    const writeText = clipboard.writeText.bind(clipboard)
+    clipboard.writeText = (text) => {
+      copied.push(text)
+      return Promise.resolve()
+    }
+    onTestFinished(() => {
+      clipboard.writeText = writeText
+    })
+    await setViewport(1512, 982)
+    await renderPending()
+    await userEvent.click(page.getByRole('button', { name: /^agents-md/ }))
+    await expect.poll(() => document.querySelector('[data-figma="path badge"]')).not.toBeNull()
+    const copy = document.querySelector('[data-figma="path badge"] button')
+    if (!(copy instanceof HTMLElement)) throw new Error('no copy button on the path badge')
+    await userEvent.click(copy)
+    await expect.poll(() => copied).toHaveLength(1)
+    expect(copied[0]).toBe(document.querySelector('[data-figma="path badge"]')?.textContent)
+  })
 })

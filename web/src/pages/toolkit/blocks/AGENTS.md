@@ -10,8 +10,8 @@ page needs moves to `web/src/blocks/`.
   `use<Name>.ts`.
 - Draw with library parts. A part the library lacks goes in
   [../LIBRARY_GAPS.md](../LIBRARY_GAPS.md); never build it by hand here.
-- Copy a press out through a prop (`onCopy`); only `ToolkitPage.tsx`
-  writes the clipboard.
+- Copy a press out through a prop (`onCopy`); only the page entries
+  (`ToolkitPage.tsx`, `ToolkitPending.tsx`) write the clipboard.
 - Wrap each `MarkdownView`, `CodeLines`, `MapGraph` and chart in
   `BlockBoundary`, keyed by what it shows (d-084 level 4,
   `app/ToolkitBlockBoundary.test.tsx`).
