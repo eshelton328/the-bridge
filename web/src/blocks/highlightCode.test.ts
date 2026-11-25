@@ -32,6 +32,17 @@ describe('highlightCode', () => {
   })
 })
 
+describe('a deeply nested fence (Codex review of #511)', () => {
+  it('keeps its whole text, never overflowing the stack', () => {
+    // 3,990 nested template interpolations, under the 20,000 characters the block colours.
+    const depth = 3990
+    const code = `${'`${'.repeat(depth)}x${'}`'.repeat(depth)}`
+    expect(code.length).toBeLessThan(20_000)
+    const lines = highlightCode(code, 'typescript')
+    expect(joined(lines)).toEqual([code])
+  })
+})
+
 describe('grammarOf', () => {
   it('knows the ten languages by their usual labels, in any case, and nothing else', () => {
     expect(['ts', 'TSX', 'js', 'json', 'sh', 'py', 'css', 'html', 'yml', 'md', 'patch'].map(grammarOf)).toEqual([

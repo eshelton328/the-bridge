@@ -67,20 +67,42 @@ function kindOf(className: unknown): CodeKind | undefined {
 const piece = (text: string, kind: CodeKind | undefined): CodeSegment =>
   kind === undefined ? { text } : { text, kind }
 
-// The text pieces in order, each with the kind of its nearest class that has one.
-function walk(node: Node, kind: CodeKind | undefined, out: CodeSegment[]): void {
-  if (node.type === 'text') {
-    if (node.value !== undefined && node.value !== '') out.push(piece(node.value, kind))
-    return
+// The text pieces in order, each with the kind of its nearest class that has one. A loop with its own stack, not
+// recursion: a fence of deeply nested code (thousands of template interpolations) must not overflow the call stack.
+function walk(root: Node): CodeSegment[] {
+  const out: CodeSegment[] = []
+  const stack: { node: Node; kind: CodeKind | undefined }[] = [{ node: root, kind: undefined }]
+  for (let next = stack.pop(); next !== undefined; next = stack.pop()) {
+    const { node, kind } = next
+    if (node.type === 'text') {
+      if (node.value !== undefined && node.value !== '') out.push(piece(node.value, kind))
+      continue
+    }
+    const own = node.type === 'element' ? kindOf(node.properties?.className) : undefined
+    const children = node.children ?? []
+    // Pushed last child first, so the pieces come off the stack in order.
+    for (let i = children.length - 1; i >= 0; i--) {
+      const child = children[i]
+      if (child !== undefined) stack.push({ node: child, kind: own ?? kind })
+    }
   }
-  const own = node.type === 'element' ? kindOf(node.properties?.className) : undefined
-  for (const child of node.children ?? []) walk(child, own ?? kind, out)
+  return out
+}
+
+/** The pieces of `code`: highlight.js's, or the code as one plain piece when highlight.js itself cannot parse it. */
+function piecesOf(code: string, grammar: CodeGrammar): CodeSegment[] {
+  try {
+    return walk(lowlight.highlight(grammar, code))
+  } catch (error) {
+    // highlight.js parses by recursion too: code nested past the call stack draws plain.
+    if (error instanceof RangeError) return [{ text: code }]
+    throw error
+  }
 }
 
 /** Each line of `code` as its pieces, in order, for MarkdownCodeBlock's `segments`; the pieces join to the line. */
 export function highlightCode(code: string, grammar: CodeGrammar): CodeSegment[][] {
-  const pieces: CodeSegment[] = []
-  walk(lowlight.highlight(grammar, code), undefined, pieces)
+  const pieces = piecesOf(code, grammar)
   let line: CodeSegment[] = []
   const lines = [line]
   for (const { text, kind } of pieces) {
