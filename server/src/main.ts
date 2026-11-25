@@ -96,7 +96,7 @@ const server = serve(
       artifacts,
       inbox,
       watchInbox: watchBrainInbox(config.value.brainDir),
-      files: createFiles(createDiskFiles({ brainDir: config.value.brainDir })),
+      files: createFiles(createDiskFiles({ brainDir: config.value.brainDir, env: process.env })),
     }).fetch,
     port,
     hostname: '127.0.0.1',

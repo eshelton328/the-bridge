@@ -3,7 +3,7 @@ import { mkdir, mkdtemp, symlink, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { createDiskFiles } from './diskFiles.ts'
+import { createDiskFiles, gitEnv } from './diskFiles.ts'
 import { describeFileStore } from './fileStoreContract.ts'
 
 // A brain in a new git repository: the tracked files added to its index, the untracked ones only written, and a
@@ -23,7 +23,7 @@ describeFileStore('disk', async ({ tracked, untracked, linkOut, fifo }) => {
   await symlink('../.pipe', join(brainDir, fifo))
   execFileSync('git', ['init', '-q', brainDir])
   execFileSync('git', ['-C', brainDir, 'add', '--', ...Object.keys(tracked), linkOut, fifo])
-  return createDiskFiles({ brainDir })
+  return createDiskFiles({ brainDir, env: process.env })
 })
 
 // Disk faults a fake cannot have: a tracked symlink to an untracked file, and a path execFile cannot pass.
@@ -35,7 +35,7 @@ describe('createDiskFiles', () => {
     await symlink('.env', join(brainDir, 'env-link'))
     execFileSync('git', ['init', '-q', brainDir])
     execFileSync('git', ['-C', brainDir, 'add', '--', 'README.md', 'env-link'])
-    return createDiskFiles({ brainDir })
+    return createDiskFiles({ brainDir, env: process.env })
   }
 
   it.each([
@@ -43,5 +43,12 @@ describe('createDiskFiles', () => {
     ['a path with a NUL, with no throw', 'README.md\0x'],
   ])('does not read %s', async (_, path) => {
     expect(await (await brainWithEnvLink()).read('brain', path, 1024)).toEqual({ ok: true, value: 'notFound' })
+  })
+})
+
+describe('gitEnv', () => {
+  it('keeps PATH, HOME and LANG only, never a GIT_ variable', () => {
+    const env = { PATH: '/bin', HOME: '/h', LANG: 'C', GIT_DIR: '/other', GIT_CONFIG_COUNT: '1', TOKEN: 'x' }
+    expect(gitEnv(env)).toEqual({ PATH: '/bin', HOME: '/h', LANG: 'C' })
   })
 })
