@@ -1,8 +1,8 @@
 {
   "frameId": "M03",
-  "inputs": "1fac93f8bccc3d0cf07d8127cbc6736b2edfdf9263c47ef57730dc735a07280f",
-  "library": "1.0.0-beta.132",
-  "recordSha256": "02d454654ccd1bff1bd87931bb0dff51a28656ef433787b1c7d21de9958c842e",
+  "inputs": "5c77228cc82bef48c233456bbd0404075b805f9a372a15576951aab9af10a54b",
+  "library": "1.0.0-beta.133",
+  "recordSha256": "6870491b36fc5a18f71af40957e8d5eb3fad5808d748db89bcc8224a6d842850",
   "record": {
     "verdict": "match",
     "viewport": "phone 390 x 844, Dark, the More drawer open",
@@ -12,7 +12,7 @@
       "render": "reports/fidelity/settings/M03.sideBySide.png",
       "reference_side": "left"
     },
-    "summary": "The render matches the reference. The only differences are the missing Notifications row and the lower drawer top edge, which accepted deviation A3 describes.",
+    "summary": "The render matches the reference except for the accepted deviations: the drawer has no Notifications row and its top edge is lower, so the Text size control is visible behind the drawer.",
     "findings": [],
     "accepted_deviations": [
       {
@@ -20,54 +20,53 @@
         "as_given": "Text size: the control is enabled, with Default selected as in the reference, and the line under it says \"Scales the text of the whole app. Small is the size of the designs.\" in place of \"Scales the whole app: Small 87.5 %, Default 100 %, Large 112.5 %.\" (d-122 and d-131). The line has a different length, so on a narrow screen it can take one more or one less text line than the reference, and every section below it then sits that much lower or higher.",
         "status": "as-described",
         "finding": null,
-        "note": "The drawer now sits lower, so the Text size label and its Small / Default / Large control show above it, with Default selected. The control's state matches the reference. The line under the control is behind the drawer in both pictures, so its new wording cannot be checked."
+        "note": "In the render the Text size label and the Small / Default / Large control (enabled, Default selected) show behind the drawer, because the drawer's top edge is lower (A3). The drawer covers the line under the control, so its text could not be checked."
       },
       {
         "id": "A2",
         "as_given": "A new \"NOTIFICATIONS\" section with one \"Notifications\" switch (off) sits between the Navigation section and the New chat defaults section. So New chat defaults sits lower, or below the bottom edge.",
         "status": "not-seen",
         "finding": null,
-        "note": "The drawer covers this part of the page in both pictures."
+        "note": "The section is under the drawer or below the bottom edge in this frame."
       },
       {
         "id": "A3",
         "as_given": "The Notifications switch moved to that section: the desktop rail no longer has the \"Notifications / Blocked in Settings\" switch at its bottom, and the More drawer no longer has the \"Notifications / Blocked in Settings\" row at its end. So the drawer is shorter and its top edge sits lower.",
         "status": "as-described",
         "finding": null,
-        "note": "The drawer ends after Workflows with no Notifications row. Its top edge is at about y 408 in the render and about y 344 in the reference, about one row lower. The rows inside the drawer are the same and in the same order."
+        "note": "The drawer ends after Workflows with no Notifications row. Its top edge is at about y 380 in the render and at about y 316 in the reference, and all of its rows moved down by the same amount."
       },
       {
         "id": "A4",
         "as_given": "The Navigation list has a new last row, \"Settings\", with the line \"Always shown: in the bar or under More.\" under it and up and down buttons but no switch (the owner's decision: Settings is an entry of the bar order that cannot be hidden). So Toolkit's down button is now enabled, the Navigation card is taller, and every section below it sits lower or below the bottom edge.",
         "status": "not-seen",
         "finding": null,
-        "note": "The Navigation section is behind the drawer."
+        "note": "The Navigation card is under the drawer."
       },
       {
         "id": "A5",
         "as_given": "On the phone and the tablet only: a thin rule line with the text \"Under More on this device\" under it sits after the last page that the tab bar shows (Projects on the phone, Artifacts on the tablet), so the rows after it sit lower by about 40 px.",
         "status": "not-seen",
         "finding": null,
-        "note": "The Navigation list is behind the drawer."
+        "note": "The Navigation list is under the drawer."
       },
       {
         "id": "A6",
         "as_given": "Appearance has a new last row, \"Chat width\", under Text size: a three-way control \"Full\", \"Wide\", \"Narrow\" with Full selected, and a line under it. On the desktop and the tablet the control is enabled and the line says \"The messages and the message box of a Workspaces chat, centred.\"; on the phone the control is disabled (muted labels) and the line says \"Phone: always full\". So the Appearance card is taller, and every section below it sits lower (about one row) or below the bottom edge.",
         "status": "not-seen",
         "finding": null,
-        "note": "The Chat width row would be below Text size, which is behind the drawer."
+        "note": "The Chat width row is under the drawer."
       },
       {
         "id": "A7",
         "as_given": "Rich text: a new \"RICH TEXT\" section sits between Appearance and Navigation, with the line \"Off shows the plain Markdown. No text is hidden.\" and six switches, all on: Callouts, Code highlighting, Chat links (with the line \"Chat bubbles in messages\" under it), Mermaid diagrams, Math and Images (bridge-coord, 2026-11-25, the owner's request). So Navigation and every section below it sit lower, or below the bottom edge.",
         "status": "not-seen",
         "finding": null,
-        "note": "The drawer covers this part of the page."
+        "note": "The section is under the drawer."
       }
     ],
     "limits": [
-      "The page behind the drawer is dimmed, and below about y 344 (reference) and y 408 (render) the drawer covers it. The Settings content there cannot be compared.",
-      "I compared the side-by-side image at the size it was shown, so differences under about 2 px may not be visible."
+      "The open drawer covers the settings content below Text size in both images, so A2, A4, A5, A6, A7 and the line under Text size (A1) could not be checked in M03-reference.png, M03-render.png or M03.sideBySide.png."
     ]
   }
 }

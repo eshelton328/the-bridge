@@ -1,8 +1,8 @@
 {
   "frameId": "T01",
-  "inputs": "eca8bd3c2ba24695cf38458676407c87f3b111564bbc181cfe2313d8b3149e79",
-  "library": "1.0.0-beta.132",
-  "recordSha256": "720c012b11a891808c3daccddce4259cce2cb22dc458b478ca6461926da1c160",
+  "inputs": "b30aac5994fbbf5f173352c828c50d26a499fe0918fe4382dc5ac88d399b03d7",
+  "library": "1.0.0-beta.133",
+  "recordSha256": "e9401050b8c0a7c8b7cec77bfbb33dfe4b362f428117aa51f683e46c905c3bce",
   "record": {
     "verdict": "match",
     "viewport": "iPad portrait 820 x 1180, Dark",
@@ -12,7 +12,7 @@
       "render": "reports/fidelity/settings/T01.sideBySide.png",
       "reference_side": "left"
     },
-    "summary": "Apart from the accepted deviations, the render matches the reference in every part that is visible in the frame.",
+    "summary": "Apart from the accepted deviations, the render matches the reference: the same header, the same Appearance rows, the same Navigation heading and description, and the same tab bar with More selected.",
     "findings": [],
     "accepted_deviations": [
       {
@@ -20,28 +20,28 @@
         "as_given": "Text size: the control is enabled, with Default selected as in the reference, and the line under it says \"Scales the text of the whole app. Small is the size of the designs.\" in place of \"Scales the whole app: Small 87.5 %, Default 100 %, Large 112.5 %.\" (d-122 and d-131). The line has a different length, so on a narrow screen it can take one more or one less text line than the reference, and every section below it then sits that much lower or higher.",
         "status": "as-described",
         "finding": null,
-        "note": "The control is enabled with Default selected. The new line fits on one text line, the same as the reference."
+        "note": "The control is enabled with Default selected, and the new line fits on one text line, as the reference line does."
       },
       {
         "id": "A2",
         "as_given": "A new \"NOTIFICATIONS\" section with one \"Notifications\" switch (off) sits between the Navigation section and the New chat defaults section. So New chat defaults sits lower, or below the bottom edge.",
         "status": "not-seen",
         "finding": null,
-        "note": "The frame ends at the Navigation Home row (about y 1117), so the Notifications section and New chat defaults are both below the bottom edge. This agrees with the description, but the section itself cannot be checked."
+        "note": "The render ends at the first Navigation row (Home), so this section and New chat defaults are below the bottom edge. This agrees with the description, but the section itself is not visible."
       },
       {
         "id": "A3",
         "as_given": "The Notifications switch moved to that section: the desktop rail no longer has the \"Notifications / Blocked in Settings\" switch at its bottom, and the More drawer no longer has the \"Notifications / Blocked in Settings\" row at its end. So the drawer is shorter and its top edge sits lower.",
         "status": "not-seen",
         "finding": null,
-        "note": "This frame shows no rail and no open More drawer."
+        "note": "Neither picture shows a desktop rail or an open More drawer."
       },
       {
         "id": "A4",
         "as_given": "The Navigation list has a new last row, \"Settings\", with the line \"Always shown: in the bar or under More.\" under it and up and down buttons but no switch (the owner's decision: Settings is an entry of the bar order that cannot be hidden). So Toolkit's down button is now enabled, the Navigation card is taller, and every section below it sits lower or below the bottom edge.",
         "status": "not-seen",
         "finding": null,
-        "note": "In the render, only the Home row of Navigation is visible. The Toolkit and Settings rows are below the bottom edge."
+        "note": "Only the Home row of Navigation is visible in the render. The Toolkit and Settings rows are below the bottom edge."
       },
       {
         "id": "A5",
@@ -55,19 +55,19 @@
         "as_given": "Appearance has a new last row, \"Chat width\", under Text size: a three-way control \"Full\", \"Wide\", \"Narrow\" with Full selected, and a line under it. On the desktop and the tablet the control is enabled and the line says \"The messages and the message box of a Workspaces chat, centred.\"; on the phone the control is disabled (muted labels) and the line says \"Phone: always full\". So the Appearance card is taller, and every section below it sits lower (about one row) or below the bottom edge.",
         "status": "as-described",
         "finding": null,
-        "note": "The render shows Chat width with Full selected and the control enabled, and the line reads \"The messages and the message box of a Workspaces chat, centred.\"."
+        "note": "The control is enabled with Full selected, and the line reads \"The messages and the message box of a Workspaces chat, centred.\" The Appearance card ends about 100 px lower than in the reference."
       },
       {
         "id": "A7",
         "as_given": "Rich text: a new \"RICH TEXT\" section sits between Appearance and Navigation, with the line \"Off shows the plain Markdown. No text is hidden.\" and six switches, all on: Callouts, Code highlighting, Chat links (with the line \"Chat bubbles in messages\" under it), Mermaid diagrams, Math and Images (bridge-coord, 2026-11-25, the owner's request). So Navigation and every section below it sit lower, or below the bottom edge.",
         "status": "as-described",
         "finding": null,
-        "note": "The section, its line and the six switches (all on) are present, and Navigation starts lower (about y 1010)."
+        "note": "The section shows the description line and the six switches, all on. The \"Chat bubbles in messages\" line is under Chat links. Navigation starts at about y 983 in the render (about y 433 in the reference)."
       }
     ],
     "limits": [
-      "Because of A6 and A7, the render ends at the Navigation Home row. I could not compare the Navigation rows from Inbox to Toolkit, the Toolkit button states, the Settings row, the Notifications section or the New chat defaults section with the reference.",
-      "The side-by-side image was viewed at about 1x per side. I did not measure differences under 2 px."
+      "The render ends at the Navigation Home row because of the added sections. So I could not compare the Inbox to Toolkit rows, the Notifications section, New chat defaults or the space above the tab bar in T01-render.png with the reference.",
+      "The Rich text section is not in the reference, so I could not compare its type weight or row spacing to a design."
     ]
   }
 }

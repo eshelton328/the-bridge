@@ -1,8 +1,8 @@
 {
   "frameId": "T03",
-  "inputs": "53c3f423bda433117e9ad6be023ec303e61b85e8f44474036101a85715b28e8f",
-  "library": "1.0.0-beta.132",
-  "recordSha256": "4f0d6b66b4d5597d891bfce6b1a3cb7195d8c21753779e12fef8716ceb63c019",
+  "inputs": "16b0649556ec31ced668116b31e2399309f2fbea05ad06e719cde97ac8eadb8c",
+  "library": "1.0.0-beta.133",
+  "recordSha256": "709f900fae31a86b14afafaca83521cc2ca80b1ab571c690a2cc37bccc505c38",
   "record": {
     "verdict": "match",
     "viewport": "1180x820 iPad landscape, Dark (tablet layout)",
@@ -12,7 +12,7 @@
       "render": "reports/fidelity/settings/T03.sideBySide.png",
       "reference_side": "left"
     },
-    "summary": "The render matches the reference apart from the accepted deviations, which show as described or fall below the bottom edge.",
+    "summary": "Apart from the accepted deviations, the render matches the reference.",
     "findings": [],
     "accepted_deviations": [
       {
@@ -20,54 +20,54 @@
         "as_given": "Text size: the control is enabled, with Default selected as in the reference, and the line under it says \"Scales the text of the whole app. Small is the size of the designs.\" in place of \"Scales the whole app: Small 87.5 %, Default 100 %, Large 112.5 %.\" (d-122 and d-131). The line has a different length, so on a narrow screen it can take one more or one less text line than the reference, and every section below it then sits that much lower or higher.",
         "status": "as-described",
         "finding": null,
-        "note": "Text size shows Default selected and the new line on one line, at the same position as the reference line (about y 414)."
+        "note": "Default is selected and the new line fits on one text line, so nothing below it moves."
       },
       {
         "id": "A2",
         "as_given": "A new \"NOTIFICATIONS\" section with one \"Notifications\" switch (off) sits between the Navigation section and the New chat defaults section. So New chat defaults sits lower, or below the bottom edge.",
         "status": "not-seen",
         "finding": null,
-        "note": "The Navigation section and everything after it are below the bottom edge of the render."
+        "note": "Both sections are below the bottom edge in this frame."
       },
       {
         "id": "A3",
         "as_given": "The Notifications switch moved to that section: the desktop rail no longer has the \"Notifications / Blocked in Settings\" switch at its bottom, and the More drawer no longer has the \"Notifications / Blocked in Settings\" row at its end. So the drawer is shorter and its top edge sits lower.",
         "status": "not-seen",
         "finding": null,
-        "note": "The tablet layout has no rail and the More drawer is closed in both pictures."
+        "note": "This tablet frame has no rail and no open More drawer."
       },
       {
         "id": "A4",
         "as_given": "The Navigation list has a new last row, \"Settings\", with the line \"Always shown: in the bar or under More.\" under it and up and down buttons but no switch (the owner's decision: Settings is an entry of the bar order that cannot be hidden). So Toolkit's down button is now enabled, the Navigation card is taller, and every section below it sits lower or below the bottom edge.",
         "status": "not-seen",
         "finding": null,
-        "note": "The Navigation section is below the bottom edge of the render."
+        "note": "The Navigation section is pushed below the bottom edge by A6 and A7."
       },
       {
         "id": "A5",
         "as_given": "On the phone and the tablet only: a thin rule line with the text \"Under More on this device\" under it sits after the last page that the tab bar shows (Projects on the phone, Artifacts on the tablet), so the rows after it sit lower by about 40 px.",
         "status": "not-seen",
         "finding": null,
-        "note": "The Navigation list is below the bottom edge of the render."
+        "note": "The Navigation list is below the bottom edge in this frame."
       },
       {
         "id": "A6",
         "as_given": "Appearance has a new last row, \"Chat width\", under Text size: a three-way control \"Full\", \"Wide\", \"Narrow\" with Full selected, and a line under it. On the desktop and the tablet the control is enabled and the line says \"The messages and the message box of a Workspaces chat, centred.\"; on the phone the control is disabled (muted labels) and the line says \"Phone: always full\". So the Appearance card is taller, and every section below it sits lower (about one row) or below the bottom edge.",
         "status": "as-described",
         "finding": null,
-        "note": "Chat width row appears under Text size, enabled, with Full selected and the tablet line; the Appearance card ends about 100 px lower (y 535 against y 435)."
+        "note": "Chat width is enabled and Full is selected, with the desktop/tablet line. The Appearance card ends at y about 507 where the reference card ends at y about 407. The gap to the next card stays 25 px."
       },
       {
         "id": "A7",
         "as_given": "Rich text: a new \"RICH TEXT\" section sits between Appearance and Navigation, with the line \"Off shows the plain Markdown. No text is hidden.\" and six switches, all on: Callouts, Code highlighting, Chat links (with the line \"Chat bubbles in messages\" under it), Mermaid diagrams, Math and Images (bridge-coord, 2026-11-25, the owner's request). So Navigation and every section below it sit lower, or below the bottom edge.",
         "status": "as-described",
         "finding": null,
-        "note": "RICH TEXT shows its line and Callouts, Code highlighting and Chat links, all on; Chat links' sub-line and the later rows are under the tab bar at the bottom edge, as the reference's Navigation rows are."
+        "note": "Callouts, Code highlighting and Chat links are visible, all on. The rest of the section, including the \"Chat bubbles in messages\" line, is under the tab bar or below the bottom edge."
       }
     ],
     "limits": [
-      "The side-by-side image may be shown scaled down, so differences under about 2 px could not be checked.",
-      "Content below the tab bar (Navigation, Notifications, New chat defaults and the rest of Rich text) is not visible in either picture."
+      "Everything below y about 742 in T03-reference.png and T03-render.png is under the tab bar or past the bottom edge, so I could not compare the Navigation list, the Notifications section or New chat defaults.",
+      "I could not reliably tell small type-weight differences in T03.sideBySide.png, so I used the 1:1 halves to measure."
     ]
   }
 }
