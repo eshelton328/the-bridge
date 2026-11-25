@@ -40,7 +40,6 @@
 // order from the phone's and tablet's edit mode; their line draws under the
 // live notice in every layout, with Dismiss.
 import type { ChatCommandRequest } from '@bridge/contract'
-import { LoadingShell } from '../../../blocks/LoadingShell.tsx'
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
 import { type ReactNode, useLayoutEffect, useRef, useState } from 'react'
 import { reportShellDiagnostic } from '../../../errors/shellDiagnostic.ts'
@@ -72,6 +71,7 @@ import { FolderPickerPane } from '../blocks/FolderPickerPane.tsx'
 import { FoldersControl } from '../blocks/FoldersControl.tsx'
 import { PaneDropZone } from '../blocks/PaneDropZone.tsx'
 import { SideChatPanel } from '../blocks/SideChatPanel.tsx'
+import { ChatSkeleton } from '../blocks/ChatSkeleton.tsx'
 import { WorkspaceSidebar } from '../blocks/WorkspaceSidebar.tsx'
 import { WorkspaceTabs } from '../blocks/WorkspaceTabs.tsx'
 import type { CopyReply } from '../blocks/ChatEntryView.tsx'
@@ -482,18 +482,6 @@ function WorkspacesLayout({
         loading={loading}
       />
     )
-  // The desktop waits for its first list with the shell and lines (the sidebar and chat skeleton come next, R58).
-  if (loading === true)
-    return (
-      <LoadingShell
-        selected="workspaces"
-        label="Loading Workspaces"
-        navPages={navPages}
-        settings={settingsEntry}
-        viewport="desktop"
-        onNavigate={onNavigate}
-      />
-    )
   // The shown workspace (R6): a tab the owner picked shows its own panes, so the focused chat, the chats the sidebar can
   // open and the chat actions' targets come from its panes, not the state's.
   const shown = shownView(named, ui).data
@@ -516,6 +504,29 @@ function WorkspacesLayout({
       />
     </div>
   )
+  // The desktop waits for its first list with its own layout (R58): the sidebar with workspaces that load and the
+  // focused chat's skeleton (D2b), as the page opens on its focused chat. Only the rail does anything.
+  if (loading === true && data.sidebar !== undefined)
+    return (
+      <Backdrop size={viewport}>
+        <AppShell
+          onDiagnostic={reportShellDiagnostic}
+          size="desktop"
+          listWidth="sidebar"
+          rail={rail}
+          list={
+            <SlotBoundary contentKey="sidebar">
+              <WorkspaceSidebar text={data.sidebar} workspaces={[]} selected="" openable={[]} ui={ui} loading />
+            </SlotBoundary>
+          }
+          detail={
+            <SlotBoundary contentKey="loading">
+              <ChatSkeleton label="Loading this chat" composer="Loading…" />
+            </SlotBoundary>
+          }
+        />
+      </Backdrop>
+    )
   // The focused pane when it is a chat: only a chat can show alone. Beside the workbench any pane can be focused.
   const focused = shown.panes.find((p) => p.id === ui.focusedPane)
   const chat = focused?.type === 'chat' ? focused : undefined

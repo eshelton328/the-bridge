@@ -2,7 +2,7 @@ import '@fontsource-variable/geist'
 import '@fontsource-variable/geist-mono'
 import '../index.css'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
 import { clearReports, getReports } from '../errors/reporter.ts'
 import { fakeTranscriptServer } from '../lib/fakeTranscriptServer.ts'
@@ -12,6 +12,7 @@ import { queryClient } from '../lib/queryClient.ts'
 import { afterRendering, setViewport } from '../lib/rendering.ts'
 import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
+import { markApp } from './appMarker.ts'
 import { stubLiveServer } from './liveServerStub.ts'
 import { routeTree } from './routeTree.gen.ts'
 import { fitGaps, fitRects } from './skeletonFit.ts'
@@ -138,4 +139,46 @@ describe('the Workspaces skeleton (R58)', () => {
           expect(Math.abs((now[i]?.[side] ?? Number.NaN) - was[side])).toBeLessThanOrEqual(2)
       expect(getReports()).toEqual([])
     })
+
+  // R58 step 4b: the desktop opens on its focused chat beside the sidebar (D2b), so it waits with both: the sidebar's
+  // workspaces that load and the chat's skeleton, with the header's rows and the chat's composer off.
+  it("draws the desktop's sidebar and chat while it loads, and the loaded blocks land within 2 px", async () => {
+    const server = withHeldList()
+    await setViewport(1512, 982)
+    const router = createRouter({ routeTree, history: createMemoryHistory({ initialEntries: ['/'] }) })
+    const before = new Set(document.body.children)
+    view = await testRender(<RouterProvider router={router} />)
+    // The app gets the window's height, as main.ts gives it, so the chat is the window's height, not its content's, and
+    // its composer sits at the window's foot.
+    const container = [...document.body.children].find((child) => !before.has(child))
+    if (container === undefined) throw new Error('no view container')
+    container.id = 'root'
+    onTestFinished(markApp())
+    onTestFinished(() => {
+      container.removeAttribute('id')
+    })
+    await userEvent.click(page.getByRole('button', { name: 'Workspaces', exact: true }))
+    await expect.poll(() => router.state.location.pathname).toBe('/workspaces')
+    await expect.element(page.getByRole('status', { name: 'Loading Workspaces' })).toBeInTheDocument()
+    await expect.element(page.getByRole('status', { name: 'Loading this chat' })).toBeInTheDocument()
+    // No text lines of the generic shell: the sidebar and the chat draw their own layout.
+    expect(document.querySelector('[data-loading="page"]')).toBeNull()
+    await expect.element(page.getByRole('button', { name: 'New workspace', exact: true })).toBeDisabled()
+    await expect.element(page.getByText('the-bridge', { exact: true })).not.toBeInTheDocument()
+    await afterRendering()
+    const skeleton = fitRects()
+    for (const block of ['group', 'items.0', 'items.1', 'chatHead']) expect(skeleton.has(block)).toBe(true)
+    const composer = page.getByRole('textbox').element().getBoundingClientRect()
+    server.release()
+    await expect.element(page.getByRole('heading', { name: 'sketch the plan', level: 2 })).toBeVisible()
+    await expect.element(page.getByRole('status', { name: 'Loading Workspaces' })).not.toBeInTheDocument()
+    await expect.element(page.getByRole('button', { name: 'New workspace', exact: true })).toBeEnabled()
+    await afterRendering()
+    expect(fitGaps(skeleton, fitRects())).toEqual([])
+    // The composer is the chat's own: it keeps its box when the chat comes.
+    const now = page.getByRole('textbox').element().getBoundingClientRect()
+    for (const side of ['top', 'left', 'width', 'height'] as const)
+      expect(Math.abs(now[side] - composer[side])).toBeLessThanOrEqual(2)
+    expect(getReports()).toEqual([])
+  })
 })

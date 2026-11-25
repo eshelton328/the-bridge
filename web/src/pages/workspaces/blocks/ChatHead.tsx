@@ -116,6 +116,7 @@ export function ChatHead(props: ChatHeadProps) {
   return (
     <header
       data-figma={figma?.head ?? '105:785'}
+      data-fit="chatHead"
       className={cx(head, meta === undefined ? cx(sizes[size], twoRows) : oneRow)}
     >
       <div className={back === undefined ? rows : withBack}>

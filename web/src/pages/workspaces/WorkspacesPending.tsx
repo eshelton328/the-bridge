@@ -1,7 +1,7 @@
 // The Workspaces page while its route loads (R58, the loading standard): the page's real layout at once, after the
 // router's pendingMs (app/router.ts). On the phone and the tablet the list draws its header with Edit and + off and
-// workspaces that load in the groups' place; the desktop still draws the shell with lines. It reads the nav order and
-// the Inbox badge like the page entry; only More and the nav do anything.
+// workspaces that load in the groups' place; the desktop draws the sidebar the same way, beside the focused chat's
+// skeleton. It reads the nav order and the Inbox badge like the page entry; only More and the nav do anything.
 import { useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 import { useInboxBadge } from '../../lib/inboxFeed.ts'
