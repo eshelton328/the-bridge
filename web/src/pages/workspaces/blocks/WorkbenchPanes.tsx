@@ -304,6 +304,7 @@ export function WorkbenchPanes({
             chatWidth={chatWidth}
             onCopy={onCopy}
             earlier={pane.earlier}
+            earlierLoad={pane.earlierLoad}
             empty={
               pane.empty === undefined ? undefined : { kind: pane.head.kind, title: pane.head.title, text: pane.empty }
             }

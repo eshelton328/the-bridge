@@ -84,8 +84,8 @@ const transcript = (tag: string, count: number): TranscriptEntry[] =>
       : { type: 'assistant', id: `${tag}-a${String(i)}`, text: markdown(i), cut: false },
   )
 
-/** Stubs the server with `count` entries in each chat's transcript; returns the transcript fake. */
-export function stubLongChats(count: number) {
+/** Stubs `count` entries in each chat's transcript; returns the fake. `paging` gives it each read's query, else 500. */
+export function stubLongChats(count: number, paging = false) {
   const server = fakeTranscriptServer()
   server.set(plan, transcript('plan', count))
   server.set(review, transcript('review', count))
@@ -93,8 +93,8 @@ export function stubLongChats(count: number) {
     'fetch',
     vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
-      const path = new URL(url, window.location.origin).pathname
-      const answer = server.handle(path, init)
+      const { pathname: path, search } = new URL(url, window.location.origin)
+      const answer = server.handle(paging ? path + search : path, init)
       if (answer !== undefined) return Promise.resolve(answer)
       if (path === '/api/workspaces')
         return Promise.resolve(

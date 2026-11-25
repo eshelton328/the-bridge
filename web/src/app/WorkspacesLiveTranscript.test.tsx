@@ -96,8 +96,8 @@ function fakeServer(transcripts: FakeTranscriptServer) {
     'fetch',
     vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
-      const path = new URL(url, window.location.origin).pathname
-      const transcript = transcripts.handle(path, init)
+      const { pathname: path, search } = new URL(url, window.location.origin)
+      const transcript = transcripts.handle(path + search, init)
       if (transcript !== undefined) return Promise.resolve(transcript)
       if (path === '/api/workspaces')
         return Promise.resolve(
@@ -443,7 +443,7 @@ describe("a live chat's transcript (slice 3b)", () => {
       expect(getReports()).toEqual([])
     })
 
-  it('shows the earlier line and the cut line', async () => {
+  it('shows the earlier line once the server has no older page, and the cut line', async () => {
     const server = fakeTranscriptServer()
     server.set(plan, [reply('a1', 'A very long reply', true)], true)
     fakeServer(server)

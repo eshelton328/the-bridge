@@ -92,12 +92,20 @@ const seekLimitMs = 1200
 /** The attribute on the button's slot in the scroller: a change inside it is not an entry, a press in it not the reader's. */
 export const newestSlot = 'data-newest-slot'
 
+const scrollIdleMs = 150
+
+/** The longest, in ms, an older page waits for a finger that rests: WebKit can skip a touchend when the touched node goes. */
+const touchHoldMs = 3000
 const fromEnd = (el: HTMLElement) => el.scrollHeight - el.scrollTop - el.clientHeight
 const atEnd = (el: HTMLElement) => fromEnd(el) <= endSlack
 const toEnd = (el: HTMLElement) => {
   el.scrollTop = el.scrollHeight
 }
-const ours = (node: EventTarget | Node | null) => node instanceof Element && node.closest(`[${newestSlot}]`) !== null
+/** The attribute on the line that loads older entries (`EarlierLine`): no entry, so the place holds by those under it. */
+export const earlierSlot = 'data-earlier-slot'
+
+const ours = (node: EventTarget | Node | null) =>
+  node instanceof Element && node.closest(`[${newestSlot}], [${earlierSlot}]`) !== null
 const reducedMotion = () =>
   typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
@@ -159,12 +167,34 @@ export function usePinnedEnd(
   enabled: boolean,
   key: string,
   last: unknown,
-): { ref: (el: HTMLElement | null) => void; newest: Newest } {
+): { ref: (el: HTMLElement | null) => void; newest: Newest; idle: () => Promise<void> } {
   const [frame, setFrame] = useState<{ scroller: HTMLElement; footer: HTMLElement } | null>(null)
   const scroller = frame?.scroller ?? null
   const footer = frame?.footer ?? null
   const [newest] = useState(newestStore)
   const pinnedRef = useRef(true)
+  // The last scroll event: an older page waits for `idle` (no scroll for `scrollIdleMs`), as iOS drops the pin's
+  // scroll write during its momentum scroll, and the reader would land a page away (the #491 Simulator run).
+  const scrolledRef = useRef(Number.NEGATIVE_INFINITY)
+  // A finger on the transcript: the page also waits while it is down, as a held finger moves nothing and gives no
+  // scroll event, but iOS would drop the pin's write when it moves again. Its lift starts the 150 ms again. The time
+  // it went down; null with no finger down.
+  const touchDownRef = useRef<number | null>(null)
+  const idle = useCallback(
+    () =>
+      new Promise<void>((resolve) => {
+        const check = () => {
+          const now = performance.now()
+          const down = touchDownRef.current
+          const held = down === null ? 0 : down + touchHoldMs - now
+          const left = held > 0 ? Math.min(held, scrollIdleMs) : scrolledRef.current + scrollIdleMs - now
+          if (left <= 0) resolve()
+          else setTimeout(check, left)
+        }
+        check()
+      }),
+    [],
+  )
   // Marks new entries while the reader is away; set while the pin runs.
   const cameRef = useRef<(() => void) | undefined>(undefined)
   const ref = useCallback((el: HTMLElement | null) => {
@@ -177,6 +207,7 @@ export function usePinnedEnd(
   useLayoutEffect(() => {
     if (!enabled || scroller === null || footer === null) return undefined
     pinnedRef.current = true
+    touchDownRef.current = null
     const view = scroller.ownerDocument.defaultView ?? window
     // The reader's input: a finger that moves on the transcript, a mouse button down in it, and the time of the
     // last wheel turn, scroll key, lifted finger or focus move into the transcript.
@@ -269,6 +300,7 @@ export function usePinnedEnd(
       placeScroll += moved
     }
     const onScroll = () => {
+      scrolledRef.current = performance.now()
       if (atEnd(scroller)) {
         endTop = scroller.scrollTop
         pinnedRef.current = true
@@ -288,7 +320,14 @@ export function usePinnedEnd(
     const onTouchMove = () => {
       reader.touching = true
     }
+    const onTouchStart = () => {
+      touchDownRef.current = performance.now()
+    }
     const onTouchEnd = () => {
+      if (touchDownRef.current !== null) {
+        touchDownRef.current = null
+        scrolledRef.current = performance.now()
+      }
       if (!reader.touching) return
       reader.touching = false
       readerInput()
@@ -345,7 +384,13 @@ export function usePinnedEnd(
       if (real.length === 0) return
       if (real.some((r) => r.target === scroller && [...r.addedNodes, ...r.removedNodes].some((n) => !ours(n))))
         layoutMoved()
-      if (!pinnedRef.current && real.some((r) => r.target === scroller && [...r.addedNodes].some((n) => !ours(n))))
+      // An older page that lands above the reader's place dots nothing.
+      const above = (n: Node) =>
+        ((place[0]?.entry.compareDocumentPosition(n) ?? 0) & Node.DOCUMENT_POSITION_PRECEDING) > 0
+      if (
+        !pinnedRef.current &&
+        real.some((r) => r.target === scroller && [...r.addedNodes].some((n) => !ours(n) && !above(n)))
+      )
         unseen = true
       observeAll()
       // An entry that comes in while the button's scroll runs moves its goal to the new end.
@@ -392,6 +437,7 @@ export function usePinnedEnd(
     mutation.observe(scroller, { childList: true, subtree: true, characterData: true })
     const passive = { passive: true } as const
     scroller.addEventListener('scroll', onScroll, passive)
+    scroller.addEventListener('touchstart', onTouchStart, passive)
     scroller.addEventListener('touchmove', onTouchMove, passive)
     scroller.addEventListener('wheel', onReader, passive)
     scroller.addEventListener('focusin', onFocusIn)
@@ -414,6 +460,9 @@ export function usePinnedEnd(
       cameRef.current = undefined
       newest.set(hidden)
       scroller.removeEventListener('scroll', onScroll)
+      // A finger that rests as the transcript unmounts gives no touchend here: the wait must not outlive it.
+      touchDownRef.current = null
+      scroller.removeEventListener('touchstart', onTouchStart)
       scroller.removeEventListener('touchmove', onTouchMove)
       scroller.removeEventListener('wheel', onReader)
       scroller.removeEventListener('focusin', onFocusIn)
@@ -435,5 +484,5 @@ export function usePinnedEnd(
   useLayoutEffect(() => {
     cameRef.current?.()
   }, [last])
-  return { ref, newest }
+  return { ref, newest, idle }
 }

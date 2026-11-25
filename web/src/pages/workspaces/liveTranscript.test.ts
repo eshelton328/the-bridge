@@ -12,6 +12,7 @@ import { type FakeTranscriptServer, fakeTranscriptServer } from '../../lib/fakeT
 import { workbench } from './states/workbench.ts'
 import {
   chatEntryOf,
+  loadEarlier,
   mergeEntries,
   retryTranscript,
   transcriptText,
@@ -42,9 +43,9 @@ function stubFetch(server: FakeTranscriptServer, readDelayMs: number) {
     'fetch',
     vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
-      const path = new URL(url, window.location.origin).pathname
+      const { pathname: path, search } = new URL(url, window.location.origin)
       if (readDelayMs > 0 && !path.endsWith('/events')) await settle(readDelayMs)
-      const answer = server.handle(path, init)
+      const answer = server.handle(path + search, init)
       if (answer === undefined) throw new TypeError(`no stub for ${url}`)
       return answer
     }),
@@ -131,12 +132,12 @@ describe('watchTranscript', () => {
     server.set(chat, all)
     watch(server, 60)
     await expect.poll(() => server.openStreams()).toEqual([chat])
-    // While the read runs, an old entry (cut from the read's last 500) and a kept one change.
-    server.push(chat, [user('u0', 'old, changed'), user('u400', 'kept, changed')])
+    // While the read runs, an old entry (cut from the read's page, the last 100) and a kept one change.
+    server.push(chat, [user('u0', 'old, changed'), user('u450', 'kept, changed')])
     await expect.poll(() => view()?.loaded).toBe(true)
-    await expect.poll(() => view()?.entries.find((e) => e.id === 'u400')).toEqual(user('u400', 'kept, changed'))
-    expect(ids()).toHaveLength(500)
-    expect(ids()?.[0]).toBe('u1')
+    await expect.poll(() => view()?.entries.find((e) => e.id === 'u450')).toEqual(user('u450', 'kept, changed'))
+    expect(ids()).toHaveLength(100)
+    expect(ids()?.[0]).toBe('u401')
     expect(ids()?.at(-1)).toBe('u500')
     expect(ids()).not.toContain('u0')
     expect(view()?.earlier).toBe(true)
@@ -361,22 +362,22 @@ describe('watchTranscript', () => {
     )
     watch(server)
     await expect.poll(() => view()?.loaded).toBe(true)
-    // u3 is before the 500 the read gave: a tool call that ended long after it started, say.
+    // u3 is before the page the read gave: a tool call that ended long after it started, say.
     server.push(chat, [user('u3', 'changed'), user('new', 'go')])
     await expect.poll(() => ids()?.at(-1)).toBe('new')
     server.push(chat, [user('u4', 'changed')])
     await settle()
-    expect(ids()).toHaveLength(500)
+    expect(ids()).toHaveLength(101)
     expect(ids()?.slice(-2)).toEqual(['u599', 'new'])
   })
 
-  it('marks a transcript with earlier entries and keeps it marked once the cap drops one', async () => {
+  it('marks a transcript with earlier entries with the line that loads them', async () => {
     const server = fakeTranscriptServer()
     server.set(chat, [user('u1', 'go')], true)
     watch(server)
     await expect.poll(() => view()?.earlier).toBe(true)
     const data = withTranscripts(liveData(), transcriptViews())
-    expect(chatPane(data)?.earlier).toBe('Earlier entries not live yet')
+    expect(chatPane(data)).toMatchObject({ earlier: 'Loading earlier entries', earlierLoad: 'more' })
   })
 
   it('shows a cut message or reply with the cut line, and the agent name and Copy from the chat', () => {
@@ -693,3 +694,112 @@ const chatPane = (data: ReturnType<typeof withTranscripts>) => {
   const found = data.panes.find((p) => p.type === 'chat' && p.liveChat === chat)
   return found?.type === 'chat' ? found : undefined
 }
+
+describe('paging', () => {
+  const many = (count: number, tag = 'e') => Array.from({ length: count }, (_, i) => user(`${tag}${String(i)}`, 'go'))
+  const loaded = (count: number) => expect.poll(() => view()?.entries.length).toBe(count)
+  const pane = () => chatPane(withTranscripts(liveData(), transcriptViews()))
+
+  it('puts a change that came while the older page waited for the scroll to rest into that page', async () => {
+    const server = fakeTranscriptServer()
+    server.set(chat, many(150))
+    watch(server)
+    await loaded(100)
+    let rest: (() => void) | undefined
+    loadEarlier(chat, () => new Promise<void>((resolve) => (rest = resolve)))
+    await expect.poll(() => rest).toBeDefined()
+    server.push(chat, [user('e10', 'done')])
+    await settle()
+    expect(view()?.entries).toHaveLength(100)
+    rest?.()
+    await loaded(150)
+    expect(view()?.entries[10]).toEqual(user('e10', 'done'))
+  })
+
+  it('reads the newest page only, then each page before the first entry, until the first one', async () => {
+    const server = fakeTranscriptServer()
+    server.set(chat, many(250))
+    watch(server)
+    await loaded(100)
+    expect(server.readQueries).toEqual([{ limit: '100' }])
+    loadEarlier(chat)
+    loadEarlier(chat)
+    await loaded(200)
+    expect(ids()?.slice(0, 2)).toEqual(['e50', 'e51'])
+    expect(view()?.earlier).toBe(true)
+    loadEarlier(chat)
+    await loaded(250)
+    expect(view()?.earlier).toBe(false)
+    loadEarlier(chat)
+    await settle()
+    expect(server.readQueries).toEqual([
+      { limit: '100' },
+      { limit: '100', before: 'e150' },
+      { limit: '100', before: 'e50' },
+    ])
+  })
+
+  it('reads as many entries as the view holds again, so a loaded page comes fresh through a reconnect', async () => {
+    const server = fakeTranscriptServer()
+    server.set(chat, many(250))
+    watch(server)
+    await loaded(100)
+    loadEarlier(chat)
+    await loaded(200)
+    // An older entry changed while the page heard nothing, such as a tool call that ended.
+    server.set(
+      chat,
+      many(250).map((e) => (e.id === 'e60' ? user('e60', 'changed') : e)),
+    )
+    retryTranscript(chat)
+    await expect.poll(() => view()?.entries.find((e) => e.id === 'e60')).toEqual(user('e60', 'changed'))
+    expect(server.readQueries.at(-1)).toEqual({ limit: '200' })
+    expect(ids()?.[0]).toBe('e50')
+  })
+
+  it('reads the newest page again in place of the view when the first entry is gone (409 entryNotFound)', async () => {
+    const server = fakeTranscriptServer()
+    server.set(chat, many(250))
+    watch(server)
+    await loaded(100)
+    server.set(chat, many(150, 'n'))
+    loadEarlier(chat)
+    await expect.poll(() => ids()?.[0]).toBe('n50')
+    expect(view()?.entries).toHaveLength(100)
+    expect(getReports()).toEqual([])
+  })
+
+  it('shows a missed read of an older page as its line, and its Retry reads it', async () => {
+    const server = fakeTranscriptServer()
+    server.set(chat, many(150))
+    watch(server)
+    await loaded(100)
+    server.answerReads(herdrDown)
+    loadEarlier(chat)
+    const line = { earlier: 'Earlier entries not loaded — herdr-unavailable', earlierLoad: 'missed' }
+    await expect.poll(pane).toMatchObject(line)
+    server.answerReads(undefined)
+    loadEarlier(chat)
+    await loaded(150)
+    expect(view()?.earlier).toBe(false)
+  })
+
+  it('loads older pages up to the 500 cap only, and then live entries drop the oldest', async () => {
+    const server = fakeTranscriptServer()
+    server.set(chat, many(700))
+    watch(server)
+    await loaded(100)
+    for (let n = 200; n <= 500; n += 100) {
+      loadEarlier(chat)
+      await loaded(n)
+    }
+    expect(pane()).toMatchObject({ earlier: 'Earlier entries not live yet' })
+    loadEarlier(chat)
+    await settle()
+    expect(server.readQueries).toHaveLength(5)
+    server.push(chat, [user('fresh', 'go')])
+    await expect.poll(() => ids()?.at(-1)).toBe('fresh')
+    expect(view()?.entries).toHaveLength(500)
+    expect(ids()?.[0]).toBe('e201')
+  })
+})

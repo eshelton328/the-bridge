@@ -4,6 +4,7 @@ import { page, userEvent } from 'vitest/browser'
 import { clearReports, getReports } from '../errors/reporter.ts'
 import { resetRetries } from '../errors/retryGuard.ts'
 import { queryClient } from '../lib/queryClient.ts'
+import { toolCall } from '../lib/fakeTranscriptServer.ts'
 import { afterRendering, setViewport } from '../lib/rendering.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { markdownShown, openWorkspaces, stubLongChats } from './longLiveChat.ts'
@@ -116,6 +117,172 @@ async function openLongChat() {
   await expect.poll(() => server.openStreams()).toContain(plan)
   return { server, chat: page.getByRole('region', { name: title }).element() }
 }
+
+describe('a long live chat reads its transcript a page at a time', () => {
+  it('reads one page on open; at the top it puts the older page above, renders no shown entry again and keeps the place, on the phone', async () => {
+    const server = stubLongChats(count, true)
+    view = await openWorkspaces([390, 844])
+    await userEvent.click(page.getByText(title, { exact: true }).first())
+    await markdownShown(100)
+    expect(server.readQueries).toEqual([{ limit: '100' }])
+    const chat = page.getByRole('region', { name: title }).element()
+    const scroller = chat.querySelector('.scroll-frame__body')
+    const first = scroller?.querySelector('article')
+    if (!(scroller instanceof HTMLElement) || !(first instanceof HTMLElement)) throw new Error('no transcript')
+    const before = entryProps(chat)
+    const offset = () => first.getBoundingClientRect().top - scroller.getBoundingClientRect().top
+    // The reader scrolls to the top: a wheel turn makes the scroll theirs, and the earlier line comes into view.
+    scroller.dispatchEvent(new WheelEvent('wheel', { bubbles: true }))
+    scroller.scrollTop = 0
+    const top = offset()
+    await markdownShown(200)
+    await afterRendering()
+    expect(server.readQueries).toEqual([{ limit: '100' }, { limit: '100', before: 'plan-u500' }])
+    expect(first.isConnected).toBe(true)
+    expect(Math.abs(offset() - top)).toBeLessThanOrEqual(1)
+    expect(renderedAgain(before, entryProps(chat))).toEqual([])
+    // A reconnect reads the 200 the view holds again, and the reader keeps the place.
+    server.drop(plan)
+    await expect.poll(() => server.readQueries.at(-1)).toEqual({ limit: '200' })
+    await afterRendering()
+    expect(Math.abs(offset() - top)).toBeLessThanOrEqual(1)
+    expect(getReports()).toEqual([])
+  })
+
+  it('holds an older page that answers while the reader scrolls, and puts it in once the scroll rests, on the phone', async () => {
+    const server = stubLongChats(count, true)
+    view = await openWorkspaces([390, 844])
+    await userEvent.click(page.getByText(title, { exact: true }).first())
+    await markdownShown(100)
+    const chat = page.getByRole('region', { name: title }).element()
+    const scroller = chat.querySelector('.scroll-frame__body')
+    const first = scroller?.querySelector('article')
+    if (!(scroller instanceof HTMLElement) || !(first instanceof HTMLElement)) throw new Error('no transcript')
+    const offset = () => first.getBoundingClientRect().top - scroller.getBoundingClientRect().top
+    scroller.dispatchEvent(new WheelEvent('wheel', { bubbles: true }))
+    scroller.scrollTop = 0
+    const top = offset()
+    // iOS's momentum scroll goes on after the read answers: scroll events every 40 ms for 600 ms.
+    const shown = () => chat.querySelectorAll('.markdown-view').length
+    for (let i = 0; i < 15; i += 1) {
+      scroller.dispatchEvent(new Event('scroll'))
+      await new Promise((resolve) => setTimeout(resolve, 40))
+    }
+    expect(server.readQueries).toEqual([{ limit: '100' }, { limit: '100', before: 'plan-u500' }])
+    expect(shown()).toBe(100)
+    await markdownShown(200)
+    await afterRendering()
+    expect(Math.abs(offset() - top)).toBeLessThanOrEqual(1)
+    expect(server.readQueries).toHaveLength(2)
+  })
+
+  it('holds an older page while a finger rests on the transcript, and puts it in 150 ms after the lift, on the phone', async () => {
+    const server = stubLongChats(count, true)
+    view = await openWorkspaces([390, 844])
+    await userEvent.click(page.getByText(title, { exact: true }).first())
+    await markdownShown(100)
+    const chat = page.getByRole('region', { name: title }).element()
+    const scroller = chat.querySelector('.scroll-frame__body')
+    const first = scroller?.querySelector('article')
+    if (!(scroller instanceof HTMLElement) || !(first instanceof HTMLElement)) throw new Error('no transcript')
+    const offset = () => first.getBoundingClientRect().top - scroller.getBoundingClientRect().top
+    // A slow drag up that ends with the finger held still: no scroll event while it rests.
+    scroller.dispatchEvent(new TouchEvent('touchstart', { bubbles: true }))
+    scroller.dispatchEvent(new TouchEvent('touchmove', { bubbles: true }))
+    scroller.scrollTop = 0
+    const top = offset()
+    const shown = () => chat.querySelectorAll('.markdown-view').length
+    await new Promise((resolve) => setTimeout(resolve, 600))
+    expect(server.readQueries).toEqual([{ limit: '100' }, { limit: '100', before: 'plan-u500' }])
+    expect(shown()).toBe(100)
+    scroller.dispatchEvent(new TouchEvent('touchend', { bubbles: true }))
+    await new Promise((resolve) => setTimeout(resolve, 60))
+    expect(shown()).toBe(100)
+    await markdownShown(200)
+    await afterRendering()
+    expect(Math.abs(offset() - top)).toBeLessThanOrEqual(1)
+    expect(server.readQueries).toHaveLength(2)
+  })
+
+  it('puts an older page in 3 s after a finger came down when no touchend comes, on the phone', async () => {
+    const server = stubLongChats(count, true)
+    view = await openWorkspaces([390, 844])
+    await userEvent.click(page.getByText(title, { exact: true }).first())
+    await markdownShown(100)
+    const chat = page.getByRole('region', { name: title }).element()
+    const scroller = chat.querySelector('.scroll-frame__body')
+    if (!(scroller instanceof HTMLElement)) throw new Error('no transcript')
+    const shown = () => chat.querySelectorAll('.markdown-view').length
+    const down = performance.now()
+    scroller.dispatchEvent(new TouchEvent('touchstart', { bubbles: true }))
+    scroller.dispatchEvent(new TouchEvent('touchmove', { bubbles: true }))
+    scroller.scrollTop = 0
+    await expect.poll(() => server.readQueries.length).toBe(2)
+    await new Promise((resolve) => setTimeout(resolve, Math.max(0, down + 2500 - performance.now())))
+    expect(shown()).toBe(100)
+    await expect.poll(shown, { timeout: 1500, interval: 50 }).toBe(200)
+    expect(performance.now() - down).toBeLessThan(4000)
+  })
+
+  it('loads the next older page after the chat closed under a resting finger, on the phone', async () => {
+    const server = stubLongChats(count, true)
+    view = await openWorkspaces([390, 844])
+    const transcript = async () => {
+      await userEvent.click(page.getByText(title, { exact: true }).first())
+      const scroller = page.getByRole('region', { name: title }).element().querySelector('.scroll-frame__body')
+      if (!(scroller instanceof HTMLElement)) throw new Error('no transcript')
+      return scroller
+    }
+    const scroller = await transcript()
+    await markdownShown(100)
+    scroller.dispatchEvent(new TouchEvent('touchstart', { bubbles: true }))
+    scroller.dispatchEvent(new TouchEvent('touchmove', { bubbles: true }))
+    scroller.scrollTop = 0
+    await expect.poll(() => server.readQueries.length).toBe(2)
+    // Back to the list while the finger still rests: the transcript unmounts with no touchend.
+    await userEvent.click(page.getByRole('button', { name: 'Back to Workspaces' }).first())
+    const again = await transcript()
+    await markdownShown(100)
+    again.dispatchEvent(new WheelEvent('wheel', { bubbles: true }))
+    again.scrollTop = 0
+    // Well before the 3 s cap: the chat reads its older page again, and it goes in.
+    await expect
+      .poll(() => [server.readQueries.length, document.querySelectorAll('.markdown-view').length], {
+        timeout: 1500,
+        interval: 50,
+      })
+      .toEqual([4, 200])
+  })
+
+  it('stays at the end when a short chat at its end loads the older page by itself, on the phone', async () => {
+    const server = stubLongChats(count, true)
+    // 99 tool calls draw as one group row, so the newest page does not fill the screen and the earlier line is in view.
+    const calls = Array.from({ length: 99 }, (_, i) =>
+      toolCall(`t${String(i)}`, 'Read', { kind: 'read', title: 'Read' }),
+    )
+    const older = Array.from(
+      { length: 50 },
+      (_, i): TranscriptEntry => ({ type: 'user', id: `q${String(i)}`, text: 'go', cut: false }),
+    )
+    server.set(plan, [...older, ...calls, { type: 'assistant', id: 'end', text: 'done', cut: false }])
+    view = await openWorkspaces([390, 844])
+    await userEvent.click(page.getByText(title, { exact: true }).first())
+    await expect.poll(() => server.readQueries).toEqual([{ limit: '100' }, { limit: '100', before: 't0' }])
+    await markdownShown(51)
+    await afterRendering()
+    const scroller = page.getByRole('region', { name: title }).element().querySelector('.scroll-frame__body')
+    if (!(scroller instanceof HTMLElement)) throw new Error('no transcript')
+    expect(scroller.scrollHeight).toBeGreaterThan(scroller.clientHeight * 2)
+    expect(scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight).toBeLessThanOrEqual(1)
+    expect(page.getByRole('button', { name: 'Scroll to the newest message' }).query()).toBeNull()
+    // A reconnect reads the view's 150 again, and the chat stays at its end.
+    server.drop(plan)
+    await expect.poll(() => server.readQueries.at(-1)).toEqual({ limit: '150' })
+    await afterRendering()
+    expect(scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight).toBeLessThanOrEqual(1)
+    expect(getReports()).toEqual([])
+  })
+})
 
 const reply = (id: string, text: string, replacedBy?: string): TranscriptEntry => ({
   type: 'assistant',

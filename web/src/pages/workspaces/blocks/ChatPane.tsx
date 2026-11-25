@@ -84,6 +84,7 @@ import { type ChatDialog, hasOpenQuestion } from './chatDialog.ts'
 import { ComposerLine } from './ComposerLine.tsx'
 import { DialogCard } from './DialogCard.tsx'
 import { type DraftBook, restoredDraft, useDraft } from './draftBook.ts'
+import { EarlierLine } from './EarlierLine.tsx'
 import { NewestButton } from './NewestButton.tsx'
 import { NotLive } from './NotLive.tsx'
 import { PendingEntry } from './PendingEntry.tsx'
@@ -181,6 +182,8 @@ export type TranscriptWatch = {
   readonly watch: (chat: string) => () => void
   /** Reads `chat`'s transcript again now: the problem line's Retry. */
   readonly retry: (chat: string) => void
+  /** Reads the page before `chat`'s first entry: the earlier line in view, or its Retry; no paging when not set. */
+  readonly older?: ((chat: string, idle: () => Promise<void>) => void) | undefined
 }
 
 const body = css({
@@ -314,6 +317,8 @@ type ChatPaneBase = {
   onCopy?: CopyReply | undefined
   /** The line over the entries, such as "Earlier entries not live yet"; none when not set. */
   earlier?: string | undefined
+  /** A live chat's earlier line loads older entries (`EarlierLine`): `more`, or `missed` with Retry; plain when not set. */
+  earlierLoad?: 'more' | 'missed' | undefined
   /**
    * A read transcript with no entries (R68): its kind mark, its name and one line, such as "Send a message to start.",
    * centred in the transcript (`ChatEmpty`); none when not set.
@@ -411,6 +416,7 @@ export function ChatPane(props: ChatPaneProps) {
     chatWidth,
     onCopy,
     earlier,
+    earlierLoad,
     empty,
     problem,
     loading,
@@ -505,7 +511,11 @@ export function ChatPane(props: ChatPaneProps) {
   )
   // A live chat opens at its newest entry and follows new ones while the reader is at the end.
   const following = liveChat !== undefined || follows === true
-  const { ref: pinRef, newest } = usePinnedEnd(following, chatId, entries.at(-1))
+  const { ref: pinRef, newest, idle } = usePinnedEnd(following, chatId, entries.at(-1))
+  const older = transcripts?.older
+  const onOlder = useCallback(() => {
+    if (liveChat !== undefined) older?.(liveChat, idle)
+  }, [liveChat, older, idle])
   const label = props.label
   const footerRef = useCallback(
     (el: HTMLDivElement | null) => {
@@ -772,7 +782,11 @@ export function ChatPane(props: ChatPaneProps) {
       <>
         {loading === undefined ? (
           <>
-            {earlier === undefined ? null : <span className={earlierLine}>{earlier}</span>}
+            {earlier === undefined ? null : earlierLoad === undefined || older === undefined ? (
+              <span className={earlierLine}>{earlier}</span>
+            ) : (
+              <EarlierLine text={earlier} missed={earlierLoad === 'missed'} onLoad={onOlder} shown={entries.length} />
+            )}
             {empty === undefined || pendingViews.length > 0 ? null : <ChatEmpty {...empty} />}
             <TranscriptEntries
               chatId={chatId}

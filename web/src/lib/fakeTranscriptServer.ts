@@ -160,6 +160,8 @@ export function fakeTranscriptServer({ streams: mode = 'open', uploads: uploadOp
   const open: Stream[] = []
   /** The chat IDs of each transcript read, in order. */
   const reads: string[] = []
+  /** The query of each transcript read, in order, when the test passes the path with its search (paging). */
+  const readQueries: { limit?: string; before?: string }[] = []
   /** The chat IDs of each stream open, in order. */
   const opens: string[] = []
   /** An answer in place of the read's, while set: such as a 503 with an error body, or one the test settles later. */
@@ -335,12 +337,19 @@ export function fakeTranscriptServer({ streams: mode = 'open', uploads: uploadOp
     return new Response(null, { status: 204 })
   }
 
-  const read = (chat: string) => {
-    const entries = transcripts.get(chat) ?? []
+  // The newest `limit` entries (500 when not set), or those before `before`; an unknown one is 409 entryNotFound.
+  const read = (chat: string, query: URLSearchParams) => {
+    const all = transcripts.get(chat) ?? []
+    const before = query.get('before')
+    const end = before === null ? all.length : all.findIndex((e) => e.id === before)
+    if (end < 0)
+      return errorAnswer({ kind: 'chat-not-ready', state: 'entryNotFound', message: 'gone', requestId: 'r' }, 409)
+    const limit = Number(query.get('limit') ?? maxTranscriptEntries)
+    const entries = all.slice(Math.max(0, end - limit), end)
     const body = TranscriptResponse.parse({
       chat,
-      entries: entries.slice(-maxTranscriptEntries),
-      earlier: (earlier.get(chat) ?? false) || entries.length > maxTranscriptEntries,
+      entries,
+      earlier: (earlier.get(chat) ?? false) || entries.length < end,
     })
     return new Response(JSON.stringify(body), { status: 200, headers: { 'content-type': 'application/json' } })
   }
@@ -383,6 +392,7 @@ export function fakeTranscriptServer({ streams: mode = 'open', uploads: uploadOp
     /** The upload routes (W1b): their records and switches, and the XMLHttpRequest a test stubs for the chunks. */
     uploads,
     reads,
+    readQueries,
     opens,
     prompts,
     sendIds,
@@ -567,12 +577,15 @@ export function fakeTranscriptServer({ streams: mode = 'open', uploads: uploadOp
         const route: Route = action[2] === 'stop' ? 'stop' : action[2] === 'prompt' ? 'prompt' : 'clear'
         return act(decodeURIComponent(action[1] ?? ''), route, init)
       }
-      const route = /^\/api\/chats\/([^/]+)\/transcript(\/events)?$/.exec(path)
+      const [pathname = '', search = ''] = path.split('?')
+      const route = /^\/api\/chats\/([^/]+)\/transcript(\/events)?$/.exec(pathname)
       if (!route) return undefined
       const chat = decodeURIComponent(route[1] ?? '')
       if (route[2] === undefined) {
         reads.push(chat)
-        return readAnswer?.() ?? read(chat)
+        const query = new URLSearchParams(search)
+        readQueries.push(Object.fromEntries(query))
+        return readAnswer?.() ?? read(chat, query)
       }
       opens.push(chat)
       if (streamAnswer !== undefined) return streamAnswer()
