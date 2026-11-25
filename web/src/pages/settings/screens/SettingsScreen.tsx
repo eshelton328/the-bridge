@@ -22,6 +22,7 @@ import {
   type Mode,
   type NavPage,
   navLayout,
+  type TextSize,
   visibleNavPages,
 } from '../../../lib/deviceSettings.ts'
 import type { PushSwitch } from '../../../lib/pushSwitch.ts'
@@ -54,6 +55,7 @@ export type SettingsScreenProps = {
   /** The live Notifications switch; without it the switch draws `data.push` and does nothing. */
   push?: PushSwitch | undefined
   onModeChange?: ((mode: Mode) => void) | undefined
+  onTextSizeChange?: ((textSize: TextSize) => void) | undefined
   onChatWidthChange?: ((chatWidth: ChatWidth) => void) | undefined
   /** Shows or hides a nav page; returns false when the nav rules refuse it (the last page besides Home). */
   onNavVisibleChange?: ((page: NavPage, visible: boolean) => boolean) | undefined
@@ -69,6 +71,7 @@ export function SettingsScreen({
   onUiChange,
   push,
   onModeChange,
+  onTextSizeChange,
   onChatWidthChange,
   onNavVisibleChange,
   onNavMove,
@@ -129,6 +132,7 @@ export function SettingsScreen({
                       settings={data.settings}
                       layout={layout}
                       onModeChange={onModeChange}
+                      onTextSizeChange={onTextSizeChange}
                       onChatWidthChange={onChatWidthChange}
                     />
                     <NavigationSection

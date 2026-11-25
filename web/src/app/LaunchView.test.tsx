@@ -12,11 +12,21 @@ import { testRender, unmountRendered } from '../lib/testRender.ts'
 // Backdrop's stars and glow at each layout width, the Logo, the late line's style, and the breath's timing.
 document.documentElement.dataset.pandaTheme = 'viewscreen'
 
-/** index.html as the browser has it before any script or CSS file: the color-mode script and the module removed. */
+/**
+ * index.html as the browser has it before any script or CSS file: the color-mode and text-size scripts and the module
+ * removed, and in light the `dark` class taken off <html> (its other classes stay).
+ */
 const bare = (dark: boolean) =>
   indexHtml
     .replace(/<script[\s\S]*?<\/script>/g, '')
-    .replace('<html lang="en" class="dark"', dark ? '<html lang="en" class="dark"' : '<html lang="en"')
+    .replace(/<html lang="en" class="([^"]*)"/, (tag, classes: string) =>
+      dark
+        ? tag
+        : `<html lang="en" class="${classes
+            .split(' ')
+            .filter((name) => name !== 'dark')
+            .join(' ')}"`,
+    )
 
 const frames: HTMLIFrameElement[] = []
 

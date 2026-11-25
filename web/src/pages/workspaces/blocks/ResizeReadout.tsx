@@ -42,7 +42,7 @@ export type ResizeReadoutProps = {
 
 export function ResizeReadout({ label, placement, figma }: ResizeReadoutProps) {
   return (
-    <div className={places[placement]}>
+    <div className={places[placement]} data-drag-layer="resize-readout">
       <span role="status" data-figma={figma} className={css({ display: 'inline-flex' })}>
         <Badge variant="outline" tone="working" label={label} />
       </span>

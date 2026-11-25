@@ -20,6 +20,11 @@ Storybook and the canvas bundle. Styles come from the component library
   key, and a missing or bad value or blocked storage keeps Dark with no
   throw. `app/colorMode.ts` keeps the mode applied after; the page has no
   Content-Security-Policy. `src/app/colorMode.test.ts` runs the script.
+- `index.html`'s `text-size` script applies the saved text size the
+  same way (d-122): `<html>` starts with `text-default`, Small removes
+  it and Large swaps it for `text-large`; a missing or bad value or
+  blocked storage keeps Default. `app/textSize.ts` keeps it applied
+  after, and `src/app/textSize.test.ts` runs the script.
 
 ## The library dependency
 

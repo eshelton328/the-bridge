@@ -1,8 +1,8 @@
 {
   "frameId": "M02",
-  "inputs": "621fdf387d7c16a3238aacbc2d7a21b641a088e32238bcd325e98efff7eab9c0",
-  "library": "1.0.0-beta.124",
-  "recordSha256": "634c60b7bbe6a9b68487c31c88095544a740793e02c305c3ebab7491f0284bff",
+  "inputs": "b72fac6bd4439a181fd7cc4a608340e92430594e9f9abc298ce1477802a7be6c",
+  "library": "1.0.0-beta.126",
+  "recordSha256": "1bffece8c141e984ca8b97f9b5ce076bcf2a92af094e95fe33367b52f25255e2",
   "record": {
     "verdict": "match",
     "viewport": "390x844 phone, Light",
@@ -12,54 +12,54 @@
       "render": "reports/fidelity/settings/M02.sideBySide.png",
       "reference_side": "left"
     },
-    "summary": "Apart from the accepted deviations, the render matches the reference: the header, Appearance card, Navigation card top and tab bar look the same.",
+    "summary": "Apart from the accepted deviations, the render matches the reference: the header, the Appearance card, the visible part of the Navigation card and the tab bar have the same content, layout, states and spacing.",
     "findings": [],
     "accepted_deviations": [
       {
         "id": "A1",
-        "as_given": "Text size: the control is disabled (muted labels) and its line under it says \"Coming soon\" in place of \"Scales the whole app: Small 87.5 %, Default 100 %, Large 112.5 %.\" (step D adds text size later). On a narrow screen the one-line note makes every section below it sit about one text line higher.",
+        "as_given": "Text size: the control is enabled, with Default selected as in the reference, and the line under it says \"Scales the text of the whole app. Small is the size of the designs.\" in place of \"Scales the whole app: Small 87.5 %, Default 100 %, Large 112.5 %.\" (d-122 and d-131). The line has a different length, so on a narrow screen it can take one more or one less text line than the reference, and every section below it then sits that much lower or higher.",
         "status": "as-described",
         "finding": null,
-        "note": "Small, Default and Large are muted, Default is still selected, and the line under the control says \"Coming soon\" on one line."
+        "note": "The control is enabled with Default selected. The new line takes two lines, the same number as the reference, so nothing below it moves because of it."
       },
       {
         "id": "A2",
         "as_given": "A new \"NOTIFICATIONS\" section with one \"Notifications\" switch (off) sits between the Navigation section and the New chat defaults section. So New chat defaults sits lower, or below the bottom edge.",
         "status": "not-seen",
         "finding": null,
-        "note": "This part of the page is below the bottom edge of this frame."
+        "note": "The frame ends inside the Navigation card, so this section is below the bottom edge."
       },
       {
         "id": "A3",
         "as_given": "The Notifications switch moved to that section: the desktop rail no longer has the \"Notifications / Blocked in Settings\" switch at its bottom, and the More drawer no longer has the \"Notifications / Blocked in Settings\" row at its end. So the drawer is shorter and its top edge sits lower.",
         "status": "not-seen",
         "finding": null,
-        "note": "This phone frame has no rail and the More drawer is closed. The tab bar is the same in both pictures."
+        "note": "This phone frame shows neither the desktop rail nor the More drawer."
       },
       {
         "id": "A4",
         "as_given": "The Navigation list has a new last row, \"Settings\", with the line \"Always shown: in the bar or under More.\" under it and up and down buttons but no switch (the owner's decision: Settings is an entry of the bar order that cannot be hidden). So Toolkit's down button is now enabled, the Navigation card is taller, and every section below it sits lower or below the bottom edge.",
         "status": "not-seen",
         "finding": null,
-        "note": "The end of the Navigation list is below the bottom edge. The render only shows Home and Inbox."
+        "note": "The render shows only the Home and Inbox rows of the Navigation card. The Settings row and Toolkit row are below the bottom edge."
       },
       {
         "id": "A5",
         "as_given": "On the phone and the tablet only: a thin rule line with the text \"Under More on this device\" under it sits after the last page that the tab bar shows (Projects on the phone, Artifacts on the tablet), so the rows after it sit lower by about 40 px.",
         "status": "not-seen",
         "finding": null,
-        "note": "In the render, the Projects row and the rule after it are below the bottom edge."
+        "note": "The Projects row is below the bottom edge in the render, so the rule is not visible."
       },
       {
         "id": "A6",
         "as_given": "Appearance has a new last row, \"Chat width\", under Text size: a three-way control \"Full\", \"Wide\", \"Narrow\" with Full selected, and a line under it. On the desktop and the tablet the control is enabled and the line says \"The messages and the message box of a Workspaces chat, centred.\"; on the phone the control is disabled (muted labels) and the line says \"Phone: always full\". So the Appearance card is taller, and every section below it sits lower (about one row) or below the bottom edge.",
         "status": "as-described",
         "finding": null,
-        "note": "\"Chat width\" sits under Text size. Full, Wide and Narrow are muted and Full is selected. The line under the control says \"Phone: always full\". The Navigation card starts about 84 px lower (at y about 537 in place of 453), so Workspaces and Projects go below the bottom edge."
+        "note": "Chat width shows Full selected, muted labels and the line \"Phone: always full\". The Appearance card is about 100 px taller, and the Navigation card moves down by the same amount. In the reference, Home through Projects are visible. In the render, only Home and Inbox are visible."
       }
     ],
     "limits": [
-      "The content below the bottom edge of the 390x844 frame cannot be compared: the lower Navigation rows, the Notifications section, New chat defaults and the sections after them."
+      "The frame shows only the top of the page down to the Inbox row of the Navigation card. The rest of Navigation, the Notifications section, New chat defaults and later sections are not visible and were not compared."
     ]
   }
 }

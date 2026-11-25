@@ -1,11 +1,10 @@
 // Settings' Appearance (d-119): Mode (Light, Dark or System; it applies at
 // once, and System follows the device), Theme with its one choice, Text
-// size, disabled with "Coming soon" until the library's text size sets are
-// in use (step D), and Chat width (Full, Wide or Narrow; bridge-coord,
-// 2026-11-23), which the phone does not use: there it is disabled and says
-// "Phone: always full". Props only.
+// size (Small, Default or Large; it applies at once, d-122), and Chat width
+// (Full, Wide or Narrow; bridge-coord, 2026-11-23), which the phone does not
+// use: there it is disabled and says "Phone: always full". Props only.
 import { Panel, SelectField, ViewSwitch } from '@eshelton328/component-library-1701'
-import { type ChatWidth, chatWidths, type Mode, modes, textSizes } from '../../../lib/deviceSettings.ts'
+import { type ChatWidth, chatWidths, type Mode, modes, type TextSize, textSizes } from '../../../lib/deviceSettings.ts'
 import type { Viewport } from '../../../lib/screenState.ts'
 import type { SettingsValues } from '../types.ts'
 import { note, row, rowLabel, rows } from './settingsParts.ts'
@@ -15,15 +14,23 @@ const sizeLabel = { small: 'Small', default: 'Default', large: 'Large' } as cons
 const widthLabel = { full: 'Full', wide: 'Wide', narrow: 'Narrow' } as const
 const isMode = (value: string): value is Mode => modes.some((m) => m === value)
 const isChatWidth = (value: string): value is ChatWidth => chatWidths.some((w) => w === value)
+const isTextSize = (value: string): value is TextSize => textSizes.some((s) => s === value)
 
 export type AppearanceSectionProps = {
   settings: SettingsValues
   layout: Viewport
   onModeChange?: ((mode: Mode) => void) | undefined
+  onTextSizeChange?: ((textSize: TextSize) => void) | undefined
   onChatWidthChange?: ((chatWidth: ChatWidth) => void) | undefined
 }
 
-export function AppearanceSection({ settings, layout, onModeChange, onChatWidthChange }: AppearanceSectionProps) {
+export function AppearanceSection({
+  settings,
+  layout,
+  onModeChange,
+  onTextSizeChange,
+  onChatWidthChange,
+}: AppearanceSectionProps) {
   const full = layout === 'phone'
   return (
     <Panel variant="section" title="Appearance">
@@ -52,9 +59,11 @@ export function AppearanceSection({ settings, layout, onModeChange, onChatWidthC
             fullWidth={full}
             items={textSizes.map((size) => ({ value: size, label: sizeLabel[size] }))}
             value={settings.textSize}
-            disabled
+            onValueChange={(value) => {
+              if (isTextSize(value)) onTextSizeChange?.(value)
+            }}
           />
-          <span className={note}>Coming soon</span>
+          <span className={note}>Scales the text of the whole app. Small is the size of the designs.</span>
         </div>
         <div className={row}>
           <span className={rowLabel}>Chat width</span>

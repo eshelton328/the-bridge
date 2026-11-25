@@ -23,8 +23,15 @@ import { ReplyEntry } from './ReplyEntry.tsx'
 import { SentFileChip } from './SentFileChip.tsx'
 import { ToolRow } from './ToolRow.tsx'
 
-// The progress lines keep their leading spaces, as a terminal does.
-const progress = css({ textStyle: 'mono', color: 'fg.muted', whiteSpace: 'pre' })
+// The progress lines keep their leading spaces, as a terminal does. At Default and Large (d-122) a line that no longer
+// fits wraps (break-spaces, so a space at the wrap does not hang past the edge); Small keeps one line per line.
+const progress = css({
+  textStyle: 'mono',
+  color: 'fg.muted',
+  whiteSpace: 'pre',
+  _textDefault: { whiteSpace: 'break-spaces' },
+  _textLarge: { whiteSpace: 'break-spaces' },
+})
 // The event line is as wide as its text, as Figma's layer is (T9 420:769),
 // but never wider than the transcript, so a long event truncates on a narrow phone.
 // The one grid column can shrink below the text, so the line never pushes the transcript wider.

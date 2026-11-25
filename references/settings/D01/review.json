@@ -1,8 +1,8 @@
 {
   "frameId": "D01",
-  "inputs": "3c82f7e03e48021149b7e263fa7cad704d365ab01e4b302dd4b3905359f0c8a8",
-  "library": "1.0.0-beta.124",
-  "recordSha256": "f52978a965ccf090c33620547b02eb1e5f43280cc63f109477e612127ffa00b0",
+  "inputs": "c4dc48ac90973ccfd9c12f4ce7623bd0013e794b6c135e0c9e57fde71437f5e6",
+  "library": "1.0.0-beta.126",
+  "recordSha256": "59be959b3ece17d3a84f1d2199bdd58ddc05e1aa9149f9f97c08670a045cab4a",
   "record": {
     "verdict": "match",
     "viewport": "desktop 1512x982, Dark",
@@ -12,48 +12,48 @@
       "render": "reports/fidelity/settings/D01.sideBySide.png",
       "reference_side": "left"
     },
-    "summary": "Apart from the accepted deviations, the render matches the reference: the header, the rail, the Mode and Theme rows, the Navigation text and the Home to Toolkit rows are the same.",
+    "summary": "Apart from the accepted deviations, the render matches the reference: the rail, heading, Appearance card and visible Navigation rows have the same content, states, sizes and alignment.",
     "findings": [],
     "accepted_deviations": [
       {
         "id": "A1",
-        "as_given": "Text size: the control is disabled (muted labels) and its line under it says \"Coming soon\" in place of \"Scales the whole app: Small 87.5 %, Default 100 %, Large 112.5 %.\" (step D adds text size later). On a narrow screen the one-line note makes every section below it sit about one text line higher.",
+        "as_given": "Text size: the control is enabled, with Default selected as in the reference, and the line under it says \"Scales the text of the whole app. Small is the size of the designs.\" in place of \"Scales the whole app: Small 87.5 %, Default 100 %, Large 112.5 %.\" (d-122 and d-131). The line has a different length, so on a narrow screen it can take one more or one less text line than the reference, and every section below it then sits that much lower or higher.",
         "status": "as-described",
         "finding": null,
-        "note": "The Small, Default and Large labels are muted and the line says \"Coming soon\". This is the desktop, so the narrow-screen shift does not apply."
+        "note": "The control is enabled with Default selected. The new line is one text line, as in the reference (y about 398 in both 1:1 crops)."
       },
       {
         "id": "A2",
         "as_given": "A new \"NOTIFICATIONS\" section with one \"Notifications\" switch (off) sits between the Navigation section and the New chat defaults section. So New chat defaults sits lower, or below the bottom edge.",
         "status": "not-seen",
         "finding": null,
-        "note": "The Navigation card runs past the bottom edge of the frame, so the Notifications section and New chat defaults are both out of view. The frame shows nothing that conflicts with the deviation."
+        "note": "The Navigation card goes past the bottom edge of the 982 px render, so the Notifications section is not in the frame. New chat defaults is below the bottom edge, which the description allows."
       },
       {
         "id": "A3",
         "as_given": "The Notifications switch moved to that section: the desktop rail no longer has the \"Notifications / Blocked in Settings\" switch at its bottom, and the More drawer no longer has the \"Notifications / Blocked in Settings\" row at its end. So the drawer is shorter and its top edge sits lower.",
         "status": "as-described",
         "finding": null,
-        "note": "The rail has no switch at its bottom. The More drawer is closed in both pictures, so its change cannot be seen."
+        "note": "The rail bottom has no switch, and nothing else is there. The More drawer is closed in this frame, so the drawer part cannot be checked."
       },
       {
         "id": "A4",
         "as_given": "The Navigation list has a new last row, \"Settings\", with the line \"Always shown: in the bar or under More.\" under it and up and down buttons but no switch (the owner's decision: Settings is an entry of the bar order that cannot be hidden). So Toolkit's down button is now enabled, the Navigation card is taller, and every section below it sits lower or below the bottom edge.",
         "status": "as-described",
         "finding": null,
-        "note": "Toolkit's down button is enabled. The new Settings row is below the bottom edge of the frame and cannot be seen."
+        "note": "Toolkit's down button is enabled and the card continues past the bottom edge. The Settings row itself is below the bottom edge and is not in the frame."
       },
       {
         "id": "A5",
         "as_given": "Appearance has a new last row, \"Chat width\", under Text size: a three-way control \"Full\", \"Wide\", \"Narrow\" with Full selected, and a line under it. On the desktop and the tablet the control is enabled and the line says \"The messages and the message box of a Workspaces chat, centred.\"; on the phone the control is disabled (muted labels) and the line says \"Phone: always full\". So the Appearance card is taller, and every section below it sits lower (about one row) or below the bottom edge.",
         "status": "as-described",
         "finding": null,
-        "note": "The Chat width control is enabled with Full selected. Its line reads as given, and Navigation sits about 100 px lower."
+        "note": "Chat width is enabled with Full selected, and the line under it reads as given. The Appearance card ends at y about 519 (reference: about 419), and the Navigation card moves down by the same 100 px."
       }
     ],
     "limits": [
-      "The Notifications section, the new Settings row of Navigation and the New chat defaults section are below the bottom edge of the render, so I could not check them.",
-      "The More drawer is closed in both pictures, so I could not check the drawer change in A3."
+      "The render shows only the top 982 px, so the Settings row in Navigation, the Notifications section and New chat defaults are below the bottom edge and could not be checked.",
+      "The More drawer is closed in this frame, so the drawer part of A3 could not be checked."
     ]
   }
 }

@@ -1,8 +1,8 @@
 {
   "frameId": "T04",
-  "inputs": "b69b5561c42d67aa0b3ba06d8dd47ed70c712b638e91cbe04497e65eb466d4ee",
-  "library": "1.0.0-beta.124",
-  "recordSha256": "7e7c11320c6b8d47440a9d5da341efd8d39146ae9cf348c855136dd9b449f6ec",
+  "inputs": "c101fd0b058528cc0d143bcb8b823a262a7d4ad4a7752411b16e140e7df4cc7d",
+  "library": "1.0.0-beta.126",
+  "recordSha256": "edcbea3ce148066b9094934e84848ed5513b6a34c74f7ad0033924dbc1b20538",
   "record": {
     "verdict": "match",
     "viewport": "1180x820 iPad landscape, Light (tablet layout)",
@@ -12,54 +12,55 @@
       "render": "reports/fidelity/settings/T04.sideBySide.png",
       "reference_side": "left"
     },
-    "summary": "Apart from the accepted deviations, the render matches the reference: the header, the Mode and Theme rows, the visible Navigation rows and the tab bar are the same.",
+    "summary": "Apart from the accepted deviations, the render matches the reference: the same header, Appearance controls, Navigation rows (Home, Inbox), switches, arrow buttons and tab bar, at the same positions and sizes.",
     "findings": [],
     "accepted_deviations": [
       {
         "id": "A1",
-        "as_given": "Text size: the control is disabled (muted labels) and its line under it says \"Coming soon\" in place of \"Scales the whole app: Small 87.5 %, Default 100 %, Large 112.5 %.\" (step D adds text size later). On a narrow screen the one-line note makes every section below it sit about one text line higher.",
+        "as_given": "Text size: the control is enabled, with Default selected as in the reference, and the line under it says \"Scales the text of the whole app. Small is the size of the designs.\" in place of \"Scales the whole app: Small 87.5 %, Default 100 %, Large 112.5 %.\" (d-122 and d-131). The line has a different length, so on a narrow screen it can take one more or one less text line than the reference, and every section below it then sits that much lower or higher.",
         "status": "as-described",
         "finding": null,
-        "note": "Small, Default and Large are muted, and the line says \"Coming soon\". At this width the reference note also takes one line, so nothing below it moves up."
+        "note": "Default is selected and the new line fits on one line (x 247 to 603), as the reference line does."
       },
       {
         "id": "A2",
         "as_given": "A new \"NOTIFICATIONS\" section with one \"Notifications\" switch (off) sits between the Navigation section and the New chat defaults section. So New chat defaults sits lower, or below the bottom edge.",
         "status": "not-seen",
         "finding": null,
-        "note": "The section is below the bottom edge of the frame."
+        "note": "That part of the page is below the bottom edge in both pictures."
       },
       {
         "id": "A3",
         "as_given": "The Notifications switch moved to that section: the desktop rail no longer has the \"Notifications / Blocked in Settings\" switch at its bottom, and the More drawer no longer has the \"Notifications / Blocked in Settings\" row at its end. So the drawer is shorter and its top edge sits lower.",
         "status": "not-seen",
         "finding": null,
-        "note": "This frame has no desktop rail and the More drawer is closed."
+        "note": "This frame shows the tablet tab bar with the drawer closed and no rail."
       },
       {
         "id": "A4",
         "as_given": "The Navigation list has a new last row, \"Settings\", with the line \"Always shown: in the bar or under More.\" under it and up and down buttons but no switch (the owner's decision: Settings is an entry of the bar order that cannot be hidden). So Toolkit's down button is now enabled, the Navigation card is taller, and every section below it sits lower or below the bottom edge.",
         "status": "not-seen",
         "finding": null,
-        "note": "Only the Home and Inbox rows are visible. The Settings row and the Toolkit row are below the bottom edge."
+        "note": "The end of the Navigation list is below the bottom edge in both pictures."
       },
       {
         "id": "A5",
         "as_given": "On the phone and the tablet only: a thin rule line with the text \"Under More on this device\" under it sits after the last page that the tab bar shows (Projects on the phone, Artifacts on the tablet), so the rows after it sit lower by about 40 px.",
         "status": "not-seen",
         "finding": null,
-        "note": "The Artifacts row and the rule are below the bottom edge."
+        "note": "The render shows only the Home and Inbox rows. The Artifacts row and the rule after it are below the bottom edge."
       },
       {
         "id": "A6",
         "as_given": "Appearance has a new last row, \"Chat width\", under Text size: a three-way control \"Full\", \"Wide\", \"Narrow\" with Full selected, and a line under it. On the desktop and the tablet the control is enabled and the line says \"The messages and the message box of a Workspaces chat, centred.\"; on the phone the control is disabled (muted labels) and the line says \"Phone: always full\". So the Appearance card is taller, and every section below it sits lower (about one row) or below the bottom edge.",
         "status": "as-described",
         "finding": null,
-        "note": "The Chat width control is enabled, with Full selected and the tablet line under it. The Navigation card starts about 100 px lower, so only Home and Inbox are visible above the tab bar."
+        "note": "The Chat width row is enabled with Full selected and the tablet line. The Appearance card ends at y 507 in place of 407, so Navigation is 100 px lower and only Home and Inbox show above the tab bar."
       }
     ],
     "limits": [
-      "Elements below the bottom edge of the frame (the Notifications section, the Settings and Artifacts rows of Navigation, the More drawer) could not be checked."
+      "The rows below Inbox in the render, and everything below Projects in the reference, are under the tab bar or below the bottom edge, so I could not compare them.",
+      "The text in the reference looks a little heavier, but each text run starts and ends at the same pixels in both pictures. I took this to be rendering or smoothing, not a weight change."
     ]
   }
 }

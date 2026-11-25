@@ -20,7 +20,17 @@ const body = css({ display: 'flex', flexDirection: 'column', gap: '8' })
 const lines = css({ display: 'flex', flexDirection: 'column', gap: '10', listStyle: 'none', m: '0', p: '0' })
 const line = css({ display: 'flex', alignItems: 'center', gap: '10', minW: '[0]' })
 const time = css({ textStyle: 'mono', color: 'fg.muted', fontVariantNumeric: 'tabular-nums', flexShrink: '0' })
-const text = css({ textStyle: 'small', color: 'fg.default', truncate: true, minW: '[0]' })
+// One line with an ellipsis at Small, as Figma draws it. At Default and Large (d-131) an activity row is content, so
+// it wraps and the row grows; it gains no ellipsis that Small does not have.
+const wrapped = { whiteSpace: 'normal', overflowWrap: 'break-word', textOverflow: 'clip' } as const
+const text = css({
+  textStyle: 'small',
+  color: 'fg.default',
+  truncate: true,
+  minW: '[0]',
+  _textDefault: wrapped,
+  _textLarge: wrapped,
+})
 
 export type ToolkitActivityLogProps = { log: NonNullable<ToolkitActivityCounts['log']> }
 

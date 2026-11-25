@@ -90,10 +90,10 @@ const arrow = css({
 })
 // D8 466:2: an arrow across runs from the card's edge over the lane's 8 px side, the 24 px gap and the next lane's
 // side, 38 long to 2 before the next card (the label over it, "yes", 458:92). T18: the lanes' sides are 6 and the gap
-// 16.
+// 16. The gap is a minimum: at Large (d-122) the label is wider than the line, so the gap grows to hold it.
 const across = {
-  md: css({ alignSelf: 'center', alignItems: 'stretch', w: '[token(spacing.24)]' }),
-  sm: css({ alignSelf: 'center', alignItems: 'stretch', w: '[token(spacing.16)]' }),
+  md: css({ alignSelf: 'center', alignItems: 'stretch', minW: '[token(spacing.24)]' }),
+  sm: css({ alignSelf: 'center', alignItems: 'stretch', minW: '[token(spacing.16)]' }),
 }
 const acrossLine = { md: css({ mx: '-8' }), sm: css({ mx: '-6' }) }
 // D8 466:6, 466:7: an elbow fills its box, from the source card's edge to the target card's, and from the middle of
