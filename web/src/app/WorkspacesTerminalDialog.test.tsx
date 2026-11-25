@@ -27,8 +27,8 @@ import { routeTree } from './routeTree.gen.ts'
 // R69: a chat that needs the owner on a dialog its transcript does not hold
 // (a skill's numbered step) shows the dialog as a card after the entries,
 // read from `GET /api/chats/:chat/dialog` (the contract's paneDialogs.ts).
-// A tap on an option posts `{ id, n }` once; while it goes the options are
-// off; a 409 says the terminal changed and the next read shows the new
+// A tap chooses an option and Send answer posts `{ id, n }` once (R72: a tap
+// alone sends nothing); while it goes the options and the button are off; a 409 says the terminal changed and the next read shows the new
 // dialog; another miss shows a line with Retry. A dialog with no sure options
 // shows its read text read-only with "Answer in the terminal". A chat whose
 // transcript asks its own question, and a chat with no dialog, show no card.
@@ -91,6 +91,22 @@ const twoOptions = {
     },
   ],
   raw: 'Sample step\nGoal: tidy the notes\n1. Send structured\n2. Send original\n3. Type something',
+}
+/** A question whose options carry their descriptions as `detail`, as the server sends them (backend #518). */
+const withDetail = {
+  id: 'f1b2c3d4e5f60718',
+  title: 'Card colour',
+  body: 'Which colour for the sample card?',
+  options: [
+    { n: 1, label: 'Red', detail: 'A warm accent' },
+    { n: 2, label: 'Blue', detail: 'The calm accent' },
+    {
+      n: 3,
+      label: 'Green',
+      detail: 'A colour no other card uses yet, so the sample card stands out from the rest of the list on a phone',
+    },
+  ],
+  raw: 'Card colour\nWhich colour for the sample card?\n1. Red\n2. Blue\n3. Green',
 }
 /** The same step after the terminal changed: another read text, so another ID. */
 const changedSample = { ...sample, id: 'b1b2c3d4e5f60718', title: 'Sample step, again' }
@@ -193,9 +209,25 @@ function watchPosts() {
 
 /** The chat: the phone's or tablet's open chat, or the desktop workbench's pane; each is a region named by its title. */
 const chat = () => page.getByRole('region', { name: title })
-/** The dialog card: the approval group named by its label. */
-const card = () => chat().getByRole('group', { name: 'Waiting in the terminal' })
-const option = (label: string) => card().getByRole('button', { name: label, exact: true })
+/** The dialog card: the group named by its status line. */
+const card = () => chat().getByRole('group', { name: 'Waiting for your answer' })
+/** An option of the card: a radio named by its label. */
+const option = (label: string) => card().getByRole('radio', { name: label, exact: true })
+/** An option's text, which a tap chooses: its radio itself is hidden, as the row draws its own. */
+const choice = (label: string) => card().getByText(label, { exact: true })
+/** An option's row, the label that holds its radio. */
+const row = (label: string) => {
+  const radio = option(label).element()
+  const box = radio.closest('label')
+  if (box === null) throw new Error(`no row for ${label}`)
+  return box
+}
+const sendButton = () => card().getByRole('button', { name: 'Send answer', exact: true })
+/** Chooses the option labelled `label` and presses Send answer: the owner's answer. */
+async function answer(label: string) {
+  await userEvent.click(choice(label))
+  await userEvent.click(sendButton())
+}
 
 /**
  * Opens the app at / at `size`, taps Workspaces and the chat (on the desktop its pane shows already). `asApp` lays the
@@ -265,7 +297,7 @@ const settle = () => new Promise((resolve) => setTimeout(resolve, 200))
 
 describe("a chat's terminal dialog (R69)", () => {
   for (const device of devices)
-    it(`draws the dialog and sends the tapped option once, on ${device.name}`, async () => {
+    it(`draws the dialog and sends the chosen option once on Send answer, on ${device.name}`, async () => {
       const { workspaces } = withChats()
       const posted = watchPosts()
       workspaces.showDialog(plan, sample)
@@ -278,9 +310,16 @@ describe("a chat's terminal dialog (R69)", () => {
         .element()
       expect(body.textContent).toBe(sample.body)
       expect(getComputedStyle(body).whiteSpace).toBe('pre-wrap')
-      for (const o of sample.options) await expect.element(option(`${String(o.n)} ${o.label}`)).toBeEnabled()
+      for (const o of sample.options) await expect.element(option(o.label)).toBeEnabled()
+      // The number is not shown: each row names its option by its label alone.
+      expect(card().element().textContent).not.toMatch(/\d Send structured/)
+      await expect.element(sendButton()).toBeDisabled()
+      // A tap chooses the row and sends nothing; Send answer sends it.
+      await userEvent.click(choice('Send original'))
+      await expect.element(option('Send original')).toBeChecked()
+      await settle()
       expect(workspaces.dialogAnswers).toEqual([])
-      await userEvent.click(option('2 Send original'))
+      await userEvent.click(sendButton())
       await expect.poll(() => workspaces.dialogAnswers).toEqual([{ chat: plan, body: { id: sample.id, n: 2 } }])
       // The chat works again: the list read after the event drops the card.
       await expect.element(card()).not.toBeInTheDocument()
@@ -295,23 +334,48 @@ describe("a chat's terminal dialog (R69)", () => {
     workspaces.showDialog(plan, twoOptions)
     await openChat(phone)
     await expect.element(card()).toBeVisible()
-    const long = `2 ${twoOptions.options[1]?.label ?? ''}`
-    await expect.element(option('1 Send structured')).toBeEnabled()
+    const long = twoOptions.options[1]?.label ?? ''
+    await expect.element(option('Send structured')).toBeEnabled()
     await expect.element(option(long)).toBeEnabled()
-    expect(card().getByRole('button').elements()).toHaveLength(2)
+    expect(card().getByRole('radio').elements()).toHaveLength(2)
     // The answers that are not a tap are in the terminal: one muted line under the options.
     const other = card().getByText('Other answers: in the terminal', { exact: true })
     await expect.element(other).toBeVisible()
-    const button = option(long).element()
-    expect(other.element().getBoundingClientRect().top).toBeGreaterThanOrEqual(button.getBoundingClientRect().bottom)
-    // The long label wraps: the option grows to more lines and stays inside the card, with nothing cut.
-    const box = button.getBoundingClientRect()
+    const longRow = row(long)
+    expect(other.element().getBoundingClientRect().top).toBeGreaterThanOrEqual(longRow.getBoundingClientRect().bottom)
+    // The long label wraps: the row grows to more lines and stays inside the card, with nothing cut.
+    const box = longRow.getBoundingClientRect()
     const cardBox = card().element().getBoundingClientRect()
-    expect(box.height).toBeGreaterThan(28)
+    expect(box.height).toBeGreaterThan(row('Send structured').getBoundingClientRect().height)
     expect(box.right).toBeLessThanOrEqual(cardBox.right)
-    expect(button.scrollWidth).toBeLessThanOrEqual(button.clientWidth)
-    await userEvent.click(option(long))
+    expect(longRow.scrollWidth).toBeLessThanOrEqual(longRow.clientWidth)
+    await answer(long)
     await expect.poll(() => workspaces.dialogAnswers).toEqual([{ chat: plan, body: { id: twoOptions.id, n: 2 } }])
+  })
+
+  it('draws each option by its label with its detail as a second line, never the two joined', async () => {
+    const { workspaces } = withChats()
+    workspaces.showDialog(plan, withDetail)
+    await openChat(phone)
+    await expect.element(option('Red')).toBeEnabled()
+    await expect.element(option('Red')).toHaveAccessibleDescription('A warm accent')
+    const red = row('Red')
+    const label = card().getByText('Red', { exact: true }).element().getBoundingClientRect()
+    const detail = card().getByText('A warm accent', { exact: true }).element().getBoundingClientRect()
+    expect(detail.top).toBeGreaterThanOrEqual(label.bottom)
+    expect(detail.bottom).toBeLessThanOrEqual(red.getBoundingClientRect().bottom)
+    expect(card().element().textContent).not.toMatch(/Red — /)
+    // A description the terminal wrapped comes as one text: the row wraps it onto more lines and shows every word.
+    const long = withDetail.options[2]?.detail ?? ''
+    const wrapped = card().getByText(long, { exact: true }).element()
+    expect(wrapped.getBoundingClientRect().height).toBeGreaterThan(
+      card().getByText('A warm accent', { exact: true }).element().getBoundingClientRect().height,
+    )
+    expect(wrapped.scrollHeight).toBeLessThanOrEqual(wrapped.clientHeight)
+    expect(wrapped.scrollWidth).toBeLessThanOrEqual(wrapped.clientWidth)
+    expect(row('Green').getBoundingClientRect().bottom).toBeGreaterThanOrEqual(wrapped.getBoundingClientRect().bottom)
+    await answer('Blue')
+    await expect.poll(() => workspaces.dialogAnswers).toEqual([{ chat: plan, body: { id: withDetail.id, n: 2 } }])
   })
 
   it('turns the options on again when an answered dialog goes and the same one comes back', async () => {
@@ -320,28 +384,31 @@ describe("a chat's terminal dialog (R69)", () => {
     await openChat(phone)
     // The server takes the answer but the chat still needs the owner, with the dialog on the screen.
     workspaces.answerDialogs(() => new Response(null, { status: 204 }))
-    await userEvent.click(option('2 Send original'))
-    await expect.element(option('1 Send structured')).toBeDisabled()
+    await answer('Send original')
+    await expect.element(option('Send structured')).toBeDisabled()
+    await expect.element(card().getByRole('button', { name: 'Sent', exact: true })).toBeDisabled()
     // The dialog goes from the screen, and then the same step shows again: a new question.
     workspaces.showDialog(plan, null, true)
     await expect.element(card(), { timeout: 8000 }).not.toBeInTheDocument()
     workspaces.showDialog(plan, sample, true)
-    await expect.element(option('1 Send structured'), { timeout: 8000 }).toBeEnabled()
-    for (const o of sample.options) await expect.element(option(`${String(o.n)} ${o.label}`)).toBeEnabled()
+    await expect.element(option('Send structured'), { timeout: 8000 }).toBeEnabled()
+    for (const o of sample.options) await expect.element(option(o.label)).toBeEnabled()
     expect(workspaces.dialogAnswers).toHaveLength(1)
   })
 
-  it('turns every option off while the answer goes, and sends a second tap never', async () => {
+  it('turns every option and the button off while the answer goes, and sends a second tap never', async () => {
     const { workspaces, gate } = withChats()
     workspaces.showDialog(plan, sample)
     await openChat(phone)
-    await expect.element(option('1 Send structured')).toBeEnabled()
+    await expect.element(option('Send structured')).toBeEnabled()
     gate.hold = true
-    await userEvent.click(option('1 Send structured'))
-    for (const o of sample.options) await expect.element(option(`${String(o.n)} ${o.label}`)).toBeDisabled()
-    await expect.element(card().element().parentElement).toHaveAttribute('aria-busy', 'true')
-    // A tap on an option that is off sends nothing.
-    await userEvent.click(option('3 Type something'), { force: true })
+    await answer('Send structured')
+    for (const o of sample.options) await expect.element(option(o.label)).toBeDisabled()
+    await expect.element(card().getByRole('button', { name: 'Sending…', exact: true })).toBeDisabled()
+    await expect.element(card()).toHaveAttribute('aria-busy', 'true')
+    // A tap on an option that is off, and on the button, sends nothing.
+    await userEvent.click(choice('Type something'), { force: true })
+    await userEvent.click(card().getByRole('button', { name: 'Sending…', exact: true }), { force: true })
     await settle()
     gate.hold = false
     gate.release()
@@ -354,16 +421,34 @@ describe("a chat's terminal dialog (R69)", () => {
     workspaces.showDialog(plan, sample)
     await openChat(phone)
     gate.hold = true
-    await userEvent.click(option('1 Send structured'))
+    await answer('Send structured')
     // The terminal changes while the answer is on its way: the next read brings the new dialog.
     workspaces.showDialog(plan, changedSample, true)
     await expect.element(card().getByText('Sample step, again', { exact: true }), { timeout: 8000 }).toBeVisible()
-    for (const o of changedSample.options) await expect.element(option(`${String(o.n)} ${o.label}`)).toBeDisabled()
-    // The answer ends (the screen changed, a 409): the new dialog's options come on.
+    for (const o of changedSample.options) await expect.element(option(o.label)).toBeDisabled()
+    // The answer ends (the screen changed, a 409): the new dialog's options come on, none chosen.
     gate.hold = false
     gate.release()
-    await expect.element(option('1 Send structured')).toBeEnabled()
+    await expect.element(option('Send structured')).toBeEnabled()
+    await expect.element(option('Send structured')).not.toBeChecked()
+    await expect.element(sendButton()).toBeDisabled()
     expect(workspaces.dialogAnswers).toEqual([{ chat: plan, body: { id: sample.id, n: 1 } }])
+  })
+
+  it('clears the chosen row when the dialog changes, also back to a dialog shown before', async () => {
+    const { workspaces } = withChats()
+    workspaces.showDialog(plan, sample)
+    await openChat(phone)
+    await userEvent.click(choice('Send original'))
+    await expect.element(sendButton()).toBeEnabled()
+    // The terminal shows another dialog, then the first one again, with no answer sent.
+    workspaces.showDialog(plan, changedSample, true)
+    await expect.element(card().getByText('Sample step, again', { exact: true }), { timeout: 8000 }).toBeVisible()
+    workspaces.showDialog(plan, sample, true)
+    await expect.element(card().getByText('Sample step', { exact: true }), { timeout: 8000 }).toBeVisible()
+    await expect.element(option('Send original')).not.toBeChecked()
+    await expect.element(sendButton()).toBeDisabled()
+    expect(workspaces.dialogAnswers).toEqual([])
   })
 
   it('says the terminal changed on a 409, then shows the new dialog from the next read', async () => {
@@ -371,18 +456,19 @@ describe("a chat's terminal dialog (R69)", () => {
     const posted = watchPosts()
     workspaces.showDialog(plan, sample)
     await openChat(tablet)
-    await expect.element(option('1 Send structured')).toBeEnabled()
+    await expect.element(option('Send structured')).toBeEnabled()
     // The terminal changes with no event: the card still shows the old dialog.
     workspaces.showDialog(plan, changedSample, true)
-    await userEvent.click(option('1 Send structured'))
+    await answer('Send structured')
     await expect
       .element(card().getByText('The terminal changed — showing the new state', { exact: true }))
       .toBeVisible()
-    await expect.element(option('2 Send original')).toBeDisabled()
+    await expect.element(option('Send original')).toBeDisabled()
+    await expect.element(sendButton()).toBeDisabled()
     // The next read (every 3 s) brings the new dialog, with its options on and no line.
     await expect.element(card().getByText('Sample step, again', { exact: true }), { timeout: 6000 }).toBeVisible()
     await expect.element(card().getByText('The terminal changed — showing the new state')).not.toBeInTheDocument()
-    await expect.element(option('2 Send original')).toBeEnabled()
+    await expect.element(option('Send original')).toBeEnabled()
     expect(workspaces.dialogAnswers).toEqual([{ chat: plan, body: { id: sample.id, n: 1 } }])
     expect(getReports()).toEqual([])
     expect(posted).toEqual([])
@@ -393,9 +479,10 @@ describe("a chat's terminal dialog (R69)", () => {
     workspaces.showDialog(plan, sample)
     await openChat(desktop)
     workspaces.answerDialogs(() => errorAnswer({ kind: 'herdr-unavailable', message: 'down', requestId: 'r-1' }, 503))
-    await userEvent.click(option('4 Chat about this'))
+    await answer('Chat about this')
     await expect.element(card().getByText('Not sent — herdr-unavailable', { exact: true })).toBeVisible()
-    await expect.element(option('4 Chat about this')).toBeEnabled()
+    await expect.element(option('Chat about this')).toBeEnabled()
+    await expect.element(option('Chat about this')).toBeChecked()
     // The report has the step, the kind and the status only, never a label or the dialog's text.
     const reports = JSON.stringify(getReports().map((r) => [r.error.name, r.error.message]))
     expect(reports).toContain('herdr-unavailable')
@@ -407,6 +494,27 @@ describe("a chat's terminal dialog (R69)", () => {
       { id: sample.id, n: 4 },
       { id: sample.id, n: 4 },
     ])
+  })
+
+  it('offers Retry only while the failed answer is the chosen row, and Send answer sends a new choice', async () => {
+    const { workspaces } = withChats()
+    workspaces.showDialog(plan, sample)
+    await openChat(desktop)
+    workspaces.answerDialogs(() => errorAnswer({ kind: 'herdr-unavailable', message: 'down', requestId: 'r-2' }, 503))
+    await answer('Chat about this')
+    const retry = card().getByRole('button', { name: 'Retry', exact: true })
+    await expect.element(retry).toBeVisible()
+    // Another row chosen: Retry would send the old answer, so it goes; Send answer sends the row shown.
+    await userEvent.click(choice('Send original'))
+    await expect.element(retry).not.toBeInTheDocument()
+    workspaces.answerDialogs(undefined)
+    await userEvent.click(sendButton())
+    await expect
+      .poll(() => workspaces.dialogAnswers.map((a) => a.body))
+      .toEqual([
+        { id: sample.id, n: 4 },
+        { id: sample.id, n: 2 },
+      ])
   })
 
   for (const device of devices)
@@ -424,6 +532,7 @@ describe("a chat's terminal dialog (R69)", () => {
       expect(box.scrollHeight).toBeGreaterThan(box.clientHeight)
       expect(getComputedStyle(box.firstElementChild ?? box).whiteSpace).toBe('pre-wrap')
       expect(card().getByRole('button').elements()).toHaveLength(0)
+      expect(card().getByRole('radio').elements()).toHaveLength(0)
       await settle()
       expect(workspaces.dialogAnswers).toEqual([])
     })
@@ -464,7 +573,7 @@ describe("a chat's terminal dialog (R69)", () => {
     const fromEnd = () => scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight
     await expect.poll(fromEnd).toBeLessThanOrEqual(2)
     workspaces.showDialog(plan, sample)
-    await expect.element(option('4 Chat about this')).toBeInViewport()
+    await expect.element(sendButton()).toBeInViewport()
     await expect.poll(fromEnd).toBeLessThanOrEqual(2)
   })
 
@@ -472,21 +581,23 @@ describe("a chat's terminal dialog (R69)", () => {
     { name: 'the phone', size: phone },
     { name: 'the tablet', size: tablet },
   ])
-    it(`draws each option 44 high on a touch screen, and 28 with a mouse, on ${device.name}`, async () => {
+    it(`draws each option as a full-width row 44 high or more, with a mouse and a touch screen, on ${device.name}`, async () => {
       const { workspaces } = withChats()
       workspaces.showDialog(plan, sample)
       await openChat(device.size)
-      const height = () => option('1 Send structured').element().getBoundingClientRect().height
-      await expect.element(option('1 Send structured')).toBeVisible()
-      expect(height()).toBe(28)
+      await expect.element(card().getByText('Send structured', { exact: true })).toBeVisible()
+      const rows = () => sample.options.map((o) => row(o.label).getBoundingClientRect())
+      const check = () => {
+        const cardBox = card().element().getBoundingClientRect()
+        for (const box of rows()) {
+          expect(box.height).toBeGreaterThanOrEqual(44)
+          // A row spans the card, less the card's padding.
+          expect(box.width).toBeGreaterThan(cardBox.width - 40)
+        }
+      }
+      check()
       await touchScreen(true)
-      await expect.poll(height).toBeGreaterThanOrEqual(44)
-      for (const o of sample.options)
-        expect(
-          option(`${String(o.n)} ${o.label}`)
-            .element()
-            .getBoundingClientRect().height,
-        ).toBeGreaterThanOrEqual(44)
+      check()
     })
 
   it('shows no card for a read the contract refuses, and reports only its kind', async () => {
@@ -516,11 +627,11 @@ describe("a chat's terminal dialog (R69)", () => {
     workspaces.answerDialogs(() =>
       errorAnswer({ kind: 'chat-not-ready', state: 'restarting', message: 'Not ready', requestId: 'r-409' }, 409),
     )
-    await userEvent.click(option('3 Type something'))
+    await answer('Type something')
     await expect.element(card().getByText('Not sent — restarting', { exact: true })).toBeVisible()
     expect(card().getByText('The terminal changed — showing the new state').elements()).toHaveLength(0)
     expect(card().getByRole('button', { name: 'Retry', exact: true }).elements()).toHaveLength(0)
-    await expect.element(option('3 Type something')).toBeEnabled()
+    await expect.element(option('Type something')).toBeEnabled()
     // The next read finds the dialog gone: no card.
     workspaces.answerDialogs(undefined)
     workspaces.showDialog(plan, null)
@@ -534,7 +645,7 @@ describe("a chat's terminal dialog (R69)", () => {
     workspaces.showDialog(plan, sample)
     await openChat(tablet)
     workspaces.answerDialogs(() => errorAnswer({ kind: 'forbidden', message: 'Forbidden', requestId: 'r-403' }, 403))
-    await userEvent.click(option('2 Send original'))
+    await answer('Send original')
     await expect.element(card().getByText('Not sent — forbidden', { exact: true })).toBeVisible()
     expect(card().getByRole('button', { name: 'Retry', exact: true }).elements()).toHaveLength(0)
     expect(getReports().map((r) => r.error.message)).toEqual(['A chat dialog answer missed: forbidden (403)'])
@@ -548,7 +659,7 @@ describe("a chat's terminal dialog (R69)", () => {
     replaceVisualViewport(viewport)
     workspaces.showDialog(plan, sample)
     await openChat(phone, true)
-    await expect.element(option('4 Chat about this')).toBeInViewport()
+    await expect.element(sendButton()).toBeInViewport()
     const scroller = chat().element().querySelector('.scroll-frame__body')
     const composer = chat().element().querySelector('.scroll-frame__footer .composer__root')
     if (!(scroller instanceof HTMLElement) || !(composer instanceof HTMLElement)) throw new Error('no scroller')
@@ -558,8 +669,8 @@ describe("a chat's terminal dialog (R69)", () => {
     await expect.poll(() => Math.round(composer.getBoundingClientRect().bottom)).toBeLessThanOrEqual(464)
     const fromEnd = () => scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight
     await expect.poll(fromEnd).toBeLessThanOrEqual(2)
-    // The card's last option sits above the docked composer, in view.
-    const last = option('4 Chat about this').element()
+    // The card's Send answer sits above the docked composer, in view.
+    const last = sendButton().element()
     await expect.poll(() => last.getBoundingClientRect().bottom <= composer.getBoundingClientRect().top).toBe(true)
     expect(last.getBoundingClientRect().top).toBeGreaterThanOrEqual(scroller.getBoundingClientRect().top)
   })
