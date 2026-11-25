@@ -1,8 +1,13 @@
 // One artifact in the grid (Figma "artifact card · …", 402:15434): its
 // preview, the title with New at the end of its row (402:15454) when the
-// library found it since the owner last looked, one line of description and
-// the meta line (source mark, source, project and age). With `onOpen` the
-// card is a button. Props only.
+// library found it since the owner last looked, the description and the meta
+// line (source mark, source, project and age). With `onOpen` the card is a
+// button. Props only.
+// Figma draws one line of description. The owner asked that every artifact
+// card have one height (screen review R77), so the description always takes
+// two lines (`descriptionLines={2}`): a longer one ends with an ellipsis and
+// shows whole in its tooltip, and a card with none keeps two empty lines
+// (LibraryCardHeight.test.tsx).
 import { Badge, Card, KindMark, MetaLine, SparkIcon, Thumbnail } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import { BlockBoundary } from '../../../errors/BlockBoundary.tsx'
@@ -39,6 +44,7 @@ export function LibraryCard({ card, showSource = true, onOpen }: LibraryCardProp
         badge={card.isNew ? <Badge label="New" icon={<SparkIcon size="12" />} tone="working" size="sm" /> : undefined}
         badgePosition="end"
         description={card.description}
+        descriptionLines={2}
         meta={
           <div className={metaWide}>
             <MetaLine
