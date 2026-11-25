@@ -31,6 +31,7 @@ import type { SkillLists } from './skillLists.ts'
 import { liveSkillList } from './useSkillRows.ts'
 import { isChatCommand, withCommands } from './chatCommands.ts'
 import { type LayoutWrites, moveTargets, swapTargets, tabOf, withLayoutActions } from './layoutActions.ts'
+import { blockedDialog, type ChatDialog } from './chatDialog.ts'
 import { ChatPane, type ChatFiles, type ChatPending, type TranscriptWatch } from './ChatPane.tsx'
 import type { DraftBook } from './draftBook.ts'
 import { EmptyPane } from './EmptyPane.tsx'
@@ -78,6 +79,8 @@ export type WorkbenchPanesProps = {
   filesOf?: ((chat: string) => ChatFiles | undefined) | undefined
   /** A live Claude chat's pending send, by chat id; none for a sample chat, a Codex chat or a shell (ChatPane `pending`). */
   pendingOf?: ((chat: string) => ChatPending | undefined) | undefined
+  /** A live Claude chat's terminal dialog source, by chat id, read while the chat needs the owner (R69); none for a sample chat. */
+  dialogOf?: ((chat: string) => ChatDialog | undefined) | undefined
   /** Reads each live chat's transcript while its pane shows (ChatPane); fixtures have none. */
   transcripts?: TranscriptWatch | undefined
   /** How wide the chat draws on the tablet and the desktop (Settings → Appearance); full when not set. */
@@ -113,6 +116,7 @@ export function WorkbenchPanes({
   onStop,
   filesOf,
   pendingOf,
+  dialogOf,
   transcripts,
   chatWidth,
   skillLists,
@@ -316,6 +320,7 @@ export function WorkbenchPanes({
             onStop={onStop && (() => onStop(pane.id))}
             files={filesOf?.(pane.id)}
             pending={pendingOf?.(pane.id)}
+            dialog={blockedDialog(pane, dialogOf)}
             skills={{
               label: data.skillsLabel,
               matching: data.skillsMatching,

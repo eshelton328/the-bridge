@@ -125,7 +125,23 @@
 // `CreateWorkspaceResponse`. `answerCreates` answers each next create with a
 // test's error, after it made the workspace when `made` (herdr made it and
 // the server's list read after it missed), and `creates` records each body.
+//
+// R69 (the contract's paneDialogs.ts): `showDialog` puts a dialog on a
+// chat's screen, as a skill's numbered step does, and makes the chat
+// `needsYou` (null takes it away and leaves the status). `GET
+// /api/chats/:chat/dialog` answers the contract's `PaneDialogResponse` and
+// records the chat in `dialogReads`. `POST /api/chats/:chat/dialog` takes the
+// contract's `AnswerDialogRequest` (any other body, or no JSON content type,
+// is 400) and records it in `dialogAnswers`; a dialog the screen no longer
+// shows, or an option it does not have, is 409 chat-not-ready
+// `dialogChanged`, and an unknown chat 404. A taken answer clears the
+// dialog, makes the chat `working`, sends `workspaces.changed` and answers
+// 204. `answerDialogs` answers each next answer with a test's answer, such
+// as a 503.
 import {
+  AnswerDialogRequest,
+  type PaneDialog,
+  PaneDialogResponse,
   ChatId,
   type ChatSummary,
   CloseChatRequest,
@@ -271,6 +287,11 @@ export function fakeWorkspacesServer(
   let createMade = false
   let quietCreates = false
   let made = 0
+  /** R69: the dialog on each chat's screen, each read's chat, each answer's chat and body, and a test's answer. */
+  const dialogs = new Map<string, PaneDialog>()
+  const dialogReads: string[] = []
+  const dialogAnswers: { chat: string; body: unknown }[] = []
+  let dialogAnswer: (() => Response) | undefined
 
   /** The ID of the tab made `at`th for `workspace`; it stays while the tab lives. */
   const tabId = (workspace: string, at: number) => `${workspace}:t${String(at + 1)}`
@@ -670,6 +691,41 @@ export function fakeWorkspacesServer(
     )
   }
 
+  /** A dialog read (R69): the dialog on the chat's screen, or null; an unknown chat is 404. */
+  const readDialog = (chat: string): Response => {
+    dialogReads.push(chat)
+    if (!response.workspaces.some((w) => w.chats.some((c) => c.id === chat)))
+      return errorAnswer(
+        { kind: 'not-found', path: `/api/chats/${chat}/dialog`, message: 'Not found', requestId: 'r-404' },
+        404,
+      )
+    return json(PaneDialogResponse.parse({ dialog: dialogs.get(chat) ?? null }))
+  }
+
+  /** A dialog answer (R69): the contract's checks, the test's answer, then the dialog's check, the list, 204. */
+  const answerDialog = (chat: string, init: RequestInit | undefined): Response => {
+    const body = bodyOf(init)
+    dialogAnswers.push({ chat, body })
+    const parsed = AnswerDialogRequest.safeParse(body)
+    if (new Headers(init?.headers).get('content-type') !== 'application/json' || !parsed.success)
+      return errorAnswer(
+        { kind: 'invalid-input', issues: ['the body'], message: 'Invalid input', requestId: 'r-400' },
+        400,
+      )
+    if (dialogAnswer !== undefined) return dialogAnswer()
+    if (!response.workspaces.some((w) => w.chats.some((c) => c.id === chat)))
+      return errorAnswer(
+        { kind: 'not-found', path: `/api/chats/${chat}/dialog`, message: 'Not found', requestId: 'r-404' },
+        404,
+      )
+    const shown = dialogs.get(chat)
+    if (shown?.id !== parsed.data.id || shown.options?.some((o) => o.n === parsed.data.n) !== true)
+      return notReady('dialogChanged')
+    dialogs.delete(chat)
+    update((c) => (c.id === chat ? { ...c, status: 'working' } : c))
+    return new Response(null, { status: 204 })
+  }
+
   /** An effort change (W10): the contract's checks, the test's answer, then the chat's status, the list, 204. */
   const effort = (chat: string, init: RequestInit | undefined): Response => {
     const body = bodyOf(init)
@@ -973,6 +1029,27 @@ export function fakeWorkspacesServer(
     hangEvents: () => {
       streams.splice(0)
     },
+    /**
+     * Puts `dialog` (checked against the contract) on `chat`'s screen and makes the chat `needsYou` (R69); null takes
+     * the dialog away and leaves the status. Tells the streams unless `quiet`.
+     */
+    showDialog: (chat: string, dialog: unknown, quiet = false) => {
+      const parsed = PaneDialogResponse.parse({ dialog }).dialog
+      if (parsed === null) {
+        dialogs.delete(chat)
+        return
+      }
+      dialogs.set(chat, parsed)
+      update((c) => (c.id === chat ? { ...c, status: 'needsYou' } : c), quiet)
+    },
+    /** Each dialog read's chat (R69), in order. */
+    dialogReads,
+    /** Each dialog answer the page posted (R69), with its chat as the server read it and its body. */
+    dialogAnswers,
+    /** Answers each next dialog answer with `answer` until it is set to undefined (R69). */
+    answerDialogs: (answer: (() => Response) | undefined) => {
+      dialogAnswer = answer
+    },
     /** Sets the status of `chat`, as a `workspaces.changed` read again shows it. */
     setStatus: (chat: string, status: ChatSummary['status']) => {
       update((c) => (c.id === chat ? { ...c, status } : c))
@@ -1076,6 +1153,11 @@ export function fakeWorkspacesServer(
         )
       const forkPath = /^\/api\/chats\/([^/]+)\/fork$/.exec(path)
       if (forkPath !== null && init?.method === 'POST') return fork(decodeURIComponent(forkPath[1] ?? ''), init)
+      const dialogPath = /^\/api\/chats\/([^/]+)\/dialog$/.exec(path)
+      if (dialogPath !== null)
+        return init?.method === 'POST'
+          ? answerDialog(decodeURIComponent(dialogPath[1] ?? ''), init)
+          : readDialog(decodeURIComponent(dialogPath[1] ?? ''))
       const effortPath = /^\/api\/chats\/([^/]+)\/effort$/.exec(path)
       if (effortPath !== null && init?.method === 'POST') return effort(decodeURIComponent(effortPath[1] ?? ''), init)
       const modelPath = /^\/api\/chats\/([^/]+)\/model$/.exec(path)

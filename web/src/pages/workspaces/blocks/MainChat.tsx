@@ -12,6 +12,7 @@ import type { ChatSkills } from './useSkillRows.ts'
 import { ChatHead } from './ChatHead.tsx'
 import type { EffortControl } from './EffortPicker.tsx'
 import type { CopyReply } from './ChatEntryView.tsx'
+import type { ChatDialog } from './chatDialog.ts'
 import { ChatPane, type ChatFiles, type ChatPending, type TranscriptWatch } from './ChatPane.tsx'
 import type { DraftBook } from './draftBook.ts'
 import { isHeaderTap } from './headerTap.ts'
@@ -57,6 +58,8 @@ export type MainChatProps = {
   files?: ChatFiles | undefined
   /** The chat's pending send, when it is a live Claude chat (ChatPane `pending`). */
   pending?: ChatPending | undefined
+  /** The chat's terminal dialog while it needs the owner, when it is a live Claude chat (ChatPane `dialog`, R69). */
+  dialog?: ChatDialog | undefined
   /** Reads each live chat's transcript while its pane shows (ChatPane); fixtures have none. */
   transcripts?: TranscriptWatch | undefined
   /** How wide the chat draws on the tablet and the desktop (Settings → Appearance); full when not set. */
@@ -86,6 +89,7 @@ export function MainChat(props: MainChatProps) {
     files,
     effort,
     pending,
+    dialog,
     transcripts,
     chatWidth,
     onCopy,
@@ -138,6 +142,7 @@ export function MainChat(props: MainChatProps) {
         onStop={onStop}
         files={files}
         pending={pending}
+        dialog={dialog}
         skills={skills}
         onSkillsOpenChange={onSkillsOpenChange}
         folders={folders}

@@ -75,6 +75,7 @@ import { SideChatPanel } from '../blocks/SideChatPanel.tsx'
 import { WorkspaceSidebar } from '../blocks/WorkspaceSidebar.tsx'
 import { WorkspaceTabs } from '../blocks/WorkspaceTabs.tsx'
 import type { CopyReply } from '../blocks/ChatEntryView.tsx'
+import { blockedDialog, type ChatDialog } from '../blocks/chatDialog.ts'
 import type { ChatFiles, ChatPending, TranscriptWatch } from '../blocks/ChatPane.tsx'
 import type { EffortControl } from '../blocks/EffortPicker.tsx'
 import type { SkillLists } from '../blocks/skillLists.ts'
@@ -107,6 +108,8 @@ export type WorkspacesScreenProps = {
   filesOf?: ((chat: string) => ChatFiles | undefined) | undefined
   /** A live Claude chat's pending send, by chat id; none for a sample chat, a Codex chat or a shell (ChatPane `pending`). */
   pendingOf?: ((chat: string) => ChatPending | undefined) | undefined
+  /** A live Claude chat's terminal dialog source, by chat id, read while the chat needs the owner (R69); none for a sample chat. */
+  dialogOf?: ((chat: string) => ChatDialog | undefined) | undefined
   /** A live Claude chat's effort picker (W10), by chat id; none for a sample chat, a Codex chat or a shell. */
   effortOf?: ((chat: string) => EffortControl | undefined) | undefined
   /** Sends a live Claude chat's /compact or /clear from its dialog (W5); answers as `onSend` does. */
@@ -155,6 +158,7 @@ export function WorkspacesScreen({
   onStop,
   filesOf,
   pendingOf,
+  dialogOf,
   effortOf,
   onCommand,
   onRetry,
@@ -324,6 +328,7 @@ export function WorkspacesScreen({
             onStop={onStop}
             filesOf={filesOf}
             pendingOf={pendingOf}
+            dialogOf={dialogOf}
             effortOf={effortOf}
             transcripts={transcripts}
             chatWidth={chatWidth}
@@ -406,6 +411,7 @@ function WorkspacesLayout({
   onStop,
   filesOf,
   pendingOf,
+  dialogOf,
   effortOf,
   transcripts,
   chatWidth,
@@ -461,6 +467,7 @@ function WorkspacesLayout({
         onStop={onStop}
         filesOf={filesOf}
         pendingOf={pendingOf}
+        dialogOf={dialogOf}
         effortOf={effortOf}
         transcripts={transcripts}
         chatWidth={chatWidth}
@@ -715,6 +722,7 @@ function WorkspacesLayout({
                   onStop={onStop}
                   filesOf={filesOf}
                   pendingOf={pendingOf}
+                  dialogOf={dialogOf}
                   transcripts={transcripts}
                   chatWidth={chatWidth}
                   skillLists={skillLists}
@@ -771,6 +779,7 @@ function WorkspacesLayout({
                   onStop={onStop && (() => onStop(chat.id))}
                   files={filesOf?.(chat.id)}
                   pending={pendingOf?.(chat.id)}
+                  dialog={blockedDialog(chat, dialogOf)}
                   effort={effortOf?.(chat.id)}
                   transcripts={transcripts}
                   chatWidth={chatWidth}
@@ -832,6 +841,7 @@ function WorkspacesLayout({
               onStop={onStop}
               filesOf={filesOf}
               pendingOf={pendingOf}
+              dialogOf={dialogOf}
               transcripts={transcripts}
               chatWidth={chatWidth}
               skillLists={skillLists}
