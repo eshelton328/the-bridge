@@ -3,7 +3,7 @@ import '@fontsource-variable/geist-mono'
 import '../index.css'
 import type { TranscriptEntry } from '@bridge/contract'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
 import { ErrorTray } from '../errors/ErrorTray.tsx'
 import { clearReports, getReports } from '../errors/reporter.ts'
@@ -13,7 +13,7 @@ import { resetRetries } from '../errors/retryGuard.ts'
 import { type FakeTranscriptServer, fakeTranscriptServer } from '../lib/fakeTranscriptServer.ts'
 import { clickNow, holdTimers } from '../lib/holdTimers.ts'
 import { queryClient } from '../lib/queryClient.ts'
-import { renderedUntil, setViewport } from '../lib/rendering.ts'
+import { afterRendering, renderedUntil, setViewport } from '../lib/rendering.ts'
 import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
@@ -313,12 +313,135 @@ describe("a live chat's transcript (slice 3b)", () => {
     fakeServer(server)
     await tapWorkspaces([390, 844])
     await tapChat('plan the slice')
-    await expect.element(page.getByText('No messages yet')).toBeVisible()
+    await expect.element(page.getByText('Send a message to start.')).toBeVisible()
     server.push(plan, [user('u1', 'First message')])
     await expect.element(page.getByText('First message')).toBeVisible()
-    await expect.element(page.getByText('No messages yet')).not.toBeInTheDocument()
+    await expect.element(page.getByText('Send a message to start.')).not.toBeInTheDocument()
     expect(getReports()).toEqual([])
   })
+
+  // A stand-in for window.visualViewport, moved as iOS Safari moves it when its keyboard opens (WorkspacesKeyboardGap).
+  class FakeViewport extends EventTarget {
+    height = document.documentElement.clientHeight
+    width = document.documentElement.clientWidth
+    offsetTop = 0
+    offsetLeft = 0
+    scale = 1
+    move(change: { height: number }) {
+      this.height = change.height
+      this.dispatchEvent(new Event('resize'))
+    }
+  }
+  /** Puts `value` in place of window.visualViewport until the test ends. */
+  function replaceVisualViewport(value: FakeViewport) {
+    const own = Object.getOwnPropertyDescriptor(window, 'visualViewport')
+    Object.defineProperty(window, 'visualViewport', { configurable: true, value })
+    onTestFinished(() => {
+      if (own) Object.defineProperty(window, 'visualViewport', own)
+      else Reflect.deleteProperty(window, 'visualViewport')
+    })
+  }
+
+  // R68 (the owner: "something a bit more polished for new chats", "nice icons that are centered"): a new chat's
+  // transcript centres the chat's mark in a round tile, its name and one quiet line above the composer. A short space
+  // (the keyboard up) hides the line, then the name, and never covers or moves the composer.
+  for (const [device, size] of [
+    ['phone', [390, 844]],
+    ['tablet', [744, 1133]],
+  ] as const)
+    it(`centres a new chat's mark, name and line, opened from the list, on the ${device}`, async () => {
+      const viewport = new FakeViewport()
+      replaceVisualViewport(viewport)
+      const server = fakeTranscriptServer()
+      server.set(plan, [])
+      fakeServer(server)
+      await tapWorkspaces(size)
+      await tapChat('plan the slice')
+      // The render's root fills the window, as `#root` does in index.css; earlier tests leave their renders.
+      const root = [...document.body.children].filter((el) => el.querySelector('.app-shell__root') !== null).at(-1)
+      if (!(root instanceof HTMLElement)) throw new Error('no root')
+      root.style.height = '100%'
+      await afterRendering()
+      const region = chatRegion('plan the slice')
+      await expect.element(region.getByText('Send a message to start.')).toBeVisible()
+      const empty = region.element().querySelector<HTMLElement>('[data-chat-empty]')
+      const part = (name: string) => empty?.querySelector<HTMLElement>(`[data-chat-empty-part="${name}"]`)
+      const mark = part('mark')
+      const title = part('title')
+      const line = part('line')
+      const body = empty?.closest<HTMLElement>('.scroll-frame__body')
+      const composer = region.getByRole('textbox').element().closest('.scroll-frame__footer')
+      if (!empty || !mark || !title || !line || !body || !composer) throw new Error('no empty state in the chat')
+      expect(mark.querySelector('svg')).not.toBeNull()
+      expect(title.textContent).toBe('plan the slice')
+      // Centred across the transcript, and in the middle of the space above the composer.
+      const middle = (r: DOMRect) => r.left + r.width / 2
+      const box = body.getBoundingClientRect()
+      for (const el of [mark, title, line])
+        expect(Math.abs(middle(el.getBoundingClientRect()) - middle(box))).toBeLessThanOrEqual(1)
+      const group = { top: mark.getBoundingClientRect().top, bottom: line.getBoundingClientRect().bottom }
+      const space = empty.getBoundingClientRect()
+      expect(Math.abs(group.top - space.top - (space.bottom - group.bottom))).toBeLessThanOrEqual(2)
+      expect(space.bottom).toBeLessThanOrEqual(composer.getBoundingClientRect().top + 0.5)
+      // The keyboard up, as the shell docks it (R36's way, WorkspacesKeyboardGap.test.tsx): a tap on the message box, then
+      // the visual viewport shrinks and the dock moves the composer up at the open's end. Two keyboard tops leave the
+      // space room for the mark and the name (the line clipped) and for the mark alone; the first top is a probe, and the
+      // second corrects it by the space it left, as the composer grows when it takes the focus.
+      const inside = (el: HTMLElement) => {
+        const r = el.getBoundingClientRect()
+        const s = empty.getBoundingClientRect()
+        return r.left >= s.left - 0.5 && r.right <= s.right + 0.5 && r.top >= s.top - 0.5 && r.bottom <= s.bottom + 0.5
+      }
+      const shell = body.closest<HTMLElement>('.app-shell__root')
+      const field = region.getByRole('textbox').element()
+      if (!shell || !(field instanceof HTMLElement)) throw new Error('no AppShell or message box')
+      const room = () => Math.round(empty.getBoundingClientRect().height)
+      await userEvent.click(field)
+      for (const [want, shows] of [
+        [96, { title: true, line: false }],
+        [60, { title: false, line: false }],
+      ] as const) {
+        let top = size[1] - 360
+        for (let step = 0; step < 2; step++) {
+          // A probe that left the room wanted needs no second move (the dock would not change).
+          if (step > 0 && room() === want) break
+          const before = shell.style.getPropertyValue('--app-shell-keyboard')
+          viewport.move({ height: top })
+          // The dock changes the layout only at the open's end, so wait for its new reach.
+          await expect.poll(() => shell.style.getPropertyValue('--app-shell-keyboard')).not.toBe(before)
+          await renderedUntil(() => true)
+          let last = -1
+          await expect
+            .poll(() => {
+              const now = room()
+              const same = now === last
+              last = now
+              return same
+            })
+            .toBe(true)
+          top -= room() - want
+        }
+        expect(Math.abs(room() - want)).toBeLessThanOrEqual(2)
+        expect(empty.getBoundingClientRect().bottom).toBeLessThanOrEqual(composer.getBoundingClientRect().top + 0.5)
+        expect(inside(mark)).toBe(true)
+        expect(inside(title)).toBe(shows.title)
+        expect(inside(line)).toBe(shows.line)
+        // A hidden part wraps whole into the next column, past the box's right edge, so none of its glyphs is drawn:
+        // it is never cut through.
+        for (const [el, shown] of [
+          [title, shows.title],
+          [line, shows.line],
+        ] as const)
+          if (!shown)
+            expect(el.getBoundingClientRect().left).toBeGreaterThanOrEqual(empty.getBoundingClientRect().right - 0.5)
+      }
+      // The keyboard closes: all three show again.
+      field.blur()
+      viewport.move({ height: size[1] })
+      await expect.poll(() => inside(line)).toBe(true)
+      expect(inside(title)).toBe(true)
+      expect(getReports()).toEqual([])
+    })
 
   it('shows the earlier line and the cut line', async () => {
     const server = fakeTranscriptServer()

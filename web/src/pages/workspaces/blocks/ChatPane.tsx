@@ -78,6 +78,7 @@ import { css, cx } from '../../../../styled-system/css/index.js'
 import { KEYBOARD_PROXY_EVENT } from '../../../lib/keyboardProxyEvent.ts'
 import { dropSkillWord, pickSkill, skillQuery } from '../../../lib/skillQuery.ts'
 import type { ChatEntry, ComposerState } from '../types.ts'
+import { ChatEmpty, type ChatEmptyProps } from './ChatEmpty.tsx'
 import type { CopyReply } from './ChatEntryView.tsx'
 import { type ChatDialog, hasOpenQuestion } from './chatDialog.ts'
 import { ComposerLine } from './ComposerLine.tsx'
@@ -313,8 +314,11 @@ type ChatPaneBase = {
   onCopy?: CopyReply | undefined
   /** The line over the entries, such as "Earlier entries not live yet"; none when not set. */
   earlier?: string | undefined
-  /** The line in place of the entries of a read transcript with none, such as "No messages yet"; none when not set. */
-  empty?: string | undefined
+  /**
+   * A read transcript with no entries (R68): its kind mark, its name and one line, such as "Send a message to start.",
+   * centred in the transcript (`ChatEmpty`); none when not set.
+   */
+  empty?: ChatEmptyProps | undefined
   /** The line under the entries, with Retry, when the transcript's read or updates failed; none when not set. */
   problem?: string | undefined
   /**
@@ -769,7 +773,7 @@ export function ChatPane(props: ChatPaneProps) {
         {loading === undefined ? (
           <>
             {earlier === undefined ? null : <span className={earlierLine}>{earlier}</span>}
-            {empty === undefined || pendingViews.length > 0 ? null : <span className={earlierLine}>{empty}</span>}
+            {empty === undefined || pendingViews.length > 0 ? null : <ChatEmpty {...empty} />}
             <TranscriptEntries
               chatId={chatId}
               entries={entries}

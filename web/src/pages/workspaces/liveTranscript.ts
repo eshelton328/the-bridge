@@ -84,8 +84,8 @@ export const transcriptText = {
   earlier: 'Earlier entries not live yet',
   /** Under an entry whose text the server cut at 65,536 characters. */
   cut: 'Cut — full text not live yet',
-  /** In place of the entries when the read transcript has none. */
-  empty: 'No messages yet',
+  /** In place of the entries when the read transcript has none, under the chat's mark and name (R68). */
+  empty: 'Send a message to start.',
   /** The label of a slash command's error output, such as a /compact that failed. */
   error: 'Error',
   /** The note on a reply that a Stop hook had written again (R62); a tap on it shows the drafts. */

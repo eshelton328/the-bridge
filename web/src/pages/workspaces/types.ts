@@ -232,7 +232,7 @@ export const WorkbenchPane = z.discriminatedUnion('type', [
     takesCommands: z.boolean().optional(),
     /** The line over the entries when the transcript has older entries than it shows, such as "Earlier entries not live yet". */
     earlier: z.string().optional(),
-    /** The line in place of the entries when a read transcript has none, such as "No messages yet". */
+    /** The line of a read transcript with no entries, such as "Send a message to start." (R68, `ChatEmpty`). */
     empty: z.string().optional(),
     /**
      * The line under the entries, with Retry, when the transcript's read or its updates failed, such as "Transcript not
