@@ -16,12 +16,15 @@ export {
   WorkspaceId,
 } from './ids.ts'
 export {
+  AbsoluteFilePath,
   FileEntry,
+  FileRawQuery,
   FileRoot,
   FilesQuery,
   FilesResponse,
   FileTextResponse,
   maxFileText,
+  maxImageBytes,
   maxIndexFiles,
   RootFilePath,
 } from './files.ts'

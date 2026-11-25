@@ -3,7 +3,7 @@
 // local path. The brain's `_local/` is not in its index. A URL names a file
 // by its `FileId`, and its text goes only in the text read's 200 body.
 import { z } from 'zod'
-import { FileId } from './ids.ts'
+import { ChatId, FileId } from './ids.ts'
 
 /** The most characters of one file's text in a response, as the Toolkit's (`maxToolkitFileText`). */
 export const maxFileText = 262_144
@@ -11,8 +11,8 @@ export const maxFileText = 262_144
 /** The most files of one root's index; a root with more lists the first ones in git's order and sets `cut`. */
 export const maxIndexFiles = 20_000
 
-/** The folder a path is relative to: the brain. */
-export const FileRoot = z.literal('brain')
+/** The folder a path is relative to: the brain, or the git repository of a live chat's folder, named by its chat ID. */
+export const FileRoot = z.union([z.literal('brain'), ChatId])
 export type FileRoot = z.infer<typeof FileRoot>
 
 /** A path relative to its root, such as "toolkit/rules/writing.md": no "/" first and no "." or ".." part. */
@@ -23,6 +23,26 @@ export const RootFilePath = z
   .refine((p) => !p.startsWith('/') && !p.split('/').some((part) => part === '' || part === '.' || part === '..'), {
     message: 'a path relative to its root',
   })
+
+/** The most bytes of an image that `GET /api/files/raw` sends. */
+export const maxImageBytes = 20 * 1024 ** 2
+
+/**
+ * A local absolute path, as a message's text writes it: the one request input that may hold a local path
+ * (contract/AGENTS.md). It never goes in a response, an error body, a header or a log.
+ */
+export const AbsoluteFilePath = z
+  .string()
+  .min(2)
+  .max(4096)
+  .refine((p) => p.startsWith('/') && !p.includes('\0'), { message: 'an absolute path' })
+
+/** The query of `GET /api/files/raw`: a root and a path in it, or an absolute path. */
+export const FileRawQuery = z.union([
+  z.strictObject({ root: FileRoot, path: RootFilePath }),
+  z.strictObject({ path: AbsoluteFilePath }),
+])
+export type FileRawQuery = z.infer<typeof FileRawQuery>
 
 /** The query of `GET /api/files` and `GET /api/files/:file/text`. */
 export const FilesQuery = z.strictObject({ root: FileRoot })
