@@ -1,37 +1,65 @@
-// A live Claude chat's terminal dialog (R69), drawn after the transcript's
-// entries while the chat needs the owner: as an approval in the transcript
-// (`ProposalBlock tone="approval"`, as a command waiting for approval draws),
-// the dialog's title, its body with its line breaks, and one button for each
-// option, "1 Send structured". The block's own actions are 28 px with no touch
-// size, so the options are the library's `Button` in the block's body, the
-// block's 28 px `sm` with a mouse and 44 (`control.xl`) on a touch screen
-// (`pointer: coarse`), as the menus' touch rows are (R59). A tap sends that
-// option; while it goes every option is off. The server lists only the
-// options a tap can answer, with their own numbers (free-text ones such as
-// "Type something" stay out), so the options keep `n` as given, a long label
-// wraps onto more lines, and a muted line under them says "Other answers: in
-// the terminal". A dialog the server could not
-// read for sure (no `options`) shows the text it read, read-only, in a
-// recessed box that scrolls when long, and the note "Answer in the terminal".
-// A 409 `dialogChanged` shows a quiet note until the next read; another miss
-// shows a line, with Retry when it may work later. Props only.
-import { Button, Inline, ProposalBlock, ProposalCommand } from '@eshelton328/component-library-1701'
+// A live Claude chat's terminal dialog (R69, restyled in R72), drawn after
+// the transcript's entries while the chat needs the owner. The card is a
+// library `Panel` with the needs-you border, as the Inbox's waiting card is:
+// a muted status line with a terminal icon ("Waiting for your answer"), the
+// dialog's title only when it says more than the question, and the question
+// as the main text with its line breaks. The options are one `OptionList`
+// in its `card` variant, as the Inbox draws the options of a question (D2):
+// a full-width row per option with a radio, the label and, when the server
+// sends one, the option's `detail` as a muted second line; the chosen row
+// is outlined. A row is 44 high or more. A tap chooses a row and "Send
+// answer" sends it (R72: one way for every dialog kind), so a slip of the
+// finger sends nothing. The server lists only the options a tap can
+// answer, with their own numbers (free-text ones such as "Type something"
+// stay out); the number is not shown, and a quiet line says "Other answers:
+// in the terminal". While an answer goes, after it went and after a 409
+// `dialogChanged` the rows and the button are off; a 409 shows a quiet note
+// until the next read; another miss shows a line, with Retry when it may
+// work later. A dialog the server could not read for sure (no `options`)
+// shows the text it read, read-only, in a recessed box that scrolls when
+// long, and the note "Answer in the terminal". Props only.
+import type { PaneDialog } from '@bridge/contract'
+import {
+  Button,
+  CheckIcon,
+  Inline,
+  OptionList,
+  Panel,
+  ProposalCommand,
+  Stack,
+  TerminalIcon,
+} from '@eshelton328/component-library-1701'
+import { useId, useState } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { DialogView } from './chatDialog.ts'
 import { TranscriptProblem } from './TranscriptProblem.tsx'
 
-/** The card's words: picked by the chat that built the card (d-101). */
+/** The card's words: picked by the chat that built the card (d-101, R72). */
 const dialogText = {
-  label: 'Waiting in the terminal',
+  status: 'Waiting for your answer',
+  options: 'Answers',
+  send: 'Send answer',
+  sending: 'Sending…',
+  sent: 'Sent',
   answerThere: 'Answer in the terminal',
   changed: 'The terminal changed — showing the new state',
   otherAnswers: 'Other answers: in the terminal',
 } as const
 
-// The body keeps the dialog's line breaks, in the transcript's small text.
-const bodyText = css({
+/**
+ * A dialog option as the contract will send it: the label alone, and the option's description in `detail` when it
+ * says more than the label. A local type until the contract's `detail` lands (backend-coord's contract PR).
+ */
+type DialogOption = NonNullable<PaneDialog['options']>[number] & { readonly detail?: string | undefined }
+
+// The status line: small and muted, its icon in the needs-you colour, as the chat's "Needs you" pill.
+const statusLine = css({ textStyle: 'small', color: 'fg.muted' })
+const statusIcon = css({ display: 'inline-flex', color: 'status.needsYou.fg' })
+const titleText = css({ m: '0', textStyle: 'label', color: 'fg.default', overflowWrap: 'anywhere' })
+// The question keeps the dialog's line breaks, in the transcript's body text.
+const questionText = css({
   m: '0',
-  textStyle: 'small',
+  textStyle: 'body',
   color: 'fg.default',
   whiteSpace: 'pre-wrap',
   overflowWrap: 'anywhere',
@@ -39,29 +67,21 @@ const bodyText = css({
 // The read text of a dialog with no options scrolls inside its box past the skill list's height (LIBRARY_GAPS.md:
 // Terminal dialog card).
 const rawBox = css({ maxH: 'shell.pickerHeight', overflowY: 'auto' })
-// An option: at least the block's 28 high with a mouse and 44 (`control.xl`) on a touch screen, as `Menu touch` rows
-// are (R59). A long label wraps onto more lines and the option grows, never past the card (LIBRARY_GAPS.md: Terminal
-// dialog card).
-const option = css({
-  h: 'auto',
-  minH: 'control.sm',
-  maxW: '[100%]',
-  flexShrink: '1',
-  py: '4',
-  whiteSpace: 'normal',
-  overflowWrap: 'anywhere',
-  textAlign: 'start',
-  '@media (pointer: coarse)': { minH: 'control.xl' },
-})
-// An option's text: its number and label, and its description (`detail`) on a muted line under them.
-const optionText = css({ display: 'flex', flexDir: 'column', alignItems: 'flex-start' })
-const detailText = css({ color: 'fg.muted' })
-// The line under the options: the answers that are not a tap.
-const otherLine = css({ m: '0', textStyle: 'small', color: 'fg.muted' })
+const quietLine = css({ m: '0', textStyle: 'small', color: 'fg.muted' })
+// Send answer keeps to the end of the row, also on its own line when the row wraps on a phone.
+const atEnd = css({ ml: 'auto' })
+
+/** The question of `dialog`, and its title when the title says more than the question. */
+function heading(dialog: PaneDialog): { title: string | undefined; question: string | undefined } {
+  const question = dialog.body?.trim() === '' ? undefined : dialog.body
+  const title = dialog.title?.trim()
+  const same = title !== undefined && question?.trim() === title
+  return { title: title === undefined || title === '' || same ? undefined : title, question }
+}
 
 export type DialogCardProps = {
   view: DialogView
-  /** Sends the option numbered `n`; the owner tapped it. */
+  /** Sends the option numbered `n`; the owner chose it and pressed Send answer. */
   onAnswer: (n: number) => void
   /** Sends the failed answer again. */
   onRetry: () => void
@@ -69,46 +89,75 @@ export type DialogCardProps = {
 
 export function DialogCard({ view, onAnswer, onRetry }: DialogCardProps) {
   const { dialog, phase } = view
+  const statusId = useId()
+  // The chosen row, kept for this dialog only: another dialog starts with none.
+  const [chosen, setChosen] = useState<{ id: string; n: number } | undefined>(undefined)
   const off = phase === 'sending' || phase === 'sent' || phase === 'changed'
-  const options = dialog.options ?? []
-  const note = phase === 'changed' ? dialogText.changed : options.length === 0 ? dialogText.answerThere : undefined
+  const options: readonly DialogOption[] = dialog.options ?? []
+  const pick = chosen?.id === dialog.id ? chosen.n : undefined
+  const { title, question } = heading(dialog)
+  const send = () => {
+    if (!off && pick !== undefined) onAnswer(pick)
+  }
+  const sendLabel = phase === 'sending' ? dialogText.sending : phase === 'sent' ? dialogText.sent : dialogText.send
   return (
-    <div data-pane-dialog="" aria-busy={phase === 'sending'}>
-      <ProposalBlock tone="approval" label={dialogText.label} title={dialog.title} note={note} actions={[]}>
-        {options.length === 0 ? (
-          <div className={rawBox} role="region" aria-label="Dialog text" tabIndex={0}>
-            <ProposalCommand>{dialog.raw}</ProposalCommand>
-          </div>
-        ) : (
-          <>
-            {dialog.body === undefined || dialog.body === '' ? null : <p className={bodyText}>{dialog.body}</p>}
-            <Inline gap="8" wrap>
-              {options.map((o) => (
+    <div data-pane-dialog="" role="group" aria-labelledby={statusId} aria-busy={phase === 'sending'}>
+      <Panel variant="section" tone="needsYou">
+        <Stack gap="12">
+          <Inline gap="6" align="center" className={statusLine}>
+            <span className={statusIcon} aria-hidden="true">
+              <TerminalIcon size="16" />
+            </span>
+            <span id={statusId}>{dialogText.status}</span>
+          </Inline>
+          {options.length === 0 ? (
+            <>
+              {title === undefined ? null : <p className={titleText}>{title}</p>}
+              <div className={rawBox} role="region" aria-label="Dialog text" tabIndex={0}>
+                <ProposalCommand>{dialog.raw}</ProposalCommand>
+              </div>
+              <p className={quietLine}>{dialogText.answerThere}</p>
+            </>
+          ) : (
+            <>
+              {title === undefined && question === undefined ? null : (
+                <Stack gap="4">
+                  {title === undefined ? null : <p className={titleText}>{title}</p>}
+                  {question === undefined ? null : <p className={questionText}>{question}</p>}
+                </Stack>
+              )}
+              <OptionList
+                label={question ?? title ?? dialogText.options}
+                variant="card"
+                disabled={off}
+                value={pick === undefined ? null : String(pick)}
+                onValueChange={(value) => {
+                  setChosen({ id: dialog.id, n: Number(value) })
+                }}
+                items={options.map((o) => ({ value: String(o.n), label: o.label, description: o.detail }))}
+              />
+              {phase === 'changed' ? <p className={quietLine}>{dialogText.changed}</p> : null}
+              <Inline gap="12" align="center" justify="between" wrap>
+                <p className={quietLine}>{dialogText.otherAnswers}</p>
                 <Button
-                  key={o.n}
-                  size="sm"
-                  textSize="xs"
-                  variant="secondary"
-                  className={option}
-                  disabled={off}
-                  onClick={() => {
-                    if (!off) onAnswer(o.n)
-                  }}
+                  variant="primary"
+                  size="lg"
+                  touch
+                  className={atEnd}
+                  disabled={off || pick === undefined}
+                  onClick={send}
                 >
-                  <span className={optionText}>
-                    <span>{`${String(o.n)} ${o.label}`}</span>
-                    {o.detail === undefined ? null : <span className={detailText}>{o.detail}</span>}
-                  </span>
+                  {phase === 'sent' ? <CheckIcon /> : null}
+                  {sendLabel}
                 </Button>
-              ))}
-            </Inline>
-            <p className={otherLine}>{dialogText.otherAnswers}</p>
-          </>
-        )}
-        {phase === 'failed' && view.line !== undefined ? (
-          <TranscriptProblem text={view.line} onRetry={view.retry === true ? onRetry : undefined} />
-        ) : null}
-      </ProposalBlock>
+              </Inline>
+            </>
+          )}
+          {phase === 'failed' && view.line !== undefined ? (
+            <TranscriptProblem text={view.line} onRetry={view.retry === true ? onRetry : undefined} />
+          ) : null}
+        </Stack>
+      </Panel>
     </div>
   )
 }

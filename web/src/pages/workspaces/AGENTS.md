@@ -359,13 +359,18 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   stopped prompt back there) keeps the draft and says "Not sent — clear
   the text in the chat's terminal input, then send", with no Retry and no
   report.
-- A terminal dialog (R69, backend #493, the contract's `paneDialogs.ts`):
-  a live Claude chat that needs the owner on a dialog its transcript does
-  not hold, such as a skill's numbered step, shows it as a card after the
-  entries (`blocks/DialogCard.tsx`, an approval `ProposalBlock`): the
-  title, the body with its line breaks and one button per option, "1 Send
-  structured", 28 high with a mouse and 44 on a touch screen (`pointer:
-  coarse`, as the menus' touch rows, R59). The pane reads `GET
+- A terminal dialog (R69, backend #493, the contract's `paneDialogs.ts`;
+  restyled in R72): a live Claude chat that needs the owner on a dialog
+  its transcript does not hold, such as a skill's numbered step, shows it
+  as a card after the entries (`blocks/DialogCard.tsx`): a library `Panel`
+  with the needs-you border, a muted "Waiting for your answer" line with
+  a terminal icon, the dialog's title only when it differs from the
+  question, and the question with its line breaks. The options are one
+  `OptionList variant="card"`, as the Inbox's question options: a
+  full-width row per option, 44 high or more, with a radio, the label and
+  the option's `detail` as a muted second line when the server sends one;
+  the number is not shown. A tap chooses a row, and "Send answer" sends
+  it, for every dialog kind (R72). The pane reads `GET
   /api/chats/:chat/dialog` only while the chat is "Needs you", its
   transcript has loaded and no AskUserQuestion of it still runs
   (`blocks/chatDialog.ts`): at once, every 3 s while the page shows and
@@ -374,14 +379,14 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   `useLiveDialogs.ts`), through the typed client. Each reply is parsed
   with the contract's schemas; `dialog: null` and a 404 draw no card. A
   reply the schema refuses is reported as `bad-reply`: on the first read
-  it draws no card, and on a later read the card keeps what it shows; a
-  tap on it still goes through the server's dialog-ID check (a 409
-  `dialogChanged` if the dialog changed). A tap posts the contract's
-  `AnswerDialogRequest` `{ id, n }` once and turns every option off until
-  the next dialog. The server lists only the options a tap answers (no
+  it draws no card, and on a later read the card keeps what it shows; an
+  answer to it still goes through the server's dialog-ID check (a 409
+  `dialogChanged` if the dialog changed). Send answer posts the contract's
+  `AnswerDialogRequest` `{ id, n }` once and turns the rows and the button
+  off ("Sending…", then "Sent") until the next dialog, which starts with
+  no row chosen. The server lists only the options a tap answers (no
   free-text ones), so the options keep `n` as given, a long label wraps,
-  an option's `detail` (its description) shows in a muted line under its
-  label in the button, and a muted line "Other answers: in the terminal" shows under them.
+  and a muted line "Other answers: in the terminal" shows beside Send answer.
   A 409 `dialogChanged` shows "The terminal changed — showing the new
   state" until the next read; another 409 state "Not sent
   — <state>" with no Retry; any other miss "Not sent — <kind>" with Retry
