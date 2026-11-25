@@ -11,7 +11,7 @@ import { execFileSync } from 'node:child_process'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { parseArgs } from 'node:util'
-import { chromium, type Page } from 'playwright'
+import { chromium, type BrowserContext, type Page } from 'playwright'
 import { waitForAnimations, waitForLayout } from './fidelity/settle.ts'
 import { serveStatic, storybookDir, storyForState, storyUrl } from './fidelity/storyServer.ts'
 import { repoRoot } from './fidelity/references.ts'
@@ -195,15 +195,42 @@ function paintedOnTop(pairs: { a: string; b: string; x: number; y: number }[]): 
   })
 }
 
-/** Puts the class of one text size on <html>, as the app does, and waits for the layout to settle. */
-async function useSize(tab: Page, className: string | null): Promise<void> {
-  await tab.evaluate((name) => {
-    const root = document.documentElement
-    root.classList.remove('text-default', 'text-large')
-    if (name !== null) root.classList.add(name)
+/**
+ * Opens the story at one text size, as the app does: index.html's text-size script puts the class on <html> before
+ * the first paint (d-122), so every part, an autoresize field too, renders at that size from the start. A class
+ * swapped on a page already drawn leaves an autoresize field at its old height for a while, which no user sees.
+ */
+async function openAt(
+  context: BrowserContext,
+  url: string,
+  className: string | null,
+  onError: (message: string) => void,
+): Promise<Page> {
+  const tab = await context.newPage()
+  tab.on('pageerror', (e) => {
+    onError(e.message)
+  })
+  await tab.addInitScript((name) => {
+    // The init script runs before <html> exists: set the class as soon as the parser adds it.
+    const apply = (): boolean => {
+      const root = document.documentElement
+      if (root === null) return false
+      root.classList.remove('text-default', 'text-large')
+      if (name !== null) root.classList.add(name)
+      return true
+    }
+    if (apply()) return
+    const watch = new MutationObserver(() => {
+      if (apply()) watch.disconnect()
+    })
+    watch.observe(document, { childList: true })
   }, className)
+  await tab.goto(url)
+  await tab.waitForSelector('#storybook-root > *')
+  await tab.evaluate(() => document.fonts.ready.then(() => undefined))
   await waitForAnimations(tab)
   await waitForLayout(tab)
+  return tab
 }
 
 if (values['skip-build'] !== true || !existsSync(join(storybookDir, 'index.json'))) {
@@ -230,19 +257,17 @@ try {
       reducedMotion: 'reduce',
     })
     try {
-      const tab = await context.newPage()
-      tab.on('pageerror', (e) => errors.push(`${page}/${state}: ${e.message}`))
-      await tab.goto(storyUrl(server.origin, story))
-      await tab.waitForSelector('#storybook-root > *')
-      await tab.evaluate(() => document.fonts.ready.then(() => undefined))
       let small: TextProblem[] = []
       const fresh: { default: TextProblem[]; large: TextProblem[] } = { default: [], large: [] }
       for (const [size, className] of sizes) {
-        await useSize(tab, className)
+        const tab = await openAt(context, storyUrl(server.origin, story), className, (message) => {
+          errors.push(`${page}/${state} (${size}): ${message}`)
+        })
         const measured = await tab.evaluate(measureText)
         const pairs = overlapPairs(measured)
         const onTop = await tab.evaluate(paintedOnTop, pairs.map((p) => ({ a: p.a.key, b: p.b.key, x: p.x, y: p.y })))
         const found = [...problemsOf(measured), ...overlapsOf(pairs, onTop)]
+        await tab.close()
         if (size === 'small') small = found
         else {
           fresh[size] = newProblems(small, found)
