@@ -216,6 +216,9 @@ const createInState = {
     'Make a store with createAppStore from state/createAppStore.ts, so it gets devtools and the reset registry (rule R7).',
 }
 
+const canvasUseMessage =
+  'The Claude Design canvas runs React 18, which has no `use`; read a context with its Consumer (vite.canvas.config.ts).'
+
 function restrictedImports({ layer, test = false, allowPane = false, allowCreate = false }) {
   const patterns = []
   if (propsOnlyLayers.includes(layer))
@@ -227,6 +230,8 @@ function restrictedImports({ layer, test = false, allowPane = false, allowCreate
     ? []
     : [{ name: '@eshelton328/component-library-1701', importNames: ['Pane'], message: paneMessage }]
   if (layer === storeLayer) paths.push(...zustandInState, ...(allowCreate ? [] : [createInState]))
+  if (propsOnlyLayers.includes(layer) && !test)
+    paths.push({ name: 'react', importNames: ['use'], message: canvasUseMessage })
   return ['error', { patterns, paths }]
 }
 

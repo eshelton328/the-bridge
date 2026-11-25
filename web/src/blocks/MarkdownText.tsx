@@ -20,7 +20,7 @@
 // plugins are one list and the element overrides one map per size, so a
 // later plugin (math, diagrams) adds an entry to each. The caller wraps it
 // in a BlockBoundary.
-import { use, useMemo, type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import Markdown, { type Components, type ExtraProps, type Options } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { ChatMention } from './ChatMention.tsx'
@@ -135,16 +135,26 @@ export type MarkdownTextProps = {
   onCopyCode?: CopyCode | undefined
 }
 
+/** The plugins for a chats map, one array per map, so a render with the same map keeps them. */
+const pluginsByChats = new WeakMap<ReadonlyMap<string, string>, NonNullable<Options['remarkPlugins']>>()
+const pluginsFor = (chats: ReadonlyMap<string, string>): NonNullable<Options['remarkPlugins']> => {
+  if (chats.size === 0) return remarkPlugins
+  const known = pluginsByChats.get(chats)
+  if (known !== undefined) return known
+  const plugins: NonNullable<Options['remarkPlugins']> = [...remarkPlugins, [remarkChatMentions, chats]]
+  pluginsByChats.set(chats, plugins)
+  return plugins
+}
+
+// The context is read with its Consumer, not `use` or useContext: the canvas runs React 18, which has no `use`.
 export function MarkdownText({ text, size = 'md', onCopyCode }: MarkdownTextProps) {
-  const { chats } = use(MarkdownChatsContext)
-  const plugins = useMemo(
-    (): NonNullable<Options['remarkPlugins']> =>
-      chats.size === 0 ? remarkPlugins : [...remarkPlugins, [remarkChatMentions, chats]],
-    [chats],
-  )
   return (
-    <Markdown remarkPlugins={plugins} components={componentsFor(size, onCopyCode)}>
-      {text}
-    </Markdown>
+    <MarkdownChatsContext.Consumer>
+      {({ chats }) => (
+        <Markdown remarkPlugins={pluginsFor(chats)} components={componentsFor(size, onCopyCode)}>
+          {text}
+        </Markdown>
+      )}
+    </MarkdownChatsContext.Consumer>
   )
 }
