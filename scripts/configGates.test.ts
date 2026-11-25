@@ -104,3 +104,17 @@ void test('G-3: a token reference that does not exist fails panda codegen and cs
     rmSync(join(root, 'web/styled-system', `${name}.css`), { force: true })
   }
 })
+
+void test('a props-only layer may not import `use` from react, which the React 18 canvas lacks', async () => {
+  const path = join(root, 'web/src/blocks', `plantedGate${String(process.pid)}.ts`)
+  writeFileSync(
+    path,
+    "import { createContext, use } from 'react'\n\nconst Planted = createContext(0)\nexport const read = (): number => use(Planted)\n",
+  )
+  try {
+    const [result] = await new ESLint({ cwd: root }).lintFiles([path])
+    assert.ok(result?.messages.some((m) => m.ruleId === 'no-restricted-imports' && m.message.includes('React 18')))
+  } finally {
+    rmSync(path, { force: true })
+  }
+})

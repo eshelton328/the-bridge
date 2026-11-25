@@ -5,7 +5,7 @@
 // own action on the link. The R56 rules are for the links a text writes,
 // not for this one. Props only.
 import { MentionChip } from '@eshelton328/component-library-1701'
-import { use, type MouseEvent, type ReactNode } from 'react'
+import type { MouseEvent, ReactNode } from 'react'
 import { MarkdownChatsContext } from './markdownChats.ts'
 
 export type ChatMentionProps = {
@@ -18,12 +18,22 @@ export type ChatMentionProps = {
 }
 
 export function ChatMention({ chat, name, children }: ChatMentionProps) {
-  const { open } = use(MarkdownChatsContext)
   if (typeof chat !== 'string' || typeof name !== 'string') return children
-  const onClick = (event: MouseEvent<HTMLAnchorElement>) => {
-    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
-    event.preventDefault()
-    open(chat)
-  }
-  return <MentionChip name={name} href={`/workspaces?chat=${encodeURIComponent(chat)}`} onClick={onClick} />
+  const href = `/workspaces?chat=${encodeURIComponent(chat)}`
+  // The Consumer, not `use` or useContext: the canvas runs React 18, which has no `use`.
+  return (
+    <MarkdownChatsContext.Consumer>
+      {({ open }) => (
+        <MentionChip
+          name={name}
+          href={href}
+          onClick={(event: MouseEvent<HTMLAnchorElement>) => {
+            if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+            event.preventDefault()
+            open(chat)
+          }}
+        />
+      )}
+    </MarkdownChatsContext.Consumer>
+  )
 }
