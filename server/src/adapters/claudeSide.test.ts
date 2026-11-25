@@ -37,10 +37,6 @@ process.stdin.on('end', () => {
     process.stderr.write('boom from the fake')
     process.exit(3)
   }
-  if (question === 'stubborn') {
-    process.on('SIGTERM', () => undefined)
-    return setInterval(() => undefined, 1000)
-  }
   say('First part.')
   out({ type: 'assistant', parent_tool_use_id: null, message: { content: [{ type: 'tool_use', name: 'Read' }] } })
   say('From a subagent.', 'toolu_1')
@@ -75,6 +71,7 @@ async function ask(
   signal = new AbortController().signal,
   limits: { timeoutMs?: number; killAfterMs?: number } = {},
   record: SideRecord = plain,
+  command: readonly [string, ...string[]] = [process.execPath, join(dir, 'fake.cjs'), join(dir, 'seen.json')],
 ) {
   logged = memoryLogger()
   const run = claudeSideRunner({
@@ -88,7 +85,7 @@ async function ask(
       HERDR_PANE_ID: 'w1:p1',
       HERDR_SOCKET_PATH: '/home/dev/h.sock',
     },
-    command: [process.execPath, join(dir, 'fake.cjs'), join(dir, 'seen.json')],
+    command,
   })
   const chunks: SideChunk[] = []
   for await (const chunk of run({ session: 'session-5150', folder: dir, question, record, signal })) chunks.push(chunk)
@@ -159,7 +156,13 @@ describe('claude side runner', () => {
   it('ends a run with no end of its own as failed at its time limit, with SIGKILL for one that stays', async () => {
     expect(await ask('hang', undefined, { timeoutMs: 200 })).toEqual([{ end: 'failed' }])
     expect(logged.lines()).toEqual([expect.objectContaining({ msg: 'side run failed', timedOut: true })])
-    expect(await ask('stubborn', undefined, { timeoutMs: 200, killAfterMs: 200 })).toEqual([{ end: 'failed' }])
+    // A process that ignores SIGTERM from its first step: sh sets the ignore before anything else, and exec keeps an
+    // ignored signal, so the same pid stays. The node fake ignored it only after node started and read stdin, which on
+    // a busy machine came after the 200 ms SIGTERM (a local verify at load 41, 2026-11-25).
+    const stubborn = ['/bin/sh', '-c', 'trap "" TERM; exec /bin/sleep 30'] as const
+    expect(await ask('stubborn', undefined, { timeoutMs: 200, killAfterMs: 200 }, plain, stubborn)).toEqual([
+      { end: 'failed' },
+    ])
     expect(logged.lines()).toEqual([expect.objectContaining({ signal: 'SIGKILL', timedOut: true })])
   })
 
