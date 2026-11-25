@@ -8,9 +8,9 @@
 // phone it sits under Back, and the phone puts Snooze and Dismiss in the
 // nav. Props only.
 import { Button, ExternalLinkIcon, Inline, MarkdownView, Panel, Stack } from '@eshelton328/component-library-1701'
-import Markdown, { type Components } from 'react-markdown'
 import { css } from '../../../../styled-system/css/index.js'
 import { DetailFrame } from '../../../blocks/DetailFrame.tsx'
+import { MarkdownText } from '../../../blocks/MarkdownText.tsx'
 import { BlockBoundary } from '../../../errors/BlockBoundary.tsx'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { BackToInbox } from '../blocks/BackToInbox.tsx'
@@ -25,16 +25,6 @@ const hint = css({ textStyle: 'small', color: 'fg.subtle' })
 // As QuestionDetail pads the phone's and the tablet's task frame (M5, T3).
 const phoneTask = css({ px: '4', pt: '8', pb: '32' })
 const tabletTask = css({ pt: '6', pb: '32' })
-
-// A record's link keeps only a safe URL and opens in a new tab; an image shows its alt text (as EntryText).
-const components: Components = {
-  a: ({ href, children }) => (
-    <a href={href} target="_blank" rel="noreferrer">
-      {children}
-    </a>
-  ),
-  img: ({ alt }) => alt ?? null,
-}
 
 /** The task bar and title block of a live item, from its row. */
 function headOf(row: InboxRowView, open: LiveOpen): InboxDetailHead {
@@ -121,7 +111,7 @@ export function LiveDetail({ row, open, layout, snooze, onBack, onOpenChat }: Li
           <DetailSection title="Context">
             <BlockBoundary contentKey={row.id}>
               <MarkdownView size="sm" padding="none">
-                <Markdown components={components}>{open.body}</Markdown>
+                <MarkdownText text={open.body} size="sm" />
               </MarkdownView>
             </BlockBoundary>
           </DetailSection>

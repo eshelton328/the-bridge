@@ -83,7 +83,8 @@ export const devices = [
   { name: 'the desktop', size: [1512, 982], nav: 'rail · Inbox' },
   { name: 'the phone', size: [390, 844], nav: 'tab · Inbox' },
 ] as const
-export type Device = (typeof devices)[number]
+/** A device the Inbox opens on: its name, its window size and the `data-figma` name of its nav's Inbox item. */
+export type Device = { readonly name: string; readonly size: readonly [number, number]; readonly nav: string }
 
 /**
  * Opens the app with no URL parameters at the device's size, which shows the Inbox, and taps Inbox in the nav.
