@@ -1,5 +1,3 @@
-import '@fontsource-variable/geist'
-import '@fontsource-variable/geist-mono'
 import '../index.css'
 import type { TranscriptEntry } from '@bridge/contract'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
@@ -14,11 +12,8 @@ import { resetAllStores } from '../state/resetStores.ts'
 import { stubLiveServer } from './liveServerStub.ts'
 import { routeTree } from './routeTree.gen.ts'
 
-// A live chat's name in a message is a mention that opens that chat (remarkChatMentions.ts). Each test takes the
-// owner's path on the phone and the tablet: it opens the app with no URL parameters, taps Workspaces and a live chat,
-// then taps the mention in its reply. The chats and their text are made up.
-document.documentElement.classList.add('dark')
-document.documentElement.dataset.pandaTheme = 'viewscreen'
+// A live chat's name in a message opens that chat (remarkChatMentions.ts), on the owner's path: the app with no URL
+// parameters, Workspaces, a live chat, then the mention in its reply. The chats and their text are made up.
 
 const workspace = 'mac-mini/w-live'
 const plan = 'mac-mini/c1'
