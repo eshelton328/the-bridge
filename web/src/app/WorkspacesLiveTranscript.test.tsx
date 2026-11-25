@@ -3,7 +3,7 @@ import '@fontsource-variable/geist-mono'
 import '../index.css'
 import type { TranscriptEntry } from '@bridge/contract'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
 import { ErrorTray } from '../errors/ErrorTray.tsx'
 import { clearReports, getReports } from '../errors/reporter.ts'
@@ -320,6 +320,28 @@ describe("a live chat's transcript (slice 3b)", () => {
     expect(getReports()).toEqual([])
   })
 
+  // A stand-in for window.visualViewport, moved as iOS Safari moves it when its keyboard opens (WorkspacesKeyboardGap).
+  class FakeViewport extends EventTarget {
+    height = document.documentElement.clientHeight
+    width = document.documentElement.clientWidth
+    offsetTop = 0
+    offsetLeft = 0
+    scale = 1
+    move(change: { height: number }) {
+      this.height = change.height
+      this.dispatchEvent(new Event('resize'))
+    }
+  }
+  /** Puts `value` in place of window.visualViewport until the test ends. */
+  function replaceVisualViewport(value: FakeViewport) {
+    const own = Object.getOwnPropertyDescriptor(window, 'visualViewport')
+    Object.defineProperty(window, 'visualViewport', { configurable: true, value })
+    onTestFinished(() => {
+      if (own) Object.defineProperty(window, 'visualViewport', own)
+      else Reflect.deleteProperty(window, 'visualViewport')
+    })
+  }
+
   // R68 (the owner: "something a bit more polished for new chats", "nice icons that are centered"): a new chat's
   // transcript centres the chat's mark in a round tile, its name and one quiet line above the composer. A short space
   // (the keyboard up) hides the line, then the name, and never covers or moves the composer.
@@ -328,6 +350,8 @@ describe("a live chat's transcript (slice 3b)", () => {
     ['tablet', [744, 1133]],
   ] as const)
     it(`centres a new chat's mark, name and line, opened from the list, on the ${device}`, async () => {
+      const viewport = new FakeViewport()
+      replaceVisualViewport(viewport)
       const server = fakeTranscriptServer()
       server.set(plan, [])
       fakeServer(server)
@@ -359,33 +383,54 @@ describe("a live chat's transcript (slice 3b)", () => {
       const space = empty.getBoundingClientRect()
       expect(Math.abs(group.top - space.top - (space.bottom - group.bottom))).toBeLessThanOrEqual(2)
       expect(space.bottom).toBeLessThanOrEqual(composer.getBoundingClientRect().top + 0.5)
-      // The keyboard up: the transcript's space shrinks by its reach. Where the space holds the mark and the name, the line
-      // is out of the box; where it holds the mark alone, the name is too. The empty state never reaches under the composer.
-      const shell = body.closest<HTMLElement>('.app-shell__root')
-      if (!shell) throw new Error('no AppShell')
+      // The keyboard up, as the shell docks it (R36's way, WorkspacesKeyboardGap.test.tsx): a tap on the message box, then
+      // the visual viewport shrinks and the dock moves the composer up at the open's end. Two keyboard tops leave the
+      // space room for the mark and the name (the line clipped) and for the mark alone; the first top is a probe, and the
+      // second corrects it by the space it left, as the composer grows when it takes the focus.
       const inside = (el: HTMLElement) => {
         const r = el.getBoundingClientRect()
         const s = empty.getBoundingClientRect()
         return r.left >= s.left - 0.5 && r.right <= s.right + 0.5 && r.top >= s.top - 0.5 && r.bottom <= s.bottom + 0.5
       }
-      const rest = space.height
-      for (const [room, shows] of [
-        // The composer's footer takes up to 8 of it on the keyboard (review R36).
+      const shell = body.closest<HTMLElement>('.app-shell__root')
+      const field = region.getByRole('textbox').element()
+      if (!shell || !(field instanceof HTMLElement)) throw new Error('no AppShell or message box')
+      const room = () => Math.round(empty.getBoundingClientRect().height)
+      await userEvent.click(field)
+      for (const [want, shows] of [
         [96, { title: true, line: false }],
         [60, { title: false, line: false }],
       ] as const) {
-        const keyboard = rest - room
-        shell.style.setProperty('--app-shell-keyboard', `${String(keyboard)}px`)
-        await afterRendering()
-        await afterRendering()
+        let top = size[1] - 360
+        for (let step = 0; step < 2; step++) {
+          // A probe that left the room wanted needs no second move (the dock would not change).
+          if (step > 0 && room() === want) break
+          const before = shell.style.getPropertyValue('--app-shell-keyboard')
+          viewport.move({ height: top })
+          // The dock changes the layout only at the open's end, so wait for its new reach.
+          await expect.poll(() => shell.style.getPropertyValue('--app-shell-keyboard')).not.toBe(before)
+          await renderedUntil(() => true)
+          let last = -1
+          await expect
+            .poll(() => {
+              const now = room()
+              const same = now === last
+              last = now
+              return same
+            })
+            .toBe(true)
+          top -= room() - want
+        }
+        expect(Math.abs(room() - want)).toBeLessThanOrEqual(2)
         expect(empty.getBoundingClientRect().bottom).toBeLessThanOrEqual(composer.getBoundingClientRect().top + 0.5)
         expect(inside(mark)).toBe(true)
         expect(inside(title)).toBe(shows.title)
         expect(inside(line)).toBe(shows.line)
       }
-      shell.style.removeProperty('--app-shell-keyboard')
-      await afterRendering()
-      expect(inside(line)).toBe(true)
+      // The keyboard closes: all three show again.
+      field.blur()
+      viewport.move({ height: size[1] })
+      await expect.poll(() => inside(line)).toBe(true)
       expect(inside(title)).toBe(true)
       expect(getReports()).toEqual([])
     })
