@@ -24,6 +24,16 @@ function chatLinkChange(data: WorkspacesData, ui: WorkspacesUi, chat: string): P
 }
 
 /**
+ * Each live chat's server ID (`<liveMachine>/<pane id>`, the ID a link names) with its title, for the mentions in a
+ * message (blocks/markdownChats.ts). Empty when the data has no live machine, as a fixture state has none.
+ */
+export function liveChatTitles(data: WorkspacesData): ReadonlyMap<string, string> {
+  const machine = data.liveMachine
+  if (machine === undefined) return new Map()
+  return new Map(data.panes.flatMap((p) => (p.type === 'chat' ? [[`${machine}/${p.id}`, p.head.title] as const] : [])))
+}
+
+/**
  * Opens the linked chat once for each link, then clears the param. `readAgain` reads the page's data from the server
  * and answers whether the server lists the chat.
  */

@@ -44,6 +44,7 @@ import { copyText } from '../../lib/copyText.ts'
 import { readsLive } from '../../lib/dataSource.ts'
 import { useInboxBadge, useInboxStreamHost } from '../../lib/inboxFeed.ts'
 import { workspacesSources } from './loadWorkspacesState.ts'
+import { MarkdownChats } from '../../blocks/markdownChats.ts'
 import { createDraftBook } from './blocks/draftBook.ts'
 import { openMoved } from './blocks/moveToWorkspace.ts'
 import { layoutsSeenOf, switchTo, withLoadedLayouts } from './blocks/workspaceLayout.ts'
@@ -63,7 +64,7 @@ import { useWorkspaceEdits } from './useWorkspaceEdits.ts'
 import { useLiveDialogs } from './useLiveDialogs.ts'
 import { useLivePending } from './useLivePending.ts'
 import { useLiveUploads } from './useLiveUploads.ts'
-import { useChatLink } from './useChatLink.ts'
+import { liveChatTitles, useChatLink } from './useChatLink.ts'
 import { useNewChat } from './useNewChat.ts'
 import { useForkedChat } from './useForkedChat.ts'
 import { useSideChats } from './useSideChats.ts'
@@ -374,8 +375,13 @@ export function WorkspacesPage() {
     drafts,
     readList: () => void router.invalidate(),
   })
+  // The live chats a message can mention (remarkChatMentions.ts); none in a fixture state, which has no live machine.
+  const mentionChats = useMemo(
+    () => ({ chats: liveChatTitles(data), open: (chat: string) => void router.navigate({ to: '/workspaces', search: { chat } }) }),
+    [data, router],
+  )
   return (
-    <>
+    <MarkdownChats value={mentionChats}>
       <WorkspacesScreen
         // The app always shows the Settings gear and the drawer's Settings row (d-119); a Figma state's story does not.
         settingsEntry
@@ -456,6 +462,6 @@ export function WorkspacesPage() {
         onClose={models.dismissFailed}
         onCopy={(text) => copyReply(text).then((copied) => copied.ok)}
       />
-    </>
+    </MarkdownChats>
   )
 }

@@ -12,16 +12,20 @@
 // box is named by its state ("Task done", "Task not done"). A table is the
 // library's Table part (`markdownTableParts.ts`) at the caller's `size`, the
 // size of its MarkdownView. A GitHub alert (`> [!NOTE]`) is the library's
-// Callout (`remarkCallout.ts`, `MarkdownQuote.tsx`). The caller wraps it in a
-// BlockBoundary. Props only.
-import type { ReactNode } from 'react'
-import Markdown, { type Components, type ExtraProps } from 'react-markdown'
+// Callout (`remarkCallout.ts`, `MarkdownQuote.tsx`). A live chat's name
+// becomes a mention that opens the chat (remarkChatMentions.ts), with the
+// chats from MarkdownChats. The caller wraps it in a BlockBoundary.
+import { use, useMemo, type ReactNode } from 'react'
+import Markdown, { type Components, type ExtraProps, type Options } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { ChatMention } from './ChatMention.tsx'
+import { MarkdownChats } from './markdownChats.ts'
 import { MarkdownQuote } from './MarkdownQuote.tsx'
 import { type MarkdownSize, markdownTableParts } from './markdownTableParts.ts'
 import { remarkCallout } from './remarkCallout.ts'
+import { remarkChatMentions } from './remarkChatMentions.ts'
 
-const remarkPlugins = [remarkGfm, remarkCallout]
+const remarkPlugins: NonNullable<Options['remarkPlugins']> = [remarkGfm, remarkCallout]
 
 /** The length of the Markdown source a link came from, or undefined when the parser gave no position. */
 const sourceLength = (node: ExtraProps['node']): number | undefined => {
@@ -69,9 +73,13 @@ const inline: Components = {
   ),
 }
 
+// The mention plugin's element (remarkChatMentions.ts), which is not an HTML element, so `Components` has no key for it.
+const mentionParts = { 'chat-mention': ChatMention }
+
 const components: Record<MarkdownSize, Components> = {
   md: {
     ...inline,
+    ...mentionParts,
     ...markdownTableParts.md,
     blockquote: ({ node, children }) => (
       <MarkdownQuote node={node} size="md">
@@ -81,6 +89,7 @@ const components: Record<MarkdownSize, Components> = {
   },
   sm: {
     ...inline,
+    ...mentionParts,
     ...markdownTableParts.sm,
     blockquote: ({ node, children }) => (
       <MarkdownQuote node={node} size="sm">
@@ -98,8 +107,14 @@ export type MarkdownTextProps = {
 }
 
 export function MarkdownText({ text, size = 'md' }: MarkdownTextProps) {
+  const { chats } = use(MarkdownChats)
+  const plugins = useMemo(
+    (): NonNullable<Options['remarkPlugins']> =>
+      chats.size === 0 ? remarkPlugins : [...remarkPlugins, [remarkChatMentions, chats]],
+    [chats],
+  )
   return (
-    <Markdown remarkPlugins={remarkPlugins} components={components[size]}>
+    <Markdown remarkPlugins={plugins} components={components[size]}>
       {text}
     </Markdown>
   )
