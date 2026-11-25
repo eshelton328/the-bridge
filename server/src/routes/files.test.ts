@@ -1,6 +1,14 @@
 // API tests of /api/files, in process with the fake agents and a fake brain
 // of made-up files.
-import { ErrorBody, FilesResponse, FileTextResponse, ChatId, MachineId, maxFileText, maxImageBytes } from '@bridge/contract'
+import {
+  ErrorBody,
+  FilesResponse,
+  FileTextResponse,
+  ChatId,
+  MachineId,
+  maxFileText,
+  maxImageBytes,
+} from '@bridge/contract'
 import { err } from '@bridge/shared'
 import { describe, expect, it } from 'vitest'
 import { createFakeAgents } from '../adapters/fakeAgents.ts'
