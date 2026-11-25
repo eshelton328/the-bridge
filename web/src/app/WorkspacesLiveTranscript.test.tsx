@@ -411,11 +411,14 @@ describe("a live chat's transcript (slice 3b)", () => {
       expect(Math.abs(down.top - at.top + (down.footer - at.footer) / 2)).toBeLessThanOrEqual(1)
       // The open and the close move the group as far as the keyboard-open place, in step with the composer.
       expect(Math.abs(up.top - down.top)).toBeGreaterThan(device === 'iPhone' ? 50 : 4)
-      const onLine = (s: { composerTop: number }) =>
-        down.top + ((s.composerTop - down.composerTop) * (up.top - down.top)) / (up.composerTop - down.composerTop)
-      const off = steps.map((s) =>
-        Math.abs(s.footer - at.footer) < 0.5 ? Math.abs(s.top - at.top) : Math.abs(s.top - onLine(s)),
-      )
+      // The group's travel for each px of the composer's. While the composer is still one row (before it grows, or
+      // a few frames into the open on a slow machine, R39), the group keeps that ratio from its one-row place.
+      const ratio = (up.top - down.top) / (up.composerTop - down.composerTop)
+      const onLine = (s: { composerTop: number; footer: number }) =>
+        Math.abs(s.footer - at.footer) < 0.5
+          ? at.top + (s.composerTop - at.composerTop) * ratio
+          : down.top + (s.composerTop - down.composerTop) * ratio
+      const off = steps.map((s) => Math.abs(s.top - onLine(s)))
       expect(steps.length).toBeGreaterThan(10)
       expect(Math.max(...off)).toBeLessThanOrEqual(1)
       expect(Math.max(...steps.map((s) => s.lineBottom - s.composerTop))).toBeLessThanOrEqual(0.5)
