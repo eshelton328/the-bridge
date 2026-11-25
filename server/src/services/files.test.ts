@@ -1,3 +1,4 @@
+import { maxIndexFiles } from '@bridge/contract'
 import { ok } from '@bridge/shared'
 import { describe, expect, it } from 'vitest'
 import type { FileStore } from './fileStore.ts'
@@ -21,6 +22,18 @@ describe('createFiles', () => {
     ['a NUL in the first 8 KiB', new Uint8Array([0x61, 0x00, 0x62])],
   ])('calls a file with %s binary', async (_, bytes) => {
     expect(await createFiles(storeOf(bytes)).text('brain', id)).toEqual({ ok: true, value: 'binary' })
+  })
+
+  it('reads no file past the index cut', async () => {
+    const paths = Array.from({ length: maxIndexFiles + 1 }, (_, i) => `notes/${String(i)}.md`)
+    const files = createFiles({
+      list: () => Promise.resolve(ok(paths)),
+      read: () => Promise.resolve(ok(new Uint8Array())),
+    })
+    expect(await files.text('brain', fileIdOf('brain', `notes/${String(maxIndexFiles)}.md`))).toEqual({
+      ok: true,
+      value: 'notFound',
+    })
   })
 
   it('leaves out a listed path that the contract cannot carry', async () => {

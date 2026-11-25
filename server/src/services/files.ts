@@ -65,7 +65,7 @@ export function createFiles(store: FileStore): Files {
     async text(root, id) {
       const listed = await paths(root)
       if (!listed.ok) return listed
-      const path = listed.value.find((p) => fileIdOf(root, p) === id)
+      const path = listed.value.slice(0, maxIndexFiles).find((p) => fileIdOf(root, p) === id)
       if (path === undefined) return ok('notFound')
       const read = await store.read(root, path, maxFileText)
       if (!read.ok) return read
