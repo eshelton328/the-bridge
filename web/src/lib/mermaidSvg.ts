@@ -141,7 +141,7 @@ export function sizedSvg(svg: string, parser: DOMParser = new DOMParser()): Draw
  * or a complex key (`?`). Mermaid gives no public API for the parsed nodes,
  * so a source with `@{` and any of those does not draw.
  */
-export function mayLoadImage(source: string): boolean {
+function mayLoadImage(source: string): boolean {
   return source.includes('@{') && /img|[\\&*!?]|<</i.test(source)
 }
 
