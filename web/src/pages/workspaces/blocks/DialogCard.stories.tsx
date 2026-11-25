@@ -1,5 +1,5 @@
 import type { PaneDialog } from '@bridge/contract'
-import { textSizeClass, type TextSize } from '@eshelton328/component-library-1701'
+import { Button, textSizeClass, type TextSize } from '@eshelton328/component-library-1701'
 import type { Decorator, Meta, StoryObj } from '@storybook/react-vite'
 import { type ComponentProps, type ReactNode, useLayoutEffect, useState } from 'react'
 import { expect, fn } from 'storybook/test'
@@ -304,3 +304,56 @@ export const TextSizesSmall: Story = { args: sized, decorators: [atSize('small')
 export const TextSizesDefault: Story = { args: sized, decorators: [atSize('default')], play: fits }
 export const TextSizesLarge: Story = { args: sized, decorators: [atSize('large')], play: fits }
 export const TextSizesLargeLight: Story = { ...TextSizesLarge, globals: { mode: 'light' } }
+
+// R72 at 390: the card keeps its height from the chosen row through Sending… to Sent, at Default and Large text, as
+// "Sending…" and "Sent" are narrower than "Send answer" and the quiet line beside the button must not move up. In the
+// meta's column with its 16 gutter, the card is as wide as on a 390 phone. "Mark sent" stands in for the server's answer.
+const phoneColumn = css({ w: '[358px]' })
+const inPhoneColumn: Decorator = (Story) => (
+  <div className={phoneColumn}>
+    <Story />
+  </div>
+)
+const steady: Story['play'] = async ({ canvas, userEvent }) => {
+  await userEvent.click(canvas.getByRole('radio', { name: 'Blue' }))
+  await expect(send(canvas)).toBeEnabled()
+  const selected = card(canvas).getBoundingClientRect().height
+  await userEvent.click(send(canvas))
+  await expect(canvas.getByRole('button', { name: 'Sending…' })).toBeDisabled()
+  await expect(Math.abs(card(canvas).getBoundingClientRect().height - selected)).toBeLessThanOrEqual(1)
+  await userEvent.click(canvas.getByRole('button', { name: 'Mark sent' }))
+  await expect(canvas.getByRole('button', { name: 'Sent' })).toBeDisabled()
+  await expect(Math.abs(card(canvas).getBoundingClientRect().height - selected)).toBeLessThanOrEqual(1)
+}
+export const SteadyHeight: Story = {
+  args: { view: { dialog: withDetail, phase: 'ready' } },
+  decorators: [inPhoneColumn, atSize('default')],
+  render: (args) => <SendsThenSent {...args} />,
+  play: steady,
+}
+export const SteadyHeightLarge: Story = { ...SteadyHeight, decorators: [inPhoneColumn, atSize('large')] }
+
+/** The card whose Send answer goes to `sending`, and a "Mark sent" button outside it that moves it to `sent`. */
+function SendsThenSent(props: ComponentProps<typeof DialogCard>) {
+  const [view, setView] = useState(props.view)
+  return (
+    <>
+      <DialogCard
+        {...props}
+        view={view}
+        onAnswer={(n) => {
+          props.onAnswer(n)
+          setView({ dialog: view.dialog, phase: 'sending' })
+        }}
+      />
+      <Button
+        variant="secondary"
+        onClick={() => {
+          setView({ dialog: view.dialog, phase: 'sent' })
+        }}
+      >
+        Mark sent
+      </Button>
+    </>
+  )
+}
