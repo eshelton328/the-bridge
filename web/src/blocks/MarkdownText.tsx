@@ -29,7 +29,7 @@ import remarkGfm from 'remark-gfm'
 import { ChatMention } from './ChatMention.tsx'
 import { type CopyCode, MarkdownCodeFence } from './MarkdownCodeFence.tsx'
 import { MarkdownChatsContext } from './markdownChats.ts'
-import { hasShownImage, MarkdownImage } from './MarkdownImage.tsx'
+import { hasShownImage, MarkdownImage, textWithAlts } from './MarkdownImage.tsx'
 import { MathFormula } from './MathFormula.tsx'
 import { codeOf } from './fence.ts'
 import { MarkdownQuote } from './MarkdownQuote.tsx'
@@ -70,6 +70,17 @@ function linkUrl(href: string | undefined, children: ReactNode, node: ExtraProps
 const inline: Components = {
   a: ({ href, children, node }) => {
     const url = linkUrl(href, children, node)
+    // A link round a shown image: the picture, then the link with its alt text, so each has its own target.
+    if (url !== undefined && hasShownImage(node)) {
+      return (
+        <>
+          {children}{' '}
+          <a href={url} target="_blank" rel="noopener noreferrer">
+            {textWithAlts(node)}
+          </a>
+        </>
+      )
+    }
     return url === undefined ? (
       children
     ) : (

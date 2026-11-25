@@ -38,6 +38,23 @@ describe('a brain image', () => {
   })
 })
 
+describe('a brain image in a link', () => {
+  it('draws the picture outside the link, so the zoom button and the link are two targets', async () => {
+    view = await testRender(
+      <MarkdownText text={'See [![Build chart](images/chart.png)](https://example.com/builds) now.'} />,
+    )
+    await expect.poll(images).toEqual(['/api/files/raw?root=brain&path=images%2Fchart.png'])
+    const figure = document.querySelector('figure')
+    expect(figure?.closest('a')).toBeNull()
+    expect(figure?.closest('p')).toBeNull()
+    const links = [...document.querySelectorAll('a')]
+    expect(links.map((a) => [a.textContent, a.getAttribute('href')])).toEqual([
+      ['Build chart', 'https://example.com/builds'],
+    ])
+    expect(links[0]?.querySelector('button, img, figure')).toBeNull()
+  })
+})
+
 describe('any other image', () => {
   it('shows its alt text and loads nothing', async () => {
     const text = [

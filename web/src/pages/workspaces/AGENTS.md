@@ -736,7 +736,9 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   `../../blocks/imageUrl.ts`), and a tap opens it in a dialog; any other
   image (http, https, data, `//host`) shows its alt text and loads
   nothing. A paragraph with such an image is a `div`, as a figure may not
-  sit in a `p` (`WorkspacesImage.test.tsx`). A GitHub alert (`> [!NOTE]`, TIP, IMPORTANT, WARNING, CAUTION)
+  sit in a `p`, and a link round one draws the picture, then the link
+  with the image's alt text, so the zoom button is never in the link
+  (`WorkspacesImage.test.tsx`, `MarkdownImage.test.tsx`). A GitHub alert (`> [!NOTE]`, TIP, IMPORTANT, WARNING, CAUTION)
   is the library's `Callout` of that tone at the MarkdownView's size
   (`../../blocks/remarkCallout.ts`, `../../blocks/MarkdownQuote.tsx`,
   `WorkspacesCallout.test.tsx`); any other quote stays a quote. A fenced
