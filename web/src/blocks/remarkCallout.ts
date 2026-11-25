@@ -36,7 +36,10 @@ function takeMarker(quote: MdNode): CalloutKind | undefined {
   const rest = text.value.slice(found[0].length)
   const endsLine = found[0].endsWith('\n') || after === undefined || after.type === 'break'
   if (!endsLine) return undefined
-  const kept = [...(rest === '' ? [] : [{ ...text, value: rest }]), ...lines.slice(after?.type === 'break' && rest === '' ? 2 : 1)]
+  const kept = [
+    ...(rest === '' ? [] : [{ ...text, value: rest }]),
+    ...lines.slice(after?.type === 'break' && rest === '' ? 2 : 1),
+  ]
   if (kept.length === 0) quote.children = quote.children?.slice(1) ?? []
   else first.children = kept
   return tone
@@ -46,7 +49,8 @@ function walk(node: MdNode): void {
   for (const child of node.children ?? []) {
     if (child.type === 'blockquote') {
       const tone = takeMarker(child)
-      if (tone !== undefined) child.data = { ...child.data, hProperties: { ...child.data?.hProperties, dataCallout: tone } }
+      if (tone !== undefined)
+        child.data = { ...child.data, hProperties: { ...child.data?.hProperties, dataCallout: tone } }
     }
     walk(child)
   }

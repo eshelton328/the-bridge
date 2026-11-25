@@ -14,7 +14,10 @@ afterEach(async () => {
 
 async function quotes(text: string): Promise<{ tone: string | null; html: string }[]> {
   view = await testRender(<Markdown remarkPlugins={[remarkGfm, remarkCallout]}>{text}</Markdown>)
-  return [...document.querySelectorAll('blockquote')].map((q) => ({ tone: q.getAttribute('data-callout'), html: q.innerHTML.trim() }))
+  return [...document.querySelectorAll('blockquote')].map((q) => ({
+    tone: q.getAttribute('data-callout'),
+    html: q.innerHTML.trim(),
+  }))
 }
 
 describe('remarkCallout', () => {
@@ -38,7 +41,9 @@ describe('remarkCallout', () => {
     expect(found[1]?.html).toContain('After a hard break.')
   })
   it('leaves a plain quote, an unknown tag and a marker with text on its line as quotes', async () => {
-    const found = await quotes('> A plain quote.\n\n> [!DANGER]\n> Unknown.\n\n> [!NOTE] same line\n\n> Text\n> [!NOTE]')
+    const found = await quotes(
+      '> A plain quote.\n\n> [!DANGER]\n> Unknown.\n\n> [!NOTE] same line\n\n> Text\n> [!NOTE]',
+    )
     expect(found.map((q) => q.tone)).toEqual([null, null, null, null])
     expect(found[2]?.html).toContain('[!NOTE] same line')
   })
