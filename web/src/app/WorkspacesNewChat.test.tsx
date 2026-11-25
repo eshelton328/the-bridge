@@ -10,7 +10,11 @@ import { rootErrorOptions } from '../errors/rootErrorOptions.ts'
 import { RouteError } from '../errors/RouteError.tsx'
 import { resetRetries } from '../errors/retryGuard.ts'
 import { errorAnswer, type FakeTranscriptServer, fakeTranscriptServer } from '../lib/fakeTranscriptServer.ts'
-import { type FakeWorkspacesServer, fakeWorkspacesServer } from '../lib/fakeWorkspacesServer.ts'
+import {
+  type FakeWorkspacesOptions,
+  type FakeWorkspacesServer,
+  fakeWorkspacesServer,
+} from '../lib/fakeWorkspacesServer.ts'
 import { answerLateServerReads } from '../lib/lateServerReads.ts'
 import { queryClient } from '../lib/queryClient.ts'
 import { setViewport } from '../lib/rendering.ts'
@@ -51,11 +55,19 @@ const list = {
 
 type Fakes = { list: FakeWorkspacesServer; chats: FakeTranscriptServer }
 
-/** The fakes; with `hold`, each start's answer waits for it, and with `noLayout` each layout read answers 502. */
-function withChats(hold?: Promise<void>, noLayout = false): Fakes {
+/**
+ * The fakes; with `hold`, each start's answer waits for it, with `noLayout` each layout read answers 502, and with
+ * `tabs` the workspace's herdr tabs (one tab of both chats when not set); `workspaceList` is the server's list.
+ */
+function withChats(
+  hold?: Promise<void>,
+  noLayout = false,
+  tabs?: FakeWorkspacesOptions['tabs'],
+  workspaceList: typeof list = list,
+): Fakes {
   const chats = fakeTranscriptServer()
-  for (const c of [plan, review]) chats.set(c, [])
-  const workspaces = fakeWorkspacesServer(chats, list)
+  for (const w of workspaceList.workspaces) for (const c of w.chats) chats.set(c.id, [])
+  const workspaces = fakeWorkspacesServer(chats, workspaceList, tabs === undefined ? {} : { tabs })
   vi.stubGlobal(
     'fetch',
     vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
@@ -117,6 +129,7 @@ async function tapWorkspaces(size: readonly [number, number]) {
   await userEvent.click(page.getByRole('button', { name: 'Workspaces', exact: true }))
   await expect.poll(() => router.state.location.pathname).toBe('/workspaces')
   await expect.element(page.getByText('plan the slice', { exact: true }).first()).toBeVisible()
+  return router
 }
 
 /** The phone's + and its New chat: the form fills the screen. */
@@ -144,6 +157,125 @@ async function fill(name: string, message: string) {
 }
 
 const quiet = (ms = 400) => new Promise((resolve) => setTimeout(resolve, ms))
+
+// R74 (the owner: "when you create a new chat … and try to go to a different chat it takes you back to the new one"):
+// the new chat's tab showed in place of herdr's active one (`shownTabs`), and a row's tap set only the focused pane, so
+// the shown tab and its focus came back. A row now shows its own chat's tab.
+describe('a row after a new chat (R74)', () => {
+  // herdr's active tab holds the plan, a second tab the notes; the new chat gets a third.
+  const twoTabs = { [live]: [[plan], [review]] }
+  const back = () => page.getByRole('button', { name: 'Back to Workspaces' }).first()
+
+  it('opens each tapped row on the phone, one in the active tab and one in another, after a new chat', async () => {
+    withChats(undefined, false, twoTabs)
+    await tapWorkspaces(phone)
+    await openPhoneForm()
+    await fill('fresh-start', '')
+    await expect.element(page.getByRole('heading', { name: 'fresh-start' })).toBeVisible()
+    await userEvent.click(back())
+    await userEvent.click(page.getByText('plan the slice', { exact: true }).first())
+    await expect.element(page.getByRole('heading', { name: 'plan the slice' })).toBeVisible()
+    expect(page.getByRole('heading', { name: 'fresh-start' }).elements()).toHaveLength(0)
+    await userEvent.click(back())
+    await userEvent.click(page.getByText('notes', { exact: true }).first())
+    await expect.element(page.getByRole('heading', { name: 'notes' })).toBeVisible()
+    expect(page.getByRole('heading', { name: 'fresh-start' }).elements()).toHaveLength(0)
+    await quiet()
+    await expect.element(page.getByRole('heading', { name: 'notes' })).toBeVisible()
+    expect(getReports()).toEqual([])
+  })
+
+  it('shows the tapped row’s own tab, focused, on the desktop after a new chat', async () => {
+    const fakes = withChats(undefined, false, twoTabs)
+    await tapWorkspaces(desktop)
+    await userEvent.click(page.getByRole('button', { name: 'Hide the workspace sidebar' }))
+    await userEvent.click(page.getByRole('button', { name: 'New chat in live work' }))
+    await fill('tab-three', '')
+    await expect.element(page.getByRole('button', { name: 'Maximise tab-three' })).toBeVisible()
+    await userEvent.click(page.getByRole('button', { name: 'Show the workspace sidebar' }))
+    // The notes are in a tab that is neither herdr's active one nor the new one.
+    await userEvent.click(page.getByText('notes', { exact: true }).first())
+    await expect.element(page.getByRole('heading', { name: 'notes' })).toBeVisible()
+    // With the sidebar hidden, the workbench draws the notes' tab, not the new one.
+    await userEvent.click(page.getByRole('button', { name: 'Hide the workspace sidebar' }))
+    await expect.element(page.getByRole('button', { name: 'Maximise notes' })).toBeVisible()
+    expect(page.getByRole('button', { name: 'Maximise tab-three' }).elements()).toHaveLength(0)
+    // The plan is in herdr's active tab, which shows again.
+    await userEvent.click(page.getByRole('button', { name: 'Show the workspace sidebar' }))
+    await userEvent.click(page.getByText('plan the slice', { exact: true }).first())
+    await expect.element(page.getByRole('heading', { name: 'plan the slice' })).toBeVisible()
+    await userEvent.click(page.getByRole('button', { name: 'Hide the workspace sidebar' }))
+    await expect.element(page.getByRole('button', { name: 'Maximise plan the slice' })).toBeVisible()
+    expect(page.getByRole('button', { name: 'Maximise notes' }).elements()).toHaveLength(0)
+    expect(page.getByRole('button', { name: 'Maximise tab-three' }).elements()).toHaveLength(0)
+    await quiet()
+    // A row's tap moves nothing in herdr: no focus goes to the owner's terminal.
+    expect(fakes.list.writes.filter((w) => w.action === 'focus')).toEqual([])
+    expect(getReports()).toEqual([])
+  })
+
+  it('opens a push link’s chat in a tab that is not herdr’s active one, after a new chat, on the desktop', async () => {
+    withChats(undefined, false, twoTabs)
+    const router = await tapWorkspaces(desktop)
+    await userEvent.click(page.getByRole('button', { name: 'Hide the workspace sidebar' }))
+    await userEvent.click(page.getByRole('button', { name: 'New chat in live work' }))
+    await fill('tab-three', '')
+    await expect.element(page.getByRole('button', { name: 'Maximise tab-three' })).toBeVisible()
+    // A tap on a push notification for the notes (d-118, useChatLink.ts).
+    await router.navigate({ to: '/workspaces', search: { chat: review } })
+    await expect.element(page.getByRole('button', { name: 'Maximise notes' })).toBeVisible()
+    expect(page.getByRole('button', { name: 'Maximise tab-three' }).elements()).toHaveLength(0)
+    await expect.poll(() => router.state.location.search).toEqual({})
+    expect(getReports()).toEqual([])
+  })
+
+  it('opens a row’s chat that a five-pane tab leaves out of its drawn panes, on the desktop', async () => {
+    const more = ['c3', 'c4', 'c5'].map((c) => summary(`mac-mini/${c}`, `chat ${c}`))
+    const five = {
+      ...list,
+      workspaces: [
+        { id: live, label: 'live work', chats: [summary(plan, 'plan the slice'), ...more, summary(review, 'notes')] },
+      ],
+    }
+    withChats(undefined, false, { [live]: [[plan, ...more.map((c) => c.id), review]] }, five)
+    await tapWorkspaces(desktop)
+    await userEvent.click(page.getByRole('button', { name: 'Hide the workspace sidebar' }))
+    // herdr's focused plan and its neighbours fill the four panes; the notes, fifth, are not drawn.
+    await expect.element(page.getByRole('button', { name: 'Maximise chat c5' })).toBeVisible()
+    expect(page.getByRole('button', { name: 'Maximise notes' }).elements()).toHaveLength(0)
+    await userEvent.click(page.getByRole('button', { name: 'Show the workspace sidebar' }))
+    await userEvent.click(page.getByText('notes', { exact: true }).first())
+    await expect.element(page.getByRole('heading', { name: 'notes' })).toBeVisible()
+    await userEvent.click(page.getByRole('button', { name: 'Hide the workspace sidebar' }))
+    await expect.element(page.getByRole('button', { name: 'Maximise notes' })).toBeVisible()
+    expect(getReports()).toEqual([])
+  })
+
+  it('opens a chat of another workspace on the phone after a row showed another tab', async () => {
+    const other = 'mac-mini/w-other'
+    const elsewhere = 'mac-mini/c9'
+    const two = {
+      ...list,
+      workspaces: [...list.workspaces, { id: other, label: 'side work', chats: [summary(elsewhere, 'far chat')] }],
+    }
+    withChats(undefined, false, twoTabs, two)
+    await tapWorkspaces(phone)
+    await openPhoneForm()
+    await fill('fresh-start', '')
+    await expect.element(page.getByRole('heading', { name: 'fresh-start' })).toBeVisible()
+    await userEvent.click(back())
+    // The notes' tab is not herdr's active one, so the row shows it.
+    await userEvent.click(page.getByText('notes', { exact: true }).first())
+    await expect.element(page.getByRole('heading', { name: 'notes' })).toBeVisible()
+    await userEvent.click(back())
+    await userEvent.click(page.getByText('far chat', { exact: true }).first())
+    await expect.element(page.getByRole('heading', { name: 'far chat' })).toBeVisible()
+    expect(page.getByRole('heading', { name: 'notes' }).elements()).toHaveLength(0)
+    await quiet()
+    await expect.element(page.getByRole('heading', { name: 'far chat' })).toBeVisible()
+    expect(getReports()).toEqual([])
+  })
+})
 
 describe('New chat on the live page (W3)', () => {
   it('starts a chat in a new tab from the phone, opens it and sends the first message once', async () => {

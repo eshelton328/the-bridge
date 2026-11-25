@@ -155,12 +155,15 @@ export function openableChats(data: WorkspacesData, ui: WorkspacesUi): string[] 
  * workspace first (`switchTo`), and a chat its workspace's layout does not hold goes first in it, within `maxPanes`.
  */
 export function openChat(data: WorkspacesData, ui: WorkspacesUi, chat: string): Partial<WorkspacesUi> {
+  const owner = ownerOf(data, chat)?.id
+  const tab = liveTabChange(data, ui, chat)
   const shown = shownWorkspace(data, ui)
   // A chat the shown workspace's panes hold shows at once, as a row always has.
-  if (shown !== null && layoutOf(data, ui, shown).panes.includes(chat)) return { focusedPane: chat }
-  const owner = ownerOf(data, chat)?.id
+  if (shown !== null && layoutOf(data, ui, shown).panes.includes(chat)) return { ...tab, focusedPane: chat }
   if (owner === undefined) return { focusedPane: chat }
   const change = owner === shown ? {} : switchTo(data, ui, owner)
+  // A chat in a herdr tab the page read shows in that tab's own layout (R74), so no layout of the page's goes over it.
+  if (tab !== undefined) return { ...change, ...tab, focusedPane: chat }
   const layout = layoutOf(data, ui, owner)
   const panes = layout.panes.includes(chat) ? layout.panes : [chat, ...layout.panes].slice(0, maxPanes)
   return {
@@ -168,6 +171,28 @@ export function openChat(data: WorkspacesData, ui: WorkspacesUi, chat: string): 
     layouts: { ...(change.layouts ?? ui.layouts), [owner]: { ...layout, panes, focusedPane: chat } },
     focusedPane: chat,
   }
+}
+
+/**
+ * The shown-tab change that a row's chat needs (R74): the workbench shows the herdr tab that holds `chat`. A chat in
+ * herdr's active tab drops the workspace's shown tab, so herdr's active tab shows; a chat in another tab shows that tab
+ * in its place, as a moved chat does (`shownTabs.ts`). The page sends herdr no focus for it. Undefined with no layout
+ * read of the workspace, or for a chat no tab holds.
+ */
+function liveTabChange(data: WorkspacesData, ui: WorkspacesUi, chat: string): Partial<WorkspacesUi> | undefined {
+  const workspace = ownerOf(data, chat)?.id
+  if (workspace === undefined) return undefined
+  const tabs = data.liveTabs?.[workspace]
+  const tab = tabs?.find((t) => t.chats.includes(chat))
+  // The data the screen gets marks a shown tab `active`, with herdr's own flag in `herdrActive`.
+  const herdr = tabs?.find((t) => t.herdrActive ?? t.active)
+  if (tab === undefined || herdr?.id === undefined) return undefined
+  if (tab === herdr) {
+    if (ui.shownTabs?.[workspace] === undefined) return {}
+    return { shownTabs: Object.fromEntries(Object.entries(ui.shownTabs).filter(([id]) => id !== workspace)) }
+  }
+  if (tab.id === undefined) return undefined
+  return { shownTabs: { ...ui.shownTabs, [workspace]: { tab: tab.id, over: herdr.id } } }
 }
 
 /** Each layout of `layouts` as JSON, by workspace id: what `layoutsSeen` holds. */

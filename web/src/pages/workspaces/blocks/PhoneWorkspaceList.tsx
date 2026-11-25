@@ -79,6 +79,8 @@ export type PhoneWorkspaceListProps = {
   edits?: WorkspaceEdits | undefined
   /** The page waits for its first list (R58): the header with Edit and + off, and workspaces that load. */
   loading?: boolean | undefined
+  /** Opens a row's chat (R74: with its herdr tab); the row sets the focused pane and the chat view when not set. */
+  onOpenChat?: ((chat: string) => void) | undefined
 }
 
 /** A chat row's ⋯ (M1 146:3), on the row and on its lifted copy (M9 146:268). */
@@ -119,6 +121,7 @@ export function PhoneWorkspaceList({
   notice,
   edits,
   loading = false,
+  onOpenChat,
 }: PhoneWorkspaceListProps) {
   const collapsed = ui.collapsed ?? []
   const editing = ui.editing === true && text.done !== undefined
@@ -280,7 +283,10 @@ export function PhoneWorkspaceList({
             openable={openable}
             layers={layers}
             grip={false}
-            onSelect={(chat) => onUiChange?.({ focusedPane: chat, phoneView: 'chat' })}
+            onSelect={(chat) => {
+              if (onOpenChat === undefined) onUiChange?.({ focusedPane: chat, phoneView: 'chat' })
+              else onOpenChat(chat)
+            }}
             rowMenu={(chat) => more(chat, layers?.rowMenus?.[chat.id])}
             onHold={openActions}
             onActions={text.workspaceMenu === undefined ? undefined : () => onUiChange?.({ workspaceMenuFor: w.id })}
