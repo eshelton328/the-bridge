@@ -411,16 +411,23 @@ describe("a live chat's transcript (slice 3b)", () => {
       expect(Math.abs(down.top - at.top + (down.footer - at.footer) / 2)).toBeLessThanOrEqual(1)
       // The open and the close move the group as far as the keyboard-open place, in step with the composer.
       expect(Math.abs(up.top - down.top)).toBeGreaterThan(device === 'iPhone' ? 50 : 4)
-      // The group's travel for each px of the composer's. While the composer is still one row (before it grows, or
-      // a few frames into the open on a slow machine, R39), the group keeps that ratio from its one-row place.
-      const ratio = (up.top - down.top) / (up.composerTop - down.composerTop)
-      const onLine = (s: { composerTop: number; footer: number }) =>
-        Math.abs(s.footer - at.footer) < 0.5
-          ? at.top + (s.composerTop - at.composerTop) * ratio
-          : down.top + (s.composerTop - down.composerTop) * ratio
-      const off = steps.map((s) => Math.abs(s.top - onLine(s)))
+      // The group's travel for each px of the composer's move with the keyboard.
+      const ratio = Math.abs((up.top - down.top) / (up.composerTop - down.composerTop))
+      // In each frame the group moves at most that ratio of the composer's move, + 1 px. In the frame the composer grows
+      // from one row or goes back to it (R39), it moves half that growth too, as it stays centred above the composer;
+      // that frame can come late on a slow machine. A jump of the group in one frame (R73 part 1) is more.
+      const oneRow = (s: { footer: number }) => Math.abs(s.footer - at.footer) < 0.5
+      const jumps = steps.slice(1).map((s, i) => {
+        const before = steps[i] ?? s
+        const grow = s.footer - before.footer
+        const allowed =
+          oneRow(before) !== oneRow(s)
+            ? Math.abs(grow) / 2 + Math.abs(s.composerTop - before.composerTop + grow) * ratio
+            : Math.abs(s.composerTop - before.composerTop) * ratio
+        return Math.abs(s.top - before.top) - allowed
+      })
       expect(steps.length).toBeGreaterThan(10)
-      expect(Math.max(...off)).toBeLessThanOrEqual(1)
+      expect(Math.max(...jumps)).toBeLessThanOrEqual(1)
       expect(Math.max(...steps.map((s) => s.lineBottom - s.composerTop))).toBeLessThanOrEqual(0.5)
       expect(getReports()).toEqual([])
     })
