@@ -343,20 +343,20 @@ describe("a live chat's transcript (slice 3b)", () => {
   }
 
   // R73 (the owner: "It's not smooth moving the text and icon with the keyboard"): the R68 group jumped to a new
-  // centre as the keyboard opened and closed, half the keyboard's reach. Each rendering step of the move, from the tap
-  // on the message box to the keyboard closed again, reads the mark's top, the composer's height and whether the group
-  // sits on the composer: the group never moves by the keyboard's reach (the dock steps), only by half of the
-  // composer's own change, while it does not sit on the composer. Known steps that are left for the library part
-  // (R73 part 2, a ScrollFrame footer height and a glide of the group on the keyboard's curve), not passed here: the
-  // composer grows from one row at the dock's start (R39), -14 px on both; R36's gap over the keyboard at the open's
-  // end, -8 px on the iPad mini; and on the iPhone too little room over the keyboard, so the group goes up to sit on
-  // the composer at the open's end, -96 px (R68: never over the composer). The keyboard tops are
-  // WorkspacesKeyboardGap's.
+  // centre as the keyboard opened and closed, half the keyboard's reach. The group carries `data-keyboard-glide`
+  // (library beta.128, R73 part 2), so AppShell glides it on the keyboard's curve to the place the dock's end gives it.
+  // Each rendering step, from the tap on the message box to the keyboard closed again, reads the composer's top, the
+  // mark's top, the composer's height and the line's bottom. With no step left out: while the composer is one row the
+  // group stays where it is; the composer's growth from one row at the dock's start (R39) moves it by half that growth;
+  // and through the open and the close every step lies on the line from the keyboard-closed place to the
+  // keyboard-open one, so the group moves with the composer and never jumps, also where it ends on the composer
+  // (the iPhone) and with R36's gap (the iPad mini). The line never goes over the composer (R68). The keyboard tops
+  // are WorkspacesKeyboardGap's.
   for (const [device, size, keyboardTop] of [
     ['iPad mini', [744, 1133], 833],
     ['iPhone', [390, 844], 464],
   ] as const)
-    it(`keeps a new chat's mark, name and line in place while the keyboard opens and closes, on the ${device}`, async () => {
+    it(`moves a new chat's mark, name and line with the composer, never by a jump, while the keyboard opens and closes, on the ${device}`, async () => {
       const viewport = new FakeViewport()
       replaceVisualViewport(viewport)
       const server = fakeTranscriptServer()
@@ -377,12 +377,13 @@ describe("a live chat's transcript (slice 3b)", () => {
       const composer = field.closest('.scroll-frame__footer')
       if (!mark || !line || !shell || !(field instanceof HTMLElement) || !composer) throw new Error('no empty state')
       const read = () => ({
+        composerTop: composer.getBoundingClientRect().top,
         top: mark.getBoundingClientRect().top,
         footer: composer.getBoundingClientRect().height,
-        onComposer: Math.abs(line.getBoundingClientRect().bottom - composer.getBoundingClientRect().top) <= 1,
+        lineBottom: line.getBoundingClientRect().bottom,
       })
       const at = read()
-      const steps: { top: number; footer: number; onComposer: boolean }[] = []
+      const steps: ReturnType<typeof read>[] = []
       let sampling = true
       const sample = () => {
         steps.push(read())
@@ -399,15 +400,25 @@ describe("a live chat's transcript (slice 3b)", () => {
       await settled()
       // On the keyboard the whole group shows over the composer.
       expect(line.getBoundingClientRect().bottom).toBeLessThanOrEqual(composer.getBoundingClientRect().top + 0.5)
+      const up = read()
       viewport.move({ height: size[1] })
       await expect.poll(() => shell.style.getPropertyValue('--app-shell-keyboard')).toMatch(/^(0px)?$/)
       await settled()
       sampling = false
-      const kept = steps.filter((s) => !s.onComposer)
-      // The iPad mini keeps its place through the whole move; the iPhone at least before and after the keyboard.
-      expect(kept.length).toBeGreaterThan(device === 'iPhone' ? 2 : steps.length - 1)
-      const off = kept.map((s) => Math.abs(s.top - at.top) - Math.abs(s.footer - at.footer) / 2)
+      const down = read()
+      // The keyboard closed again with the box still focused: the composer stays grown, and the group sits half that
+      // growth higher than before the tap.
+      expect(Math.abs(down.top - at.top + (down.footer - at.footer) / 2)).toBeLessThanOrEqual(1)
+      // The open and the close move the group as far as the keyboard-open place, in step with the composer.
+      expect(Math.abs(up.top - down.top)).toBeGreaterThan(device === 'iPhone' ? 50 : 4)
+      const onLine = (s: { composerTop: number }) =>
+        down.top + ((s.composerTop - down.composerTop) * (up.top - down.top)) / (up.composerTop - down.composerTop)
+      const off = steps.map((s) =>
+        Math.abs(s.footer - at.footer) < 0.5 ? Math.abs(s.top - at.top) : Math.abs(s.top - onLine(s)),
+      )
+      expect(steps.length).toBeGreaterThan(10)
       expect(Math.max(...off)).toBeLessThanOrEqual(1)
+      expect(Math.max(...steps.map((s) => s.lineBottom - s.composerTop))).toBeLessThanOrEqual(0.5)
       expect(getReports()).toEqual([])
     })
 
