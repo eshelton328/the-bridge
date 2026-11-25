@@ -17,6 +17,8 @@ import {
   type NavPage,
   type NavProblem,
   parseStoredSettings,
+  type RichTextFeature,
+  type RichTextFeatures,
   setNavPageVisible,
   settingsKey,
   type TextSize,
@@ -29,6 +31,8 @@ type SettingsState = DeviceSettings & {
     setMode: (mode: Mode) => void
     setTextSize: (textSize: TextSize) => void
     setChatWidth: (chatWidth: ChatWidth) => void
+    /** Turns one rich text feature on or off; the others keep their value. */
+    setRichText: (feature: RichTextFeature, on: boolean) => void
     setChatDefaults: (chat: Partial<ChatDefaults>) => void
     setPushPreview: (pushPreview: boolean) => void
     /** Moves `page` one place up (-1) or down (1) in the nav order. */
@@ -54,6 +58,9 @@ const useSettingsStore = createAppStore<SettingsState>('settings', (set, get) =>
     },
     setChatWidth: (chatWidth) => {
       set({ chatWidth }, undefined, 'settings/setChatWidth')
+    },
+    setRichText: (feature, on) => {
+      set((s) => ({ richText: { ...s.richText, [feature]: on } }), undefined, 'settings/setRichText')
     },
     setChatDefaults: (chat) => {
       set((s) => ({ chat: { ...s.chat, ...chat } }), undefined, 'settings/setChatDefaults')
@@ -82,6 +89,7 @@ function saved(s: DeviceSettings): DeviceSettings {
     mode: s.mode,
     textSize: s.textSize,
     chatWidth: s.chatWidth,
+    richText: s.richText,
     nav: s.nav,
     chat: s.chat,
     pushPreview: s.pushPreview,
@@ -117,6 +125,7 @@ export function startSettingsStorage({ storage, report, onChange }: SettingsStor
       s.mode === before.mode &&
       s.textSize === before.textSize &&
       s.chatWidth === before.chatWidth &&
+      s.richText === before.richText &&
       s.nav === before.nav &&
       s.chat === before.chat &&
       s.pushPreview === before.pushPreview
@@ -137,6 +146,8 @@ export const useSettingsMode = (): Mode => useSettingsStore((s) => s.mode)
 export const useSettingsTextSize = (): TextSize => useSettingsStore((s) => s.textSize)
 /** How wide the Workspaces chats draw on the tablet and the desktop. @public */
 export const useSettingsChatWidth = (): ChatWidth => useSettingsStore((s) => s.chatWidth)
+/** Which rich text features a message draws; the object changes only with setRichText. @public */
+export const useSettingsRichText = (): RichTextFeatures => useSettingsStore((s) => s.richText)
 /** The nav order with each page's visibility (d-038). @public */
 export const useSettingsNav = (): readonly NavEntry[] => useSettingsStore((s) => s.nav)
 /** The new chat defaults; saved on this device, which chats do not use yet. @public */

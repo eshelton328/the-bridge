@@ -33,8 +33,8 @@ afterEach(() => {
 
 describe('settingsStore', () => {
   it('starts at the defaults, Dark', () => {
-    const { mode, textSize, chatWidth, nav, chat, pushPreview } = settingsStore.getState()
-    expect({ mode, textSize, chatWidth, nav, chat, pushPreview }).toEqual(defaultSettings)
+    const { mode, textSize, chatWidth, richText, nav, chat, pushPreview } = settingsStore.getState()
+    expect({ mode, textSize, chatWidth, richText, nav, chat, pushPreview }).toEqual(defaultSettings)
     expect(pushPreview).toBe(true)
   })
 
@@ -68,6 +68,14 @@ describe('settingsStore', () => {
         .nav.filter((e) => e.visible)
         .map((e) => e.page),
     ).toEqual(['home', 'toolkit', 'settings'])
+  })
+
+  it('turns one rich text feature off and on, and keeps the others', () => {
+    const { actions } = settingsStore.getState()
+    actions.setRichText('mermaid', false)
+    expect(settingsStore.getState().richText).toEqual({ ...defaultSettings.richText, mermaid: false })
+    actions.setRichText('mermaid', true)
+    expect(settingsStore.getState().richText).toEqual(defaultSettings.richText)
   })
 
   it('sets the message preview choice', () => {
@@ -105,6 +113,16 @@ describe('startSettingsStorage', () => {
       mode: 'system',
       chatWidth: 'narrow',
     })
+    settingsStore.getState().actions.setRichText('images', false)
+    expect(JSON.parse(fake.data.get(settingsKey) ?? '{}')).toEqual({
+      ...defaultSettings,
+      mode: 'system',
+      chatWidth: 'narrow',
+      richText: { ...defaultSettings.richText, images: false },
+    })
+    expect(onChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ richText: { ...defaultSettings.richText, images: false } }),
+    )
     expect(new Set(fake.keys)).toEqual(new Set([settingsKey]))
     expect(report).not.toHaveBeenCalled()
   })
