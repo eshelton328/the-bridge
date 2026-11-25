@@ -23,6 +23,13 @@ function chatLinkChange(data: WorkspacesData, ui: WorkspacesUi, chat: string): P
   return { ...openChat(data, ui, pane.id), phoneView: 'chat' }
 }
 
+/** Each live chat's server ID (`<machine>/<pane>`) and title, for message mentions; none with no live machine. */
+export function liveChatTitles(data: WorkspacesData): ReadonlyMap<string, string> {
+  const machine = data.liveMachine
+  if (machine === undefined) return new Map()
+  return new Map(data.panes.flatMap((p) => (p.type === 'chat' ? [[`${machine}/${p.id}`, p.head.title] as const] : [])))
+}
+
 /**
  * Opens the linked chat once for each link, then clears the param. `readAgain` reads the page's data from the server
  * and answers whether the server lists the chat.

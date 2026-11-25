@@ -37,6 +37,7 @@
 // Claude chat's Fork is one of those edits (backend #443), and its new chat opens once the list shows it
 // (useForkedChat.ts), and so is New workspace (W4), whose workspace opens once the list shows it. A live Claude chat's Side chat asks its questions of a copy of the chat's session and streams
 // each answer (useSideChats.ts, backend #460): the page draws the side chat of `ui.sideChatFor` in `data.sideChat`.
+import { z } from 'zod'
 import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { report } from '../../errors/reporter.ts'
@@ -44,6 +45,7 @@ import { copyText } from '../../lib/copyText.ts'
 import { readsLive } from '../../lib/dataSource.ts'
 import { useInboxBadge, useInboxStreamHost } from '../../lib/inboxFeed.ts'
 import { workspacesSources } from './loadWorkspacesState.ts'
+import { MarkdownChatsContext } from '../../blocks/markdownChats.ts'
 import { createDraftBook } from './blocks/draftBook.ts'
 import { openMoved } from './blocks/moveToWorkspace.ts'
 import { layoutsSeenOf, switchTo, withLoadedLayouts } from './blocks/workspaceLayout.ts'
@@ -63,7 +65,7 @@ import { useWorkspaceEdits } from './useWorkspaceEdits.ts'
 import { useLiveDialogs } from './useLiveDialogs.ts'
 import { useLivePending } from './useLivePending.ts'
 import { useLiveUploads } from './useLiveUploads.ts'
-import { useChatLink } from './useChatLink.ts'
+import { liveChatTitles, useChatLink } from './useChatLink.ts'
 import { useNewChat } from './useNewChat.ts'
 import { useForkedChat } from './useForkedChat.ts'
 import { useSideChats } from './useSideChats.ts'
@@ -76,6 +78,8 @@ import {
 } from './workspacesStore.ts'
 import { navRoute } from '../../lib/navRoutes.ts'
 import { useSettingsChatWidth, useVisibleNavPages } from '../../state/settingsStore.ts'
+
+const titleEntries = z.array(z.tuple([z.string(), z.string()]))
 
 const route = getRouteApi('/workspaces')
 
@@ -374,8 +378,17 @@ export function WorkspacesPage() {
     drafts,
     readList: () => void router.invalidate(),
   })
+  // The chats a message can mention, keyed by their titles' text, so a read that changes no title draws nothing again.
+  const titlesKey = JSON.stringify([...liveChatTitles(data)])
+  const mentionChats = useMemo(
+    () => ({
+      chats: new Map(titleEntries.parse(JSON.parse(titlesKey))),
+      open: (chat: string) => void router.navigate({ to: '/workspaces', search: { chat } }),
+    }),
+    [titlesKey, router],
+  )
   return (
-    <>
+    <MarkdownChatsContext value={mentionChats}>
       <WorkspacesScreen
         // The app always shows the Settings gear and the drawer's Settings row (d-119); a Figma state's story does not.
         settingsEntry
@@ -456,6 +469,6 @@ export function WorkspacesPage() {
         onClose={models.dismissFailed}
         onCopy={(text) => copyReply(text).then((copied) => copied.ok)}
       />
-    </>
+    </MarkdownChatsContext>
   )
 }
