@@ -84,8 +84,14 @@ export type DialogCardProps = {
 export function DialogCard({ view, onAnswer, onRetry }: DialogCardProps) {
   const { dialog, phase } = view
   const statusId = useId()
-  // The chosen row, kept for this dialog only: another dialog starts with none.
+  // The chosen row, kept for this dialog only. Each change of the dialog's ID clears it, also back to an ID shown
+  // before (A, B, then A again), so an answer always needs a fresh choice.
   const [chosen, setChosen] = useState<{ id: string; n: number } | undefined>(undefined)
+  const [shownId, setShownId] = useState(dialog.id)
+  if (shownId !== dialog.id) {
+    setShownId(dialog.id)
+    setChosen(undefined)
+  }
   const off = phase === 'sending' || phase === 'sent' || phase === 'changed'
   const options = dialog.options ?? []
   const pick = chosen?.id === dialog.id ? chosen.n : undefined

@@ -435,6 +435,22 @@ describe("a chat's terminal dialog (R69)", () => {
     expect(workspaces.dialogAnswers).toEqual([{ chat: plan, body: { id: sample.id, n: 1 } }])
   })
 
+  it('clears the chosen row when the dialog changes, also back to a dialog shown before', async () => {
+    const { workspaces } = withChats()
+    workspaces.showDialog(plan, sample)
+    await openChat(phone)
+    await userEvent.click(choice('Send original'))
+    await expect.element(sendButton()).toBeEnabled()
+    // The terminal shows another dialog, then the first one again, with no answer sent.
+    workspaces.showDialog(plan, changedSample, true)
+    await expect.element(card().getByText('Sample step, again', { exact: true }), { timeout: 8000 }).toBeVisible()
+    workspaces.showDialog(plan, sample, true)
+    await expect.element(card().getByText('Sample step', { exact: true }), { timeout: 8000 }).toBeVisible()
+    await expect.element(option('Send original')).not.toBeChecked()
+    await expect.element(sendButton()).toBeDisabled()
+    expect(workspaces.dialogAnswers).toEqual([])
+  })
+
   it('says the terminal changed on a 409, then shows the new dialog from the next read', async () => {
     const { workspaces } = withChats()
     const posted = watchPosts()
