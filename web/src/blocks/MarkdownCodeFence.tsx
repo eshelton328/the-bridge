@@ -11,7 +11,11 @@
 // canvas runs React 18, which has no `use` (Codex review of #511). A `pre` that is not
 // a fence (a code element with text alone) draws as it was. A `mermaid` fence
 // is a diagram (MermaidDiagram.tsx), with the code block until its code loads;
-// a `math` fence (`$…$`) is a KaTeX formula (MathFormula.tsx).
+// a `math` fence (`$…$`) is a KaTeX formula (MathFormula.tsx). The rich
+// text features (markdownFeatures.ts) turn each of these off: with
+// `colours` off the block loads no highlighter and draws its code plain,
+// with `diagrams` off a mermaid fence and with `math` off a math fence stay
+// code blocks of their source. The label, the scroll and Copy stay.
 // Props only.
 import { type CodeSegment, MarkdownCodeBlock } from '@eshelton328/component-library-1701'
 import { lazy, type ReactNode, Suspense, useEffect, useMemo, useState } from 'react'
@@ -73,12 +77,25 @@ export type MarkdownCodeFenceProps = ExtraProps & {
   readonly children?: ReactNode
   /** Copies the code (the page's copyText); without it the block has no copy button. */
   readonly onCopy?: CopyCode | undefined
+  /** Colours the code of a known language; on when not set. */
+  readonly colours?: boolean | undefined
+  /** Draws a `mermaid` fence as a diagram; on when not set. */
+  readonly diagrams?: boolean | undefined
+  /** Draws a `math` fence as a formula; on when not set. */
+  readonly math?: boolean | undefined
 }
 
-export function MarkdownCodeFence({ node, children, onCopy: copy }: MarkdownCodeFenceProps) {
+export function MarkdownCodeFence({
+  node,
+  children,
+  onCopy: copy,
+  colours = true,
+  diagrams = true,
+  math = true,
+}: MarkdownCodeFenceProps) {
   const fence = fenceOf(node)
   const code = fence?.code
-  const grammar = code !== undefined && code.length <= maxColoured ? grammarOf(fence?.language) : undefined
+  const grammar = colours && code !== undefined && code.length <= maxColoured ? grammarOf(fence?.language) : undefined
   const highlighter = useHighlighter(grammar)
   const segments = useMemo<CodeSegment[][] | undefined>(
     () => (code === undefined || grammar === undefined ? undefined : highlighter?.highlightCode(code, grammar)),
@@ -90,9 +107,9 @@ export function MarkdownCodeFence({ node, children, onCopy: copy }: MarkdownCode
   )
   if (fence === undefined) return <pre>{children}</pre>
   // Display math (`$…$`, or a fence labelled math, as GitHub draws it) is a KaTeX formula.
-  if (fence.language === 'math') return <MathFormula tex={fence.code} display />
+  if (math && fence.language === 'math') return <MathFormula tex={fence.code} display />
   const block = <MarkdownCodeBlock code={fence.code} language={fence.language} segments={segments} onCopy={onCopy} />
-  if (fence.language !== 'mermaid') return block
+  if (!diagrams || fence.language !== 'mermaid') return block
   return (
     <Suspense fallback={block}>
       <MermaidDiagram source={fence.code} />
