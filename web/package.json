@@ -28,6 +28,7 @@
     "react-error-boundary": "catalog:",
     "highlight.js": "catalog:",
     "lowlight": "catalog:",
+    "mermaid": "catalog:",
     "react-markdown": "catalog:",
     "remark-gfm": "catalog:",
     "zod": "catalog:",
