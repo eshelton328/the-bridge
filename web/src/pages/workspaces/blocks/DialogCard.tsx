@@ -46,12 +46,6 @@ const dialogText = {
   otherAnswers: 'Other answers: in the terminal',
 } as const
 
-/**
- * A dialog option as the contract will send it: the label alone, and the option's description in `detail` when it
- * says more than the label. A local type until the contract's `detail` lands (backend-coord's contract PR).
- */
-type DialogOption = NonNullable<PaneDialog['options']>[number] & { readonly detail?: string | undefined }
-
 // The status line: small and muted, its icon in the needs-you colour, as the chat's "Needs you" pill.
 const statusLine = css({ textStyle: 'small', color: 'fg.muted' })
 const statusIcon = css({ display: 'inline-flex', color: 'status.needsYou.fg' })
@@ -93,7 +87,7 @@ export function DialogCard({ view, onAnswer, onRetry }: DialogCardProps) {
   // The chosen row, kept for this dialog only: another dialog starts with none.
   const [chosen, setChosen] = useState<{ id: string; n: number } | undefined>(undefined)
   const off = phase === 'sending' || phase === 'sent' || phase === 'changed'
-  const options: readonly DialogOption[] = dialog.options ?? []
+  const options = dialog.options ?? []
   const pick = chosen?.id === dialog.id ? chosen.n : undefined
   const { title, question } = heading(dialog)
   const send = () => {

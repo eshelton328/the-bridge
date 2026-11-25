@@ -92,6 +92,22 @@ const twoOptions = {
   ],
   raw: 'Sample step\nGoal: tidy the notes\n1. Send structured\n2. Send original\n3. Type something',
 }
+/** A question whose options carry their descriptions as `detail`, as the server sends them (backend #518). */
+const withDetail = {
+  id: 'f1b2c3d4e5f60718',
+  title: 'Card colour',
+  body: 'Which colour for the sample card?',
+  options: [
+    { n: 1, label: 'Red', detail: 'A warm accent' },
+    { n: 2, label: 'Blue', detail: 'The calm accent' },
+    {
+      n: 3,
+      label: 'Green',
+      detail: 'A colour no other card uses yet, so the sample card stands out from the rest of the list on a phone',
+    },
+  ],
+  raw: 'Card colour\nWhich colour for the sample card?\n1. Red\n2. Blue\n3. Green',
+}
 /** The same step after the terminal changed: another read text, so another ID. */
 const changedSample = { ...sample, id: 'b1b2c3d4e5f60718', title: 'Sample step, again' }
 /** A dialog the server could not read for sure: its read text only, long enough to scroll. */
@@ -335,6 +351,31 @@ describe("a chat's terminal dialog (R69)", () => {
     expect(longRow.scrollWidth).toBeLessThanOrEqual(longRow.clientWidth)
     await answer(long)
     await expect.poll(() => workspaces.dialogAnswers).toEqual([{ chat: plan, body: { id: twoOptions.id, n: 2 } }])
+  })
+
+  it('draws each option by its label with its detail as a second line, never the two joined', async () => {
+    const { workspaces } = withChats()
+    workspaces.showDialog(plan, withDetail)
+    await openChat(phone)
+    await expect.element(option('Red')).toBeEnabled()
+    await expect.element(option('Red')).toHaveAccessibleDescription('A warm accent')
+    const red = row('Red')
+    const label = card().getByText('Red', { exact: true }).element().getBoundingClientRect()
+    const detail = card().getByText('A warm accent', { exact: true }).element().getBoundingClientRect()
+    expect(detail.top).toBeGreaterThanOrEqual(label.bottom)
+    expect(detail.bottom).toBeLessThanOrEqual(red.getBoundingClientRect().bottom)
+    expect(card().element().textContent).not.toMatch(/Red — /)
+    // A description the terminal wrapped comes as one text: the row wraps it onto more lines and shows every word.
+    const long = withDetail.options[2]?.detail ?? ''
+    const wrapped = card().getByText(long, { exact: true }).element()
+    expect(wrapped.getBoundingClientRect().height).toBeGreaterThan(
+      card().getByText('A warm accent', { exact: true }).element().getBoundingClientRect().height,
+    )
+    expect(wrapped.scrollHeight).toBeLessThanOrEqual(wrapped.clientHeight)
+    expect(wrapped.scrollWidth).toBeLessThanOrEqual(wrapped.clientWidth)
+    expect(row('Green').getBoundingClientRect().bottom).toBeGreaterThanOrEqual(wrapped.getBoundingClientRect().bottom)
+    await answer('Blue')
+    await expect.poll(() => workspaces.dialogAnswers).toEqual([{ chat: plan, body: { id: withDetail.id, n: 2 } }])
   })
 
   it('turns the options on again when an answered dialog goes and the same one comes back', async () => {

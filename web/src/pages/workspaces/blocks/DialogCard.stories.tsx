@@ -7,8 +7,7 @@ import { css } from '../../../../styled-system/css/index.js'
 import { DialogCard } from './DialogCard.tsx'
 
 // R69, restyled in R72: a terminal dialog that the transcript does not hold, drawn after a blocked chat's entries.
-// Made-up values. An option's `detail` comes with backend-coord's contract PR; until then these dialogs carry it
-// beside the contract's type.
+// Made-up values.
 const dialog = {
   id: 'a1b2c3d4e5f60718',
   title: 'Sample step',
@@ -28,7 +27,7 @@ const withDetail = {
     { n: 2, label: 'Blue', detail: 'The calm accent the other cards use' },
   ],
   raw: 'Card colour\nWhich colour for the sample card?',
-}
+} satisfies PaneDialog
 const longLabel = {
   id: 'c1b2c3d4e5f60718',
   body: 'How should the notes go to the chat?',
@@ -54,7 +53,7 @@ const sixOptions = {
     { n: 6, label: 'sample-five', detail: 'Last pushed a week ago' },
   ],
   raw: 'Pick a branch',
-}
+} satisfies PaneDialog
 const rawOnly: PaneDialog = {
   id: 'e1b2c3d4e5f60718',
   raw: Array.from({ length: 40 }, (_, i) => `line ${String(i + 1)} of a sample menu`).join('\n'),
