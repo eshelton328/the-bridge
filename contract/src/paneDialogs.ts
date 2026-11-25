@@ -8,8 +8,15 @@ import { z } from 'zod'
 /** The most characters of a dialog's text that the server sends. */
 export const maxDialogChars = 8000
 
-/** One numbered option of a dialog, as its screen shows it. */
-export const DialogOption = z.strictObject({ n: z.number().int().min(1).max(9), label: z.string().min(1).max(500) })
+/**
+ * One numbered option of a dialog, as its screen shows it: its label, and the description under it as `detail` only
+ * when it says more than the label.
+ */
+export const DialogOption = z.strictObject({
+  n: z.number().int().min(1).max(9),
+  label: z.string().min(1).max(500),
+  detail: z.string().min(1).max(500).optional(),
+})
 export type DialogOption = z.infer<typeof DialogOption>
 
 /**

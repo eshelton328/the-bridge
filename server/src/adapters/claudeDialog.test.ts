@@ -11,14 +11,25 @@ describe('dialogOf', () => {
       title: 'Colour',
       body: 'Which colour for marker-5150?',
       options: [
-        { n: 1, label: 'Red — Use red for marker-5150.' },
-        { n: 2, label: 'Green — Use green for marker-5150.' },
-        { n: 3, label: 'Blue — Use blue for marker-5150.' },
+        { n: 1, label: 'Red', detail: 'Use red for marker-5150.' },
+        { n: 2, label: 'Green', detail: 'Use green for marker-5150.' },
+        { n: 3, label: 'Blue', detail: 'Use blue for marker-5150.' },
       ],
     })
     // The text above the dialog's edge is the chat's, so it is not in the dialog.
     expect(shown?.dialog.raw).not.toContain('example text')
     expect(shown?.dialog.raw).toContain('Chat about this')
+  })
+
+  it('gives a description as the detail of its option only when it differs from the label, case aside', () => {
+    const screen = questionScreen(1)
+      .replace('Use red for marker-5150.', 'red')
+      .replace('Use blue for marker-5150.', 'Blue')
+    expect(dialogOf(screen)?.dialog.options).toEqual([
+      { n: 1, label: 'Red' },
+      { n: 2, label: 'Green', detail: 'Use green for marker-5150.' },
+      { n: 3, label: 'Blue' },
+    ])
   })
 
   it('keeps the question and the options when "Chat about this", under an edge, is marked', () => {

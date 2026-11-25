@@ -179,7 +179,9 @@ client of a socket or a file sits beside them.
   Claude chat with no input box: the text below the last edge above "❯"
   (else the whole screen) is `raw`, its hash the ID. Only one choice
   numbered from 1 gives options, never "Type something." or "Chat about
-  this". An answer reads the screen again and, only when the ID and the
+  this"; an option's label is its numbered line, and the lines under it
+  are its `detail`, left out when they only repeat the label, case aside
+  ("Red" under "1. Red"). An answer reads the screen again and, only when the ID and the
   option match, sends ↑ or ↓ and Enter in one `agent.send_keys`, which
   herdr takes for a blocked agent (probe, 2026-11-24); else `dialogChanged`.
 - A command (`/compact` with its instructions on one line, or

@@ -140,7 +140,8 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
 - A dialog on a chat's screen that its transcript does not hold (R69,
   `paneDialogs.ts`): `GET /api/chats/:chat/dialog` gives a `PaneDialog`
   or null. Its `id` is a hash of the read text, `options` (1 to 9, each
-  a number and a label) is there only when the server read the numbered
+  a number, a label and an optional `detail`, the description under it
+  when it says more than the label) is there only when the server read the numbered
   list for sure, and `raw` is the dialog's text, at most
   `maxDialogChars`. This is the one place the contract carries a
   screen's text (d-125, an exception to d-110): the owner must see the
