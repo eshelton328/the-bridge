@@ -55,10 +55,13 @@ function build(size: MarkdownSize, onCopy: CopyCode | undefined, features: RichT
   return {
     a: ({ href, children, node }) => {
       const url = linkUrl(href, children, node)
-      // With images off, an image in a link is its alt text inside the link: never a link in a link.
+      // With images off, an image in a link is its alt text inside the link: never a link in a link. With no alt
+      // text, the link's name is its URL, so it is never an empty link (Codex review of #532).
       if (!images) {
-        const text = holdsImage(node) ? textWithAlts(node) : children
-        return url === undefined ? text : webLink(url, text)
+        if (!holdsImage(node)) return url === undefined ? children : webLink(url, children)
+        const text = textWithAlts(node)
+        if (url === undefined) return text.trim() === '' ? children : text
+        return webLink(url, text.trim() === '' ? url : text)
       }
       // A link round a shown image: the picture, then the link with its alt text, so each has its own target.
       if (url !== undefined && hasShownImage(node)) {

@@ -120,6 +120,17 @@ describe('images off', () => {
     ])
     expect(document.querySelector('img, figure')).toBeNull()
   })
+
+  it('names a link round an image with no alt text by its URL: never an empty link', async () => {
+    view = await testRender(
+      <MarkdownText text={'See [![](images/chart.png)](https://example.com/builds) now.'} features={off('images')} />,
+    )
+    const links = [...document.querySelectorAll('a')]
+    expect(links.map((a) => [a.textContent, a.getAttribute('href')])).toEqual([
+      ['https://example.com/builds', 'https://example.com/builds'],
+    ])
+    expect(document.querySelector('img, figure')).toBeNull()
+  })
 })
 
 describe('the features context', () => {
