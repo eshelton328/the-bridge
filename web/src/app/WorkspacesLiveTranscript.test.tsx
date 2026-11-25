@@ -342,6 +342,75 @@ describe("a live chat's transcript (slice 3b)", () => {
     })
   }
 
+  // R73 (the owner: "It's not smooth moving the text and icon with the keyboard"): the R68 group jumped to a new
+  // centre as the keyboard opened and closed, half the keyboard's reach. Each rendering step of the move, from the tap
+  // on the message box to the keyboard closed again, reads the mark's top, the composer's height and whether the group
+  // sits on the composer: the group never moves by the keyboard's reach (the dock steps), only by half of the
+  // composer's own change, while it does not sit on the composer. Known steps that are left for the library part
+  // (R73 part 2, a ScrollFrame footer height and a glide of the group on the keyboard's curve), not passed here: the
+  // composer grows from one row at the dock's start (R39), -14 px on both; R36's gap over the keyboard at the open's
+  // end, -8 px on the iPad mini; and on the iPhone too little room over the keyboard, so the group goes up to sit on
+  // the composer at the open's end, -96 px (R68: never over the composer). The keyboard tops are
+  // WorkspacesKeyboardGap's.
+  for (const [device, size, keyboardTop] of [
+    ['iPad mini', [744, 1133], 833],
+    ['iPhone', [390, 844], 464],
+  ] as const)
+    it(`keeps a new chat's mark, name and line in place while the keyboard opens and closes, on the ${device}`, async () => {
+      const viewport = new FakeViewport()
+      replaceVisualViewport(viewport)
+      const server = fakeTranscriptServer()
+      server.set(plan, [])
+      fakeServer(server)
+      await tapWorkspaces(size)
+      await tapChat('plan the slice')
+      const root = [...document.body.children].filter((el) => el.querySelector('.app-shell__root') !== null).at(-1)
+      if (!(root instanceof HTMLElement)) throw new Error('no root')
+      root.style.height = '100%'
+      const region = chatRegion('plan the slice')
+      await expect.element(region.getByText('Send a message to start.')).toBeVisible()
+      await afterRendering()
+      const mark = region.element().querySelector<HTMLElement>('[data-chat-empty-part="mark"]')
+      const line = region.element().querySelector<HTMLElement>('[data-chat-empty-part="line"]')
+      const shell = mark?.closest<HTMLElement>('.app-shell__root')
+      const field = region.getByRole('textbox').element()
+      const composer = field.closest('.scroll-frame__footer')
+      if (!mark || !line || !shell || !(field instanceof HTMLElement) || !composer) throw new Error('no empty state')
+      const read = () => ({
+        top: mark.getBoundingClientRect().top,
+        footer: composer.getBoundingClientRect().height,
+        onComposer: Math.abs(line.getBoundingClientRect().bottom - composer.getBoundingClientRect().top) <= 1,
+      })
+      const at = read()
+      const steps: { top: number; footer: number; onComposer: boolean }[] = []
+      let sampling = true
+      const sample = () => {
+        steps.push(read())
+        if (sampling) requestAnimationFrame(sample)
+      }
+      requestAnimationFrame(sample)
+      const settled = async () => {
+        await expect.poll(() => document.getAnimations().length).toBe(0)
+        await renderedUntil(() => true)
+      }
+      await userEvent.click(field)
+      viewport.move({ height: keyboardTop })
+      await expect.poll(() => shell.style.getPropertyValue('--app-shell-keyboard')).not.toBe('')
+      await settled()
+      // On the keyboard the whole group shows over the composer.
+      expect(line.getBoundingClientRect().bottom).toBeLessThanOrEqual(composer.getBoundingClientRect().top + 0.5)
+      viewport.move({ height: size[1] })
+      await expect.poll(() => shell.style.getPropertyValue('--app-shell-keyboard')).toMatch(/^(0px)?$/)
+      await settled()
+      sampling = false
+      const kept = steps.filter((s) => !s.onComposer)
+      // The iPad mini keeps its place through the whole move; the iPhone at least before and after the keyboard.
+      expect(kept.length).toBeGreaterThan(device === 'iPhone' ? 2 : steps.length - 1)
+      const off = kept.map((s) => Math.abs(s.top - at.top) - Math.abs(s.footer - at.footer) / 2)
+      expect(Math.max(...off)).toBeLessThanOrEqual(1)
+      expect(getReports()).toEqual([])
+    })
+
   // R68 (the owner: "something a bit more polished for new chats", "nice icons that are centered"): a new chat's
   // transcript centres the chat's mark in a round tile, its name and one quiet line above the composer. A short space
   // (the keyboard up) hides the line, then the name, and never covers or moves the composer.
