@@ -7,8 +7,10 @@
 // remark-gfm gives `http://`) and a bare email become links, the `www.` one
 // to https; a link with any other URL (`javascript:`, `data:`, a relative
 // path) stays plain text. MarkdownView draws a link in the accent colour, underlined,
-// and breaks a long URL anywhere, so it wraps in its column. An image shows
-// its alt text, so the text loads nothing from another site. A task list's
+// and breaks a long URL anywhere, so it wraps in its column. An image of a
+// file in the brain is the library's ImageFigure through the server's image
+// route (`MarkdownImage.tsx`, `imageUrl.ts`); any other image shows its alt
+// text, so the text loads nothing from another site. A task list's
 // box is named by its state ("Task done", "Task not done"). A table is the
 // library's Table part (`markdownTableParts.ts`) at the caller's `size`, the
 // size of its MarkdownView. A GitHub alert (`> [!NOTE]`) is the library's
@@ -22,11 +24,12 @@
 // draws with KaTeX (`useMathPlugins.ts`, `MathFormula.tsx`). The caller wraps it
 // in a BlockBoundary.
 import type { ReactNode } from 'react'
-import Markdown, { type Components, type ExtraProps, type Options } from 'react-markdown'
+import Markdown, { type Components, defaultUrlTransform, type ExtraProps, type Options } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { ChatMention } from './ChatMention.tsx'
 import { type CopyCode, MarkdownCodeFence } from './MarkdownCodeFence.tsx'
 import { MarkdownChatsContext } from './markdownChats.ts'
+import { hasShownImage, MarkdownImage, textWithAlts } from './MarkdownImage.tsx'
 import { MathFormula } from './MathFormula.tsx'
 import { codeOf } from './fence.ts'
 import { MarkdownQuote } from './MarkdownQuote.tsx'
@@ -36,6 +39,11 @@ import { remarkChatMentions } from './remarkChatMentions.ts'
 import { useMathPlugins } from './useMathPlugins.ts'
 
 const remarkPlugins: NonNullable<Options['remarkPlugins']> = [remarkGfm, remarkCallout]
+
+// react-markdown's own rule, except that an image keeps a `file:` URL, which `imageUrl` reads as a brain file. A link
+// with one still goes through the default rule, and `linkUrl` keeps only http, https and mailto.
+const urlTransform: NonNullable<Options['urlTransform']> = (url, key) =>
+  key === 'src' && /^file:/i.test(url.trim()) ? url : defaultUrlTransform(url)
 
 /** The length of the Markdown source a link came from, or undefined when the parser gave no position. */
 const sourceLength = (node: ExtraProps['node']): number | undefined => {
@@ -62,6 +70,17 @@ function linkUrl(href: string | undefined, children: ReactNode, node: ExtraProps
 const inline: Components = {
   a: ({ href, children, node }) => {
     const url = linkUrl(href, children, node)
+    // A link round a shown image: the picture, then the link with its alt text, so each has its own target.
+    if (url !== undefined && hasShownImage(node)) {
+      return (
+        <>
+          {children}{' '}
+          <a href={url} target="_blank" rel="noopener noreferrer">
+            {textWithAlts(node)}
+          </a>
+        </>
+      )
+    }
     return url === undefined ? (
       children
     ) : (
@@ -70,7 +89,9 @@ const inline: Components = {
       </a>
     )
   },
-  img: ({ alt }) => alt ?? null,
+  img: ({ src, alt }) => <MarkdownImage src={src} alt={alt} />,
+  // A paragraph with a shown image is a div, as the image is a figure, which may not sit in a p.
+  p: ({ node, children }) => (hasShownImage(node) ? <div>{children}</div> : <p>{children}</p>),
   pre: ({ node, children }) => <MarkdownCodeFence node={node}>{children}</MarkdownCodeFence>,
   // Inline math (remark-math, for a text with a $) is a code element labelled math; any other code stays code.
   code: ({ node, children, ...props }) => {
@@ -179,7 +200,11 @@ export function MarkdownText({ text, size = 'md', onCopyCode }: MarkdownTextProp
   return (
     <MarkdownChatsContext.Consumer>
       {({ chats }) => (
-        <Markdown remarkPlugins={pluginsFor(chats, math.plugins)} components={componentsFor(size, onCopyCode)}>
+        <Markdown
+          urlTransform={urlTransform}
+          remarkPlugins={pluginsFor(chats, math.plugins)}
+          components={componentsFor(size, onCopyCode)}
+        >
           {math.text}
         </Markdown>
       )}

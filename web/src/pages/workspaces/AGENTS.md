@@ -729,8 +729,16 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   (remark-gfm, review R51), HTML in the text stays text, a bare URL
   and a `www.` link (to https) are links, only an http, https or mailto
   link is a link and it opens in a new tab (review R56,
-  `app/WorkspacesMarkdownLinks.test.tsx`), and an image shows its alt
-  text. A GitHub alert (`> [!NOTE]`, TIP, IMPORTANT, WARNING, CAUTION)
+  `app/WorkspacesMarkdownLinks.test.tsx`). An image of a file in the brain
+  (a path relative to the brain, an absolute path or a `file:` URL) is the
+  library's `ImageFigure` through the server's image route,
+  `/api/files/raw` (`../../blocks/MarkdownImage.tsx`,
+  `../../blocks/imageUrl.ts`), and a tap opens it in a dialog; any other
+  image (http, https, data, `//host`) shows its alt text and loads
+  nothing. A paragraph with such an image is a `div`, as a figure may not
+  sit in a `p`, and a link round one draws the picture, then the link
+  with the image's alt text, so the zoom button is never in the link
+  (`WorkspacesImage.test.tsx`, `MarkdownImage.test.tsx`). A GitHub alert (`> [!NOTE]`, TIP, IMPORTANT, WARNING, CAUTION)
   is the library's `Callout` of that tone at the MarkdownView's size
   (`../../blocks/remarkCallout.ts`, `../../blocks/MarkdownQuote.tsx`,
   `WorkspacesCallout.test.tsx`); any other quote stays a quote. A fenced
