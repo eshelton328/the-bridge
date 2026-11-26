@@ -1,8 +1,8 @@
 {
   "frameId": "M02",
-  "inputs": "5b7e28f213fbabb212bb8e3137189d12cb8c03ab366f02c2748b680381d8f606",
-  "library": "1.0.0-beta.132",
-  "recordSha256": "a37912fa62bac6af8ebce8703c1e6429ff5ff8ee1e331e284377b380bd19554e",
+  "inputs": "84c87f022b4c9001b26f4a524fd49fceced22c7db43fcc27d1211e0a59afcf81",
+  "library": "1.0.0-beta.134",
+  "recordSha256": "97ce6515fd373a221f6202febb8d3209ebffbbe072b2595ec7aa809356e8f852",
   "record": {
     "verdict": "match",
     "viewport": "390x844 phone, Light",
@@ -12,7 +12,7 @@
       "render": "reports/fidelity/settings/M02.sideBySide.png",
       "reference_side": "left"
     },
-    "summary": "The render matches the reference except for the accepted deviations: the new Text size line, the disabled Chat width row and the new Rich text section, which push Navigation below the bottom edge.",
+    "summary": "Apart from the accepted deviations, the render matches the reference: the title, Appearance card and tab bar are the same, and the other differences are the new Chat width row, the Rich text section and the flat page background, all accepted.",
     "findings": [],
     "accepted_deviations": [
       {
@@ -20,54 +20,60 @@
         "as_given": "Text size: the control is enabled, with Default selected as in the reference, and the line under it says \"Scales the text of the whole app. Small is the size of the designs.\" in place of \"Scales the whole app: Small 87.5 %, Default 100 %, Large 112.5 %.\" (d-122 and d-131). The line has a different length, so on a narrow screen it can take one more or one less text line than the reference, and every section below it then sits that much lower or higher.",
         "status": "as-described",
         "finding": null,
-        "note": "Control is enabled with Default selected. The new line takes two lines, the same as the reference."
+        "note": "Default is selected, the control is enabled and the new line takes two lines, the same as the reference."
       },
       {
         "id": "A2",
         "as_given": "A new \"NOTIFICATIONS\" section with one \"Notifications\" switch (off) sits between the Navigation section and the New chat defaults section. So New chat defaults sits lower, or below the bottom edge.",
         "status": "not-seen",
         "finding": null,
-        "note": "Navigation and all sections after it are below the bottom edge in the render."
+        "note": "The section sits below the bottom edge of this frame."
       },
       {
         "id": "A3",
         "as_given": "The Notifications switch moved to that section: the desktop rail no longer has the \"Notifications / Blocked in Settings\" switch at its bottom, and the More drawer no longer has the \"Notifications / Blocked in Settings\" row at its end. So the drawer is shorter and its top edge sits lower.",
         "status": "not-seen",
         "finding": null,
-        "note": "This frame has no rail and no open More drawer."
+        "note": "Neither the rail nor the More drawer is in this frame."
       },
       {
         "id": "A4",
         "as_given": "The Navigation list has a new last row, \"Settings\", with the line \"Always shown: in the bar or under More.\" under it and up and down buttons but no switch (the owner's decision: Settings is an entry of the bar order that cannot be hidden). So Toolkit's down button is now enabled, the Navigation card is taller, and every section below it sits lower or below the bottom edge.",
         "status": "not-seen",
         "finding": null,
-        "note": "The Navigation section is below the bottom edge in the render."
+        "note": "The Navigation section sits below the bottom edge of this frame."
       },
       {
         "id": "A5",
         "as_given": "On the phone and the tablet only: a thin rule line with the text \"Under More on this device\" under it sits after the last page that the tab bar shows (Projects on the phone, Artifacts on the tablet), so the rows after it sit lower by about 40 px.",
         "status": "not-seen",
         "finding": null,
-        "note": "The Navigation list is below the bottom edge in the render."
+        "note": "The Navigation list sits below the bottom edge of this frame."
       },
       {
         "id": "A6",
         "as_given": "Appearance has a new last row, \"Chat width\", under Text size: a three-way control \"Full\", \"Wide\", \"Narrow\" with Full selected, and a line under it. On the desktop and the tablet the control is enabled and the line says \"The messages and the message box of a Workspaces chat, centred.\"; on the phone the control is disabled (muted labels) and the line says \"Phone: always full\". So the Appearance card is taller, and every section below it sits lower (about one row) or below the bottom edge.",
         "status": "as-described",
         "finding": null,
-        "note": "The Chat width row is under Text size. The control is muted, Full is selected and the line says \"Phone: always full\"."
+        "note": "Chat width shows Full selected, all three labels muted and the line \"Phone: always full\"."
       },
       {
         "id": "A7",
         "as_given": "Rich text: a new \"RICH TEXT\" section sits between Appearance and Navigation, with the line \"Off shows the plain Markdown. No text is hidden.\" and six switches, all on: Callouts, Code highlighting, Chat links (with the line \"Chat bubbles in messages\" under it), Mermaid diagrams, Math and Images (bridge-coord, 2026-11-25, the owner's request). So Navigation and every section below it sit lower, or below the bottom edge.",
         "status": "as-described",
         "finding": null,
-        "note": "The RICH TEXT heading, its line and the Callouts, Code highlighting and Chat links switches (all on) show. Chat links continues behind the tab bar, so the rest of the section is below the bottom edge, as in the reference, where the Projects row goes behind the tab bar."
+        "note": "Callouts, Code highlighting and Chat links are visible and on. The tab bar covers the rest of the section."
+      },
+      {
+        "id": "A8",
+        "as_given": "Light mode only: the page background has no soft light-blue glow behind or beside the cards; it is the flat pale grey page colour (Erik's screen review row R52, library e0fc0b7 \"drop the backdrop glow in Light mode\", beta.134; bridge-coord, 2026-11-26). Cards, text and controls are unchanged by it.",
+        "status": "as-described",
+        "finding": null,
+        "note": "The reference has a pale blue glow between the cards at about y 440. The render background is flat."
       }
     ],
     "limits": [
-      "Only the part of the screen above the tab bar is in the frame, so the Navigation, Notifications, New chat defaults and later sections could not be checked.",
-      "The side-by-side image may be shown scaled down, so differences under about 2 px could not be checked."
+      "Most of the page under Appearance in the render is Rich text, so this frame cannot compare the Navigation rows and the sections below them."
     ]
   }
 }

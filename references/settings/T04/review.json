@@ -1,8 +1,8 @@
 {
   "frameId": "T04",
-  "inputs": "0d44c9e7814335074760f4da6a07fdfca07b376f1ea5ee15d932d5556ffc2d35",
-  "library": "1.0.0-beta.132",
-  "recordSha256": "78572410e6e82e94e6a38a28503a4778a2f2d827e4a7ee70081dd412b33332ce",
+  "inputs": "56113da766c19e7ec66252fb81c0d760dd393892a9eecac53c3eb4af1f39d5cf",
+  "library": "1.0.0-beta.134",
+  "recordSha256": "4359b3a26485cba381eb23a7635ca5bcdf07c5868516a7903a2cd3041d3af309",
   "record": {
     "verdict": "match",
     "viewport": "1180x820 iPad landscape, Light (tablet layout)",
@@ -12,7 +12,7 @@
       "render": "reports/fidelity/settings/T04.sideBySide.png",
       "reference_side": "left"
     },
-    "summary": "The render matches the reference apart from the accepted deviations: the text size line and the new Chat width row and Rich text section push the Navigation section below the bottom edge.",
+    "summary": "The render matches the reference apart from the accepted deviations: the new Text size line, the new Chat width row and the new Rich text section, with no backdrop glow; the header, the Appearance card and the tab bar are otherwise the same.",
     "findings": [],
     "accepted_deviations": [
       {
@@ -20,21 +20,21 @@
         "as_given": "Text size: the control is enabled, with Default selected as in the reference, and the line under it says \"Scales the text of the whole app. Small is the size of the designs.\" in place of \"Scales the whole app: Small 87.5 %, Default 100 %, Large 112.5 %.\" (d-122 and d-131). The line has a different length, so on a narrow screen it can take one more or one less text line than the reference, and every section below it then sits that much lower or higher.",
         "status": "as-described",
         "finding": null,
-        "note": "The control is enabled with Default selected. The new line fits on one line, as the reference line does."
+        "note": "Default is selected and the new line is on one text line, the same as the reference line."
       },
       {
         "id": "A2",
         "as_given": "A new \"NOTIFICATIONS\" section with one \"Notifications\" switch (off) sits between the Navigation section and the New chat defaults section. So New chat defaults sits lower, or below the bottom edge.",
         "status": "not-seen",
         "finding": null,
-        "note": "Navigation and everything after it are below the bottom edge in the render."
+        "note": "The section would be below the bottom edge of this frame."
       },
       {
         "id": "A3",
         "as_given": "The Notifications switch moved to that section: the desktop rail no longer has the \"Notifications / Blocked in Settings\" switch at its bottom, and the More drawer no longer has the \"Notifications / Blocked in Settings\" row at its end. So the drawer is shorter and its top edge sits lower.",
         "status": "not-seen",
         "finding": null,
-        "note": "This tablet frame has no rail and the More drawer is closed in both pictures."
+        "note": "This tablet frame has no rail, and the More drawer is closed in both pictures."
       },
       {
         "id": "A4",
@@ -48,26 +48,32 @@
         "as_given": "On the phone and the tablet only: a thin rule line with the text \"Under More on this device\" under it sits after the last page that the tab bar shows (Projects on the phone, Artifacts on the tablet), so the rows after it sit lower by about 40 px.",
         "status": "not-seen",
         "finding": null,
-        "note": "The Navigation list is below the bottom edge in the render."
+        "note": "The Navigation rows are below the bottom edge in the render."
       },
       {
         "id": "A6",
         "as_given": "Appearance has a new last row, \"Chat width\", under Text size: a three-way control \"Full\", \"Wide\", \"Narrow\" with Full selected, and a line under it. On the desktop and the tablet the control is enabled and the line says \"The messages and the message box of a Workspaces chat, centred.\"; on the phone the control is disabled (muted labels) and the line says \"Phone: always full\". So the Appearance card is taller, and every section below it sits lower (about one row) or below the bottom edge.",
         "status": "as-described",
         "finding": null,
-        "note": "Chat width shows Full, Wide and Narrow, with Full selected and the control enabled. The line says \"The messages and the message box of a Workspaces chat, centred.\""
+        "note": "Enabled, Full selected, the tablet line is shown, and the card is about 100 px taller."
       },
       {
         "id": "A7",
         "as_given": "Rich text: a new \"RICH TEXT\" section sits between Appearance and Navigation, with the line \"Off shows the plain Markdown. No text is hidden.\" and six switches, all on: Callouts, Code highlighting, Chat links (with the line \"Chat bubbles in messages\" under it), Mermaid diagrams, Math and Images (bridge-coord, 2026-11-25, the owner's request). So Navigation and every section below it sit lower, or below the bottom edge.",
         "status": "as-described",
         "finding": null,
-        "note": "The section shows its heading, its line and the Callouts, Code highlighting and Chat links rows with their switches on. The tab bar covers the Chat links switch and the rows after Chat links. This is the normal bottom edge of the scrolled view."
+        "note": "Callouts and Code highlighting are visible and on, Chat links is cut by the tab bar, and the remaining rows are below the bottom edge."
+      },
+      {
+        "id": "A8",
+        "as_given": "Light mode only: the page background has no soft light-blue glow behind or beside the cards; it is the flat pale grey page colour (Erik's screen review row R52, library e0fc0b7 \"drop the backdrop glow in Light mode\", beta.134; bridge-coord, 2026-11-26). Cards, text and controls are unchanged by it.",
+        "status": "as-described",
+        "finding": null,
+        "note": "The background is flat pale grey with no glow between or behind the cards."
       }
     ],
     "limits": [
-      "Content below the tab bar (the Chat links subline, Mermaid diagrams, Math, Images, Navigation, Notifications and New chat defaults) is not in either picture's view, so I could not compare it.",
-      "The side-by-side image is about 2384 px wide. If it was scaled down for display, I could not check differences under about 2 px."
+      "Only the part above the tab bar can be checked. Navigation, Notifications, New chat defaults, the rest of the Rich text rows and the Chat links sub-line are below the bottom edge of the render, so A2, A4 and A5 cannot be seen in this frame."
     ]
   }
 }
