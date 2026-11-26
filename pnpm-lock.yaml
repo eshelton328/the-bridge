@@ -10,8 +10,8 @@ catalogs:
       specifier: 2.6.8
       version: 2.6.8
     '@eshelton328/component-library-1701':
-      specifier: 1.0.0-beta.132
-      version: 1.0.0-beta.132
+      specifier: 1.0.0-beta.134
+      version: 1.0.0-beta.134
     '@eslint-community/eslint-plugin-eslint-comments':
       specifier: 4.8.1
       version: 4.8.1
@@ -322,7 +322,7 @@ importers:
         version: link:../shared
       '@eshelton328/component-library-1701':
         specifier: 'catalog:'
-        version: 1.0.0-beta.132(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+        version: 1.0.0-beta.134(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       '@fontsource-variable/geist':
         specifier: 'catalog:'
         version: 5.3.0
@@ -814,8 +814,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@eshelton328/component-library-1701@1.0.0-beta.132':
-    resolution: {integrity: sha512-92+JsUqo+S2I8hJuh3X8cFAwv3S41F4pbl8HwkJQB5hxwb58pUYz3TZYvxOSVpslHJ2E/RYgDJIw50JXsHITPQ==, tarball: https://npm.pkg.github.com/download/@eshelton328/component-library-1701/1.0.0-beta.132/f16487a657147f3f29b466012bc10da27a106492}
+  '@eshelton328/component-library-1701@1.0.0-beta.134':
+    resolution: {integrity: sha512-IWloUoZsjXOXVrcKpYFfAdebLZt1BFX6uJtyMGFp0ZOQ4m04nl14C9MPQD33Doi520HSFxkG9Fzj8PdHNsdfjQ==, tarball: https://npm.pkg.github.com/download/@eshelton328/component-library-1701/1.0.0-beta.134/57eff42ef3210a34206643bea3f6aaf7c4e9b342}
     engines: {node: '>=24'}
     peerDependencies:
       react: ^19.0.0
@@ -5026,7 +5026,7 @@ snapshots:
   '@esbuild/win32-x64@0.28.2':
     optional: true
 
-  '@eshelton328/component-library-1701@1.0.0-beta.132(react-dom@19.3.1(react@19.3.1))(react@19.3.1)':
+  '@eshelton328/component-library-1701@1.0.0-beta.134(react-dom@19.3.1(react@19.3.1))(react@19.3.1)':
     dependencies:
       '@ark-ui/react': 5.40.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       '@fontsource-variable/geist': 5.3.0
