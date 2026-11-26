@@ -34,10 +34,10 @@
 // (`GET /api/workspaces`) takes the same rule: such a miss shows no notice,
 // and the list is read again once the page shows; a second one in the same
 // trip, or any answer from the server, shows the notice as before.
-// Review R43: a server restart ends the event stream. After a stream that
-// opened ends or drops, a miss is quiet for `reconnectGraceMs`: the status
-// bar says the stream is lost only when a miss comes after that window, and
-// a stream that opens ends the outage.
+// Review R43 and R70: a server restart ends the event stream. The stream
+// connects again on the backoff of `lib/reconnectBackoff.ts`, and the status
+// bar says it is lost only after 4 misses in a row while the page shows and
+// `reconnectGraceMs` since the first; a stream that opens ends the outage.
 // Review R34: the home's sample skills never reach the live page; each live
 // Claude chat's "/" list is read from the server when it opens (liveSkills.ts).
 import {
@@ -56,6 +56,7 @@ import { err, ok, type Result } from '@bridge/shared'
 import { report } from '../../errors/reporter.ts'
 import { api } from '../../lib/api.ts'
 import { type Frame, frames, reconnectGraceMs } from '../../lib/eventFrames.ts'
+import { reconnectBackoff } from '../../lib/reconnectBackoff.ts'
 import { queryClient } from '../../lib/queryClient.ts'
 import { countListRead } from './listReads.ts'
 import type { ScreenState } from '../../lib/screenState.ts'
@@ -878,6 +879,8 @@ export type WatchDeps = {
    * (lib/inboxFeed.ts `useInboxStreamHost`), so the app holds one stream of the route.
    */
   readonly onInbox?: () => void
+  /** The backoff's jitter, in [0, 1) as Math.random gives: a test's fixed wait. */
+  readonly random?: () => number
 }
 
 /** The new cache for one chat's status, or undefined when the cache does not hold the chat. */
@@ -914,10 +917,12 @@ const openEvents: OpenStream = (signal) =>
  * opens (the first time and after it connects again) mark the cache invalid, with every layout, so the next load
  * reads the server. A `layout.changed` event marks that workspace's layout invalid, and only when the page shows that
  * workspace (`shownWorkspaces`): a workspace the page does not show is not read. A burst of events gives one
- * `onChange`. When the stream ends or the network drops, it connects again after the server's retry time (5 s), as EventSource does. A miss
- * shows the error in the status bar, once for each outage, but after a stream that opened ends or drops (a server
- * restart) only a miss after `reconnectGraceMs` does, and an outage that ends sooner shows nothing (review R43). A
- * 5xx is a miss too, as the Vite proxy answers 5xx while the server is down.
+ * `onChange`. When the stream ends or the network drops, it connects again on the jittered backoff (R70,
+ * `lib/reconnectBackoff.ts`), not the stream's `retry` field. A miss shows the error in the status bar, once for each
+ * outage, only when it is one of 4 misses in a row while the page shows and `reconnectGraceMs` has passed since the
+ * first; at that time the watcher tries at once, so an outage that ends sooner shows nothing (reviews R43, R70). A
+ * 5xx is a miss too, as the Vite proxy answers 5xx while the server is down. A stream that opens, the page back at the
+ * front and the network's `online` event start the steps again, and the last two connect at once.
  * When the server refuses the stream (such as 403), it stops and shows a notice in the status bar and the dev
  * ErrorTray, as a failed read does. The result stops it.
  */
@@ -927,6 +932,7 @@ export function watchLiveWorkspaces({
   open = openEvents,
   settleMs = 100,
   onInbox,
+  random = () => Math.random(),
 }: WatchDeps): () => void {
   watching += 1
   if (watching === 1) {
@@ -937,25 +943,37 @@ export function watchLiveWorkspaces({
   lost = undefined
   const abort = new AbortController()
   watchSignal = abort.signal
-  let retryMs = 5000
   let timer: ReturnType<typeof setTimeout> | undefined
-  /**
-   * The outage's grace (R43): it starts when a stream that opened ends or drops, and a stream that opens ends it. A
-   * miss with no grace, such as the first connection's, shows at once.
-   */
-  const grace: { timer: ReturnType<typeof setTimeout> | undefined; over: boolean } = { timer: undefined, over: false }
-  let opened = false
-  const outage = () => {
-    if (!opened) return
-    opened = false
-    grace.timer = setTimeout(() => {
-      grace.over = true
-    }, reconnectGraceMs)
+  const backoff = reconnectBackoff(random)
+  /** The row's floor (R43, R70): it starts at the row's first miss, and the lost line waits for it. */
+  let floor: ReturnType<typeof setTimeout> | undefined
+  let floorPassed = false
+  /** Whether the row has the visible misses the lost line needs. */
+  let enough = false
+  /** Ends the wait between two tries, while one runs. */
+  let wake: (() => void) | undefined
+  /** A new row: the next miss waits as the first one does, and its floor starts again. */
+  const fresh = () => {
+    backoff.reset()
+    clearTimeout(floor)
+    floor = undefined
+    floorPassed = false
+    enough = false
   }
-  const endOutage = () => {
-    clearTimeout(grace.timer)
-    grace.timer = undefined
-    grace.over = false
+  /** A miss: the wait before the next try. */
+  const missed = () => {
+    const step = backoff.miss(!isHidden())
+    enough = step.enough
+    if (step.first) {
+      clearTimeout(floor)
+      floor = setTimeout(() => {
+        floor = undefined
+        floorPassed = true
+        // The floor passed during a wait, with the misses the line needs: try once more now, and its miss shows it.
+        if (enough) wake?.()
+      }, reconnectGraceMs)
+    }
+    return step.waitMs
   }
   const changed = () => {
     timer ??= setTimeout(() => {
@@ -981,7 +999,6 @@ export function watchLiveWorkspaces({
     invalidate(layoutKey(workspace))
   }
   const take = (frame: Frame) => {
-    if (frame.retry !== undefined) retryMs = frame.retry
     if (frame.event === 'open' || frame.event === 'inbox.changed') onInbox?.()
     if (frame.event === 'layout.changed') {
       takeLayout(frame)
@@ -1010,18 +1027,23 @@ export function watchLiveWorkspaces({
     client.setQueryData(queryKey, next)
     changed()
   }
-  const pause = () =>
+  const pause = (ms: number) =>
     new Promise<void>((resolve) => {
-      const wait = setTimeout(resolve, retryMs)
-      abort.signal.addEventListener('abort', () => {
+      const done = () => {
         clearTimeout(wait)
+        abort.signal.removeEventListener('abort', done)
+        wake = undefined
         resolve()
-      })
+      }
+      const wait = setTimeout(done, ms)
+      wake = done
+      abort.signal.addEventListener('abort', done, { once: true })
     })
   // A call, so that each read sees the signal as it is now.
   const closed = () => abort.signal.aborted
   const run = async () => {
     while (!closed()) {
+      let waitMs: number
       // A stream that gives no answer (no headers) within `liveReadTimeoutMs` is a miss, so an outage after a drop is
       // shown even when the reconnect hangs (R43); the limit ends once the headers come.
       const late = new AbortController()
@@ -1043,18 +1065,17 @@ export function watchLiveWorkspaces({
         }
         // The stream is open: the outage, if there was one, is over.
         lost = undefined
-        endOutage()
-        opened = true
+        fresh()
         for await (const frame of frames(res.body)) take(frame)
-        outage()
+        waitMs = missed()
       } catch (thrown) {
         // The watcher stopped (the page closed the stream; fetch rejects with an AbortError): end, with no report.
         if (closed() || (thrown instanceof DOMException && thrown.name === 'AbortError' && !late.signal.aborted)) return
-        // The network dropped: connect again after the retry time. Within the grace a miss is quiet, as the server
-        // restarts; after it the status bar keeps the error. A long outage tells the page once, on its first error
-        // shown, not once for each reconnect; the status bar says it, so it is not reported.
-        outage()
-        if (grace.timer === undefined || grace.over) {
+        // The network dropped: connect again on the backoff. Until the row has 4 visible misses and its floor passed, a
+        // miss is quiet, as the server restarts; after that the status bar keeps the error. A long outage tells the page
+        // once, on its first error shown, not once for each reconnect; the status bar says it, so it is not reported.
+        waitMs = missed()
+        if (enough && floorPassed) {
           const first = lost === undefined
           const why = late.signal.aborted
             ? `no answer within ${String(liveReadTimeoutMs / 1000)} s`
@@ -1065,11 +1086,21 @@ export function watchLiveWorkspaces({
           if (first) changed()
         }
       }
-      await pause()
+      await pause(waitMs)
     }
   }
+  // The page back at the front, or the network online again, connects at once and starts the steps again (R70).
+  const onFront = () => {
+    if (isHidden()) return
+    fresh()
+    wake?.()
+  }
+  window.addEventListener('online', onFront)
+  document.addEventListener('visibilitychange', onFront)
   void run()
   return () => {
+    window.removeEventListener('online', onFront)
+    document.removeEventListener('visibilitychange', onFront)
     if (reload === invalidate) reload = undefined
     if (watchSignal === abort.signal) watchSignal = undefined
     watching -= 1
@@ -1081,7 +1112,7 @@ export function watchLiveWorkspaces({
       endListGrace()
     }
     clearTimeout(timer)
-    endOutage()
+    clearTimeout(floor)
     abort.abort()
   }
 }

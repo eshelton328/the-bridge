@@ -708,22 +708,53 @@ describe('watchLiveWorkspaces', () => {
     stop()
   })
 
-  it("connects again after the server's retry time when the stream ends, and not at once", async () => {
+  it("connects again on the jittered backoff when the stream ends, not after the stream's retry time (R70)", async () => {
     const server = fakeServer()
-    const stop = watchLiveWorkspaces({ onChange: () => undefined, client: client(), settleMs: 10, open: server.open })
+    // The first miss waits a random time below 0.5 s: 0.6 of it is 300 ms.
+    const stop = watchLiveWorkspaces({
+      onChange: () => undefined,
+      client: client(),
+      settleMs: 10,
+      open: server.open,
+      random: () => 0.6,
+    })
     await settle(5)
     server.opened[0]?.send('event: open\ndata: {}\nretry: 100\n\n')
     server.opened[0]?.end()
-    await settle(40)
+    await settle(200)
     expect(server.opened).toHaveLength(1)
-    await settle(120)
+    await settle(200)
     expect(server.opened).toHaveLength(2)
     stop()
-    await settle(150)
+    await settle(400)
     expect(server.opened).toHaveLength(2)
   })
 
-  it('shows the last error of a stream that fails three times in a row, and reports none', async () => {
+  it('connects at once when the network is online again, with no wait for the backoff (R70)', async () => {
+    vi.useFakeTimers()
+    try {
+      let calls = 0
+      const open = vi.fn(() => {
+        calls += 1
+        return Promise.reject(new TypeError(`Failed to fetch ${String(calls)}`))
+      })
+      // Each miss waits the most of its step: tries at 0, 0.5, 1.5 and 3.5 s, then a wait of 8 s.
+      const stop = watchLiveWorkspaces({ onChange: () => undefined, client: client(), open, random: () => 0.999 })
+      await vi.advanceTimersByTimeAsync(3600)
+      expect(open).toHaveBeenCalledTimes(4)
+      window.dispatchEvent(new Event('online'))
+      await vi.advanceTimersByTimeAsync(1)
+      expect(open).toHaveBeenCalledTimes(5)
+      // The steps start again: the next miss waits below 0.5 s, not 16 s.
+      await vi.advanceTimersByTimeAsync(500)
+      expect(open).toHaveBeenCalledTimes(6)
+      stop()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('shows the lost line only after 4 misses in a row and 10 s, then tries at once, and reports none (R70)', async () => {
     vi.useFakeTimers()
     try {
       const queries = client()
@@ -732,16 +763,30 @@ describe('watchLiveWorkspaces', () => {
         fails += 1
         return Promise.reject(new TypeError(`Failed to fetch ${String(fails)}`))
       })
-      const stop = watchLiveWorkspaces({ onChange: () => undefined, client: queries, settleMs: 10, open })
-      await vi.advanceTimersByTimeAsync(5000 * 2 + 100)
-      expect(open).toHaveBeenCalledTimes(3)
-      expect(getReports()).toEqual([])
-      const state = await withLiveWorkspaces(workspacesHome, {
-        fetchLayout: noLayout,
+      const alert = async () =>
+        (
+          await withLiveWorkspaces(workspacesHome, {
+            fetchLayout: noLayout,
+            client: queries,
+            fetch: () => Promise.resolve(ok(response)),
+          })
+        ).data.status.alert
+      // Half of each step: tries at 0, 0.25, 0.75, 1.75, 3.75 and 7.75 s, then a wait of 8 s.
+      const stop = watchLiveWorkspaces({
+        onChange: () => undefined,
         client: queries,
-        fetch: () => Promise.resolve(ok(response)),
+        settleMs: 10,
+        open,
+        random: () => 0.5,
       })
-      expect(state.data.status.alert).toBe('Live updates lost the event stream (Failed to fetch 3); connecting again.')
+      await vi.advanceTimersByTimeAsync(9900)
+      expect(open).toHaveBeenCalledTimes(6)
+      expect(getReports()).toEqual([])
+      expect(await alert()).toBeUndefined()
+      // At 10 s the floor passes: the watcher tries at once, and that miss shows the line.
+      await vi.advanceTimersByTimeAsync(200)
+      expect(open).toHaveBeenCalledTimes(7)
+      expect(await alert()).toBe('Live updates lost the event stream (Failed to fetch 7); connecting again.')
       stop()
     } finally {
       vi.useRealTimers()
@@ -776,8 +821,15 @@ describe('watchLiveWorkspaces', () => {
           })
         })
       })
-      const stop = watchLiveWorkspaces({ onChange: () => undefined, client: queries, settleMs: 10, open })
-      await vi.advanceTimersByTimeAsync(5000 + liveReadTimeoutMs + 1000)
+      // Half of each step: the drop, then three tries with no answer in 8 s each, the last past the 10 s floor.
+      const stop = watchLiveWorkspaces({
+        onChange: () => undefined,
+        client: queries,
+        settleMs: 10,
+        open,
+        random: () => 0.5,
+      })
+      await vi.advanceTimersByTimeAsync(3 * liveReadTimeoutMs + 2000)
       expect(getReports()).toEqual([])
       const state = await withLiveWorkspaces(workspacesHome, {
         fetchLayout: noLayout,
@@ -814,11 +866,11 @@ describe('watchLiveWorkspaces', () => {
       return calls === 1 ? Promise.resolve(new Response('', { status: 500 })) : server.open(signal)
     }
     const onChange = vi.fn()
-    const stop = watchLiveWorkspaces({ onChange, client: client(), settleMs: 10, open })
+    const stop = watchLiveWorkspaces({ onChange, client: client(), settleMs: 10, open, random: () => 0.5 })
     await vi.advanceTimersByTimeAsync(20)
     expect(getReports()).toEqual([])
     onChange.mockClear()
-    await vi.advanceTimersByTimeAsync(5000)
+    await vi.advanceTimersByTimeAsync(300)
     expect(calls).toBe(2)
     server.opened[0]?.send(server.frame('open', {}))
     await vi.advanceTimersByTimeAsync(20)
