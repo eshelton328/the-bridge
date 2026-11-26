@@ -210,7 +210,7 @@ describe('a server restart (R70, in place of review R43)', () => {
       // At 10 s the page tries at once; that miss shows the line, and report() gets it once however often it misses.
       await pass(2500)
       await renderedUntil(() => shows(/^Transcript updates lost — connecting again$/))
-      // The desktop's status bar says the event stream is lost too, after its own 10 s grace; it is not reported.
+      // The desktop's status bar says the event stream is lost too, on the same rule; it is not reported.
       if (device.size[0] >= 700) await renderedUntil(() => shows(eventsLine))
       expect(getReports().map((r) => r.error.message)).toEqual([
         'A chat transcript stream missed: status 502 (chat mac-mini/c1)',

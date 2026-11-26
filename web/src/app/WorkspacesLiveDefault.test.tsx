@@ -104,10 +104,13 @@ async function layoutAnswer(reply: () => Response, url: string): Promise<Respons
 /**
  * The stubbed server. `reply` answers each `GET /api/workspaces`: a Response, or `'down'` for no answer; a
  * workspace's layout comes from it (`layoutAnswer`). The event stream opens with `open` when the server is up, and
- * fails as a network error when it is down; `send` writes an event to every open stream.
+ * fails as a network error when it is down; `send` writes an event to every open stream. `answer(next, { stream:
+ * false })` keeps the event stream down, so only Retry loads the list: the stream's backoff tries again within 1 s
+ * (R70), and its load would take the notice away before the tap.
  */
 function fakeServer(first: (() => Response) | 'down') {
   let reply = first
+  let streamUp = first !== 'down'
   const encoder = new TextEncoder()
   const streams: ReadableStreamDefaultController<Uint8Array>[] = []
   const reads: string[] = []
@@ -119,7 +122,8 @@ function fakeServer(first: (() => Response) | 'down') {
       const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
       const layout = url.includes('/api/workspaces/') && url.endsWith('/layout')
       if (url.includes('/api/workspaces') && !layout) reads.push(url)
-      if (reply === 'down') return Promise.reject(new TypeError('Failed to fetch'))
+      if (reply === 'down' || (url.includes('/api/events') && !streamUp))
+        return Promise.reject(new TypeError('Failed to fetch'))
       const transcript = transcripts.handle(new URL(url, window.location.origin).pathname, init)
       if (transcript !== undefined) return Promise.resolve(transcript)
       if (layout) return layoutAnswer(reply, url)
@@ -145,8 +149,9 @@ function fakeServer(first: (() => Response) | 'down') {
   )
   return {
     reads,
-    answer: (next: (() => Response) | 'down') => {
+    answer: (next: (() => Response) | 'down', { stream = true }: { readonly stream?: boolean } = {}) => {
       reply = next
+      if (stream) streamUp = next !== 'down'
     },
     send: (event: string, data: unknown) => {
       for (const control of streams) {
@@ -271,12 +276,12 @@ describe('Workspaces on the live source by default (d-117)', () => {
       .toBeVisible()
     await expect.element(page.getByRole('heading', { name: 'Workspaces' })).toBeVisible()
     await expectNoSample()
-    // The event stream's first failure loads the page once more, for the status bar; the server comes back after it.
-    await expect.poll(() => server.reads.length).toBe(2)
+    // The event stream's misses load nothing until 4 in a row and 10 s (R70); the server comes back before that.
+    await expect.poll(() => server.reads.length).toBe(1)
     await expect.element(noticeAlert()).toBeVisible()
-    server.answer(ok([plan]))
+    server.answer(ok([plan]), { stream: false })
     await userEvent.click(noticeAlert().getByRole('button', { name: 'Retry' }))
-    await expect.poll(() => server.reads.length).toBe(3)
+    await expect.poll(() => server.reads.length).toBe(2)
     await expect.element(page.getByText('plan the slice')).toBeVisible()
     await expect.element(noticeAlert()).not.toBeInTheDocument()
     await expectNoSample()
@@ -290,8 +295,8 @@ describe('Workspaces on the live source by default (d-117)', () => {
     await expect.poll(() => router?.state.location.pathname).toBe('/workspaces')
     await expect.element(noticeAlert()).toBeVisible()
     await expectNoSample()
-    await expect.poll(() => server.reads.length).toBe(2)
-    server.answer(ok([plan]))
+    await expect.poll(() => server.reads.length).toBe(1)
+    server.answer(ok([plan]), { stream: false })
     await userEvent.click(noticeAlert().getByRole('button', { name: 'Retry' }))
     await expect.element(page.getByRole('heading', { name: 'plan the slice' })).toBeVisible()
     await expect.element(page.getByText(planEntry)).toBeVisible()
@@ -324,11 +329,11 @@ describe('Workspaces on the live source by default (d-117)', () => {
     await openApp()
     await userEvent.click(page.getByRole('button', { name: 'Workspaces', exact: true }))
     await expect.element(noticeAlert()).toBeVisible()
-    await expect.poll(() => server.reads.length).toBe(2)
+    await expect.poll(() => server.reads.length).toBe(1)
     await userEvent.click(page.getByRole('button', { name: 'Hide the workspace sidebar' }))
     await expect.element(noticeAlert()).toBeVisible()
     await expectNoSample()
-    server.answer(ok([plan]))
+    server.answer(ok([plan]), { stream: false })
     await userEvent.click(noticeAlert().getByRole('button', { name: 'Retry' }))
     await expect.element(page.getByRole('button', { name: 'Maximise plan the slice' })).toBeVisible()
     await expect.element(noticeAlert()).not.toBeInTheDocument()
@@ -338,10 +343,10 @@ describe('Workspaces on the live source by default (d-117)', () => {
     const server = fakeServer('down')
     await tapWorkspacesOnPhone()
     await expect.element(noticeAlert()).toBeVisible()
-    await expect.poll(() => server.reads.length).toBe(2)
+    await expect.poll(() => server.reads.length).toBe(1)
     await expect.element(noticeAlert()).toBeVisible()
     server.answer(ok([plan]))
-    // The stream connects again after its retry time (5 s), then the page loads again.
+    // The stream connects again on its backoff (R70), then the page loads again.
     await expect.element(page.getByText('plan the slice'), { timeout: 12_000 }).toBeVisible()
     await expect.element(noticeAlert()).not.toBeInTheDocument()
   })
@@ -445,9 +450,9 @@ describe('a live miss is a state the page shows, not an error (d-117)', () => {
     await openApp()
     await userEvent.click(page.getByRole('button', { name: 'Workspaces', exact: true }))
     await expect.element(noticeAlert()).toBeVisible()
-    await expect.poll(() => server.reads.length).toBe(2)
+    await expect.poll(() => server.reads.length).toBe(1)
     await expect.element(trayBadge()).not.toBeInTheDocument()
-    server.answer(ok([plan]))
+    server.answer(ok([plan]), { stream: false })
     await userEvent.click(noticeAlert().getByRole('button', { name: 'Retry' }))
     await expect.element(page.getByText('plan the slice', { exact: true }).first()).toBeVisible()
     await expect.element(trayBadge()).not.toBeInTheDocument()
@@ -459,10 +464,10 @@ describe('a live miss is a state the page shows, not an error (d-117)', () => {
     await openApp()
     await userEvent.click(page.getByRole('button', { name: 'Workspaces', exact: true }))
     await expect.element(noticeAlert()).toBeVisible()
-    await expect.poll(() => server.reads.length).toBe(2)
+    await expect.poll(() => server.reads.length).toBe(1)
     await expect.element(page.getByText('omni-brain · 4 panes', { exact: true })).not.toBeInTheDocument()
     await expect.element(page.getByText(/· \d+ panes?$/)).not.toBeInTheDocument()
-    server.answer(ok([plan, review]))
+    server.answer(ok([plan, review]), { stream: false })
     await userEvent.click(noticeAlert().getByRole('button', { name: 'Retry' }))
     await userEvent.click(page.getByRole('button', { name: 'Hide the workspace sidebar' }))
     await expect.element(page.getByText('live work · 2 panes', { exact: true })).toBeVisible()

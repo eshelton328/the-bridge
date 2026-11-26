@@ -236,9 +236,11 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   page back at the front and the network's `online` event start the
   steps again, and the last two connect at once. An `error` event (a
   failed watch, review R35), an event the page cannot read, a refusal and
-  a 4xx read show at once. The event stream's "Live updates lost" in the
-  desktop status bar keeps R43's 10 s grace
-  (`app/WorkspacesQuietReconnect.test.tsx`). A list read with
+  a 4xx read show at once. The event stream (`GET /api/events`,
+  `watchLiveWorkspaces`) connects again on the same backoff, and its
+  "Live updates lost" in the desktop status bar takes the same rule of 4
+  misses and 10 s, with no report (`liveWorkspaces.test.ts`,
+  `app/WorkspacesQuietReconnect.test.tsx`). A list read with
   no answer (no status, a timeout, a 5xx with no error body) after the
   page showed a list keeps that list and its cached layouts, with no
   notice, for the same window; a miss after it shows the notice, and a

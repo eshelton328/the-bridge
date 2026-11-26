@@ -69,7 +69,8 @@ state file and a page are in `screenState.ts` (d-082).
   `errors/globalHandlers.ts` sets, since lib may not import errors
   (`queryClient.test.ts`, audit W-7).
 - `inboxClient.ts` reads the Inbox list (`readInboxList`) and follows the
-  event stream (`watchInboxChanges`) with the quiet iOS resume of
+  event stream (`watchInboxChanges`, which connects again on the R70
+  backoff of `reconnectBackoff.ts`) with the quiet iOS resume of
   `pageResume.ts`; `inboxFeed.ts` holds the context that
   `app/InboxFeedProvider.tsx` fills, and the hooks a page entry uses
   (`useInboxBadge`, `useInboxChanges`). Without the provider, as in a

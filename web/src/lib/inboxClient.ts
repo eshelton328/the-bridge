@@ -18,6 +18,7 @@ import {
   resumeMark,
   whenVisible,
 } from './pageResume.ts'
+import { reconnectBackoff } from './reconnectBackoff.ts'
 
 /** How long a read or a write waits for the server, in ms, as the Workspaces reads do (d-101). */
 const inboxTimeoutMs = 8000
@@ -148,31 +149,46 @@ export type WatchInboxDeps = {
   readonly open?: OpenStream
   /** How long a burst of events waits before it gives one `onChange`, in ms. */
   readonly settleMs?: number
+  /** The backoff's jitter, in [0, 1) as Math.random gives: a test's fixed wait. */
+  readonly random?: () => number
 }
 
 /**
  * Reads the event stream while the page shows and gives one `onChange` for each burst of `inbox.changed` events, and
- * one each time the stream opens, as an event lost while it was closed may have changed the Inbox. When the stream ends or the network drops, it connects again after the
- * server's retry time (5 s), as EventSource does; a refused stream (a 4xx) stops it. The list read says what the
+ * one each time the stream opens, as an event lost while it was closed may have changed the Inbox. When the stream
+ * ends or the network drops, it connects again on the jittered backoff (R70, `reconnectBackoff.ts`), not the stream's
+ * `retry` field; a stream that opens, the page back at the front and the network's `online` event start the steps
+ * again, and the last two connect at once. A refused stream (a 4xx) stops it. The list read says what the
  * server answers, so the watcher shows no line of its own. The result stops it.
  */
-export function watchInboxChanges({ onChange, open = openEvents, settleMs = 100 }: WatchInboxDeps): () => void {
+export function watchInboxChanges({
+  onChange,
+  open = openEvents,
+  settleMs = 100,
+  random = () => Math.random(),
+}: WatchInboxDeps): () => void {
   const abort = new AbortController()
   let timer: ReturnType<typeof setTimeout> | undefined
-  let retryMs = 5000
+  const backoff = reconnectBackoff(random)
+  /** Ends the wait between two tries, while one runs. */
+  let wake: (() => void) | undefined
   const changed = () => {
     timer ??= setTimeout(() => {
       timer = undefined
       onChange()
     }, settleMs)
   }
-  const pause = () =>
+  const pause = (ms: number) =>
     new Promise<void>((resolve) => {
-      const wait = setTimeout(resolve, retryMs)
-      abort.signal.addEventListener('abort', () => {
+      const done = () => {
         clearTimeout(wait)
+        abort.signal.removeEventListener('abort', done)
+        wake = undefined
         resolve()
-      })
+      }
+      const wait = setTimeout(done, ms)
+      wake = done
+      abort.signal.addEventListener('abort', done, { once: true })
     })
   // A call, so that each read sees the signal as it is now.
   const closed = () => abort.signal.aborted
@@ -182,19 +198,29 @@ export function watchInboxChanges({ onChange, open = openEvents, settleMs = 100 
         const res = await open(abort.signal)
         if (res.status < 500 && (!res.ok || res.body === null)) return
         if (res.status >= 500 || res.body === null) throw new Error('no stream')
+        backoff.reset()
         for await (const frame of frames(res.body)) {
-          if (frame.retry !== undefined) retryMs = frame.retry
           // Each open, the first too, may follow events the page missed while the stream was closed (the contract's rule).
           if (frame.event === 'open' || frame.event === 'inbox.changed') changed()
         }
       } catch {
         if (closed()) return
       }
-      await pause()
+      await pause(backoff.miss(!isHidden()).waitMs)
     }
   }
+  // The page back at the front, or the network online again, connects at once and starts the steps again (R70).
+  const onFront = () => {
+    if (isHidden()) return
+    backoff.reset()
+    wake?.()
+  }
+  window.addEventListener('online', onFront)
+  document.addEventListener('visibilitychange', onFront)
   void run()
   return () => {
+    window.removeEventListener('online', onFront)
+    document.removeEventListener('visibilitychange', onFront)
     clearTimeout(timer)
     abort.abort()
   }
