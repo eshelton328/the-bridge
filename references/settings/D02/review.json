@@ -1,8 +1,8 @@
 {
   "frameId": "D02",
-  "inputs": "9513c9313f79bc028c6c54288cc0bd781217c389fd64b63146014ee48187f5a2",
-  "library": "1.0.0-beta.132",
-  "recordSha256": "c786c457e32c3aa07b692e1a54fcfbc65b8a0a086d9e86f71d6c8db07faafe50",
+  "inputs": "8ebc06c5b79a69a2194dffe781ac3a773eeb307e9604052f96d67a6e144fe293",
+  "library": "1.0.0-beta.134",
+  "recordSha256": "35760747573ec0a31833216e560ec46ee228c409583131a3c5759fa956c54fa5",
   "record": {
     "verdict": "match",
     "viewport": "1512x982 desktop, Light",
@@ -12,7 +12,7 @@
       "render": "reports/fidelity/settings/D02.sideBySide.png",
       "reference_side": "left"
     },
-    "summary": "Apart from the accepted deviations, the render matches the reference: the rail, the header and the Appearance card have the same content, size and position.",
+    "summary": "The only differences between the render and the reference are the accepted deviations: the new Text size line, the Chat width row, the Rich text section, no Notifications switch on the rail and no background glow.",
     "findings": [],
     "accepted_deviations": [
       {
@@ -20,49 +20,54 @@
         "as_given": "Text size: the control is enabled, with Default selected as in the reference, and the line under it says \"Scales the text of the whole app. Small is the size of the designs.\" in place of \"Scales the whole app: Small 87.5 %, Default 100 %, Large 112.5 %.\" (d-122 and d-131). The line has a different length, so on a narrow screen it can take one more or one less text line than the reference, and every section below it then sits that much lower or higher.",
         "status": "as-described",
         "finding": null,
-        "note": "Default is selected and the control is enabled. The new line fits on one line, the same as in the reference."
+        "note": "Default is selected and the new line fits on one line at y 398, the same position as in the reference."
       },
       {
         "id": "A2",
         "as_given": "A new \"NOTIFICATIONS\" section with one \"Notifications\" switch (off) sits between the Navigation section and the New chat defaults section. So New chat defaults sits lower, or below the bottom edge.",
         "status": "not-seen",
         "finding": null,
-        "note": "Navigation, Notifications and New chat defaults are all below the bottom edge of the render because the Chat width row and the Rich text section push them down. This agrees with the description."
+        "note": "The section is below the bottom edge of the render. New chat defaults is also out of view."
       },
       {
         "id": "A3",
         "as_given": "The Notifications switch moved to that section: the desktop rail no longer has the \"Notifications / Blocked in Settings\" switch at its bottom, and the More drawer no longer has the \"Notifications / Blocked in Settings\" row at its end. So the drawer is shorter and its top edge sits lower.",
         "status": "as-described",
         "finding": null,
-        "note": "The rail no longer has the switch at its bottom. This frame does not show the More drawer."
+        "note": "The bottom of the rail is empty in the render. The More drawer is closed in both pictures, so I could not check the drawer."
       },
       {
         "id": "A4",
         "as_given": "The Navigation list has a new last row, \"Settings\", with the line \"Always shown: in the bar or under More.\" under it and up and down buttons but no switch (the owner's decision: Settings is an entry of the bar order that cannot be hidden). So Toolkit's down button is now enabled, the Navigation card is taller, and every section below it sits lower or below the bottom edge.",
         "status": "not-seen",
         "finding": null,
-        "note": "The Navigation card is below the bottom edge of the render, so the new Settings row is not in view."
+        "note": "The Navigation section is below the bottom edge of the render."
       },
       {
         "id": "A5",
         "as_given": "Appearance has a new last row, \"Chat width\", under Text size: a three-way control \"Full\", \"Wide\", \"Narrow\" with Full selected, and a line under it. On the desktop and the tablet the control is enabled and the line says \"The messages and the message box of a Workspaces chat, centred.\"; on the phone the control is disabled (muted labels) and the line says \"Phone: always full\". So the Appearance card is taller, and every section below it sits lower (about one row) or below the bottom edge.",
         "status": "as-described",
         "finding": null,
-        "note": "The Chat width row has Full selected, the control is enabled and the desktop line is shown. The Appearance card is about one row taller."
+        "note": "The control is enabled with Full selected, and the line shows the desktop text. The Appearance card ends about 100 px lower (y 519 against 419)."
       },
       {
         "id": "A6",
         "as_given": "Rich text: a new \"RICH TEXT\" section sits between Appearance and Navigation, with the line \"Off shows the plain Markdown. No text is hidden.\" and six switches, all on: Callouts, Code highlighting, Chat links (with the line \"Chat bubbles in messages\" under it), Mermaid diagrams, Math and Images (bridge-coord, 2026-11-25, the owner's request). So Navigation and every section below it sit lower, or below the bottom edge.",
         "status": "as-described",
         "finding": null,
-        "note": "The section shows its line and all six switches turned on. Chat links has its subline. Navigation is now below the bottom edge."
+        "note": "The section has the given line and six switches, all on, at the same width as the other cards and with the same 60 px row pitch as the Navigation rows."
+      },
+      {
+        "id": "A7",
+        "as_given": "Light mode only: the page background has no soft light-blue glow behind or beside the cards; it is the flat pale grey page colour (Erik's screen review row R52, library e0fc0b7 \"drop the backdrop glow in Light mode\", beta.134; bridge-coord, 2026-11-26). Cards, text and controls are unchanged by it.",
+        "status": "as-described",
+        "finding": null,
+        "note": "The render background is flat pale grey. The reference has a light-blue glow at about x 830-1110, y 300-750."
       }
     ],
     "limits": [
-      "The side-by-side image is 3048x1010 and I saw it scaled to 2576x854, so I could not check differences under about 2 px.",
-      "No region crops were given.",
-      "Navigation, Notifications and New chat defaults are below the bottom edge of the render, so I could not compare them.",
-      "The More drawer is not in this frame."
+      "The Navigation, Notifications and New chat defaults sections are below the bottom edge of the render, so I could not check them. This includes the Settings row and the Toolkit down button.",
+      "The More drawer is closed in both pictures, so I could not check it."
     ]
   }
 }
