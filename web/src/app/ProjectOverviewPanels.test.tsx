@@ -43,17 +43,19 @@ const pull = (number: number, title: string, status: string) => ({
   updatedAt: '2026-11-21T10:00:00.000Z',
 })
 
+/** Alpha's Queue as the fake server answers it; a test may change it. */
+const queues: Record<string, unknown> = {}
+
 /** The fakes as the page's fetch: Alpha with two open PRs and an unread repository, and an Inbox of `items`. */
 function withServer(items: readonly unknown[]) {
+  queues.alpha = {
+    inProgress: [pull(12, 'Sample PR in review', 'inReview'), pull(11, 'Sample PR whose CI failed', 'ciFailed')],
+    unread: ['alpha-docs'],
+  }
   const projects = fakeProjectsServer(
     [{ slug: 'alpha', name: 'Alpha', purpose: 'Made up.', icon: null, pinned: false }],
     {
-      queues: {
-        alpha: {
-          inProgress: [pull(12, 'Sample PR in review', 'inReview'), pull(11, 'Sample PR whose CI failed', 'ciFailed')],
-          unread: ['alpha-docs'],
-        },
-      },
+      queues,
     },
   )
   const inbox = fakeInboxServer({ items })
@@ -204,5 +206,14 @@ describe("A project's Overview panels (R5, R6)", () => {
     await unmountRendered()
     stop.abort?.(new DOMException('The operation was aborted.', 'AbortError'))
     await quiet() // Vitest fails the run on an unhandled rejection.
+  })
+
+  it('reads the project again on projects.changed, so the Queue shows the new PRs with no reload', async () => {
+    const inbox = withServer(items)
+    await openAlpha(1440, 900)
+    await expect.poll(() => inbox.streams()).toBe(1)
+    queues.alpha = { inProgress: [pull(13, 'Sample PR opened later', 'draft')], unread: [] }
+    inbox.emit('projects.changed')
+    await expect.poll(() => titles('Queue')).toEqual(['Sample PR opened later'])
   })
 })

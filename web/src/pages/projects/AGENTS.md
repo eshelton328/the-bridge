@@ -55,7 +55,9 @@ T10b, M10 for the home, D01, T01, T01b, M01 for a project's page), read with
     each `inbox.changed` through `useInboxChanges` (no timer, NCC-138):
     one read when the page opens from the home, two on a cold load (the
     loader and the feed's stream open), then one per change
-    (`app/ProjectOverviewPanels.test.tsx`).
+    (`app/ProjectOverviewPanels.test.tsx`). The server gives its kept PRs
+    at once and runs gh behind the read; on `projects.changed` the page
+    runs its loader again, so new PRs show with no reload (NCC-156).
   - The Ideas tab (R10; NCC-132's live slice, plain on every size) is in
     the address, `?tab=ideas`, so a reload and Back keep it. Only then
     does the loader read `GET /api/projects/:slug/ideas`; the Overview

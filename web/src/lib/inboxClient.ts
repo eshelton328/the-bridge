@@ -146,6 +146,8 @@ const openEvents: OpenStream = (signal) =>
 export type WatchInboxDeps = {
   /** The page loads again. */
   readonly onChange: () => void
+  /** A project's open PRs changed (`projects.changed`, NCC-156). */
+  readonly onProjects?: () => void
   readonly open?: OpenStream
   /** How long a burst of events waits before it gives one `onChange`, in ms. */
   readonly settleMs?: number
@@ -163,6 +165,7 @@ export type WatchInboxDeps = {
  */
 export function watchInboxChanges({
   onChange,
+  onProjects,
   open = openEvents,
   settleMs = 100,
   random = () => Math.random(),
@@ -202,6 +205,7 @@ export function watchInboxChanges({
         for await (const frame of frames(res.body)) {
           // Each open, the first too, may follow events the page missed while the stream was closed (the contract's rule).
           if (frame.event === 'open' || frame.event === 'inbox.changed') changed()
+          if (frame.event === 'projects.changed') onProjects?.()
         }
       } catch {
         if (closed()) return
