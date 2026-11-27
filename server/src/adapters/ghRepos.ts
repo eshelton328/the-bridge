@@ -1,7 +1,9 @@
 // A GitHub repository's visibility and newest release (f-008 increment two,
 // R2), from one read-only `gh api graphql` call run as ghPulls.ts runs gh.
-// The newest release counts pre-releases, as the library's releases all are;
-// a release with no publish time (a draft) is none.
+// The newest release counts pre-releases, as the library's releases all are.
+// A release with no publish time is a draft: it is skipped, so a newer draft
+// never hides an older published release. Of the newest 10, the first
+// published one is the release; 10 drafts in a row give none.
 import { RepositoryRelease, RepositoryVisibility } from '@bridge/contract'
 import { err, ok } from '@bridge/shared'
 import { z } from 'zod'
@@ -12,7 +14,7 @@ const query = [
   'query($owner: String!, $name: String!) {',
   '  repository(owner: $owner, name: $name) {',
   '    visibility',
-  '    releases(first: 1, orderBy: { field: CREATED_AT, direction: DESC }) { nodes { tagName url publishedAt } }',
+  '    releases(first: 10, orderBy: { field: CREATED_AT, direction: DESC }) { nodes { tagName url publishedAt } }',
   '  }',
   '}',
 ].join('\n')
@@ -37,7 +39,7 @@ export function createGhRepositoryFacts(options: GhOptions): RepositoryFacts {
       const repository = read.value.data.repository
       const visibility = RepositoryVisibility.safeParse(repository.visibility.toLowerCase())
       if (!visibility.success) return err({ reason: 'failed', code: 'EBADDATA' })
-      const newest = repository.releases.nodes[0]
+      const newest = repository.releases.nodes.find((node) => node.publishedAt !== null)
       const release = RepositoryRelease.safeParse(
         newest === undefined || newest.publishedAt === null
           ? null

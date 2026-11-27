@@ -60,6 +60,24 @@ describe('createGhRepositoryFacts', () => {
     expect(await offSite.about(repo)).toEqual({ ok: true, value: { visibility: 'public', release: null } })
   })
 
+  it('skips a newer draft and gives the published release after it', async () => {
+    const published = {
+      tagName: 'v1.0.0-beta.1',
+      url: 'https://github.com/example-owner/example-repo/releases/tag/v1.0.0-beta.1',
+      publishedAt: '2026-11-26T08:00:00Z',
+    }
+    const facts = await gh(
+      `cat <<'EOF'\n${reply('PUBLIC', [{ tagName: 'v1.0.0-beta.2', url: 'https://github.com/o/r/releases/tag/v1.0.0-beta.2', publishedAt: null }, published])}\nEOF`,
+    )
+    expect(await facts.about(repo)).toEqual({
+      ok: true,
+      value: {
+        visibility: 'public',
+        release: { tag: 'v1.0.0-beta.1', url: published.url, publishedAt: '2026-11-26T08:00:00.000Z' },
+      },
+    })
+  })
+
   it('is a fault with a code only for a failed run or a reply it does not read', async () => {
     const failed = await gh('echo "marker-5150" >&2\nexit 1')
     expect(await failed.about(repo)).toEqual({ ok: false, error: { reason: 'failed', code: 'exit-1' } })
