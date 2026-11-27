@@ -8,10 +8,12 @@ import type { Viewport } from '../../../lib/screenState.ts'
 import { ProjectHeader } from '../blocks/ProjectHeader.tsx'
 import { type ProjectCard, ProjectTab, type ProjectsData, type ProjectsUi } from '../types.ts'
 
-// The page's sides and top, as the Projects home has them (D10, T10, M10).
+// The page's sides, as the Projects home has them (D10, T10, M10), and its
+// top: 24 on a desktop or tablet, where D01, T01 and T01b draw 28 (no
+// spacing token has 28), and the home's 40 on a phone.
 const page = {
   desktop: css({ pt: '24', pb: '32', px: '40' }),
-  tablet: css({ pt: { base: '40', _landscape: '24' }, pb: '32', px: '32' }),
+  tablet: css({ pt: '24', pb: '32', px: '32' }),
   phone: css({ pt: '40', pb: '16', px: '16' }),
 } as const satisfies Record<Viewport, string>
 const tabs = css({ pt: '32' })

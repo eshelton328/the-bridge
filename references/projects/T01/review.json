@@ -1,0 +1,74 @@
+{
+  "frameId": "T01",
+  "inputs": "8890a2b04d75161493a0a8d445961f7d64a120483286412a3475b43a2f5a4207",
+  "library": "1.0.0-beta.135",
+  "recordSha256": "c748ba2815bc1c9d1880e0bb25964637fbbc90178c4410f7760eee72d2c5e4ee",
+  "record": {
+    "verdict": "match",
+    "viewport": "744x2120 iPad portrait, dark mode (744 CSS px wide)",
+    "inputs": {
+      "layout": "separate",
+      "reference": "references/projects/T01/frame.png",
+      "render": "reports/fidelity/projects/T01.render.png",
+      "reference_side": null
+    },
+    "summary": "Apart from the seven accepted deviations, which the render shows as described, the render matches the reference.",
+    "findings": [],
+    "accepted_deviations": [
+      {
+        "id": "A1",
+        "as_given": "Panels: the render has no Inbox, Queue, Context drift or Chats panel under the tabs; the page is empty below the tabs. Those panels are built in later issues.",
+        "status": "as-described",
+        "finding": null,
+        "note": "Below the tab row, the render shows only the starfield background down to the bottom tab bar."
+      },
+      {
+        "id": "A2",
+        "as_given": "Tabs: the render's tab row shows Overview and Ideas, where the reference shows Overview, Repositories, Architecture and QA. Only the tabs of shipped increments show.",
+        "status": "as-described",
+        "finding": null,
+        "note": "Overview is selected, the same as in the reference. Ideas has a lightbulb icon and the unselected style."
+      },
+      {
+        "id": "A3",
+        "as_given": "Quick chat shows as the reference draws it and does nothing yet.",
+        "status": "as-described",
+        "finding": null,
+        "note": "The button has the same size, cyan fill, icon and label. Its 4 px upward shift is covered by A5. A still image cannot show what the button does."
+      },
+      {
+        "id": "A4",
+        "as_given": "Owner's name: the purpose starts \"The owner's personal workspace\", where the reference has a person's name. A secret-scan rule keeps the name out of the code, so the purpose breaks its lines at other words.",
+        "status": "as-described",
+        "finding": null,
+        "note": "The render's first line ends at \"directing AI\" and the second line starts \"agents, plus the shared template for new projects.\" It is still two lines, and the right edge is about x 684, the same as in the reference."
+      },
+      {
+        "id": "A5",
+        "as_given": "Top: the back row with Quick chat sits 4 px higher than in the reference (the design's 28 px top has no spacing token). The tabs are 2 px lower than the reference's.",
+        "status": "as-described",
+        "finding": null,
+        "note": "Quick chat spans y 28-64 in the reference and y 24-60 in the render. The tab pills span about y 188-224 in the reference and y 190-226 in the render."
+      },
+      {
+        "id": "A6",
+        "as_given": "Picture: the project picture is 64 px square, where the reference draws 56, which no size token has. The name and the purpose keep the 16 px gap after it, so they start 8 px right of the reference's.",
+        "status": "as-described",
+        "finding": null,
+        "note": "The picture spans x 32-88 in the reference and x 32-96 in the render. The name and the purpose start at about x 104 in the reference and x 112 in the render. The name is about 128 px wide in both."
+      },
+      {
+        "id": "A7",
+        "as_given": "Tab bar: the bottom tab bar is the app's shared one in its default order: Home, Inbox, Workspaces, Projects, Artifacts and More. The reference draws Inbox, Workspaces, Projects and More.",
+        "status": "as-described",
+        "finding": null,
+        "note": "The render's bar has six centred items, with Projects highlighted in cyan, the same as in the reference. The bar's height and top border match the reference."
+      }
+    ],
+    "limits": [
+      "The full images were viewed scaled down. Differences under about 2 px were checked only in the 1:1 crops at the top (y 0-300) and bottom (y 2020-2120). The rest of the page is the empty area covered by A1.",
+      "Whether Quick chat does anything (A3) cannot be judged from a still image.",
+      "The background glow sits a little lower in the render. It was treated as part of the decorative background behind the page, not as a screen element."
+    ]
+  }
+}

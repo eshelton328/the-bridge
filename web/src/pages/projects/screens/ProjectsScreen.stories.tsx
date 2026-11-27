@@ -89,3 +89,27 @@ export const ProjectOverview: Story = {
     await expectProject(canvas)
   },
 }
+
+export const ProjectOverviewTablet: Story = {
+  name: "T01: NCC-1701's page on an iPad in portrait, on its Overview tab",
+  args: {
+    data: projectsStates.projectOverviewTablet.data,
+    ui: projectsStates.projectOverviewTablet.ui,
+    viewport: 'tablet',
+  },
+  play: async ({ canvas }) => {
+    await expectProject(canvas)
+  },
+}
+
+export const ProjectOverviewTabletWide: Story = {
+  name: "T01b: NCC-1701's page on an iPad in landscape, on its Overview tab",
+  args: {
+    data: projectsStates.projectOverviewTabletWide.data,
+    ui: projectsStates.projectOverviewTabletWide.ui,
+    viewport: 'tablet',
+  },
+  play: async ({ canvas }) => {
+    await expectProject(canvas)
+  },
+}

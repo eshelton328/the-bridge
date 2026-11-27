@@ -8,5 +8,14 @@ import type { projectsStates } from './index.ts'
 export const projectsScreens = {
   home: { title: 'The Projects home', desktop: 'menuOpen', tablet: 'projectsTablet', phone: 'projectsPhone' },
   wide: { title: 'The Projects home on an iPad in landscape', landscape: true, tablet: 'projectsTabletWide' },
-  project: { title: "A project's page", desktop: 'projectOverview' },
+  project: {
+    title: "A project's page",
+    desktop: 'projectOverview',
+    tablet: 'projectOverviewTablet',
+  },
+  projectWide: {
+    title: "A project's page on an iPad in landscape",
+    landscape: true,
+    tablet: 'projectOverviewTabletWide',
+  },
 } as const satisfies ScreenMap<keyof typeof projectsStates>

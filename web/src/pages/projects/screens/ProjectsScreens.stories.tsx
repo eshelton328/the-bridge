@@ -44,3 +44,4 @@ function screenStory(screen: Screen<string>): Story {
 export const HomeScreen: Story = screenStory(projectsScreens.home)
 export const WideScreen: Story = screenStory(projectsScreens.wide)
 export const ProjectScreen: Story = screenStory(projectsScreens.project)
+export const ProjectWideScreen: Story = screenStory(projectsScreens.projectWide)
