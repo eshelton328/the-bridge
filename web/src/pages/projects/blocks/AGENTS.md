@@ -28,5 +28,8 @@ moves to `web/src/blocks/`.
   state and tags in the meta, the age at the end). It takes only the
   words it draws. The frames' table (D08, T08, T08b, M08) is a later
   issue's.
+- `ContextDrift` is the Context drift panel (R9): `PageHeader` with Run check
+  (off while `busy`) over a `Panel` of `ListRow` findings; `OverviewPanels`
+  draws it under Inbox and Queue, across both columns on the desktop.
 - Each card carries `data-figma="project card · <name>"`, which the live
   tests read for the order.
