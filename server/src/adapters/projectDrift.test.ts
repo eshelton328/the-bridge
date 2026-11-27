@@ -114,6 +114,21 @@ describe('a drift run', () => {
     expect(await projects.runDrift('no-such-project')).toEqual(ok('notFound'))
   })
 
+  it('gives no run for a project whose slug is an Object property name, such as constructor', async () => {
+    const projects = createProjects({
+      brain: {
+        list: () =>
+          Promise.resolve(ok([{ slug: 'constructor', name: 'Example', purpose: '', icon: null, repositories: [] }])),
+        ideas: () => Promise.resolve(ok([])),
+      },
+      pins: { load: () => Promise.resolve(ok([])), save: () => Promise.resolve(ok(undefined)) },
+      pulls: { open: () => Promise.resolve(ok([])) },
+      check: { run: () => Promise.resolve(ok([])) },
+      drift: createDiskDriftStore(join(dir, 'data')),
+    })
+    expect(await projects.drift('constructor')).toEqual(ok({ last: null }))
+  })
+
   it('stores a failed check as a failed run with its code for the log', async () => {
     const projects = createProjects({
       brain: {

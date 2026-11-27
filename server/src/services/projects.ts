@@ -234,7 +234,7 @@ export function createProjects({ brain, pins, pulls, check, drift, now = () => n
       if (record.value === 'notFound') return ok('notFound')
       const runs = await drift.load()
       if (!runs.ok) return runs
-      return ok({ last: runs.value[slug] ?? null })
+      return ok({ last: Object.hasOwn(runs.value, slug) ? (runs.value[slug] ?? null) : null })
     },
 
     async runDrift(slug) {
