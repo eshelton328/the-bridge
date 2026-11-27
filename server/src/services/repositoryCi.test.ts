@@ -11,15 +11,17 @@ import {
 } from './repositoryCi.ts'
 
 const at = (minute: number) => new Date(Date.parse('2026-11-01T00:00:00.000Z') + minute * 60_000).toISOString()
-/** A workflow run of commit `sha` that starts at minute `start` and takes `length` minutes. */
+/** A run of workflow `workflow` (by default its own) for commit `sha` that starts at minute `start` and takes `length` minutes. */
 const run = (
   sha: string,
   conclusion: string | null,
   start: number,
   length: number,
   event = 'pull_request',
+  workflow = start,
 ): WorkflowRun => ({
   id: start,
+  workflow,
   sha,
   event,
   branch: 'a-branch',
@@ -57,7 +59,19 @@ describe('ciRunsOf', () => {
       [[0, 1], true, true],
       [[3], true, true],
     ])
-    expect(runs[3]).toMatchObject({ start: at(0), end: at(9) })
+    expect(runs[3]).toMatchObject({ end: at(9), minutes: 8 })
+  })
+
+  it('keeps the newest run of each workflow, so a next-day title check neither adds a day nor keeps an old failure', () => {
+    const day = 24 * 60
+    const runs = ciRunsOf([
+      run('a', 'success', 0, 10, 'pull_request', 1),
+      run('a', 'failure', 0, 1, 'pull_request', 2),
+      run('a', 'success', day, 1, 'pull_request', 2),
+    ])
+    expect(runs).toHaveLength(1)
+    expect(runs[0]).toMatchObject({ green: true, finished: true, minutes: 10, end: at(day + 1) })
+    expect(runs[0]?.runs.map((r) => r.id)).toEqual([0, day])
   })
 })
 
@@ -75,11 +89,11 @@ describe('ciOf', () => {
     expect(ciOf(at(0), failedOnly, [], []).runMinutes).toBeNull()
   })
 
-  it('counts the finished and green CI runs, and times a green one from its first start to its last end', () => {
+  it('counts the finished and green CI runs, and times a green one by its longest workflow run', () => {
     const runs = ciRunsOf([run('a', 'success', 0, 1), run('a', 'success', 1, 8), run('b', 'failure', 20, 2)])
     const ci = ciOf(at(0), runs, [], [])
     expect(ci.runs).toEqual({ green: 1, finished: 2 })
-    expect(ci.runMinutes).toBe(9)
+    expect(ci.runMinutes).toBe(8)
     expect(ci.merge).toEqual({ count: 0, medianHours: null, p90Hours: null })
   })
 

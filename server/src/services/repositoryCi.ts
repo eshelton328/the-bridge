@@ -9,6 +9,8 @@ import type { ProjectFault } from './projects.ts'
 /** One GitHub Actions workflow run of the window. */
 export type WorkflowRun = {
   readonly id: number
+  /** The workflow's ID: one CI run keeps the newest run of each workflow. */
+  readonly workflow: number
   readonly sha: string
   readonly event: string
   readonly branch: string
@@ -35,11 +37,15 @@ export const jobRunCount = 10
 /** The most workflow runs one read gives: 10 pages of 100. */
 export const maxWorkflowRuns = 1_000
 
-/** One CI run: the workflow runs of one commit and event, with its first start and last end. */
+/**
+ * One CI run: the newest run of each workflow for one commit and event, its last end, and its minutes: the longest of
+ * those runs, as the workflows run at the same time. A later run of one workflow (a PR title edit runs the title check
+ * again) takes the place of the earlier one, so it neither keeps that run's result nor adds the time between them.
+ */
 export type CiRun = {
   readonly runs: readonly WorkflowRun[]
-  readonly start: string
   readonly end: string
+  readonly minutes: number
   /** Every workflow run ended and none was cancelled; a skipped one is left out. */
   readonly finished: boolean
   readonly green: boolean
@@ -65,16 +71,22 @@ export function ciRunsOf(runs: readonly WorkflowRun[]): CiRun[] {
     groups.set(key, [...(groups.get(key) ?? []), run])
   }
   return [...groups.values()]
-    .map((all) => {
+    .map((group) => {
+      const newest = new Map<number, WorkflowRun>()
+      for (const run of group) {
+        const kept = newest.get(run.workflow)
+        if (kept === undefined || run.startedAt > kept.startedAt) newest.set(run.workflow, run)
+      }
+      const all = [...newest.values()].sort((a, b) => a.startedAt.localeCompare(b.startedAt))
       const finished = all.every((r) => r.conclusion !== null && r.conclusion !== 'cancelled')
       return {
         runs: all,
-        start: all.map((r) => r.startedAt).sort()[0] ?? '',
         end:
           all
             .map((r) => r.updatedAt)
             .sort()
             .at(-1) ?? '',
+        minutes: Math.max(0, ...all.map((r) => minutes(r.startedAt, r.updatedAt))),
         finished,
         green: finished && all.every((r) => r.conclusion === 'success'),
       }
@@ -116,7 +128,7 @@ export function ciOf(
     since,
     runs: { green: green.length, finished: runs.filter((r) => r.finished).length },
     runMinutes: rank(
-      green.map((r) => minutes(r.start, r.end)),
+      green.map((r) => r.minutes),
       0.5,
     ),
     merge: { count: hours.length, medianHours: rank(hours, 0.5), p90Hours: rank(hours, 0.9) },

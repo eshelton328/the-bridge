@@ -39,6 +39,7 @@ const Runs = z.object({
   workflow_runs: z.array(
     z.object({
       id: z.number().int(),
+      workflow_id: z.number().int(),
       head_sha: z.string(),
       event: z.string(),
       head_branch: z.string().nullable(),
@@ -129,6 +130,7 @@ export function createGhCi(options: GhOptions): CiSource {
       return ok(
         read.value.map((r) => ({
           id: r.id,
+          workflow: r.workflow_id,
           sha: r.head_sha,
           event: r.event,
           branch: r.head_branch ?? '',
