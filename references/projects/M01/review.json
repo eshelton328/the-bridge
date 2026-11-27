@@ -1,0 +1,87 @@
+{
+  "frameId": "M01",
+  "inputs": "4d6935a345e720bad08d5e0ea09b64bf27e0d0de762352f5373e9a6960d185f4",
+  "library": "1.0.0-beta.135",
+  "recordSha256": "8d52623503b33e91e8b029e6eabc47ddd5bca941cf30da5841c9ff144c2d88fb",
+  "record": {
+    "verdict": "match",
+    "viewport": "390x2560 phone, dark mode",
+    "inputs": {
+      "layout": "separate",
+      "reference": "references/projects/M01/frame.png",
+      "render": "reports/fidelity/projects/M01.render.png",
+      "reference_side": null
+    },
+    "summary": "Apart from the nine accepted deviations, which all appear as described, the render matches the reference.",
+    "findings": [],
+    "accepted_deviations": [
+      {
+        "id": "A1",
+        "as_given": "Panels: the render has no Inbox, Queue, Context drift or Chats panel under the tabs; the page is empty below the tabs. Those panels are built in later issues.",
+        "status": "as-described",
+        "finding": null,
+        "note": "Below the tabs, the render shows only the page background and its glow down to the bottom tab bar."
+      },
+      {
+        "id": "A2",
+        "as_given": "Tabs: the render's tab row shows Overview and Ideas, where the reference shows Overview, Repositories, Architecture and more. Only the tabs of shipped increments show.",
+        "status": "as-described",
+        "finding": null,
+        "note": "The tab row shows Overview (selected) and Ideas with a lightbulb icon."
+      },
+      {
+        "id": "A3",
+        "as_given": "Quick chat shows as the reference draws it and does nothing yet.",
+        "status": "as-described",
+        "finding": null,
+        "note": "The cyan Quick chat button at the top right has the same icon, label, size and position. Behaviour cannot be seen in a still image."
+      },
+      {
+        "id": "A4",
+        "as_given": "Owner's name: the purpose starts \"The owner's personal workspace\", where the reference has a person's name. A secret-scan rule keeps the name out of the code, so the purpose breaks its lines at other words.",
+        "status": "as-described",
+        "finding": null,
+        "note": "The render reads \"The owner's personal workspace for / thinking, learning, managing projects and / directing AI agents, plus the shared / template for new projects.\" It has four lines, like the reference, and none are cut off."
+      },
+      {
+        "id": "A5",
+        "as_given": "Name size: the name is a 28 px heading, where the reference draws about 24 px, which no text style has, so it is wider and its line ends about 4 px lower.",
+        "status": "as-described",
+        "finding": null,
+        "note": "\"NCC-1701\" is about 127 px wide in the render and about 109 px in the reference, a ratio that fits 28/24. The purpose starts about 4 to 6 px lower and still ends above the tabs, which sit at the same y (about 194) in both."
+      },
+      {
+        "id": "A6",
+        "as_given": "Picture: the project picture is 64 px square, where the reference draws 56, which no size token has. The name and the purpose keep the 16 px gap after it, so they start 8 px right of the reference's.",
+        "status": "as-described",
+        "finding": null,
+        "note": "The picture spans x 16 to 80 in the render and x 16 to 72 in the reference. The name and purpose start at about x 97 in the render and x 89 in the reference."
+      },
+      {
+        "id": "A7",
+        "as_given": "Tab padding: the selected Overview tab is the library's large item tab, about 4 px wider than the reference's and 2 px further in from the page's left edge.",
+        "status": "as-described",
+        "finding": null,
+        "note": "The Overview tab spans about x 18 to 127 in the render and x 16 to 121 in the reference. Both span y 194 to 230."
+      },
+      {
+        "id": "A8",
+        "as_given": "Tab row: the two tabs fit the width; the reference's row of tabs scrolls past the right edge.",
+        "status": "as-described",
+        "finding": null,
+        "note": "Both tabs fit within the 390 px width, and nothing is clipped at the right edge."
+      },
+      {
+        "id": "A9",
+        "as_given": "Tab bar: the bottom tab bar is the app's shared one in its default order: Home, Inbox, Workspaces, Projects and More. The reference draws Inbox, Workspaces, Projects and More.",
+        "status": "as-described",
+        "finding": null,
+        "note": "The bottom bar shows Home, Inbox, Workspaces, Projects (selected, in cyan) and More, spaced evenly."
+      }
+    ],
+    "limits": [
+      "The full 390 x 2560 images were shown scaled down. Only the top (y 0 to 300) and bottom (y 2460 to 2560) were checked at 1:1, using the crops, so differences under about 3 px in the empty middle area could not be checked.",
+      "Where the decorative background stars fall is not compared. They are placed at different points in the two pictures."
+    ]
+  }
+}

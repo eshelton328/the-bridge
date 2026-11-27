@@ -8,8 +8,8 @@ import type { ProjectCard, ProjectPageWords } from '../types.ts'
 import { ProjectTile } from './ProjectTile.tsx'
 
 // The picture's top meets the name's line on a desktop (D01). On a tablet
-// or a phone it sits at the middle of the name and the purpose (T01, T01b),
-// 16 from them.
+// or a phone it sits at the middle of the name and the purpose (T01, T01b,
+// M01). It is 16 from them everywhere.
 const titleStyle = css.raw({ display: 'flex', alignItems: 'flex-start', gap: '16', pt: '16' })
 const title = {
   desktop: css(titleStyle),
