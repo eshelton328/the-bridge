@@ -58,7 +58,9 @@ export function createNccCheck({ command, root, env }: NccCheckOptions): LayoutC
                 return
               }
               if (error.code === 1 && error.killed !== true) {
-                resolve(ok(relativeLines(stdout, roots, kept.HOME)))
+                const lines = relativeLines(stdout, roots, kept.HOME)
+                // Exit 1 with no problem line is a check that broke (an unreadable file), never a clean layout.
+                resolve(lines.length > 0 ? ok(lines) : err({ reason: 'failed', code: 'no-output' }))
                 return
               }
               const code = typeof error.code === 'number' ? `exit-${String(error.code)}` : (error.code ?? 'unknown')

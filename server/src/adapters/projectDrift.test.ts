@@ -42,6 +42,11 @@ describe('createNccCheck', () => {
     )
   })
 
+  it('is a fault for exit 1 with no problem line, as a check that broke', async () => {
+    const command = await stub('echo "PermissionError: marker-5150" >&2\nexit 1')
+    expect(await check(command).run()).toEqual({ ok: false, error: { reason: 'failed', code: 'no-output' } })
+  })
+
   it('is a fault with the exit code only for any other end, and for a program that is missing', async () => {
     const command = await stub('echo "marker-5150" >&2\nexit 2')
     expect(await check(command).run()).toEqual({ ok: false, error: { reason: 'failed', code: 'exit-2' } })
