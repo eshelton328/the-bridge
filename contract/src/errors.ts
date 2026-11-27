@@ -100,6 +100,19 @@ export const ErrorKind = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('storage-full'), ...common }),
   /** The Inbox item cannot take this action here (409): a brain item changes in the brain, not in the app. */
   z.object({ kind: z.literal('inbox-read-only'), ...common }),
+  /**
+   * A QA launch cannot start (409): two launches run (`launchLimit`), a launch of the issue runs (`launching`), its
+   * repository has no launch method (`noMethod`), or the issue has no `QA check` comment (`noAsk`).
+   */
+  z.object({
+    kind: z.literal('qa-not-ready'),
+    state: z.enum(['launchLimit', 'launching', 'noMethod', 'noAsk']),
+    ...common,
+  }),
+  /** Linear answered with something the server does not read (502). */
+  z.object({ kind: z.literal('linear-bad-reply'), ...common }),
+  /** Linear does not answer (503). */
+  z.object({ kind: z.literal('linear-unavailable'), ...common }),
   /** The client sent more requests of this kind than the server takes in a minute (429). */
   z.object({ kind: z.literal('too-many-requests'), ...common }),
   /** A bug in the server (500); the server's log has the cause under the request ID. */
@@ -124,6 +137,9 @@ export const errorStatus = {
   'upload-conflict': 409,
   'storage-full': 507,
   'inbox-read-only': 409,
+  'qa-not-ready': 409,
+  'linear-bad-reply': 502,
+  'linear-unavailable': 503,
   'too-many-requests': 429,
   internal: 500,
 } as const satisfies Record<ErrorKind['kind'], number>

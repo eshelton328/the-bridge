@@ -99,6 +99,9 @@ async function answerOf(res: Response, fault: Fault): Promise<StartAnswer> {
     case 'upload-conflict':
     case 'storage-full':
     case 'inbox-read-only':
+    case 'qa-not-ready':
+    case 'linear-bad-reply':
+    case 'linear-unavailable':
     case 'workspace-not-ready':
       // The page sends only a body the contract takes, and a start takes no file: the server's refusal is a bug.
       return unexpected(fault, error.kind, res.status)

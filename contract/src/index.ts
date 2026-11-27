@@ -7,6 +7,8 @@ export {
   ChatId,
   MachineId,
   PaneId,
+  QaDraftId,
+  QaFileId,
   SendId,
   splitId,
   TabId,
@@ -102,6 +104,32 @@ export {
   RepositoryId,
   RunDriftRequest,
 } from './projects.ts'
+export {
+  maxQaAnchor,
+  maxQaStep,
+  maxQaSteps,
+  maxQaText,
+  QaActionRequest,
+  QaAnswer,
+  QaAttachment,
+  QaComment,
+  QaDraft,
+  QaDraftRequest,
+  QaDraftResponse,
+  QaIssueId,
+  QaItem,
+  QaItemDetailResponse,
+  QaItemResponse,
+  QaLaunchBlock,
+  QaListResponse,
+  QaPhase,
+  QaReviewRequest,
+  QaReviewResponse,
+  tailnetSuffix,
+  QaStatus,
+  QaThread,
+  QaWorktree,
+} from './qa.ts'
 export { ErrorBody, ErrorKind, errorStatus } from './errors.ts'
 export { EventEnvelope, EventSource, eventOf } from './events.ts'
 export {
@@ -202,6 +230,7 @@ export {
   LayoutChangedEvent,
   LiveEvent,
   ProjectsChangedEvent,
+  QaChangedEvent,
   ToolkitChangedEvent,
   WorkspacesChangedEvent,
 } from './liveEvents.ts'

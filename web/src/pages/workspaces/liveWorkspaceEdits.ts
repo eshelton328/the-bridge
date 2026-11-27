@@ -207,6 +207,9 @@ async function missOf(action: WorkspaceEdit, res: Response): Promise<EditAnswer>
     case 'upload-conflict':
     case 'storage-full':
     case 'inbox-read-only':
+    case 'qa-not-ready':
+    case 'linear-bad-reply':
+    case 'linear-unavailable':
       return reported(action, error.kind, res.status)
   }
 }
@@ -358,6 +361,9 @@ async function createMissOf(res: Response): Promise<CreateAnswer> {
     case 'chat-not-ready':
     case 'forbidden':
     case 'inbox-read-only':
+    case 'qa-not-ready':
+    case 'linear-bad-reply':
+    case 'linear-unavailable':
     case 'not-found':
     case 'storage-full':
     case 'too-large':

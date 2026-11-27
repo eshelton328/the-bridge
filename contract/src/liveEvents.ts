@@ -5,6 +5,7 @@
 import { z } from 'zod'
 import { eventOf } from './events.ts'
 import { ChatId, WorkspaceId } from './ids.ts'
+import { ProjectSlug } from './projects.ts'
 import { ChatStatus } from './workspaces.ts'
 
 /** A chat's status changed. */
@@ -38,6 +39,9 @@ export type ToolkitChangedEvent = z.infer<typeof ToolkitChangedEvent>
 /** A project's open PRs changed (NCC-156): read `GET /api/projects/:slug` again. */
 export const ProjectsChangedEvent = eventOf('projects.changed', z.object({}))
 export type ProjectsChangedEvent = z.infer<typeof ProjectsChangedEvent>
+/** A QA launch of the project started, ran, failed or stopped: read `GET /api/projects/:slug/qa` again. */
+export const QaChangedEvent = eventOf('qa.changed', z.object({ project: ProjectSlug }))
+export type QaChangedEvent = z.infer<typeof QaChangedEvent>
 
 /** One event of the stream. Its `type` is also the SSE event name, and its `seq` the SSE id. */
 export const LiveEvent = z.discriminatedUnion('type', [
@@ -45,6 +49,7 @@ export const LiveEvent = z.discriminatedUnion('type', [
   InboxChangedEvent,
   LayoutChangedEvent,
   ProjectsChangedEvent,
+  QaChangedEvent,
   ToolkitChangedEvent,
   WorkspacesChangedEvent,
 ])
