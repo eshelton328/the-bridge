@@ -45,6 +45,24 @@ runs:
     - if: inputs.browser == 'true' && steps.playwright-cache.outputs.cache-hit == 'true'
       shell: bash
       run: sudo cp ~/.cache/playwright-debs/*.deb /var/cache/apt/archives/
+    # The runner image adds a packages.microsoft.com apt source, and
+    # `playwright install --with-deps` runs apt-get update over every
+    # source. That source answered 403 ("InRelease is no longer signed")
+    # in runs 46015586613 and 46033156369, and apt-get update stopped the
+    # job (NCC-148). Chromium's packages come only from the Ubuntu
+    # archive, so the browser path moves that source out of apt's list;
+    # the runner is thrown away after the job.
+    - if: inputs.browser == 'true'
+      shell: bash
+      run: |
+        mapfile -t sources < <(grep -rlE 'packages\.microsoft\.com' /etc/apt/sources.list.d/ || true)
+        if [ "${#sources[@]}" -gt 0 ]; then
+          sudo mkdir -p /etc/apt/sources.list.d.unused
+          sudo mv "${sources[@]}" /etc/apt/sources.list.d.unused/
+          printf 'Moved apt source: %s\n' "${sources[@]}"
+        else
+          echo "No packages.microsoft.com apt source."
+        fi
     # apt waits with no limit for an index that stops mid-transfer: a
     # test-stories setup hung in apt-get update for 6 h (the-bridge run
     # 45161813669). Give each fetch 30 s with no data and three tries, so
