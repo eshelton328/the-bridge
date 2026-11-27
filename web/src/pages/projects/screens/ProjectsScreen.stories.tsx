@@ -7,7 +7,7 @@ import { ProjectsScreen } from './ProjectsScreen.tsx'
 // PNG reference in references/projects/ (d-133): the fidelity tools render
 // its story at the reference's size and mode. A story renders at the test
 // runner's width, so these check the cards and the menu, not the bars;
-// app/ProjectsRoute.test.tsx checks the rail, the tab bar and More.
+// app/ProjectsHome.test.tsx checks the home at each width, with Projects selected.
 const meta = {
   title: 'Pages/Projects/States',
   component: ProjectsScreen,
