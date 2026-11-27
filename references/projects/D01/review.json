@@ -1,10 +1,10 @@
 {
   "frameId": "D01",
-  "inputs": "6cfaa06f83a218b2ec82c6f20bbf8f2ab3a3912a297be49f96a5ae89c92da26e",
+  "inputs": "3595a1e8c1daa0285f63cf23b85624a8495d15836e71ec60f80c91840962e328",
   "library": "1.0.0-beta.135",
-  "recordSha256": "875f9813363827b8745aea88070a2b48b4c42a2ab81f3406d572f31308102361",
+  "recordSha256": "39e8af13bc5c862bccefd2ef54b6ffa2119a5cb646ccdf497b6ba451d9161c36",
   "record": {
-    "verdict": "match",
+    "verdict": "differences",
     "viewport": "1512 CSS px wide desktop, dark mode",
     "inputs": {
       "layout": "separate",
@@ -12,56 +12,95 @@
       "render": "reports/fidelity/projects/D01.render.png",
       "reference_side": null
     },
-    "summary": "Apart from the six accepted deviations, the render matches the reference: the header, picture, name, purpose line, Quick chat button and Overview tab have the same content, sizes and states.",
-    "findings": [],
+    "summary": "Apart from the accepted deviations, the only difference is spacing: the three Inbox rows are 2 px closer together than in the reference, so \"To review\" and the bottom of the Inbox panel sit a few pixels higher.",
+    "findings": [
+      {
+        "id": "F1",
+        "priority": "P3",
+        "kind": "spacing",
+        "region": "Inbox panel, Needs you rows",
+        "reference_location": "Inbox panel, the three Needs you rows; in the 1:1 left crop the titles are at y 129, 187 and 245, with \"To review 17\" at y 309 (full image y 349, 407, 465, 529)",
+        "reference_shows": "rows 58 px apart, title to title (\"Context bar: another way to show context use?\", \"Terminal output from herdr in the-bridge (slice 3c)\", \"Review the Storybook after the fidelity loop\"); the Queue rows in the reference are 56 px apart",
+        "render_location": "same rows; in the 1:1 left crop the titles are at y 127, 183 and 239, with \"To review 17\" at y 301 (full image y 347, 403, 459, 521)",
+        "render_shows": "rows 56 px apart, 2 px less per row, so \"To review 17\" sits about 6 px higher relative to the first row and the panel ends higher (bottom edge about y 549 against the reference's 557)",
+        "accepted": null
+      }
+    ],
     "accepted_deviations": [
       {
         "id": "A1",
-        "as_given": "Panels: the render has no Inbox, Queue, Context drift or Chats panel under the tabs; the page is empty below the tabs. Those panels are built in later issues.",
+        "as_given": "Panels. The Overview tab shows the Inbox and Queue panels (R5, R6) and no Context drift or Chats panel: those are NCC-131's (Context drift) and NCC-130's next PR (Chats, with its pager; LIBRARY_GAPS.md).",
         "status": "as-described",
         "finding": null,
-        "note": "Below the tabs the render shows only the starfield background, from y 202 to the bottom of the page."
+        "note": "Only Inbox and Queue show. Below them the page is empty background, with no Context drift, Run check, Chats, filter chips, table or pager."
       },
       {
         "id": "A2",
-        "as_given": "Tabs: the render's tab row shows Overview and Ideas, where the reference shows Overview, Repositories, Architecture and QA. Only the tabs of shipped increments show.",
+        "as_given": "Queue. \"In progress\" lists the open PRs with their pills, and no priority mark or owner chat on a row (\"the-bridge#535\" without \"· bridge-workbench\"): both come from Linear, which is out of scope. There is no \"Up next\" group, so the Queue counts its open PRs: 3 where the frame says 8, and \"In progress\" 3 where the frame says 4 over three rows.",
         "status": "as-described",
         "finding": null,
-        "note": "Overview is selected in both and has the same size (about 109 x 32). Ideas has a lightbulb icon and shows the unselected state."
+        "note": "Queue 3 and In progress 3. The rows have no bar marks and no owner chat, so the row text starts at the mark's old position. The pills match. There is no Up next row, which leaves empty space at the bottom of the panel."
       },
       {
         "id": "A3",
-        "as_given": "Owner's name: the purpose line starts \"The owner's personal workspace\", where the reference has a person's name. A secret-scan rule keeps the name out of the code.",
+        "as_given": "To review. The group shows as the frame draws it, closed with 17. On the live page it is empty until backend-coord decides how a chat's Inbox item names its project.",
         "status": "as-described",
         "finding": null,
-        "note": "The longer wording still fits on one line, which ends at about x 1079."
+        "note": "Closed, with the label \"TO REVIEW 17\"."
       },
       {
         "id": "A4",
-        "as_given": "Top: the back row, the picture, the name and the purpose sit 4 px higher than in the reference, and the purpose sits 4 px further under the name. The design's 28 px top has no spacing token.",
+        "as_given": "Panel headings. \"Inbox\" and \"Queue\" are PageHeader at its pane size (15 px, the count in mono), where the frame has an 18/24 heading and a 13 px count: no text style is 18 px (LIBRARY_GAPS.md).",
         "status": "as-described",
         "finding": null,
-        "note": "The back link, picture (72-136 against 76-140) and name sit 4 px higher. The Quick chat button on the same top row also sits 4 px higher (24-56 against 28-60), and I count that as part of this deviation. The purpose line sits about 5 px higher, not 4 px further under the name: the gap from the name to the purpose looks the same as in the reference, within about 1 px. The tab row has not moved (170-202 in both), so the gap above the tabs is about 4-5 px larger. That follows from this deviation."
+        "note": "The headings are smaller and the panels start about 2 px higher, which follows from the smaller heading."
       },
       {
         "id": "A5",
-        "as_given": "Rail: the left rail is the app's shared rail in its default order: Inbox, Workspaces, Projects, Artifacts, Toolkit and More. The reference draws an older rail with Inbox, Workspaces, Projects and More. The page never changes the shared rail.",
+        "as_given": "Tabs. The tab row shows Overview and Ideas, where the frame shows Overview, Repositories, Architecture and QA: only the tabs of shipped increments show (d-133), and Ideas is increment one's.",
         "status": "as-described",
         "finding": null,
-        "note": "Artifacts and Toolkit sit between Projects and More. Projects is selected in both."
+        "note": "Overview is selected and Ideas has a lightbulb icon."
       },
       {
         "id": "A6",
-        "as_given": "Sides: the content starts 4 px further right than in the reference (40 px sides where the reference has 36). No spacing token is 36.",
+        "as_given": "Quick chat shows as the frame draws it; no frame draws its composer, so it is the library Dialog on every size, and in a state it opens nothing.",
         "status": "as-described",
         "finding": null,
-        "note": "The back link, picture and tabs start 4 px further right. The Quick chat button's right edge is 4 px further left (1472 against 1476), which matches the 40 px side on the right."
+        "note": "The button matches the reference, 4 px further left because of the sides deviation (A10)."
+      },
+      {
+        "id": "A7",
+        "as_given": "Owner's name. NCC-1701's purpose starts \"The owner's personal workspace\", where the frame has the owner's name: the secret scan's personal-term rule keeps the name out of web/. The live page shows the brain's own words.",
+        "status": "as-described",
+        "finding": null,
+        "note": "The purpose reads \"The owner's personal workspace for thinking, ...\" on one line."
+      },
+      {
+        "id": "A8",
+        "as_given": "Top. The back row with Quick chat, the picture, the name and the purpose sit 4 px higher than the frame's: the page starts 24 down, as the home does, where the frame has 28, which no spacing token has. The tabs are where the frame draws them, so the gap above them is 4 px larger.",
+        "status": "as-described",
+        "finding": null,
+        "note": "Projects is at y 39 against 43 and the title at y 92 against 96. The tabs are at y 186 in both."
+      },
+      {
+        "id": "A9",
+        "as_given": "Rail. The rail is the app's shared one in the default order (d-105, d-119): Inbox, Workspaces, Projects, Artifacts, Toolkit and More. The frame draws an older rail with Inbox, Workspaces, Projects and More. The page never changes the shared rail (pages/projects/AGENTS.md).",
+        "status": "as-described",
+        "finding": null,
+        "note": "The rail shows Artifacts and Toolkit before More. Projects is selected."
+      },
+      {
+        "id": "A10",
+        "as_given": "Sides. The page has 40 px sides, as the home has, where the frame has 36, so the header and the tabs are 4 px right of the frame's.",
+        "status": "as-described",
+        "finding": null,
+        "note": "The header, the tabs and the Inbox panel start at x 104 against 100. Quick chat and the Queue panel's right edge end at x 1472 against 1476. The gap between the panels is the same, so each panel is about 4 px narrower."
       }
     ],
     "limits": [
-      "Below the tabs the render shows only the starfield background (accepted deviation A1), so I could not compare the panel regions.",
-      "The full-size images may have been shown scaled down when shown to me. In the lower half, where there were no 1:1 crops, I could not check differences under about 2 px. That area is empty in the render.",
-      "I measured vertical positions in the header to about 1 px."
+      "Only static renders were given, so I could not check hover, focus or the Quick chat dialog.",
+      "The full images were viewed at their native 1512 px width; the coordinates above were read from them and from the 1:1 crops and are accurate to about 1 px."
     ]
   }
 }
