@@ -7,7 +7,7 @@
 // (liveWorkspaces.ts) and loads its state again when they change it, and the
 // live-unavailable notice's Retry loads it again; each live chat pane reads
 // its transcript while it shows (useLiveTranscripts.ts); a build has no live code. A live Claude chat's Send and
-// Stop go to the server (liveSend.ts, W1), to the chat whose composer sent them, as does a clear of its terminal
+// Stop go to the server (lib/chatSend.ts, W1), to the chat whose composer sent them, as does a clear of its terminal
 // input (R28 part B); any other chat's Send goes to the
 // page store's `send`, and a failed send is reported. A failed send keeps the composer's draft. A live Claude chat's
 // files upload as the owner adds them (useLiveUploads.ts, W1b), and its send names the ones ready, in the chips'
@@ -22,7 +22,7 @@
 // Every reply's Copy, sample or live, writes the clipboard
 // here through copyText, and its button shows Copied or Copy failed; a fault
 // is reported with the clipboard's error only, never the reply's text (audit P-4).
-// A live Claude chat's /compact and /clear go to the server from their dialog (liveSend.ts, W5). When a live chat's ID
+// A live Claude chat's /compact and /clear go to the server from their dialog (lib/chatSend.ts, W5). When a live chat's ID
 // changes on its pane (/clear, from the page or the terminal), the owner's changes move to the new ID before the page
 // draws the new list (paneFollow.ts): the open chat stays open, now the new one, with an empty composer.
 // A live chat's focus, zoom, swap, close, split and move go to the server (useLayoutWrites.ts, W2), and the page waits
@@ -94,8 +94,10 @@ const draftsFor = (state: WorkspacesStateKey) =>
   })
 
 /** The live module's send, stop or command, loaded when first used; a module that fails to load is reported. */
-const viaLive = (use: (live: typeof import('./liveSend.ts')) => Promise<ComposerAnswer>): Promise<ComposerAnswer> =>
-  import('./liveSend.ts').then(use, (error: unknown) => {
+const viaLive = (
+  use: (live: typeof import('../../lib/chatSend.ts')) => Promise<ComposerAnswer>,
+): Promise<ComposerAnswer> =>
+  import('../../lib/chatSend.ts').then(use, (error: unknown) => {
     report(error, 'handler')
     return false
   })
@@ -325,7 +327,7 @@ export function WorkspacesPage() {
             dropRestored(search.state, chat)
             keepSend(search.state, { chat, liveChat, sendId, text, files: [...names], at: Date.now() })
             const bubble = pendings.start(liveChat, text, names, settled)
-            const posted = viaLive((m) => m.sendPrompt(liveChat, text, attached, sendId))
+            const posted = viaLive((m) => m.sendPrompt(liveChat, text, attached, sendId, report))
             // An answer settles the kept send: a miss puts the text back in the draft, which is saved. With no answer
             // the server may have it, and a reload ends the request so in the second before the page goes: the text
             // goes back in the draft, and the kept send stays, marked, for the next load to read (keptSends.ts).
@@ -447,14 +449,14 @@ export function WorkspacesPage() {
             const liveChat = liveChatOf(chat)
             return liveChat === undefined
               ? Promise.resolve(false)
-              : once(`stop:${chat}`, () => viaLive((m) => m.stopChat(liveChat)))
+              : once(`stop:${chat}`, () => viaLive((m) => m.stopChat(liveChat, report)))
           }}
           onCommand={(chat, request) => {
             const liveChat = liveChatOf(chat)
             return liveChat === undefined
               ? Promise.resolve(false)
               : once(`command:${chat}`, () =>
-                  viaLive((m) => m.sendCommand(liveChat, request)).then((answer) => {
+                  viaLive((m) => m.sendCommand(liveChat, request, report)).then((answer) => {
                     // The server sends no event when the cleared chat gets its new ID: read the list until it shows.
                     if (answer === true && request.command === 'clear')
                       void import('./liveWorkspaces.ts').then((m) => m.readAfterClear(liveChat))

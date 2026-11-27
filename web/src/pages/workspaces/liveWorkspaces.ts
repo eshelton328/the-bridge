@@ -55,6 +55,7 @@ import type { QueryClient, QueryKey } from '@tanstack/react-query'
 import { err, ok, type Result } from '@bridge/shared'
 import { report } from '../../errors/reporter.ts'
 import { api } from '../../lib/api.ts'
+import { liveReadTimeoutMs } from '../../lib/chatSend.ts'
 import { type Frame, frames, reconnectGraceMs } from '../../lib/eventFrames.ts'
 import { reconnectBackoff } from '../../lib/reconnectBackoff.ts'
 import { queryClient } from '../../lib/queryClient.ts'
@@ -198,7 +199,7 @@ const notLiveText = {
  * A pane for each live chat, with its header from the sidebar row and no sample text: a shell's terminal and a Codex
  * chat's transcript say they are not live yet, and a Codex chat's composer is disabled and says sending is not live
  * yet. A Claude chat's pane has no entries and names its server chat ID, `<machine>/<local>` (`liveChat`), so the page
- * reads its transcript while the pane shows (liveTranscript.ts) and sends its prompts and stops to it (liveSend.ts);
+ * reads its transcript while the pane shows (liveTranscript.ts) and sends its prompts and stops to it (lib/chatSend.ts);
  * its composer shows Stop while the chat works. A Codex chat's pane names none, so the page reads nothing.
  */
 export function livePanes(workspaces: readonly Workspace[], machine: string): WorkbenchPane[] {
@@ -396,11 +397,7 @@ function liveOnly(
   }
 }
 
-/**
- * How long the live read waits for the server, in ms: the owner's decision under d-101, 8 s, as a read over the
- * tailnet takes under 1 s.
- */
-export const liveReadTimeoutMs = 8000
+export { liveReadTimeoutMs }
 
 /**
  * A live read that missed in a way the page expects; `message` says what happened, for the status bar and the

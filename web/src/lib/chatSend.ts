@@ -4,6 +4,9 @@
 // transcript stream (liveTranscript.ts), and the chat's status through the
 // workspace events (liveWorkspaces.ts), so a 204 is all the page reads.
 //
+// It sits in lib so another page can use it (Quick chat, NCC-129); the page
+// passes its report() as `fault`.
+//
 // A miss gives the composer one quiet line, by kind, as the transcript's
 // line says "Transcript not live — <kind>": "Not sent — <kind>" or
 // "Not stopped — <kind>", with Retry when the same request may work later (a
@@ -22,7 +25,7 @@
 // nothing and says "cannot read this chat's input box. Look at the chat on
 // the Mac.", with no Retry, no offer to clear and no report: it is a state of
 // the chat, not a fault. A Stop that finds the chat not working (409
-// notWorking) is quiet: the chat stopped already. report() gets a ChatSendMissError for a 5xx and
+// notWorking) is quiet: the chat stopped already. `fault` gets a ChatSendMissError for a 5xx and
 // for an answer the page does not expect, with the action, the miss's kind
 // and the HTTP status only: never the message text, the chat ID or the
 // server's message. The requests go through the typed RPC client (backend
@@ -54,10 +57,37 @@ import {
   StopChatRequest,
   type UploadId,
 } from '@bridge/contract'
-import { report } from '../../errors/reporter.ts'
-import { api } from '../../lib/api.ts'
-import type { ComposerAnswer } from './blocks/useComposerActions.ts'
-import { liveReadTimeoutMs, readChecked, readJson } from './liveWorkspaces.ts'
+import { api } from './api.ts'
+import { readJson } from './startChat.ts'
+
+/**
+ * How long the live read waits for the server, in ms: the owner's decision under d-101, 8 s, as a read over the
+ * tailnet takes under 1 s.
+ */
+export const liveReadTimeoutMs = 8000
+
+/** Where a miss goes: the page's report(), with its source. */
+type Fault = (error: Error, source: 'live') => void
+
+/**
+ * What a send or a stop gives the composer: `true` once it went through; `false` when it missed and the caller
+ * reported it or there is nothing to say; else the line to show under the composer, with Retry when `retry`.
+ */
+export type ComposerAnswer =
+  | boolean
+  | {
+      readonly line: string
+      readonly retry: boolean
+      /**
+       * Empties the terminal input of the chat that refused the send, the one the line was made for: `true` once it is
+       * empty, else the line of the miss. Only a send's line has it.
+       */
+      readonly clearInput?: (() => Promise<ComposerAnswer>) | undefined
+      /** The server refused the send's files (409 upload-conflict): the page fails their chips. */
+      readonly uploadConflict?: boolean
+      /** No answer came (the request failed or timed out): the server may have taken it. */
+      readonly noAnswer?: boolean
+    }
 
 /** What the page posts: a send, a stop, a clear of the terminal input, or a /compact or /clear (W5). */
 type Action = 'send' | 'stop' | 'clear' | 'compact' | 'clearContext'
@@ -94,13 +124,14 @@ const line = (action: Action, text: string, retry: boolean): Exclude<ComposerAns
 })
 
 /** The answer of a miss the page does not expect: reported, with its kind and status, and a line with no Retry. */
-function unexpected(action: Action, kind: string, status: number | undefined): ComposerAnswer {
-  report(new ChatSendMissError(action, kind, status), 'live')
+function unexpected(fault: Fault, action: Action, kind: string, status: number | undefined): ComposerAnswer {
+  fault(new ChatSendMissError(action, kind, status), 'live')
   return line(action, kind, false)
 }
 
 /** What the composer shows for an answer that is not 204; a send's inputNotEmpty line offers `clear`. */
 async function missOf(
+  fault: Fault,
   action: Action,
   res: Response,
   clear: (() => Promise<ComposerAnswer>) | undefined,
@@ -109,10 +140,10 @@ async function missOf(
   if (!parsed.success) {
     // A 5xx with no error body is the Vite proxy or `tailscale serve` answering for a server that is down.
     if (res.status >= 500) {
-      report(new ChatSendMissError(action, 'unreachable', res.status), 'live')
+      fault(new ChatSendMissError(action, 'unreachable', res.status), 'live')
       return line(action, 'unreachable', true)
     }
-    return unexpected(action, res.ok ? 'bad-reply' : 'status', res.status)
+    return unexpected(fault, action, res.ok ? 'bad-reply' : 'status', res.status)
   }
   const error = parsed.data.error
   switch (error.kind) {
@@ -142,7 +173,7 @@ async function missOf(
     case 'herdr-unavailable':
     case 'herdr-bad-reply':
     case 'internal':
-      report(new ChatSendMissError(action, error.kind, res.status), 'live')
+      fault(new ChatSendMissError(action, error.kind, res.status), 'live')
       return line(action, error.kind, true)
     case 'too-many-requests':
       return line(action, error.kind, true)
@@ -150,24 +181,25 @@ async function missOf(
       return line(action, error.kind, false)
     case 'invalid-input':
       // The composer sends, and the line clears, only a body the contract takes, so the server's refusal is a bug.
-      return unexpected(action, error.kind, res.status)
+      return unexpected(fault, action, error.kind, res.status)
     case 'upload-conflict':
       // A send names a file that is not a complete upload of this chat: the page fails its chips.
       if (action === 'send')
         return { line: `${lead.send} — retry the files that failed`, retry: false, uploadConflict: true }
-      return unexpected(action, error.kind, res.status)
+      return unexpected(fault, action, error.kind, res.status)
     case 'too-large':
     case 'unsupported-media':
     case 'storage-full':
     case 'inbox-read-only':
     case 'workspace-not-ready':
       // Only an upload or an Inbox action gets these kinds, never a send, a stop, a clear or a command.
-      return unexpected(action, error.kind, res.status)
+      return unexpected(fault, action, error.kind, res.status)
   }
 }
 
 /** Posts with `call` and gives the composer's answer: `true` on 204. */
 async function post(
+  fault: Fault,
   action: Action,
   call: (signal: AbortSignal) => Promise<Response>,
   clear?: () => Promise<ComposerAnswer>,
@@ -182,7 +214,7 @@ async function post(
   }
   if (res.status === 204) return true
   try {
-    return await missOf(action, res, clear)
+    return await missOf(fault, action, res, clear)
   } catch {
     // The connection dropped while the error body came.
     return { ...line(action, signal.aborted ? 'timeout' : 'unreachable', true), noAnswer: true }
@@ -196,8 +228,9 @@ async function post(
 export function sendPrompt(
   chat: string,
   text: string,
-  attachments: readonly UploadId[] = [],
-  sendId?: string,
+  attachments: readonly UploadId[],
+  sendId: string | undefined,
+  fault: Fault,
 ): Promise<ComposerAnswer> {
   const body = SendPromptRequest.safeParse({
     text,
@@ -206,6 +239,7 @@ export function sendPrompt(
   })
   if (!body.success) return Promise.resolve(false)
   return post(
+    fault,
     'send',
     (signal) =>
       api.api.chats[':chat'].prompt.$post(
@@ -213,22 +247,22 @@ export function sendPrompt(
         { init: { signal } },
       ),
     // The line that asks the owner to clear the terminal input clears the chat this send went to, and no other.
-    () => clearInput(chat),
+    () => clearInput(chat, fault),
   )
 }
 
 /** Empties the terminal input of the live chat `chat` (its server ID): `true` once the server says it is empty. */
-export function clearInput(chat: string): Promise<ComposerAnswer> {
+export function clearInput(chat: string, fault: Fault): Promise<ComposerAnswer> {
   const json = ClearInputRequest.parse({})
-  return post('clear', (signal) =>
+  return post(fault, 'clear', (signal) =>
     api.api.chats[':chat'].input.clear.$post({ param: { chat: encodeURIComponent(chat) }, json }, { init: { signal } }),
   )
 }
 
 /** Stops the live chat `chat` (its server ID). */
-export function stopChat(chat: string): Promise<ComposerAnswer> {
+export function stopChat(chat: string, fault: Fault): Promise<ComposerAnswer> {
   const json = StopChatRequest.parse({})
-  return post('stop', (signal) =>
+  return post(fault, 'stop', (signal) =>
     api.api.chats[':chat'].stop.$post({ param: { chat: encodeURIComponent(chat) }, json }, { init: { signal } }),
   )
 }
@@ -238,17 +272,18 @@ export function stopChat(chat: string): Promise<ComposerAnswer> {
  * request the contract refuses is not sent: the dialog stops it first, so this answers `false` with no line. A chat
  * whose terminal input holds text gets a line that can clear it (`clearInput`).
  */
-export function sendCommand(chat: string, command: ChatCommandRequest): Promise<ComposerAnswer> {
+export function sendCommand(chat: string, command: ChatCommandRequest, fault: Fault): Promise<ComposerAnswer> {
   const body = ChatCommandRequest.safeParse(command)
   if (!body.success) return Promise.resolve(false)
   return post(
+    fault,
     body.data.command === 'compact' ? 'compact' : 'clearContext',
     (signal) =>
       api.api.chats[':chat'].command.$post(
         { param: { chat: encodeURIComponent(chat) }, json: body.data },
         { init: { signal } },
       ),
-    () => clearInput(chat),
+    () => clearInput(chat, fault),
   )
 }
 
@@ -259,19 +294,15 @@ export function sendCommand(chat: string, command: ChatCommandRequest): Promise<
  */
 export async function readSendResult(chat: string, sendId: string): Promise<SendResult | 'gone' | 'failed'> {
   try {
-    const read = await readChecked(
-      (signal) =>
-        api.api.chats[':chat'].sends[':send'].$get(
-          { param: { chat: encodeURIComponent(chat), send: encodeURIComponent(sendId) } },
-          { init: { signal } },
-        ),
-      (body) => SendResultResponse.parse(body),
-      AbortSignal.timeout(liveReadTimeoutMs),
+    const res = await api.api.chats[':chat'].sends[':send'].$get(
+      { param: { chat: encodeURIComponent(chat), send: encodeURIComponent(sendId) } },
+      { init: { signal: AbortSignal.timeout(liveReadTimeoutMs) } },
     )
-    if (read.ok) return read.value.result
-    return read.error.kind === 'status' && read.error.status === 404 ? 'gone' : 'failed'
+    if (res.status === 404) return 'gone'
+    if (!res.ok) return 'failed'
+    return SendResultResponse.parse(await res.json()).result
   } catch {
-    // A reply the contract refuses, or a body that is not JSON.
+    // No answer in time, a reply the contract refuses, or a body that is not JSON.
     return 'failed'
   }
 }

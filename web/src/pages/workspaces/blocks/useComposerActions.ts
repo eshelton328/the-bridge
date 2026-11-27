@@ -16,26 +16,9 @@
 // sends, stops and clears.
 import { maxPromptChars } from '@bridge/contract'
 import { useLayoutEffect, useRef, useState } from 'react'
+import type { ComposerAnswer } from '../../../lib/chatSend.ts'
 
-/**
- * What a send or a stop gives the composer: `true` once it went through; `false` when it missed and the caller
- * reported it or there is nothing to say; else the line to show under the composer, with Retry when `retry`.
- */
-export type ComposerAnswer =
-  | boolean
-  | {
-      readonly line: string
-      readonly retry: boolean
-      /**
-       * Empties the terminal input of the chat that refused the send, the one the line was made for: `true` once it is
-       * empty, else the line of the miss. Only a send's line has it.
-       */
-      readonly clearInput?: (() => Promise<ComposerAnswer>) | undefined
-      /** The server refused the send's files (409 upload-conflict): the page fails their chips. */
-      readonly uploadConflict?: boolean
-      /** No answer came (the request failed or timed out): the server may have taken it. */
-      readonly noAnswer?: boolean
-    }
+export type { ComposerAnswer }
 
 type Problem = {
   readonly line: string
