@@ -14,10 +14,50 @@ const ghTimeoutMs = 20_000
 /** The variables gh reads to find its config and token; nothing else of the server's environment. */
 const ghKeys = ['PATH', 'HOME', 'LANG', 'GH_CONFIG_DIR', 'XDG_CONFIG_HOME', 'GH_TOKEN', 'GITHUB_TOKEN', 'GH_HOST']
 
-export type GhPullsOptions = {
+export type GhOptions = {
   /** The `gh` program: a name on PATH or an absolute path. */
   readonly command: string
   readonly env: Readonly<Record<string, string | undefined>>
+}
+export type GhPullsOptions = GhOptions
+
+/**
+ * One gh run with an argument list and its JSON reply, checked with `schema`. gh reads its own token at run
+ * time; the server passes none. A failed run, a timeout or a reply the schema does not take is a code only.
+ */
+export function runGh<T>({ command, env }: GhOptions, args: readonly string[], schema: z.ZodType<T>) {
+  const kept: Record<string, string> = {}
+  for (const key of ghKeys) {
+    const value = env[key]
+    if (value !== undefined) kept[key] = value
+  }
+  return new Promise<Result<T, ProjectFault>>((resolve) => {
+    try {
+      execFile(
+        command,
+        [...args],
+        { env: kept, timeout: ghTimeoutMs, maxBuffer: 16 * 1024 ** 2, encoding: 'utf8' },
+        (error, stdout) => {
+          if (error !== null) {
+            const code = typeof error.code === 'number' ? `exit-${String(error.code)}` : (error.code ?? 'unknown')
+            resolve(err({ reason: 'failed', code: error.killed === true ? 'timeout' : code }))
+            return
+          }
+          let raw: unknown
+          try {
+            raw = JSON.parse(stdout)
+          } catch {
+            resolve(err({ reason: 'failed', code: 'EBADDATA' }))
+            return
+          }
+          const parsed = schema.safeParse(raw)
+          resolve(parsed.success ? ok(parsed.data) : err({ reason: 'failed', code: 'EBADDATA' }))
+        },
+      )
+    } catch {
+      resolve(err({ reason: 'failed', code: 'spawn' }))
+    }
+  })
 }
 
 const Check = z.union([
@@ -57,14 +97,9 @@ export function statusOf(pull: z.infer<typeof GhPull>): PullStatus {
 
 const pullUrl = /^https:\/\/github\.com\/[^/]+\/[^/]+\/pull\/\d+$/
 
-export function createGhPulls({ command, env }: GhPullsOptions): PullSource {
-  const kept: Record<string, string> = {}
-  for (const key of ghKeys) {
-    const value = env[key]
-    if (value !== undefined) kept[key] = value
-  }
+export function createGhPulls(options: GhPullsOptions): PullSource {
   return {
-    open(repository): Promise<Result<readonly OpenPull[], ProjectFault>> {
+    async open(repository): Promise<Result<readonly OpenPull[], ProjectFault>> {
       const args = [
         'pr',
         'list',
@@ -77,50 +112,20 @@ export function createGhPulls({ command, env }: GhPullsOptions): PullSource {
         '--json',
         'number,title,url,headRefName,isDraft,updatedAt,statusCheckRollup',
       ]
-      return new Promise((resolve) => {
-        try {
-          execFile(
-            command,
-            args,
-            { env: kept, timeout: ghTimeoutMs, maxBuffer: 16 * 1024 ** 2, encoding: 'utf8' },
-            (error, stdout) => {
-              if (error !== null) {
-                const code = typeof error.code === 'number' ? `exit-${String(error.code)}` : (error.code ?? 'unknown')
-                resolve(err({ reason: 'failed', code: error.killed === true ? 'timeout' : code }))
-                return
-              }
-              let raw: unknown
-              try {
-                raw = JSON.parse(stdout)
-              } catch {
-                resolve(err({ reason: 'failed', code: 'EBADDATA' }))
-                return
-              }
-              const parsed = z.array(GhPull).safeParse(raw)
-              if (!parsed.success) {
-                resolve(err({ reason: 'failed', code: 'EBADDATA' }))
-                return
-              }
-              resolve(
-                ok(
-                  parsed.data
-                    .filter((p) => pullUrl.test(p.url))
-                    .map((p) => ({
-                      number: p.number,
-                      title: p.title.slice(0, maxProjectTitle),
-                      url: p.url,
-                      branch: p.headRefName.slice(0, 255),
-                      status: statusOf(p),
-                      updatedAt: new Date(p.updatedAt).toISOString(),
-                    })),
-                ),
-              )
-            },
-          )
-        } catch {
-          resolve(err({ reason: 'failed', code: 'spawn' }))
-        }
-      })
+      const listed = await runGh(options, args, z.array(GhPull))
+      if (!listed.ok) return listed
+      return ok(
+        listed.value
+          .filter((p) => pullUrl.test(p.url))
+          .map((p) => ({
+            number: p.number,
+            title: p.title.slice(0, maxProjectTitle),
+            url: p.url,
+            branch: p.headRefName.slice(0, 255),
+            status: statusOf(p),
+            updatedAt: new Date(p.updatedAt).toISOString(),
+          })),
+      )
     },
   }
 }
