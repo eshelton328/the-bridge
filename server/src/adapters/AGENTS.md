@@ -427,3 +427,19 @@ client of a socket or a file sits beside them.
   root, opened with no follow and no block, when the open file's stat is
   a regular file, up to the cap. Git gets only PATH, HOME and LANG of the
   server's environment (`fileStoreContract.ts`, `diskFiles.test.ts`).
+- The Projects app (f-008): `diskProjects.ts` reads each
+  `<brain>/projects/<slug>/project.yaml` (a plain file of at most 64 KiB
+  in a real folder, never a symlink; the folder name is the slug): the
+  top-level scalars and the `repositories` list only, as the project
+  template writes them. It keeps the pins (`pins.json`) and the last
+  drift runs (`drift.json`) in a 0700 folder beside the database, 0600
+  and replaced in one rename; a bad file is `EBADDATA`
+  (`diskProjects.test.ts`). `projectIdeas.ts` reads `<project>/ideas/*.md`
+  records of `type: idea` with the inbox's front-matter reader, plain
+  files in the real folder only; the summary is the first paragraph
+  after the heading (`projectIdeas.test.ts`). `ghPulls.ts` runs `gh pr
+  list` and `projectDrift.ts` runs `ncc check` (NCC_ROOT is the chat
+  root), each with an argument list, a time limit and only the variables
+  it needs; a failed run is its code only, and each path of a check line
+  is made relative to the root or starts with "~" (`ghPulls.test.ts`,
+  `projectDrift.test.ts`, stub programs).

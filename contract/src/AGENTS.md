@@ -152,3 +152,12 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
 - A `ClientErrorReport` holds only its listed fields (a strict object),
   so a report carries no page text or app state (`clientErrors.test.ts`).
 - The file links (`files.ts`): a `FileRoot` (the brain or a chat ID) index of git's tracked files as `RootFilePath`s, each named by its `FileId`; file text only in `FileTextResponse`; `FileRawQuery` takes a root and path or an `AbsoluteFilePath` (`files.test.ts`).
+- The Projects app (f-008, `projects.ts`): a project is named by its
+  `ProjectSlug` (its brain folder name) and an idea by its record's UUID
+  (`IdeaId`), never by a path. A repository gives its GitHub owner and
+  name, or null for one off GitHub; a PR link is an https github.com link
+  only. An idea with no `tags`, `kind` or `state` key has no tags, the
+  kind `idea` and the state `open`. A `DriftRun` lists findings only when
+  its result is `findings`; each finding's paths are relative to the root
+  of the chat tree. The pin and drift run bodies are strict objects
+  (`projects.test.ts`).

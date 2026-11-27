@@ -11,6 +11,9 @@ import { createDiskArtifactStore } from './adapters/diskArtifacts.ts'
 import { createDiskFiles } from './adapters/diskFiles.ts'
 import { createBrainRequests, createDiskInboxMarks, watchBrainInbox } from './adapters/diskInbox.ts'
 import { createDiskPushStore } from './adapters/diskPush.ts'
+import { createBrainProjects, createDiskDriftStore, createDiskPins } from './adapters/diskProjects.ts'
+import { createGhPulls } from './adapters/ghPulls.ts'
+import { createNccCheck } from './adapters/projectDrift.ts'
 import { createDiskUploads } from './adapters/diskUploads.ts'
 import { createWebPushSender } from './adapters/webPushSender.ts'
 import { createHerdrAgents } from './adapters/herdrAgents.ts'
@@ -24,6 +27,7 @@ import { handleProcessErrors } from './processErrors.ts'
 import { createArtifacts } from './services/artifacts.ts'
 import { createFiles } from './services/files.ts'
 import { createInbox } from './services/inbox.ts'
+import { createProjects } from './services/projects.ts'
 import { createPushSeen } from './services/push.ts'
 import { createPushNotifier } from './services/pushNotifier.ts'
 
@@ -83,6 +87,16 @@ const inbox = createInbox({
   brain: createBrainRequests(config.value.brainDir),
   marks: createDiskInboxMarks(join(dirname(dbFile), 'inbox')),
 })
+// The Projects app reads the brain's project folders and idea records, the open PRs with gh and the layout with
+// `ncc check` on the chat tree; the pins and the last drift runs go beside the database too (f-008).
+const projectsRoot = join(dirname(dbFile), 'projects')
+const projects = createProjects({
+  brain: createBrainProjects(config.value.brainDir),
+  pins: createDiskPins(projectsRoot),
+  pulls: createGhPulls({ command: 'gh', env: process.env }),
+  check: createNccCheck({ command: 'ncc', root: config.value.chatRoot, env: process.env }),
+  drift: createDiskDriftStore(projectsRoot),
+})
 const server = serve(
   {
     fetch: createApp({
@@ -97,6 +111,7 @@ const server = serve(
       inbox,
       watchInbox: watchBrainInbox(config.value.brainDir),
       files: createFiles(createDiskFiles({ brainDir: config.value.brainDir, env: process.env })),
+      projects,
     }).fetch,
     port,
     hostname: '127.0.0.1',

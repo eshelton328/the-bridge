@@ -10,6 +10,7 @@ import { createRateLimit } from './rateLimit.ts'
 import { artifactsRoutes } from './routes/artifacts.ts'
 import { filesRoutes } from './routes/files.ts'
 import { inboxRoutes } from './routes/inbox.ts'
+import { projectsRoutes } from './routes/projects.ts'
 import { chatsRoutes } from './routes/chats.ts'
 import { sidesRoutes } from './routes/sides.ts'
 import { createSideAnswers } from './services/sideAnswers.ts'
@@ -22,6 +23,7 @@ import type { AgentPort } from './services/agentPort.ts'
 import { type Artifacts, createArtifacts } from './services/artifacts.ts'
 import { createFiles, type Files } from './services/files.ts'
 import { createInbox, type Inbox } from './services/inbox.ts'
+import { noProjects, type Projects } from './services/projects.ts'
 import { createLiveEvents, type InboxWatch } from './services/liveEvents.ts'
 import { createPushSeen, type PushSeen, type PushStore } from './services/push.ts'
 import { defaultChunkBytes, type UploadStore } from './services/uploadStore.ts'
@@ -47,6 +49,8 @@ export type AppDeps = {
   readonly watchInbox?: InboxWatch
   /** The files a message can link to; with none, each files route answers 500. main.ts gives git's index of the brain. */
   readonly files?: Files
+  /** The Projects app (f-008); with none, each projects route answers 500. main.ts gives the brain, gh, ncc and the disk stores. */
+  readonly projects?: Projects
 }
 
 /** The store of an app with none: each call fails, so an upload answers 500 and is logged. */
@@ -111,6 +115,7 @@ export function createApp({
   inbox = noInbox(agents),
   watchInbox,
   files = noFiles,
+  projects = noProjects,
 }: AppDeps) {
   const live = createLiveEvents(agents, watchInbox)
   return (
@@ -149,6 +154,7 @@ export function createApp({
       .route('/api/artifacts', artifactsRoutes(artifacts, agents, log))
       .route('/api/inbox', inboxRoutes(inbox, log, live.inboxChanged))
       .route('/api/files', filesRoutes(files, log))
+      .route('/api/projects', projectsRoutes(projects, log))
       .route('/api/client-errors', clientErrorsRoutes(log, createRateLimit(60, 60_000)))
       .notFound((c) => errorJson(c, 'not-found', { path: c.req.path, message: 'no route has this path' }))
       // A throw that no route caught: the log gets the error and its causes, the client the request ID.

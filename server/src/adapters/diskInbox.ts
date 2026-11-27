@@ -41,7 +41,7 @@ const decodeDouble = (inner: string) =>
     code.length > 1 ? String.fromCodePoint(Number.parseInt(code.slice(1), 16)) : (simpleEscapes[code] ?? whole),
   )
 
-const unquote = (value: string): string | null => {
+export const unquote = (value: string): string | null => {
   if (value === 'null' || value === '~' || value === '') return null
   if (value.startsWith("'") && value.endsWith("'") && value.length >= 2) return value.slice(1, -1).replaceAll("''", "'")
   if (value.startsWith('"') && value.endsWith('"') && value.length >= 2) return decodeDouble(value.slice(1, -1))

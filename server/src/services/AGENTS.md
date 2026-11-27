@@ -105,3 +105,12 @@ from the outside world.
   on each change that the Inbox watch tells; it opens that watch with the
   first client and closes it with the last (`liveEvents.test.ts`).
 - `fileStore.ts` is the port of git's tracked files in a root; `files.ts` gives each an ID and reads text only from the index (`files.test.ts`).
+- `projects.ts` is the Projects app (f-008) and its ports: the brain's
+  projects and idea records (read only), the pins, the open PRs of a
+  GitHub repository, the layout check and the last drift run of each
+  project. The pinned cards come first, each part by name; the PRs of a
+  project's repositories newest first. A drift run keeps only the check's
+  lines about the project (`findingsFor`: a path in `projects/<slug>` or
+  "project <slug>"), one check runs at a time, and a failed check is a
+  `failed` run. One store change at a time (`projectDrift.test.ts`,
+  `../routes/projects.test.ts`).

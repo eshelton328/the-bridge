@@ -202,3 +202,13 @@ Thin Hono sub-apps, one file for each area, named after the area
   imports an adapter.
 - `GET /api/files?root=` and `GET /api/files/:file/text?root=`: an unknown, untracked or unreadable file is the same 404; binary is 415, over `maxFileText` 413; a log keeps the root and errno code only (`files.test.ts`).
 - `GET /api/files/raw` (`?root=&path=` or `?path=<absolute>`): only an indexed PNG, JPEG, GIF or WebP whose extension and first bytes agree, with nosniff, a sandbox CSP and a private cache; else 404, 415 or 413, and no path in a body or a log (`files.test.ts`).
+- `/api/projects` (f-008): `GET /` lists the projects, pinned first;
+  `GET /:slug` gives one with its repositories and open PRs (`unread`
+  names a repository whose PRs gh could not read); `PUT /:slug/pin`
+  (`{ pinned }`) pins or unpins it: 200 with the card. `GET /:slug/ideas`
+  and `GET /:slug/ideas/:id` give the idea records. `GET /:slug/drift`
+  gives the last layout check and `POST /:slug/drift` (`{}`) runs it
+  again: 200 with the run, `failed` when the check did not run (its code
+  goes to the log at warn). A slug or idea ID that the contract does not
+  take, or that names nothing, is 404; a body with another field is 400;
+  a store fault is 500 with its code in the log only (`projects.test.ts`).

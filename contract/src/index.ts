@@ -70,6 +70,34 @@ export {
   ToolkitResponse,
   ToolkitScope,
 } from './toolkit.ts'
+export {
+  DriftFinding,
+  DriftResponse,
+  DriftRun,
+  Idea,
+  IdeaDetailResponse,
+  IdeaId,
+  IdeaKind,
+  IdeasResponse,
+  IdeaState,
+  maxDriftFindings,
+  maxIdeaBody,
+  maxProjectSummary,
+  maxProjectTitle,
+  maxRepositoryPulls,
+  PinProjectRequest,
+  PinProjectResponse,
+  ProjectDetailResponse,
+  ProjectIcon,
+  ProjectPull,
+  ProjectRepository,
+  ProjectSlug,
+  ProjectsResponse,
+  ProjectSummary,
+  PullStatus,
+  RepositoryId,
+  RunDriftRequest,
+} from './projects.ts'
 export { ErrorBody, ErrorKind, errorStatus } from './errors.ts'
 export { EventEnvelope, EventSource, eventOf } from './events.ts'
 export {
