@@ -10,5 +10,5 @@ moves to `web/src/blocks/`.
   (increment four, d-133).
 - `ProjectTile` draws the project's library icon when its `icon` names one
   in the tile's list, else the first letter of its name in capitals.
-- Each card carries `data-figma="project card · <name>"` for the fidelity
-  tools and the tests.
+- Each card carries `data-figma="project card · <name>"`, which the live
+  tests read for the order.

@@ -35,6 +35,10 @@ export const ProjectsData = z.object({
   menu: ProjectMenuWords,
   /** The cards in the order they show: the pinned ones first. */
   projects: z.array(ProjectCard),
+  /** Set when the cards came from the server (liveProjects.ts), so the bars show the app's live Inbox count. */
+  live: z.object({}).optional(),
+  /** The line of a read that missed, such as "Projects not read — the server answered 500". */
+  notice: z.string().optional(),
 })
 export type ProjectsData = z.infer<typeof ProjectsData>
 
