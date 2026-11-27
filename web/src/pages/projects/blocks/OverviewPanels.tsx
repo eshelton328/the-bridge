@@ -19,10 +19,12 @@ import type { Viewport } from '../../../lib/screenState.ts'
 import type { ProjectOverview, ProjectPageWords, ProjectsUi } from '../types.ts'
 
 // The frames' heading row is 32 high (44 on touch) with the title in its middle, 16 over the panel.
+// On the phone the tab list's 2 px padding, the tabs' 12 gap and a 6 top start the heading row 20 under
+// the tabs, as M01 draws it.
 const grid = {
   desktop: css({ display: 'grid', gridTemplateColumns: '[repeat(2, minmax(0, 1fr))]', gap: '20', pt: '12' }),
   tablet: css({ display: 'grid', gap: '24', pt: '12' }),
-  phone: css({ display: 'grid', gap: '24', pt: '8' }),
+  phone: css({ display: 'grid', gap: '24', pt: '6' }),
 } as const satisfies Record<Viewport, string>
 const head = {
   desktop: css({ display: 'flex', alignItems: 'center', minH: 'control.md' }),
