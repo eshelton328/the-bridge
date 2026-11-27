@@ -125,7 +125,9 @@ from the outside world.
   first run is not kept). A read gets the kept answer at once, at any age;
   one older than 30 s also starts one run in the background, and other PRs
   from it call the `watch` listeners, so `/api/events` sends
-  `projects.changed` (NCC-156, `projectsPulls.test.ts`). A drift run keeps only the check's
+  `projects.changed` (NCC-156, `projectsPulls.test.ts`). A run that throws
+  is a failed one. A failed background run keeps the old answer at any
+  age, and the page cannot tell: while gh fails, a merged PR still shows. A drift run keeps only the check's
   lines about the project (`findingsFor`: a path in `projects/<slug>`,
   "project <slug>" or one of its repositories named alone), one check runs at a time, and a failed check is a
   `failed` run. One store change at a time (`projectDrift.test.ts`,

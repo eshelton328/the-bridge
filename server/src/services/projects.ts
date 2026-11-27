@@ -128,15 +128,18 @@ export const pullsKeptMs = 30_000
  * The pull source with each repository's last answer kept (NCC-156): the first read waits for its run, and the
  * requests that cross share it; a failed first run is not kept. After that a read gets the kept answer at once,
  * at any age, and a read of one older than `pullsKeptMs` also starts one run in the background, one at a time.
- * When that run's PRs differ from the kept ones, `changed` is called; a failed one keeps the answer.
+ * When that run's PRs differ from the kept ones, `changed` is called; a failed one keeps the answer. A run that
+ * throws is a failed one (`threw`), so no rejection is left unhandled; its message, which can name a path, is not kept.
  */
 export function keptPulls(source: PullSource, now: () => Date, changed: () => void = () => undefined): PullSource {
   type Answer = Result<readonly OpenPull[], ProjectFault>
   type Kept = { at: number; answer: Promise<Answer>; running: boolean }
   const kept = new Map<string, Kept>()
+  const run = (repository: Parameters<PullSource['open']>[0]): Promise<Answer> =>
+    source.open(repository).catch((): Answer => err({ reason: 'failed', code: 'threw' }))
   const refresh = (entry: Kept, repository: Parameters<PullSource['open']>[0]) => {
     entry.running = true
-    void Promise.all([entry.answer, source.open(repository)])
+    void Promise.all([entry.answer, run(repository)])
       .then(([before, after]) => {
         if (!after.ok) return
         entry.at = now().getTime()
@@ -156,7 +159,7 @@ export function keptPulls(source: PullSource, now: () => Date, changed: () => vo
         if (!last.running && at - last.at >= pullsKeptMs) refresh(last, repository)
         return last.answer
       }
-      const entry: Kept = { at, answer: source.open(repository), running: true }
+      const entry: Kept = { at, answer: run(repository), running: true }
       kept.set(key, entry)
       void entry.answer.then((result) => {
         entry.running = false

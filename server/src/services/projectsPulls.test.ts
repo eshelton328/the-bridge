@@ -96,4 +96,23 @@ describe('keptPulls', () => {
     void pulls.open(repo)
     expect(waiting).toHaveLength(3)
   })
+
+  it('takes a thrown run as a failed one: no unhandled rejection, a first one not kept, a later one keeps the answer', async () => {
+    let time = 0
+    let calls = 0
+    const source: PullSource = {
+      open: () => {
+        calls += 1
+        return calls === 2 ? Promise.resolve(ok([pull(1)])) : Promise.reject(new Error('the adapter broke'))
+      },
+    }
+    const pulls = keptPulls(source, () => new Date(time))
+    expect(await pulls.open(repo)).toEqual(err({ reason: 'failed', code: 'threw' }))
+    expect(await pulls.open(repo)).toEqual(ok([pull(1)]))
+    time = pullsKeptMs
+    expect(await pulls.open(repo)).toEqual(ok([pull(1)]))
+    await settle()
+    expect(calls).toBe(3)
+    expect(await pulls.open(repo)).toEqual(ok([pull(1)]))
+  })
 })
