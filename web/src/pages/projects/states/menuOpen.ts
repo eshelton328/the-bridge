@@ -17,6 +17,14 @@ export const menuOpen = {
     railBadge: 0,
     cardsHeading: 'All projects',
     menu: { label: 'Actions for {name}', pin: 'Pin to top', unpin: 'Unpin', edit: 'Edit details' },
+    page: {
+      back: 'Projects',
+      backLabel: 'Back to Projects',
+      quickChat: 'Quick chat',
+      tabs: 'Project sections',
+      overview: 'Overview',
+      ideas: 'Ideas',
+    },
     projects: [
       {
         slug: 'ncc-1701',

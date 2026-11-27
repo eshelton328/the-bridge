@@ -1,0 +1,67 @@
+{
+  "frameId": "D01",
+  "inputs": "56ccf81adc2428f929ecad7016ba4c7780d7f0e37890e83cf8ae3a997fee29bf",
+  "library": "1.0.0-beta.135",
+  "recordSha256": "875f9813363827b8745aea88070a2b48b4c42a2ab81f3406d572f31308102361",
+  "record": {
+    "verdict": "match",
+    "viewport": "1512 CSS px wide desktop, dark mode",
+    "inputs": {
+      "layout": "separate",
+      "reference": "references/projects/D01/frame.png",
+      "render": "reports/fidelity/projects/D01.render.png",
+      "reference_side": null
+    },
+    "summary": "Apart from the six accepted deviations, the render matches the reference: the header, picture, name, purpose line, Quick chat button and Overview tab have the same content, sizes and states.",
+    "findings": [],
+    "accepted_deviations": [
+      {
+        "id": "A1",
+        "as_given": "Panels: the render has no Inbox, Queue, Context drift or Chats panel under the tabs; the page is empty below the tabs. Those panels are built in later issues.",
+        "status": "as-described",
+        "finding": null,
+        "note": "Below the tabs the render shows only the starfield background, from y 202 to the bottom of the page."
+      },
+      {
+        "id": "A2",
+        "as_given": "Tabs: the render's tab row shows Overview and Ideas, where the reference shows Overview, Repositories, Architecture and QA. Only the tabs of shipped increments show.",
+        "status": "as-described",
+        "finding": null,
+        "note": "Overview is selected in both and has the same size (about 109 x 32). Ideas has a lightbulb icon and shows the unselected state."
+      },
+      {
+        "id": "A3",
+        "as_given": "Owner's name: the purpose line starts \"The owner's personal workspace\", where the reference has a person's name. A secret-scan rule keeps the name out of the code.",
+        "status": "as-described",
+        "finding": null,
+        "note": "The longer wording still fits on one line, which ends at about x 1079."
+      },
+      {
+        "id": "A4",
+        "as_given": "Top: the back row, the picture, the name and the purpose sit 4 px higher than in the reference, and the purpose sits 4 px further under the name. The design's 28 px top has no spacing token.",
+        "status": "as-described",
+        "finding": null,
+        "note": "The back link, picture (72-136 against 76-140) and name sit 4 px higher. The Quick chat button on the same top row also sits 4 px higher (24-56 against 28-60), and I count that as part of this deviation. The purpose line sits about 5 px higher, not 4 px further under the name: the gap from the name to the purpose looks the same as in the reference, within about 1 px. The tab row has not moved (170-202 in both), so the gap above the tabs is about 4-5 px larger. That follows from this deviation."
+      },
+      {
+        "id": "A5",
+        "as_given": "Rail: the left rail is the app's shared rail in its default order: Inbox, Workspaces, Projects, Artifacts, Toolkit and More. The reference draws an older rail with Inbox, Workspaces, Projects and More. The page never changes the shared rail.",
+        "status": "as-described",
+        "finding": null,
+        "note": "Artifacts and Toolkit sit between Projects and More. Projects is selected in both."
+      },
+      {
+        "id": "A6",
+        "as_given": "Sides: the content starts 4 px further right than in the reference (40 px sides where the reference has 36). No spacing token is 36.",
+        "status": "as-described",
+        "finding": null,
+        "note": "The back link, picture and tabs start 4 px further right. The Quick chat button's right edge is 4 px further left (1472 against 1476), which matches the 40 px side on the right."
+      }
+    ],
+    "limits": [
+      "Below the tabs the render shows only the starfield background (accepted deviation A1), so I could not compare the panel regions.",
+      "The full-size images may have been shown scaled down when shown to me. In the lower half, where there were no 1:1 crops, I could not check differences under about 2 px. That area is empty in the render.",
+      "I measured vertical positions in the header to about 1 px."
+    ]
+  }
+}

@@ -9,6 +9,9 @@ moves to `web/src/blocks/`.
   or Unpin on a pinned card, and Edit details, which does nothing
   (increment four, d-133).
 - `ProjectTile` draws the project's library icon when its `icon` names one
-  in the tile's list, else the first letter of its name in capitals.
+  in the tile's list, else the first letter of its name in capitals; its
+  `picture` size is the 64 px square of a project's page.
+- `ProjectHeader` is a project page's head: `BackRow` with Quick chat at its
+  end, then the picture beside the name and purpose.
 - Each card carries `data-figma="project card · <name>"`, which the live
   tests read for the order.

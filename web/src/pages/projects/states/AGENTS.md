@@ -6,7 +6,8 @@ listed in `index.ts`. Make one with
 `index.ts` entry and its story.
 
 - A frame's node is the Figma node of the read-only file
-  `yJaVpShE9RVoQwUeUBnMQ4` that its `reference.json` source names.
+  `yJaVpShE9RVoQwUeUBnMQ4` that its `reference.json` source names, or the
+  saved design render (`ov-D01.dc.html`) for a project's page.
 - `menuOpen` (D10) holds the data the others share: the brain's three
   projects on 2026-11-26, word for word, NCC-1701 pinned, except the
   owner's name, which the secret scan keeps out of `web/` ("The owner's").

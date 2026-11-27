@@ -1,6 +1,6 @@
 # Projects library gaps
 
-Parts and tokens the Projects home (f-008 increment one, d-133) needs that
+Parts and tokens the Projects home and a project's page (f-008 increment one, d-133) need that
 the component library (`@eshelton328/component-library-1701`,
 `1.0.0-beta.135` in this worktree) cannot draw. Each gap goes to the
 library in a batched PR through the `library-gap-filler` agent. Until it
@@ -15,3 +15,4 @@ ships, the page uses the part under "Used now", and each frame's
 | Card description with every line, or a set line count | D10, T10, T10b      | `Card`'s `description` shows one line at Small or exactly two (`descriptionLines`). D10 and T10 show the whole purpose; T10b cuts it at three lines.                                                                                                                                                                        | The purpose as a `bodySm` paragraph in the card's `meta` row                                                     |
 | Card grid columns by width                            | T10b                | T10b draws three columns at 1133 px, in the tablet layout. `Grid` takes a fixed column count, and no token gives a card's least width.                                                                                                                                                                                      | `Grid` with four columns on the desktop, two on a tablet, one on a phone                                         |
 | Purpose text style (13/20, wider tracking)            | D10, T10, T10b, M10 | The frames set the purpose at 13 px on a 20 px line, with glyphs about 4 % wider than `bodySm` (Geist 13/20, no tracking): "A Chrome extension that pins comments on" is about 268 px in D10 and 259 px in `bodySm`. That fits 13 px with about 0.26 px letter spacing; no text style has it, and `body` (14/20) is 279 px. | `bodySm`; the purposes break at other words (each frame's `deviations.md`)                                       |
+| Spacing 28 and 36                                     | D01                 | A project's page starts its back row 28 under the page top, its tabs 28 under the picture, and its content 36 from the rail. The spacing tokens step from 24 to 32 and from 32 to 40.                                                                                                                                       | The home's 24 top and 40 sides; the tabs 32 under the purpose, which is where D01 draws them.                    |

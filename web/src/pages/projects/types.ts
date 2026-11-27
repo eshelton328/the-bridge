@@ -24,6 +24,23 @@ export const ProjectMenuWords = z.object({
 })
 export type ProjectMenuWords = z.infer<typeof ProjectMenuWords>
 
+/** The words of a project's page (R4): its back row, Quick chat and the tabs of increment one (d-133). */
+export const ProjectPageWords = z.object({
+  back: z.string(),
+  /** The back button's accessible name, such as "Back to Projects". */
+  backLabel: z.string(),
+  quickChat: z.string(),
+  /** The tab list's accessible name. */
+  tabs: z.string(),
+  overview: z.string(),
+  ideas: z.string(),
+})
+export type ProjectPageWords = z.infer<typeof ProjectPageWords>
+
+/** A project page's tab (R4): Overview and Ideas only, the tabs of increment one (d-133). */
+export const ProjectTab = z.enum(['overview', 'ideas'])
+export type ProjectTab = z.infer<typeof ProjectTab>
+
 export const ProjectsData = z.object({
   title: z.string(),
   /** New project: drawn as the frames do; it has no action until increment four (d-133). */
@@ -33,6 +50,7 @@ export const ProjectsData = z.object({
   /** The cards' heading for a screen reader, between the page's h1 and each card's h3; no frame draws it. */
   cardsHeading: z.string(),
   menu: ProjectMenuWords,
+  page: ProjectPageWords,
   /** The cards in the order they show: the pinned ones first. */
   projects: z.array(ProjectCard),
   /** Set when the cards came from the server (liveProjects.ts), so the entry sends a pin to it. */
@@ -48,6 +66,10 @@ export const ProjectsUi = z.object({
   menuFor: z.string().optional(),
   /** The More drawer, which a tablet's or phone's More opens. */
   moreOpen: z.boolean().optional(),
+  /** The slug of the project whose page shows (`/projects/<slug>`, R4); the home shows when not set. */
+  open: z.string().optional(),
+  /** The project page's selected tab; Overview when not set. */
+  tab: ProjectTab.optional(),
 })
 export type ProjectsUi = z.infer<typeof ProjectsUi>
 
