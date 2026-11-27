@@ -10,13 +10,13 @@ import { type ProjectCard, ProjectTab, type ProjectsData, type ProjectsUi } from
 
 // The page's sides, as the Projects home has them (D10, T10, M10), and its
 // top: 24 on a desktop or tablet, where D01, T01 and T01b draw 28 (no
-// spacing token has 28), and the home's 40 on a phone.
+// spacing token has 28), and 8 on a phone, as M01 draws it.
 const page = {
   desktop: css({ pt: '24', pb: '32', px: '40' }),
   tablet: css({ pt: '24', pb: '32', px: '32' }),
-  phone: css({ pt: '40', pb: '16', px: '16' }),
+  phone: css({ pt: '8', pb: '16', px: '16' }),
 } as const satisfies Record<Viewport, string>
-const tabs = css({ pt: '32' })
+const tabs = { wide: css({ pt: '32' }), phone: css({ pt: '12' }) }
 
 export type ProjectDetailProps = {
   project: ProjectCard
@@ -33,7 +33,7 @@ export function ProjectDetail({ project, data, ui, layout, onUiChange, onBack, o
   return (
     <div className={page[layout]}>
       <ProjectHeader project={project} words={words} layout={layout} onBack={onBack} onQuickChat={onQuickChat} />
-      <div className={tabs} data-figma="project tabs">
+      <div className={layout === 'phone' ? tabs.phone : tabs.wide} data-figma="project tabs">
         <ItemTabs
           label={words.tabs}
           tone="accent"

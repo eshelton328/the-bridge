@@ -12,6 +12,7 @@ export const projectsScreens = {
     title: "A project's page",
     desktop: 'projectOverview',
     tablet: 'projectOverviewTablet',
+    phone: 'projectOverviewPhone',
   },
   projectWide: {
     title: "A project's page on an iPad in landscape",

@@ -113,3 +113,15 @@ export const ProjectOverviewTabletWide: Story = {
     await expectProject(canvas)
   },
 }
+
+export const ProjectOverviewPhone: Story = {
+  name: "M01: NCC-1701's page on the phone, on its Overview tab",
+  args: {
+    data: projectsStates.projectOverviewPhone.data,
+    ui: projectsStates.projectOverviewPhone.ui,
+    viewport: 'phone',
+  },
+  play: async ({ canvas }) => {
+    await expectProject(canvas)
+  },
+}
