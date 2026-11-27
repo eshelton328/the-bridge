@@ -79,6 +79,8 @@ async function missOf(res: Response): Promise<EffortAnswer> {
     case 'qa-not-ready':
     case 'linear-bad-reply':
     case 'linear-unavailable':
+    case 'project-not-ready':
+    case 'brain-busy':
     case 'workspace-not-ready':
       return failed(error.kind, res.status)
   }

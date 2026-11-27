@@ -90,6 +90,16 @@ export const ToolkitItemId = z
   .brand<'ToolkitItemId'>()
 export type ToolkitItemId = z.infer<typeof ToolkitItemId>
 
+/**
+ * A Queue item of the Projects app (f-008 increment four): 16 hex characters of a sha256 that the server makes of the
+ * item's key (such as `pr:<repo>#<number>`), so no key goes in a URL.
+ */
+export const QueueItemId = z
+  .string()
+  .regex(/^[0-9a-f]{16}$/)
+  .brand<'QueueItemId'>()
+export type QueueItemId = z.infer<typeof QueueItemId>
+
 /** A file of a Toolkit item: 16 hex characters of a sha256 that the server makes of its item and path. */
 export const ToolkitFileId = z
   .string()

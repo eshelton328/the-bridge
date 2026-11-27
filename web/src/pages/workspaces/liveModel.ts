@@ -98,6 +98,8 @@ async function answerOf(res: Response): Promise<ModelAnswer> {
     case 'qa-not-ready':
     case 'linear-bad-reply':
     case 'linear-unavailable':
+    case 'project-not-ready':
+    case 'brain-busy':
     case 'workspace-not-ready':
       return unexpected(error.kind, res.status)
   }

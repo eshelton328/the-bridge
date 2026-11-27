@@ -119,6 +119,8 @@ function missOf(step: Step, status: number, text: string): Miss {
     case 'qa-not-ready':
     case 'linear-bad-reply':
     case 'linear-unavailable':
+    case 'project-not-ready':
+    case 'brain-busy':
     case 'workspace-not-ready':
       // The page sends only what the contract takes, and an upload never gets an Inbox answer: a bug.
       return { why: error.kind, transient: false, restart: true, report: { kind: error.kind, status } }

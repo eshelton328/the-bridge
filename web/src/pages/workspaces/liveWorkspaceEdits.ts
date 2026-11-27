@@ -210,6 +210,8 @@ async function missOf(action: WorkspaceEdit, res: Response): Promise<EditAnswer>
     case 'qa-not-ready':
     case 'linear-bad-reply':
     case 'linear-unavailable':
+    case 'project-not-ready':
+    case 'brain-busy':
       return reported(action, error.kind, res.status)
   }
 }
@@ -364,6 +366,8 @@ async function createMissOf(res: Response): Promise<CreateAnswer> {
     case 'qa-not-ready':
     case 'linear-bad-reply':
     case 'linear-unavailable':
+    case 'project-not-ready':
+    case 'brain-busy':
     case 'not-found':
     case 'storage-full':
     case 'too-large':
