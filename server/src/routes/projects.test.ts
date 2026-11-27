@@ -21,6 +21,7 @@ import { createBrainProjects, createDiskDriftStore, createDiskPins } from '../ad
 import { createFakeAgents } from '../adapters/fakeAgents.ts'
 import { createDiskWorktrees } from '../adapters/diskWorktrees.ts'
 import { createGhPulls } from '../adapters/ghPulls.ts'
+import { createGhRepositoryFacts } from '../adapters/ghRepos.ts'
 import { createNccCheck } from '../adapters/projectDrift.ts'
 import { createApp } from '../app.ts'
 import { memoryLogger } from '../logger.ts'
@@ -68,6 +69,23 @@ const ghReply = JSON.stringify([
   },
 ])
 
+const aboutReply = JSON.stringify({
+  data: {
+    repository: {
+      visibility: 'PUBLIC',
+      releases: {
+        nodes: [
+          {
+            tagName: 'v1.0.0-beta.2',
+            url: 'https://github.com/example-owner/example-repo/releases/tag/v1.0.0-beta.2',
+            publishedAt: '2026-11-21T10:00:00Z',
+          },
+        ],
+      },
+    },
+  },
+})
+
 let dir: string
 let brain: string
 let data: string
@@ -102,7 +120,10 @@ beforeEach(async () => {
     await writeFile(join(brain, path), text)
   }
   await mkdir(bin, { recursive: true })
-  await writeFile(join(bin, 'gh'), `#!/bin/sh\ncat <<'EOF'\n${ghReply}\nEOF\n`)
+  await writeFile(
+    join(bin, 'gh'),
+    `#!/bin/sh\nif [ "$1" = api ]; then\ncat <<'EOF'\n${aboutReply}\nEOF\nelse\ncat <<'EOF'\n${ghReply}\nEOF\nfi\n`,
+  )
   await writeFile(
     join(bin, 'ncc'),
     '#!/bin/sh\necho "not a git clone: $NCC_ROOT/projects/example-project/stray.log (only <repo>/ go here)"\necho "loose file in projects/: $NCC_ROOT/projects/other.txt"\nexit 1\n',
@@ -123,6 +144,7 @@ function server() {
     pulls: createGhPulls({ command: join(bin, 'gh'), env: process.env }),
     check: createNccCheck({ command: join(bin, 'ncc'), root: join(dir, 'root'), env: process.env }),
     drift: createDiskDriftStore(data),
+    facts: createGhRepositoryFacts({ command: join(bin, 'gh'), env: process.env }),
     worktrees: createDiskWorktrees(join(dir, 'root')),
     now: () => new Date('2026-11-22T09:00:00.000Z'),
   })
@@ -377,7 +399,7 @@ describe('/api/projects', () => {
 })
 
 describe('/api/projects/:slug/repositories', () => {
-  it('gives each repository in project.yaml order with its counts, and names the facts it has no source for', async () => {
+  it('gives each repository in project.yaml order with its GitHub facts and counts', async () => {
     const worktrees = join(dir, 'root', 'projects', 'example-project', 'example-repo-worktrees')
     for (const name of ['feature-a', 'feature-b']) {
       await mkdir(join(worktrees, name), { recursive: true })
@@ -391,11 +413,15 @@ describe('/api/projects/:slug/repositories', () => {
         id: 'example-repo',
         role: 'the app',
         github: { owner: 'example-owner', name: 'example-repo' },
-        visibility: null,
-        release: null,
+        visibility: 'public',
+        release: {
+          tag: 'v1.0.0-beta.2',
+          url: 'https://github.com/example-owner/example-repo/releases/tag/v1.0.0-beta.2',
+          publishedAt: '2026-11-21T10:00:00.000Z',
+        },
         openPulls: 2,
         worktrees: 2,
-        unread: ['about'],
+        unread: [],
       },
       {
         id: 'local-repo',

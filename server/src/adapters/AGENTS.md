@@ -458,7 +458,12 @@ client of a socket or a file sits beside them.
   is made relative to the root or starts with "~", and any other absolute
   path is "<path>" with its `projects/…` part kept (`ghPulls.test.ts`,
   `projectDrift.test.ts`, stub programs).
-  `diskWorktrees.ts` (increment two) counts the folders with a `.git` entry under
+  `ghRepos.ts` (increment two)
+  reads a repository's visibility and newest release, pre-releases
+  included, with one read-only `gh api graphql` call through `runGh`: the
+  first published one of the newest 10, so a newer draft is skipped; a
+  link off github.com is no release (`ghRepos.test.ts`).
+  `diskWorktrees.ts` counts the folders with a `.git` entry under
   `<chat root>/projects/<slug>/<repo>-worktrees`, 8 levels down at most
   (a folder still unread past that is the fault `too-deep`),
   follows no symlink and refuses a folder whose real path leaves the chat
