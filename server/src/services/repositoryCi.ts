@@ -66,7 +66,7 @@ export function rank(values: readonly number[], p: number): number | null {
 export function ciRunsOf(runs: readonly WorkflowRun[]): CiRun[] {
   const groups = new Map<string, WorkflowRun[]>()
   for (const run of runs) {
-    if (!ciEvents.has(run.event) || run.conclusion === 'skipped') continue
+    if (!ciEvents.has(run.event)) continue
     const key = `${run.event} ${run.sha}`
     groups.set(key, [...(groups.get(key) ?? []), run])
   }
@@ -77,7 +77,11 @@ export function ciRunsOf(runs: readonly WorkflowRun[]): CiRun[] {
         const kept = newest.get(run.workflow)
         if (kept === undefined || run.startedAt > kept.startedAt) newest.set(run.workflow, run)
       }
-      const all = [...newest.values()].sort((a, b) => a.startedAt.localeCompare(b.startedAt))
+      // The newest run of a workflow counts even when it was skipped, so a skipped rerun never brings back an
+      // older failure; a skipped run is then left out.
+      const all = [...newest.values()]
+        .filter((r) => r.conclusion !== 'skipped')
+        .sort((a, b) => a.startedAt.localeCompare(b.startedAt))
       const finished = all.every((r) => r.conclusion !== null && r.conclusion !== 'cancelled')
       return {
         runs: all,
