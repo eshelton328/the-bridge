@@ -1,0 +1,113 @@
+{
+  "frameId": "D10",
+  "inputs": "70bc39c070563789a419a4bdd7ebb0ed3dc9fdd87f98df970815b5aa2a58c286",
+  "library": "1.0.0-beta.135",
+  "recordSha256": "ddf3ed4bacc90a84892743ce7c87224590d2d302d836d6d31b2501813c75d4b6",
+  "record": {
+    "verdict": "differences",
+    "viewport": "1512 CSS px wide desktop",
+    "inputs": {
+      "layout": "separate",
+      "reference": "references/projects/D10/frame.png",
+      "render": "reports/fidelity/projects/D10.render.png",
+      "reference_side": null
+    },
+    "summary": "Apart from the accepted deviations, the render matches the frame. The only remaining difference is that the gap between each card's name and its purpose text is about 2 px smaller.",
+    "findings": [
+      {
+        "id": "F1",
+        "priority": "P3",
+        "kind": "spacing",
+        "region": "project cards, meta row",
+        "reference_location": "each card, between the name line (y about 307) and the first purpose line (y about 336)",
+        "reference_shows": "about 29 px from the name's baseline area to the first purpose line, e.g. \"Pinpoint\" over \"A Chrome extension that pins comments on\"",
+        "render_location": "each card, between the name line (y about 223) and the first purpose line (y about 250)",
+        "render_shows": "about 27 px between the name line and the first purpose line, the same in all three cards",
+        "accepted": null
+      }
+    ],
+    "accepted_deviations": [
+      {
+        "id": "A1",
+        "as_given": "New project shows as the frame draws it and does nothing: making a project is increment four (d-133, f-008 increment one, Out of scope).",
+        "status": "as-described",
+        "finding": null,
+        "note": "The button shows at top right as in the frame. Its 4 px shift to the left is part of A11."
+      },
+      {
+        "id": "A2",
+        "as_given": "Edit details shows in each card's menu and does nothing: editing a project's details is increment four (d-133).",
+        "status": "as-described",
+        "finding": null,
+        "note": "The open menu on the Pinpoint card shows \"Pin to top\" and \"Edit details\" in the frame's position."
+      },
+      {
+        "id": "A3",
+        "as_given": "Pin icon. The library has no pin icon, so a pinned card shows the 16 px pill \"Pinned\" after its name, which keeps the name's line height.",
+        "status": "as-described",
+        "finding": null,
+        "note": "NCC-1701 shows a \"Pinned\" pill where the frame has a pin glyph. The name line sits level with the other cards."
+      },
+      {
+        "id": "A4",
+        "as_given": "Tile. The letter tile is shorter than the frame's and its letter is the heading style, smaller than the frame's; no token has the frame's height or letter size.",
+        "status": "as-described",
+        "finding": null,
+        "note": "The tile is about 120 px tall, where the frame's is about 204 px. Because of this the cards end at y about 337, where the frame's end at about 401."
+      },
+      {
+        "id": "A5",
+        "as_given": "Purpose. The purpose is a bodySm paragraph in the card's meta row, as the library's Card description shows only one or two lines.",
+        "status": "as-described",
+        "finding": null,
+        "note": ""
+      },
+      {
+        "id": "A6",
+        "as_given": "Purpose wraps. The purpose is bodySm (13/20), whose glyphs are about 4 % narrower than the frame's; Pinpoint's and omni's lines break at other words and NCC-1701's purpose takes four lines where the frame's takes three. The line height (20 px) is the frame's.",
+        "status": "as-described",
+        "finding": null,
+        "note": "The line breaks are the ones described. Because NCC-1701's purpose takes four lines, the Pinpoint and omni cards have one empty line of space at the bottom."
+      },
+      {
+        "id": "A7",
+        "as_given": "Unpin. A pinned card's menu says Unpin in place of Pin to top. No frame draws a pinned card's menu.",
+        "status": "not-seen",
+        "finding": null,
+        "note": "Only Pinpoint's menu is open, and Pinpoint is not pinned."
+      },
+      {
+        "id": "A8",
+        "as_given": "Owner's name. NCC-1701's purpose starts \"The owner's personal workspace\" in the state file, where the frame has the owner's name.",
+        "status": "as-described",
+        "finding": null,
+        "note": ""
+      },
+      {
+        "id": "A9",
+        "as_given": "Cards heading. A heading \"All projects\" that only a screen reader reads sits between the page title and the cards. No frame draws it.",
+        "status": "not-seen",
+        "finding": null,
+        "note": "The heading is not visible, as expected for text that only a screen reader reads."
+      },
+      {
+        "id": "A10",
+        "as_given": "Rail. The rail is the app's shared one in the default order: Inbox, Workspaces, Projects, Artifacts, Toolkit and More. The frame draws an older rail with Inbox, Workspaces, Projects and More.",
+        "status": "as-described",
+        "finding": null,
+        "note": ""
+      },
+      {
+        "id": "A11",
+        "as_given": "Sides. The page is 40 in from the rail and the window's edge, so each of the four columns is the frame's 327 px; the frame has 36, so the header and the cards start 4 px further right than the frame's.",
+        "status": "as-described",
+        "finding": null,
+        "note": "The title and the first card start about 4 px further right, and New project ends about 4 px further left."
+      }
+    ],
+    "limits": [
+      "The starfield background was not compared star by star.",
+      "Card widths and gaps were measured by eye only. Differences of 1 to 2 px in the cards' edges were not confirmed."
+    ]
+  }
+}
