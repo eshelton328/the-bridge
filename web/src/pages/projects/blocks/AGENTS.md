@@ -31,5 +31,8 @@ moves to `web/src/blocks/`.
 - `ContextDrift` is the Context drift panel (R9): `PageHeader` with Run check
   (off while `busy`) over a `Panel` of `ListRow` findings; `OverviewPanels`
   draws it under Inbox and Queue, across both columns on the desktop.
+- `ChatsPanel` is the Overview's Chats panel (R7): compact `ListRow` rows
+  (title, workspace, a `StatusPill` toned as the Workspaces sidebar does)
+  in a `Panel`; a press calls `onChatOpen`. It spans both desktop columns.
 - Each card carries `data-figma="project card · <name>"`, which the live
   tests read for the order.

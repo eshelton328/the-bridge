@@ -8,7 +8,8 @@
 // A project's page reads its project (`GET /api/projects/:slug`, R4); a slug
 // the server does not know is not found. Its open PRs are the Queue panel (R6),
 // and the Inbox panel (R5) is the project's items of `GET /api/inbox`, read
-// with it and again on each `inbox.changed` (ProjectPage.tsx; NCC-138).
+// with it and again on each `inbox.changed` (ProjectPage.tsx; NCC-138), as is
+// the Chats panel (R7, `GET /api/projects/:slug/chats`) on the Overview tab.
 // Its Ideas tab reads `GET /api/projects/:slug/ideas` only while it shows (R10).
 // The Context drift panel (R9) reads the last check with it; Run check is `runDrift`.
 //
@@ -24,6 +25,7 @@ import {
   type ErrorKind,
   type Idea,
   IdeasResponse,
+  ProjectChatsResponse,
   ProjectDetailResponse,
   type ProjectPull,
   ProjectsResponse,
@@ -47,7 +49,7 @@ type ProjectsMiss = {
   readonly status: number | undefined
 }
 
-type ProjectsStep = 'list' | 'pin' | 'detail' | 'ideas' | 'drift' | 'runDrift'
+type ProjectsStep = 'list' | 'pin' | 'detail' | 'ideas' | 'drift' | 'runDrift' | 'chats'
 
 /** A miss for report(): a stable name and, in its message, only the step, the kind and the status. */
 class ProjectsMissError extends Error {
@@ -195,6 +197,22 @@ export async function runDrift(slug: string): Promise<Result<ProjectDrift, strin
   return ok(driftView(DriftResponse.parse(readJson(sent.value)).last, new Date()))
 }
 
+export type ProjectChats = NonNullable<ProjectOverview['chats']>
+
+/** The Chats panel (R7): project `slug`'s tagged chats, or no rows and the miss's line (a 404 is not found). */
+export async function readProjectChats(slug: string, signal?: AbortSignal): Promise<ProjectChats> {
+  const answer = await send(
+    (init) => api.api.projects[':slug'].chats.$get({ param: { slug } }, { init: { signal: init } }),
+    signal,
+  )
+  if (!answer.ok) {
+    if (answer.error.kind !== 'not-found') reportMiss('chats', answer.error)
+    return { rows: [], notRead: missLine('Chats not read', answer.error) }
+  }
+  const { chats } = ProjectChatsResponse.parse(readJson(answer.value))
+  return { rows: chats.map((c) => ({ id: c.id, title: c.title, workspace: c.workspace.label, status: c.status })) }
+}
+
 const pullRow = (p: ProjectPull) => ({ title: p.title, meta: `${p.repository}#${String(p.number)}`, status: p.status })
 
 /** `state` with the server's projects in place of the sample ones, or with none and the miss's line. */
@@ -216,17 +234,19 @@ export async function withLiveProjects(
 
 /**
  * `state` with the server's project `slug` as its one card, open; with no card and the miss's line when the read
- * missed, or with no card when the server does not know the slug, so the loader says it is not found.
+ * missed, or with no card when the server does not know the slug, so the loader says it is not found. With `chats`
+ * false (the Ideas tab) it reads no chats: each chats read sends herdr list calls.
  */
 export async function withLiveProject(
   state: ProjectsState,
   slug: string,
-  { signal }: { readonly signal?: AbortSignal | undefined } = {},
+  { signal, chats: readChats = true }: { readonly signal?: AbortSignal | undefined; readonly chats?: boolean } = {},
 ): Promise<ProjectsState> {
-  const [answer, inbox, drift] = await Promise.all([
+  const [answer, inbox, drift, chats] = await Promise.all([
     send((init) => api.api.projects[':slug'].$get({ param: { slug } }, { init: { signal: init } }), signal),
     readProjectInbox(slug, signal),
     readDrift(slug, signal),
+    readChats ? readProjectChats(slug, signal) : undefined,
   ])
   const ui = { ...state.ui, open: slug }
   if (!answer.ok) {
@@ -243,6 +263,7 @@ export async function withLiveProject(
       ...(queue.unread.length === 0 ? {} : { unread: `PRs not read: ${queue.unread.join(', ')}` }),
     },
     drift,
+    ...(chats === undefined ? {} : { chats }),
   }
   return { ...state, ui, data: { ...state.data, projects: [projectCard(project)], live: {}, overview } }
 }

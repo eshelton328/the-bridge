@@ -42,6 +42,8 @@ export type ProjectsScreenProps = {
   onQuickChatRetry?: (() => void) | undefined
   /** Context drift's Run check (R9). Without it Run check is off. */
   onRunDrift?: (() => void) | undefined
+  /** A Chats panel row was pressed (R7): open that chat. */
+  onChatOpen?: ((id: string) => void) | undefined
 }
 
 export function ProjectsScreen({
@@ -58,6 +60,7 @@ export function ProjectsScreen({
   onQuickChatSend,
   onQuickChatRetry,
   onRunDrift,
+  onChatOpen,
 }: ProjectsScreenProps) {
   // The project page of `ui.open` (R4); the home when it names no card.
   const open = data.projects.find((p) => p.slug === ui.open)
@@ -130,6 +133,7 @@ export function ProjectsScreen({
                     onUiChange={onUiChange}
                     onBack={onBack}
                     onRunDrift={onRunDrift}
+                    onChatOpen={onChatOpen}
                     onQuickChat={() => {
                       onUiChange?.({ quickChat: {} })
                     }}
