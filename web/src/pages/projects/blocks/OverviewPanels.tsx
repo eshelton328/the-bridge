@@ -73,7 +73,7 @@ export function OverviewPanels({ overview, words, layout, groupsOpen, onGroupOpe
         padding={padding}
         title={i.title}
         meta={i.meta}
-        leading={<KindTile kind={i.kind} />}
+        leading={<KindTile kind={i.kind} title={words.kinds[i.kind]} />}
         trailing={i.age}
       />
     ))

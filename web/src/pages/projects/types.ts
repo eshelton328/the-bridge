@@ -40,6 +40,8 @@ export const ProjectPageWords = z.object({
   /** The Overview's panels (R5, R6): headings, group names and the PR pills by status. */
   panels: z.record(z.enum(['inbox', 'queue', 'needsYou', 'toReview', 'inProgress']), z.string()),
   pulls: z.record(z.enum(['draft', 'ciFailed', 'ciRunning', 'inReview']), z.string()),
+  /** Each Inbox kind's word, the name of its row's kind tile for assistive tech. */
+  kinds: z.record(z.enum(['approval', 'question', 'review', 'action']), z.string()),
 })
 export type ProjectPageWords = z.infer<typeof ProjectPageWords>
 

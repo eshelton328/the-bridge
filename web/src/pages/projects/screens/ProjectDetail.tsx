@@ -32,6 +32,18 @@ export type ProjectDetailProps = {
 
 export function ProjectDetail({ project, data, ui, layout, onUiChange, onBack, onQuickChat }: ProjectDetailProps) {
   const words = data.page
+  // The panels are the Overview tab's content, so its tab controls them; the tabs' 12 gap and the panels' own
+  // 12 top keep them 24 under the tabs.
+  const overview =
+    layout === 'desktop' && data.overview !== undefined ? (
+      <OverviewPanels
+        overview={data.overview}
+        words={words}
+        layout={layout}
+        groupsOpen={ui.groupsOpen ?? {}}
+        onGroupOpen={(group, open) => onUiChange?.({ groupsOpen: { ...ui.groupsOpen, [group]: open } })}
+      />
+    ) : null
   return (
     <div className={page[layout]}>
       <ProjectHeader project={project} words={words} layout={layout} onBack={onBack} onQuickChat={onQuickChat} />
@@ -46,20 +58,11 @@ export function ProjectDetail({ project, data, ui, layout, onUiChange, onBack, o
             if (picked.success) onUiChange?.({ tab: picked.data })
           }}
           items={[
-            { value: 'overview', label: words.overview, icon: <GridIcon />, content: null },
+            { value: 'overview', label: words.overview, icon: <GridIcon />, content: overview },
             { value: 'ideas', label: words.ideas, icon: <BulbIcon />, content: null },
           ]}
         />
       </div>
-      {layout === 'desktop' && (ui.tab ?? 'overview') === 'overview' && data.overview !== undefined ? (
-        <OverviewPanels
-          overview={data.overview}
-          words={words}
-          layout={layout}
-          groupsOpen={ui.groupsOpen ?? {}}
-          onGroupOpen={(group, open) => onUiChange?.({ groupsOpen: { ...ui.groupsOpen, [group]: open } })}
-        />
-      ) : null}
     </div>
   )
 }

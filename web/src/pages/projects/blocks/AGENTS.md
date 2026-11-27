@@ -20,6 +20,9 @@ moves to `web/src/blocks/`.
   at its pane size over a `Panel` of `GroupHeader` groups ("Needs you" and
   "In progress" open, "To review" closed), with compact `ListRow` rows and
   a `StatusPill` for each PR. Two columns of one height on the desktop,
-  one on a tablet or phone.
+  one on a tablet or phone. Each Inbox row's `KindTile` takes its kind's
+  word (`words.kinds`) as its `title`, so assistive tech names the kind.
+  `ProjectDetail` passes the block as the Overview tab's `content`, so the
+  tab's `aria-controls` panel holds it.
 - Each card carries `data-figma="project card · <name>"`, which the live
   tests read for the order.

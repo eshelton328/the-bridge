@@ -34,6 +34,7 @@ export const menuOpen = {
         inProgress: 'In progress',
       },
       pulls: { draft: 'Draft', ciFailed: 'CI failed', ciRunning: 'CI running', inReview: 'In review' },
+      kinds: { approval: 'Approval', question: 'Question', review: 'Review', action: 'Action' },
     },
     projects: [
       {
