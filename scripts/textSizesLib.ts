@@ -272,8 +272,8 @@ export type StateProblem = TextProblem & { state: string; size: LargerSize }
 
 /**
  * Splits the new problems into the open ones (the check fails on them) and the accepted ones, and names each
- * entry place (state and size) of `accepted` that matched nothing in the checked states. An unused place fails
- * the check too, so the file only lists cuts that the app still has.
+ * entry place (state and size) of `accepted` on a checked page that matched nothing, also one of a state that
+ * the page no longer has. An unused place fails the check too, so the file only lists cuts that the app still has.
  */
 export function splitAccepted(
   problems: readonly StateProblem[],
@@ -281,10 +281,14 @@ export function splitAccepted(
   checked: ReadonlySet<string>,
 ): { open: StateProblem[]; accepted: number; unused: string[] } {
   const place = (state: string, size: string, kind: string, text: string) => `${state} ${size} ${kind} ${text}`
+  // A state of a checked page counts even when the check did not find it, so an entry for a removed or renamed
+  // state is unused; only the pages that --page leaves out are skipped.
+  const pageOf = (state: string) => state.split('/')[0]
+  const pages = new Set([...checked].map(pageOf))
   const places = new Set<string>()
   for (const cut of accepted)
     for (const state of cut.states)
-      if (checked.has(state)) for (const size of cut.sizes) places.add(place(state, size, cut.kind, cut.text))
+      if (pages.has(pageOf(state))) for (const size of cut.sizes) places.add(place(state, size, cut.kind, cut.text))
   const used = new Set<string>()
   const open: StateProblem[] = []
   for (const p of problems) {
