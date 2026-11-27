@@ -11,7 +11,7 @@ import type { WorktreeCount } from '../services/projects.ts'
 
 /** How deep a worktree may sit under the `-worktrees` folder; folders left past it make the count a fault. */
 const maxDepth = 8
-/** The most folders one count reads. */
+/** The most folder reads of one count, each child's look for its .git included. */
 const maxFolders = 5_000
 
 const codeOf = (e: unknown) => (e instanceof Error && 'code' in e && typeof e.code === 'string' ? e.code : 'unknown')
@@ -22,7 +22,8 @@ export function insideRoot(root: string, folder: string): boolean {
   return rel !== '' && !rel.startsWith('..') && !isAbsolute(rel)
 }
 
-export function createDiskWorktrees(chatRoot: string): WorktreeCount {
+export function createDiskWorktrees(chatRoot: string, limits: { readonly maxFolders?: number } = {}): WorktreeCount {
+  const folderLimit = limits.maxFolders ?? maxFolders
   return {
     async count(slug, repository) {
       let root: string
@@ -41,11 +42,13 @@ export function createDiskWorktrees(chatRoot: string): WorktreeCount {
         for (let depth = 1; depth <= maxDepth && level.length > 0; depth++) {
           const next: string[] = []
           for (const parent of level) {
-            if (++read > maxFolders) return err({ reason: 'failed', code: 'too-many' })
+            if (++read > folderLimit) return err({ reason: 'failed', code: 'too-many' })
             const entries: Dirent[] = await readdir(parent, { withFileTypes: true })
             for (const entry of entries) {
               if (!entry.isDirectory()) continue
               const child = join(parent, entry.name)
+              // Each read counts, the look into a child for its .git too.
+              if (++read > folderLimit) return err({ reason: 'failed', code: 'too-many' })
               const inner = await readdir(child, { withFileTypes: true })
               if (inner.some((e) => e.name === '.git')) count++
               else next.push(child)

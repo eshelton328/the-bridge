@@ -43,6 +43,15 @@ describe('createDiskWorktrees', () => {
     })
   })
 
+  it('is the fault too-many when the reads pass the limit, the reads of child folders counted', async () => {
+    for (const name of ['a', 'b', 'c', 'd', 'e']) await worktree(join(worktrees(), name))
+    expect(await createDiskWorktrees(root, { maxFolders: 3 }).count(slug, repo)).toEqual({
+      ok: false,
+      error: { reason: 'failed', code: 'too-many' },
+    })
+    expect(await createDiskWorktrees(root, { maxFolders: 6 }).count(slug, repo)).toEqual({ ok: true, value: 5 })
+  })
+
   it('is 0 when the repository has no worktrees folder', async () => {
     expect(await createDiskWorktrees(root).count(slug, repo)).toEqual({ ok: true, value: 0 })
   })
