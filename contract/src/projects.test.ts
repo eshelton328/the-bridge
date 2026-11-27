@@ -12,6 +12,7 @@ import {
   ProjectDetailResponse,
   ProjectSlug,
   ProjectSummary,
+  RepositoryDriftRun,
   RunDriftRequest,
   SlugResponse,
   RepositoryCiResponse,
@@ -88,6 +89,36 @@ describe('the projects contract', () => {
     expect(PinProjectRequest.safeParse({ pinned: true, slug: 'x' }).success).toBe(false)
     expect(RunDriftRequest.safeParse({}).success).toBe(true)
     expect(RunDriftRequest.safeParse({ command: 'rm' }).success).toBe(false)
+  })
+
+  it('keeps a repository drift finding to a kind the check prints and a path from the repository root', () => {
+    const run = (path: string, kind = 'over-budget') => ({
+      result: 'findings',
+      checkedAt: '2026-11-27T10:00:00.000Z',
+      commit: 'a'.repeat(40),
+      findings: [{ kind, path, detail: '(165 > 60 lines)' }],
+      total: 1,
+    })
+    expect(RepositoryDriftRun.safeParse(run('contract/src/AGENTS.md')).success).toBe(true)
+    for (const path of ['/etc/AGENTS.md', '../AGENTS.md', 'a/./AGENTS.md', 'a//AGENTS.md'])
+      expect(RepositoryDriftRun.safeParse(run(path)).success).toBe(false)
+    expect(RepositoryDriftRun.safeParse(run('AGENTS.md', 'other')).success).toBe(false)
+    expect(
+      RepositoryDriftRun.safeParse({
+        result: 'clean',
+        checkedAt: '2026-11-27T10:00:00.000Z',
+        commit: null,
+        findings: [],
+        total: 0,
+      }).success,
+    ).toBe(true)
+    expect(RepositoryDriftRun.safeParse({ ...run('AGENTS.md'), result: 'clean' }).success).toBe(false)
+    expect(RepositoryDriftRun.safeParse({ ...run('AGENTS.md'), total: 0 }).success).toBe(false)
+    const many = Array.from({ length: 200 }, (_, i) => ({ kind: 'missing', path: `p${String(i)}`, detail: null }))
+    expect(RepositoryDriftRun.safeParse({ ...run('AGENTS.md'), findings: many, total: 250 }).success).toBe(true)
+    expect(RepositoryDriftRun.safeParse({ ...run('AGENTS.md'), findings: many.slice(1), total: 250 }).success).toBe(
+      false,
+    )
   })
 })
 

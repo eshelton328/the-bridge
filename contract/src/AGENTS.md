@@ -175,6 +175,9 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
   `unread` does; `ci` null with `reading` true means the first read runs;
   `ci` with `reading` true means a refresh runs. `readAt`, the time of the
   GitHub read, is null exactly when `ci` is null.
+  A `RepositoryDriftRun` has the
+  snapshot's commit and findings of a strict `AgentsMdKind` with a path
+  from the repository root, the first `maxDriftFindings` and a `total`.
   `projects.changed` on `/api/events` says that a
   project's open PRs changed or a CI read of one of its repositories
   ended, good or failed: read the project and its CI numbers again (NCC-156); its data is `{}`. Increment four: a create or edit body holds a

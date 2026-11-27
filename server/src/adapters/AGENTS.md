@@ -488,6 +488,14 @@ client of a socket or a file sits beside them.
   credential helper and only PATH, HOME, LANG and GIT_TERMINAL_PROMPT=0;
   an ID or a GitHub name that could leave the folder is refused with no
   call (`gitSnapshots.test.ts`, a stub git).
+  `agentsMdCheck.ts` (increment two, R7) runs the brain's `agents-md`
+  `scripts/check` on a snapshot as `python3 -I`, from the brain folder,
+  with a 60 s limit and only PATH, HOME and LANG: exit 0 is clean, exit 1
+  gives each line as a kind, a path from the repository root and its
+  detail, masked as `relativeLines` does, the first 200 with the full
+  count. A kind the contract does not know is `unknown-kind` and another
+  line it cannot read `EBADDATA`, never a dropped line; exit 1 with no line
+  is `no-output` (`agentsMdCheck.test.ts`).
   `diskWorktrees.ts` counts the folders with a `.git` entry under
   `<chat root>/projects/<slug>/<repo>-worktrees`, 8 levels down at most
   (a folder still unread past that is the fault `too-deep`),
