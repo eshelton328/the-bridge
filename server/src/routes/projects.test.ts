@@ -344,22 +344,30 @@ describe('/api/projects', () => {
       expect(agents.reads()).toBe(0)
     })
 
-    it('answers 500 when the agents do not answer, and logs the code only', async () => {
+    it("answers herdr's fault as the workspaces routes do: 503 when it does not answer, 502 for a bad reply", async () => {
       const { agents, logger } = server()
-      const failing = createProjects({
-        brain: createBrainProjects(brain),
-        pins: createDiskPins(data),
-        pulls: createGhPulls({ command: join(bin, 'gh'), env: process.env }),
-        check: createNccCheck({ command: join(bin, 'ncc'), root: join(dir, 'root'), env: process.env }),
-        drift: createDiskDriftStore(data),
-        agents: createFakeAgents(MachineId.parse('test-mac'), {
-          error: { reason: 'unreachable', message: 'herdr is down marker-5150' },
-        }),
-      })
-      const down = createApp({ agents, owner: 'owner@example.com', log: logger.log, projects: failing })
-      const response = await read(down, '/api/projects/example-project/chats')
-      expect(response.status).toBe(500)
-      expect(logger.text()).toContain('agents-unreachable')
+      const failingWith = (reason: 'unreachable' | 'badReply') =>
+        createApp({
+          agents,
+          owner: 'owner@example.com',
+          log: logger.log,
+          projects: createProjects({
+            brain: createBrainProjects(brain),
+            pins: createDiskPins(data),
+            pulls: createGhPulls({ command: join(bin, 'gh'), env: process.env }),
+            check: createNccCheck({ command: join(bin, 'ncc'), root: join(dir, 'root'), env: process.env }),
+            drift: createDiskDriftStore(data),
+            agents: createFakeAgents(MachineId.parse('test-mac'), {
+              error: { reason, message: 'herdr is down marker-5150' },
+            }),
+          }),
+        })
+      const down = await read(failingWith('unreachable'), '/api/projects/example-project/chats')
+      expect(down.status).toBe(503)
+      expect(ErrorBody.parse(await down.json()).error.kind).toBe('herdr-unavailable')
+      const bad = await read(failingWith('badReply'), '/api/projects/example-project/chats')
+      expect(bad.status).toBe(502)
+      expect(ErrorBody.parse(await bad.json()).error.kind).toBe('herdr-bad-reply')
       expect(logger.text()).not.toContain('marker-5150')
     })
   })

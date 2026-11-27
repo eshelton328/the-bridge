@@ -214,4 +214,6 @@ Thin Hono sub-apps, one file for each area, named after the area
   again: 200 with the run, `failed` when the check did not run (its code
   goes to the log at warn). A slug or idea ID that the contract does not
   take, or that names nothing, is 404; a body with another field is 400;
-  a store fault is 500 with its code in the log only (`projects.test.ts`).
+  a store fault is 500 with its code in the log only; herdr's fault on
+  `GET /:slug/chats` is 503 or 502 through `agentErrorJson`, as on the
+  workspaces routes (`projects.test.ts`).

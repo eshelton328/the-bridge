@@ -101,7 +101,8 @@ export type Projects = {
   idea(slug: ProjectSlug, id: IdeaId): Promise<Result<IdeaDetailResponse | NotFound, ProjectFault>>
   drift(slug: ProjectSlug): Promise<Result<DriftResponse | NotFound, ProjectFault>>
   runDrift(slug: ProjectSlug): Promise<Result<DriftRunOutcome | NotFound, ProjectFault>>
-  chats(slug: ProjectSlug): Promise<Result<ProjectChatsResponse | NotFound, ProjectFault>>
+  /** A fault of the agents is the port's own, so the route answers it as the workspaces routes do. */
+  chats(slug: ProjectSlug): Promise<Result<ProjectChatsResponse | NotFound, ProjectFault | AgentPortError>>
 }
 
 const tagKeys = ['project', 'area', 'role'] as const
@@ -117,8 +118,6 @@ export function chatTagsOf(tokens: Readonly<Record<string, string>>): ChatTag[] 
     return value !== undefined && tagValue.test(value) ? [{ key, value }] : []
   })
 }
-
-const agentFault = (error: AgentPortError): ProjectFault => ({ reason: 'failed', code: `agents-${error.reason}` })
 
 /** How long the open PRs of one repository are kept before `gh` runs again for it. */
 export const pullsKeptMs = 30_000
@@ -327,8 +326,8 @@ export function createProjects({
       if (record.value === 'notFound') return ok('notFound')
       if (agents === undefined) return err({ reason: 'failed', code: 'no-agents' })
       const [spaces, tags] = await Promise.all([agents.listWorkspaces(), agents.chatTags()])
-      if (!spaces.ok) return err(agentFault(spaces.error))
-      if (!tags.ok) return err(agentFault(tags.error))
+      if (!spaces.ok) return spaces
+      if (!tags.ok) return tags
       const chats = spaces.value.flatMap((w) =>
         w.chats.flatMap((c) => {
           const kept = chatTagsOf(tags.value.get(c.pane) ?? {})
