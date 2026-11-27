@@ -32,9 +32,10 @@ export type ProjectsHomeProps = {
   layout: Viewport
   onUiChange?: ((change: Partial<ProjectsUi>) => void) | undefined
   onPin?: ((slug: string, pinned: boolean) => void) | undefined
+  onOpen?: ((slug: string) => void) | undefined
 }
 
-export function ProjectsHome({ data, ui, layout, onUiChange, onPin }: ProjectsHomeProps) {
+export function ProjectsHome({ data, ui, layout, onUiChange, onPin, onOpen }: ProjectsHomeProps) {
   const count = data.projects.length
   return (
     <Stack gap={stackGap[layout]} className={page[layout]}>
@@ -73,6 +74,7 @@ export function ProjectsHome({ data, ui, layout, onUiChange, onPin }: ProjectsHo
               onUiChange?.({ menuFor: undefined })
               onPin?.(slug, pinned)
             }}
+            onOpen={onOpen}
           />
         ))}
       </Grid>
