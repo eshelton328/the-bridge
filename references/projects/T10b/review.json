@@ -1,6 +1,6 @@
 {
   "frameId": "T10b",
-  "inputs": "85ae6898dbc93017acd7bc4b0646c7faf4f113d0f6e3a86fd00298d7831bac5f",
+  "inputs": "c2fa1f1b5763c9cbb43d30e0728abd5e9f1863bb5f1a26287b32997c9a5e63dd",
   "library": "1.0.0-beta.135",
   "recordSha256": "0dea8483c32181e3e2da45d37acb9ac0e5a276e00fad2374ec7c35be9880407b",
   "record": {
@@ -93,6 +93,8 @@
         "note": "Each purpose shows in full on two lines."
       }
     ],
-    "limits": ["The scattered background stars are decorative, so I did not compare them one by one."]
+    "limits": [
+      "The scattered background stars are decorative, so I did not compare them one by one."
+    ]
   }
 }

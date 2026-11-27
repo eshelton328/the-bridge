@@ -22,11 +22,14 @@ T10b, M10 for the home, D01, T01, T01b, M01 for a project's page), read with
 - A project's page is `ui.open` on the same state, so it shares the
   home's data and screen. It shows the header and the tabs of increment
   one, Overview and Ideas (d-133); their panels are NCC-130's and
-  NCC-132's, and Quick chat does nothing yet. `ProjectPage.tsx` is its
+  NCC-132's. `ProjectPage.tsx` is its
   entry, on the route `projects_.$slug.tsx` (not nested in `/projects`);
   `loadProjectState.ts` reads it as the home's loader does, and a slug with
   no project is not found. `app/ProjectPageRoute.test.tsx` opens it from a
   card at 1440, 1024 and 390 px.
+- Quick chat (R8) is `liveQuickChat.ts`, whose header has its rules, and
+  works on the live project only. `app/ProjectQuickChat.test.tsx` checks
+  it at 1440, 1024 and 390 px with the fakes: never a real chat.
 - In development the home reads the live projects (`liveProjects.ts`), as
   the Artifacts home does (d-117): with no `?state=` and no `?source=`, and
   with `?source=live`; `?source=fixtures` shows the sample data, and a

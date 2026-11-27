@@ -14,6 +14,7 @@ import { ViewportFrame } from '../../../blocks/ViewportFrame.tsx'
 import { reportShellDiagnostic } from '../../../errors/shellDiagnostic.ts'
 import { type BarPage, defaultVisiblePages, navLayout } from '../../../lib/deviceSettings.ts'
 import type { Viewport } from '../../../lib/screenState.ts'
+import { QuickChat } from '../blocks/QuickChat.tsx'
 import type { ProjectsData, ProjectsUi } from '../types.ts'
 import { ProjectDetail } from './ProjectDetail.tsx'
 import { ProjectsHome } from './ProjectsHome.tsx'
@@ -36,8 +37,9 @@ export type ProjectsScreenProps = {
   onOpen?: ((slug: string) => void) | undefined
   /** Back to Projects was pressed on a project's page. */
   onBack?: (() => void) | undefined
-  /** Quick chat was pressed on a project's page. */
-  onQuickChat?: (() => void) | undefined
+  /** Quick chat's send (R8): true once the chat is open. Without it Quick chat does nothing. */
+  onQuickChatSend?: ((text: string) => Promise<boolean>) | undefined
+  onQuickChatRetry?: (() => void) | undefined
 }
 
 export function ProjectsScreen({
@@ -51,14 +53,28 @@ export function ProjectsScreen({
   onPin,
   onOpen,
   onBack,
-  onQuickChat,
+  onQuickChatSend,
+  onQuickChatRetry,
 }: ProjectsScreenProps) {
   // The project page of `ui.open` (R4); the home when it names no card.
   const open = data.projects.find((p) => p.slug === ui.open)
+  const chat = open === undefined || onQuickChatSend === undefined ? undefined : ui.quickChat
   return (
     <ViewportFrame initial={viewport}>
       {(layout) => {
         const nav = navLayout(navPages, layout)
+        const quickChat =
+          chat === undefined || onQuickChatSend === undefined ? null : (
+            <QuickChat
+              words={data.page}
+              status={chat}
+              onSend={onQuickChatSend}
+              onRetry={onQuickChatRetry}
+              onClose={() => {
+                onUiChange?.({ quickChat: undefined })
+              }}
+            />
+          )
         return (
           <Backdrop size={layout}>
             <AppShell
@@ -110,11 +126,14 @@ export function ProjectsScreen({
                     layout={layout}
                     onUiChange={onUiChange}
                     onBack={onBack}
-                    onQuickChat={onQuickChat}
+                    onQuickChat={() => {
+                      onUiChange?.({ quickChat: {} })
+                    }}
                   />
                 )
               }
             />
+            {quickChat}
             {/* The tablet's and the phone's More open the shared More drawer (d-119). */}
             <MoreDrawer
               settings={settingsEntry}

@@ -24,6 +24,8 @@ export const menuOpen = {
       tabs: 'Project sections',
       overview: 'Overview',
       ideas: 'Ideas',
+      message: 'First message',
+      retry: 'Retry',
     },
     projects: [
       {
