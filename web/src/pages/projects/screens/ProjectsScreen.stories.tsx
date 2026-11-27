@@ -63,3 +63,12 @@ export const ProjectsTabletWide: Story = {
     await expect(home === null || home === undefined ? '' : getComputedStyle(home).paddingTop).toBe('24px')
   },
 }
+
+export const ProjectsPhone: Story = {
+  name: 'M10: The Projects home on the phone',
+  args: { data: projectsStates.projectsPhone.data, ui: projectsStates.projectsPhone.ui, viewport: 'phone' },
+  play: async ({ canvas }) => {
+    await expectHome(canvas)
+    await expect(canvas.getByRole('button', { name: 'Actions for omni' })).toBeInTheDocument()
+  },
+}
