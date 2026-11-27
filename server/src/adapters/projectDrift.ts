@@ -23,7 +23,13 @@ export type NccCheckOptions = {
 }
 
 /** An absolute path that starts a line or follows a space, a quote, "(", "=" or ":". */
-const otherPath = /(^|[\s'"(=:])\/[^\s'"),;]+/g
+const otherPath = /(^|[\s'"(=:])(\/[^\s'"),;]+)/g
+
+/** "<path>" in place of the path, with its `projects/…` part kept, so the line still names its project. */
+const masked = (path: string) => {
+  const at = path.indexOf('/projects/')
+  return at === -1 ? '<path>' : `<path>${path.slice(at)}`
+}
 
 /** Each line with the root (and its real path) cut off its paths, and the home folder as "~". */
 export function relativeLines(stdout: string, roots: readonly string[], home: string | undefined): string[] {
@@ -32,7 +38,7 @@ export function relativeLines(stdout: string, roots: readonly string[], home: st
     for (const root of roots) out = out.replaceAll(`${root}/`, '').replaceAll(root, '.')
     if (home !== undefined && home.length > 1) out = out.replaceAll(home, '~')
     // A path outside the root and the home folder would show where the machine keeps files: only "<path>" leaves.
-    return out.replace(otherPath, '$1<path>').trim()
+    return out.replace(otherPath, (_, before: string, path: string) => before + masked(path)).trim()
   }
   return stdout
     .split('\n')

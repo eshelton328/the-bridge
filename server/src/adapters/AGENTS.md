@@ -442,5 +442,5 @@ client of a socket or a file sits beside them.
   root), each with an argument list, a time limit and only the variables
   it needs; a failed run is its code only, and each path of a check line
   is made relative to the root or starts with "~", and any other absolute
-  path is "<path>" (`ghPulls.test.ts`,
+  path is "<path>" with its `projects/…` part kept (`ghPulls.test.ts`,
   `projectDrift.test.ts`, stub programs).

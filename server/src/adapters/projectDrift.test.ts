@@ -89,6 +89,12 @@ describe('findingsFor', () => {
       ),
     ).toEqual(['lock in <path> and (<path>) and a'])
   })
+
+  it('keeps the projects/<slug> part of a hidden path, so the finding still names its project', () => {
+    const lines = relativeLines('not in its place: /tmp/projects/example-project/stray\n', ['/r'], '/home/dev')
+    expect(lines).toEqual(['not in its place: <path>/projects/example-project/stray'])
+    expect(findingsFor('example-project', [], lines).map((f) => f.text)).toEqual(lines)
+  })
 })
 
 describe('a drift run', () => {
