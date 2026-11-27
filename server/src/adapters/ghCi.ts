@@ -4,7 +4,7 @@
 // costs at most 10 calls a list. The pages after the first and the job
 // reads run at once, but at most `maxParallel` gh calls of one adapter run
 // at a time, so the Mac and GitHub's limit on parallel requests are spared.
-import { ok, type Result } from '@bridge/shared'
+import { err, ok, type Result } from '@bridge/shared'
 import { z } from 'zod'
 import type { ProjectFault } from '../services/projects.ts'
 import { type CiSource, maxWorkflowRuns } from '../services/repositoryCi.ts'
@@ -50,6 +50,8 @@ const Runs = z.object({
 })
 const Search = z.object({
   total_count: z.number().int(),
+  /** True when GitHub's search timed out and gave only part of the items. */
+  incomplete_results: z.boolean(),
   items: z.array(
     z.object({
       created_at: z.iso.datetime({ offset: true }),
@@ -77,6 +79,7 @@ async function pages<T extends { readonly total_count: number }, I>(
   fields: readonly string[],
   schema: z.ZodType<T>,
   items: (page: T) => readonly I[],
+  complete: (page: T) => boolean = () => true,
 ): Promise<Result<I[], ProjectFault>> {
   const read = (page: number) =>
     limited(() =>
@@ -98,11 +101,13 @@ async function pages<T extends { readonly total_count: number }, I>(
     )
   const first = await read(1)
   if (!first.ok) return first
+  if (!complete(first.value)) return err({ reason: 'failed', code: 'incomplete' })
   const count = Math.min(maxPages, Math.ceil(first.value.total_count / pageSize))
   const rest = await Promise.all(Array.from({ length: Math.max(0, count - 1) }, (_, i) => read(i + 2)))
   const all = [...items(first.value)]
   for (const page of rest) {
     if (!page.ok) return page
+    if (!complete(page.value)) return err({ reason: 'failed', code: 'incomplete' })
     all.push(...items(page.value))
   }
   return ok(all)
@@ -135,7 +140,15 @@ export function createGhCi(options: GhOptions): CiSource {
     },
     async merged({ owner, name }, since) {
       const q = `q=repo:${owner}/${name} is:pr is:merged merged:>=${since.slice(0, 10)}`
-      const read = await pages(limited, options, 'search/issues', [q], Search, (p) => p.items)
+      const read = await pages(
+        limited,
+        options,
+        'search/issues',
+        [q],
+        Search,
+        (p) => p.items,
+        (p) => !p.incomplete_results,
+      )
       if (!read.ok) return read
       return ok(
         read.value.flatMap((p) => {

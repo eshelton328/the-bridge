@@ -465,7 +465,9 @@ client of a socket or a file sits beside them.
   link off github.com is no release (`ghRepos.test.ts`).
   `ghCi.ts` reads the runs, the merged PRs (a search) and a run's jobs
   with `gh api -X GET` only, in pages of 100 that the first page's
-  `total_count` names, at most 10, the later pages at once (`ghCi.test.ts`).
+  `total_count` names, at most 10, the later pages at once; a search page
+  that GitHub marks `incomplete_results` is the fault `incomplete`
+  (`ghCi.test.ts`).
   `diskWorktrees.ts` counts the folders with a `.git` entry under
   `<chat root>/projects/<slug>/<repo>-worktrees`, 8 levels down at most
   (a folder still unread past that is the fault `too-deep`),

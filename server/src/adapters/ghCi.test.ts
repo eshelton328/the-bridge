@@ -28,7 +28,7 @@ async function stub(full: number, total = full * 100 + 1) {
       `echo "$*" >> ${join(dir, 'calls')}`,
       'case "$*" in',
       `  *jobs*) echo '{"total_count":1,"jobs":[{"name":"lint","conclusion":"success","started_at":"2026-11-21T10:00:00Z","completed_at":"2026-11-21T10:03:00Z"}]}' ;;`,
-      `  *search*) echo '{"total_count":2,"items":[{"created_at":"2026-11-21T08:00:00Z","pull_request":{"merged_at":"2026-11-21T10:00:00Z"}},{"created_at":"2026-11-21T08:00:00Z","pull_request":{"merged_at":null}}]}' ;;`,
+      `  *search*) echo '{"total_count":2,"incomplete_results":false,"items":[{"created_at":"2026-11-21T08:00:00Z","pull_request":{"merged_at":"2026-11-21T10:00:00Z"}},{"created_at":"2026-11-21T08:00:00Z","pull_request":{"merged_at":null}}]}' ;;`,
       ...Array.from({ length: full }, (_, i) => `  *"page=${String(i + 1)} "*) echo '${page(100)}' ;;`),
       `  *) echo '${page(1)}' ;;`,
       'esac',
@@ -101,6 +101,14 @@ describe('createGhCi', () => {
     expect(await open.jobs(repo, 7)).toEqual({ ok: true, value: [{ name: 'test', conclusion: null, minutes: null }] })
     await writeFile(gh, `#!/bin/sh\necho '${reply('"soon"')}'\n`)
     expect(await open.jobs(repo, 7)).toEqual({ ok: false, error: { reason: 'failed', code: 'EBADDATA' } })
+  })
+
+  it('is the fault incomplete when GitHub gives part of a search', async () => {
+    const gh = join(dir, 'gh')
+    await writeFile(gh, `#!/bin/sh\necho '{"total_count":1,"incomplete_results":true,"items":[]}'\n`)
+    await chmod(gh, 0o755)
+    const merged = await createGhCi({ command: gh, env: process.env }).merged(repo, '2026-10-23T09:00:00.000Z')
+    expect(merged).toEqual({ ok: false, error: { reason: 'failed', code: 'incomplete' } })
   })
 
   it('is a fault with its code only when gh fails', async () => {
