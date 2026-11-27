@@ -4,7 +4,7 @@
 // shown `?state=`, and Back to Projects opens the home. Quick chat works on the
 // live project only (liveQuickChat.ts): each send is a new start, Retry the last.
 import { getRouteApi } from '@tanstack/react-router'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useInboxBadge } from '../../lib/inboxFeed.ts'
 import { navRoute } from '../../lib/navRoutes.ts'
 import { useVisibleNavPages } from '../../state/settingsStore.ts'
@@ -28,10 +28,15 @@ export function ProjectPage() {
     setChanged((c) => ({ of: search.state, ui: { ...(c.of === search.state ? c.ui : {}), ...change } }))
   }
   const attemptRef = useRef<QuickChatAttempt | undefined>(undefined)
+  // Each run, a close and the unmount count up, so a late answer of an older run changes nothing.
+  const runRef = useRef(0)
+  useEffect(() => () => void (runRef.current += 1), [])
   const run = async (next: QuickChatAttempt): Promise<boolean> => {
     attemptRef.current = next
+    const ran = (runRef.current += 1)
     changeUi({ quickChat: { busy: true } })
     const result = await import('./liveQuickChat.ts').then((live) => live.quickChat(next))
+    if (ran !== runRef.current) return false
     if ('chat' in result) void navigate({ to: '/workspaces', search: { chat: result.chat } })
     else changeUi({ quickChat: { line: result.line, retry: result.retry } })
     return 'chat' in result
@@ -48,7 +53,10 @@ export function ProjectPage() {
         const to = navRoute(page)
         if (to !== undefined) void navigate({ to })
       }}
-      onUiChange={changeUi}
+      onUiChange={(change) => {
+        if ('quickChat' in change && change.quickChat === undefined) runRef.current += 1
+        changeUi(change)
+      }}
       onBack={() => void navigate({ to: '/projects', search: { source: search.source } })}
       onQuickChatSend={
         state.data.live === undefined || slug === undefined

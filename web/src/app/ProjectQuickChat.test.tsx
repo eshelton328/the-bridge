@@ -1,6 +1,7 @@
 import '@fontsource-variable/geist'
 import '@fontsource-variable/geist-mono'
 import '../index.css'
+import { maxPromptChars } from '@bridge/contract'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
@@ -30,8 +31,11 @@ afterEach(async () => {
   await setViewport(1512, 982)
 })
 
+let startHeld: Promise<undefined> | undefined // A test's hold on POST /api/chats.
+
 /** The fakes as the page's fetch, with the made-up project Alpha and its workspace. */
 function withServer() {
+  startHeld = undefined
   const projects = fakeProjectsServer([
     { slug: 'alpha', name: 'Alpha', purpose: 'Made up.', icon: null, pinned: false },
   ])
@@ -42,11 +46,19 @@ function withServer() {
   })
   vi.stubGlobal(
     'fetch',
-    vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+    vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
       const path = new URL(url, window.location.origin).pathname
+      if (path === '/api/chats' && init?.method === 'POST') await startHeld
       const answer = projects.handle(path, init) ?? chats.handle(path, init) ?? workspaces.handle(path, init)
-      return answer === undefined ? Promise.reject(new TypeError(`no stub for ${url}`)) : Promise.resolve(answer)
+      if (answer === undefined) throw new TypeError(`no stub for ${url}`)
+      // An answer that never comes ends on the request's signal, as fetch's does.
+      const aborted = new Promise<never>((_, fail) => {
+        init?.signal?.addEventListener('abort', () => {
+          fail(new DOMException('Aborted', 'AbortError'))
+        })
+      })
+      return Promise.race([answer, aborted])
     }),
   )
   return { workspaces, chats }
@@ -127,4 +139,49 @@ describe('Quick chat (R8)', () => {
     expect(chats.prompts).toEqual([])
     expect(router.state.location.pathname).toBe('/projects/alpha')
   })
+
+  it('keeps the text when a retried send answers duplicateSend after notSubmitted', async () => {
+    const { chats } = withServer()
+    chats.dropSubmits('test-box/new1', true)
+    const { router, box } = await quickChat(1440, 900)
+    await userEvent.click(box.getByRole('button', { name: 'Retry' }))
+    await expect.element(box.getByRole('status')).toHaveTextContent('Not sent — chat not ready')
+    await expect.element(box.getByRole('textbox', { name: 'First message' })).toHaveValue('Look at the open PRs')
+    expect(router.state.location.pathname).toBe('/projects/alpha')
+  })
+
+  it('starts nothing for a text over the limit, says by how much, and keeps Send', async () => {
+    const { workspaces } = withServer()
+    const { box } = await quickChat(1440, 900, 'x'.repeat(maxPromptChars + 1))
+    await expect.element(box.getByRole('status')).toHaveTextContent('Message too long — 1 character over')
+    await expect.element(box.getByRole('button', { name: 'Send', exact: true })).toBeEnabled()
+    expect(workspaces.starts).toEqual([])
+  })
+
+  it('changes nothing when a start answers after the dialog closed', async () => {
+    const { workspaces } = withServer()
+    let release: (value: undefined) => void = () => undefined
+    startHeld = new Promise((done) => {
+      release = done
+    })
+    const { went } = await quickChat(1440, 900)
+    await userEvent.keyboard('{Escape}')
+    await expect.element(page.getByRole('dialog')).not.toBeInTheDocument()
+    release(undefined)
+    await expect.poll(() => workspaces.starts.length).toBe(1)
+    await new Promise((done) => setTimeout(done, 500))
+    // No navigation and no dialog again.
+    expect([went, page.getByRole('dialog').elements()]).toEqual([[], []])
+  })
+
+  it('ends a send that gets no answer in a line with Retry, and opens the chat once it was sent', async () => {
+    const { chats } = withServer()
+    chats.answerPrompts(() => new Promise<Response>(() => undefined))
+    const { router, box } = await quickChat(1440, 900)
+    await expect.element(box.getByRole('status'), { timeout: 12_000 }).toHaveTextContent('Not sent — timeout')
+    // The server took it after all: the Retry's duplicateSend reads `sent`, and the chat opens.
+    chats.setSendResult('test-box/new1', chats.sendIds[0] ?? '', 'sent')
+    await userEvent.click(box.getByRole('button', { name: 'Retry' }))
+    await expect.poll(() => router.state.location.pathname).toBe('/workspaces')
+  }, 20_000)
 })
