@@ -93,11 +93,18 @@ const results = {
       },
     ],
   },
-  // Every pane, the agents' too: w18:p2 is a shell with no agent.
+  // Every pane, the agents' too: w18:p2 is a shell with no agent. w17:p1 has tags (d-120), every source merged.
   'pane.list': {
     type: 'pane_list',
     panes: [
-      { pane_id: 'w17:p1', terminal_id: 'term_1', workspace_id: 'w17', agent: 'claude', agent_status: 'blocked' },
+      {
+        pane_id: 'w17:p1',
+        terminal_id: 'term_1',
+        workspace_id: 'w17',
+        agent: 'claude',
+        agent_status: 'blocked',
+        tokens: { project: 'example-project', area: 'bridge', note: 'Not a tag' },
+      },
       { pane_id: 'w17:p2', terminal_id: 'term_2', workspace_id: 'w17', agent: 'codex', agent_status: 'idle' },
       {
         pane_id: 'w18:p1',
@@ -193,6 +200,7 @@ const statusLine = (pane: string, status: string) => ({
 })
 
 type AgentListReply = { readonly agents: readonly { readonly pane_id: string }[] }
+type PaneListReply = { readonly panes: readonly { readonly pane_id: string }[] }
 
 const field = (value: unknown, name: string): unknown =>
   typeof value === 'object' && value !== null ? Object.getOwnPropertyDescriptor(value, name)?.value : undefined
@@ -201,7 +209,7 @@ const field = (value: unknown, name: string): unknown =>
  * The suite's status and input hooks for the chat in `pane`: a status stays in the agent list, as herdr lists
  * it after a change, and `received` reads each agent.prompt text and each Escape that the pane got.
  */
-function chatInPane(sock: () => FakeHerdrSocket, list: AgentListReply, pane: string) {
+function chatInPane(sock: () => FakeHerdrSocket, list: AgentListReply, panes: PaneListReply, pane: string) {
   // The pane's input box, as Claude Code keeps it: a stop puts the last prompt back, and ctrl+u empties it.
   let box = ''
   let last = ''
@@ -242,6 +250,10 @@ function chatInPane(sock: () => FakeHerdrSocket, list: AgentListReply, pane: str
       dropEnter = true
       return Promise.resolve()
     },
+    tagChat: (tokens: Readonly<Record<string, string>>) => {
+      sock().set('pane.list', { ...panes, panes: panes.panes.map((p) => (p.pane_id === pane ? { ...p, tokens } : p)) })
+      return Promise.resolve()
+    },
     setStatus: (status: 'working' | 'idle') => {
       sock().set('agent.list', {
         ...list,
@@ -273,11 +285,13 @@ describe('herdr (recorded socket)', () => {
   // Each status that the suite sets stays in the agent list until the suite ends.
   afterAll(() => {
     socket.set('agent.list', undefined)
+    socket.set('pane.list', undefined)
     socket.set('pane.read', undefined)
     socket.onRequest(undefined)
   })
   describeAgentPort('herdr (recorded socket)', () => {
     socket.set('agent.list', undefined)
+    socket.set('pane.list', undefined)
     return Promise.resolve({
       port: port(),
       expected: {
@@ -285,7 +299,7 @@ describe('herdr (recorded socket)', () => {
         chat: 'bridge-coord',
         shell: { workspace: 'phone · shell', program: 'pnpm' },
       },
-      ...chatInPane(() => socket, results['agent.list'], 'w17:p1'),
+      ...chatInPane(() => socket, results['agent.list'], results['pane.list'], 'w17:p1'),
       transcript: { chat: 'bridge-coord', append: appendToSessionA },
       changeLayout: () => {
         socket.push({
@@ -348,6 +362,7 @@ afterAll(() => resumed.close())
 
 describeAgentPort('herdr (one session resumed in two panes)', () => {
   resumed.set('agent.list', undefined)
+  resumed.set('pane.list', undefined)
   return Promise.resolve({
     port: createHerdrAgents({ socket: resumed.path, machine, log, claudeProjects: projects, home }),
     expected: {
@@ -355,7 +370,7 @@ describeAgentPort('herdr (one session resumed in two panes)', () => {
       chat: 'bridge-coord 2',
       shell: { workspace: 'phone · shell', program: 'pnpm' },
     },
-    ...chatInPane(() => resumed, resumedTwice['agent.list'], 'w17:p2'),
+    ...chatInPane(() => resumed, resumedTwice['agent.list'], resumedTwice['pane.list'], 'w17:p2'),
     transcript: { chat: 'bridge-coord 2', append: appendToSessionA },
     changeLayout: () => {
       resumed.push({
@@ -749,6 +764,28 @@ describe('herdr agents: input to a chat', () => {
         socket.onRequest(undefined)
         socket.set('agent.list', undefined)
       }
+    })
+
+    it("gives each tagged pane's tags by its chat's pane, from one pane list", async () => {
+      const listed = await port().listWorkspaces()
+      if (!listed.ok) throw new Error(listed.error.message)
+      const before = socket.requests().length
+      const tags = await port().chatTags()
+      if (!tags.ok) throw new Error(tags.error.message)
+      expect(
+        socket
+          .requests()
+          .slice(before)
+          .map((r) => r.method),
+      ).toEqual(['pane.list'])
+      const tagged = listed.value.flatMap((w) => w.chats).filter((c) => tags.value.has(c.pane))
+      expect(tagged.map((c) => tags.value.get(c.pane))).toEqual([
+        { project: 'example-project', area: 'bridge', note: 'Not a tag' },
+      ])
+      // The one key is the pane that the list gives the tagged chat (w17:p1, bridge-coord): the same PaneId.
+      const coord = listed.value.flatMap((w) => w.chats).find((c) => c.title === 'bridge-coord')
+      if (coord === undefined) throw new Error('bridge-coord is not listed')
+      expect([...tags.value.keys()]).toEqual([coord.pane])
     })
 
     it('reads the turn ends of many chats with one agent list (NCC-138)', async () => {

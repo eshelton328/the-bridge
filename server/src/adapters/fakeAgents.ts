@@ -152,6 +152,8 @@ export type FakeAgents = AgentPort & {
   readonly subscriptions: () => number
   /** Gives a chat a new status, as an agent would, and tells each subscription. */
   readonly setStatus: (chat: ChatId, status: ChatStatus) => void
+  /** Gives a chat's pane `tokens` as its tags (d-120), as `pane.report_metadata` would; a project start tags its pane. */
+  readonly setChatTags: (chat: ChatId, tokens: Readonly<Record<string, string>>) => void
   /** Sets when a Claude chat's last turn ended; each Claude chat starts with `fakeTurnEnd`. */
   readonly setTurnEnd: (chat: ChatId, at: string) => void
   /** Tells each subscription that the layout of `workspace` changed. */
@@ -282,6 +284,7 @@ export function createFakeAgents(
   const transcriptReads: ChatId[] = []
   const transcripts = new Map<ChatId, { entries: TranscriptEntry[]; earlier: boolean }>()
   const turnEnds = new Map<ChatId, string>()
+  const tags = new Map<PaneId, Readonly<Record<string, string>>>()
   const watchers = new Set<{ readonly chat: ChatId; readonly onChange: () => void }>()
   /** The fake's transcript of `chat`, made the first time it is asked for; undefined for no such chat. */
   const transcriptOf = (chat: ChatId) => {
@@ -391,6 +394,7 @@ export function createFakeAgents(
             ?.chats[0]?.id
     const started =
       beside === undefined ? undefined : addPane(beside, place.in === 'split' ? place.direction : 'row', make)
+    if (started !== undefined && place.in === 'project') tags.set(started.pane, { project: place.project })
     return Promise.resolve(
       ok(started === undefined ? 'notFound' : { pane: started.pane, chat: started.id, state: 'ready' }),
     )
@@ -440,6 +444,14 @@ export function createFakeAgents(
           ),
         ),
       )
+    },
+    chatTags() {
+      if ('error' in answer) return Promise.resolve(err(answer.error))
+      return Promise.resolve(ok(new Map(tags)))
+    },
+    setChatTags(chat, tokens) {
+      const found = chatOf(chat)
+      if (found !== undefined) tags.set(found.pane, { ...tokens })
     },
     setTurnEnd(chat, at) {
       turnEnds.set(chat, at)

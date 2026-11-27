@@ -1,5 +1,5 @@
 // /api/projects (f-008, increment one): the Projects home, a project's page,
-// its pin, its idea records and its context drift. A URL names a project by
+// its pin, its idea records, its context drift and its tagged chats. A URL names a project by
 // its slug and an idea by its record ID; a param the contract does not take
 // is 404, as no project or idea has it. A fault logs its errno code only,
 // never a title, a record's text or a path.
@@ -10,6 +10,7 @@ import {
   IdeasResponse,
   PinProjectRequest,
   PinProjectResponse,
+  ProjectChatsResponse,
   ProjectDetailResponse,
   ProjectSlug,
   ProjectsResponse,
@@ -53,6 +54,14 @@ export function projectsRoutes(projects: Projects, log: Logger) {
       if (!pinned.ok) return failed(c, pinned.error)
       if (pinned.value === 'notFound') return noProject(c)
       return c.json(PinProjectResponse.parse({ project: pinned.value }), 200)
+    })
+    .get('/:slug/chats', async (c) => {
+      const slug = slugOf(c)
+      if (!slug.success) return noProject(c)
+      const chats = await projects.chats(slug.data)
+      if (!chats.ok) return failed(c, chats.error)
+      if (chats.value === 'notFound') return noProject(c)
+      return c.json(ProjectChatsResponse.parse(chats.value), 200)
     })
     .get('/:slug/ideas', async (c) => {
       const slug = slugOf(c)

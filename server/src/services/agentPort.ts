@@ -216,6 +216,12 @@ export type AgentPort = {
    */
   turnEnds(chats: readonly ChatId[]): Promise<Result<ReadonlyMap<ChatId, string | null>, AgentPortError>>
   /**
+   * The tags of each tagged pane of this machine (d-120), by the pane of its chat (`ChatSummary.pane`): herdr's
+   * tokens, every source in one map, from one pane list. The values are as written; the caller keeps the tags it
+   * knows and never logs a value.
+   */
+  chatTags(): Promise<Result<ReadonlyMap<PaneId, Readonly<Record<string, string>>>, AgentPortError>>
+  /**
    * Watches one chat's transcript: `onChange` gets a call each time it may have changed (read it again with
    * `readTranscript`), until `close()`. It watches only that chat's session, with no timer (d-112). When the
    * agents stop answering, `onEnd` gets why, once, and the watch is over.
