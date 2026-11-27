@@ -176,6 +176,19 @@ describe('a cut tool line and event line on the phone at Large (NCC-147)', () =>
       expect(getReports()).toEqual([])
     })
 
+  it('gives each cut line a box, as the pin measures entries by their boxes, and no hidden copy of its text', async () => {
+    applyTextSize('large')
+    stubChat(entries)
+    await openChat([390, 844])
+    for (const text of [`Read ${longTarget}`, longError]) {
+      const root = lineText(text).closest('.tool-line__root')
+      const holder = root?.parentElement
+      if (holder == null) throw new Error(`no holder around ${text}`)
+      expect(holder.getBoundingClientRect().height).toBeGreaterThan(0)
+      expect(page.getByText(text, { exact: true }).elements()).toHaveLength(1)
+    }
+  })
+
   it('keeps a line that fits as Figma draws it: no button and no chevron', async () => {
     applyTextSize('large')
     stubChat(entries)

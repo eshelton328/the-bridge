@@ -2,13 +2,15 @@
 // tool-call line stay one line because "it expands on tap"; the library's ToolLine expands only with onOpenChange and
 // output, so a cut line gets both, with its full text as the output (mono, wrapped). A line that fits stays as Figma
 // draws it, with no chevron and no button. The cut is measured on the line's text, as the library's TruncatedText
-// measures it, and again on each resize; a line that is open stays a button until it closes. Props only.
+// measures it, and again on each resize; a line that is open stays a button until it closes. The full text is in the
+// page only while the line is open, so a closed line holds no hidden copy of its text. Props only.
 import { ToolLine } from '@eshelton328/component-library-1701'
 import { useLayoutEffect, useRef, useState } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 
-// The wrapper only holds the ref: it draws no box, so the line lays out as it did without it.
-const wrap = css({ display: 'contents' })
+// The wrapper holds the ref. It is a box, as the transcript's pin measures each entry's box (`usePinnedEnd`), and it
+// can shrink below the text, so a long line still truncates in the event line's grid.
+const wrap = css({ minW: '0' })
 
 export type CutToolLineProps = {
   /** The tool, or an event's text. */
@@ -49,7 +51,8 @@ export function CutToolLine({ name, target, state, stateLabel }: CutToolLineProp
         open={open}
         onOpenChange={expandable ? setOpen : undefined}
       >
-        {expandable ? text : null}
+        {/* The library makes the line a button only when it has output, so a closed cut line gets an empty one. */}
+        {expandable ? open ? text : <span /> : null}
       </ToolLine>
     </div>
   )
