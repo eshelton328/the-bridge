@@ -8,7 +8,7 @@
 import { ProjectSlug } from '@bridge/contract'
 import { notFound } from '@tanstack/react-router'
 import { parseState } from '../../errors/parseState.ts'
-import { type DataSourceOptions, readState } from '../../lib/dataSource.ts'
+import { type DataSourceOptions, readsLiveServer, readState } from '../../lib/dataSource.ts'
 import type { ScreenState } from '../../lib/screenState.ts'
 import { projectsHome } from './home.ts'
 import { projectsStates } from './states/index.ts'
@@ -43,7 +43,7 @@ export function loadProjectState(
   )
   if (!read.ok) throw notFound({ data: read.error })
   const name = `projects/${read.value.key}`
-  if (import.meta.env.DEV && read.value.live)
+  if (readsLiveServer() && read.value.live)
     return import('./liveProjects.ts')
       .then(async (live) => {
         const project = await live.withLiveProject(read.value.state, slug, { signal })

@@ -8,6 +8,7 @@
 // shows its own data's number and the Inbox page watches the stream itself,
 // as before the feed.
 import { createContext, use, useCallback, useEffect, useRef } from 'react'
+import { readsLiveServer } from './dataSource.ts'
 
 export type InboxFeed = {
   /** The server's `counts.needsYou`; undefined until a read answers. */
@@ -54,7 +55,7 @@ export function useInboxChanges(live: boolean, onChange: () => void, count: numb
     changeRef.current = onChange
   })
   useEffect(() => {
-    if (!import.meta.env.DEV || !live) return undefined
+    if (!readsLiveServer() || !live) return undefined
     const call = () => {
       changeRef.current()
     }
@@ -84,7 +85,7 @@ export function useInboxStreamHost(live: boolean): () => void {
   const host = use(InboxFeedContext)?.host
   const hostedRef = useRef<InboxHost | undefined>(undefined)
   useEffect(() => {
-    if (!import.meta.env.DEV || !live || host === undefined) return undefined
+    if (!readsLiveServer() || !live || host === undefined) return undefined
     const hosted = host()
     hostedRef.current = hosted
     return () => {

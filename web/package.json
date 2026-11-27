@@ -9,6 +9,7 @@
     "dev": "vite",
     "typecheck": "tsc -p tsconfig.json",
     "build": "vite build",
+    "build:served": "vite build --mode served",
     "build:canvas": "vite build --config vite.canvas.config.ts",
     "preview": "vite preview",
     "storybook": "storybook dev -p 6007",

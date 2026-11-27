@@ -64,6 +64,13 @@ state file and a page are in `screenState.ts` (d-082).
   change it.
 - With no `?state=`, and always in a production build, a loader reads
   the page's home; read [../pages/AGENTS.md](../pages/AGENTS.md) for it.
+- `readsLiveServer()` (`dataSource.ts`) gates every live read, stream and
+  write: true in development and in a build in the served mode (`pnpm
+  build:served`, `vite build --mode served`), which the served app runs
+  (d-134); false in any other build, which reads only fixtures (d-117).
+  Dev tools (the keyboard trace, the ErrorTray, `?state=`) stay
+  `import.meta.env.DEV` only (`dataSource.test.ts`,
+  `app/WorkspacesLiveDefault.test.tsx`).
 - A query retries at most twice, only on a network error, a 5xx, a 408
   or a 429; a query or mutation that fails for good goes to the sink that
   `errors/globalHandlers.ts` sets, since lib may not import errors

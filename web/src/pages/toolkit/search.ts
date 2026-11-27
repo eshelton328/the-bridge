@@ -1,9 +1,9 @@
 // The Toolkit URL search params, validated. `state` picks a Figma state in development.
 import { z } from 'zod'
-import { dataSourceParam } from '../../lib/dataSource.ts'
+import { dataSourceParam, stateParam } from '../../lib/dataSource.ts'
 
 export const toolkitSearch = z.object({
-  state: z.string().optional(),
+  state: stateParam,
   /** The data source in development (lib/dataSource.ts); fixtures when not set. */
   source: dataSourceParam,
 })

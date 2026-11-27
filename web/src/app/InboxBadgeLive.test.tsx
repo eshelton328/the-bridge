@@ -151,6 +151,19 @@ describe('the live Inbox badge', () => {
     }
   }
 
+  it("shows the server's count on /toolkit?state=toolkitList in a served build, which ignores ?state= (d-134)", async () => {
+    vi.stubEnv('DEV', false)
+    vi.stubEnv('MODE', 'served')
+    onTestFinished(() => {
+      vi.unstubAllEnvs()
+    })
+    const device = devices[0]
+    withInbox()
+    const router = await openApp(device, '/toolkit?state=toolkitList')
+    await expect.poll(() => router.state.location.pathname).toBe('/toolkit')
+    await expect.poll(() => badge(device)).toBe(2)
+  })
+
   it('reports a badge reply the contract refuses by a fixed message, with no part of the reply', async () => {
     const server = withInbox()
     const refused = { items: [{ title: 'Sample title that never goes to a report' }], counts: 'none' }

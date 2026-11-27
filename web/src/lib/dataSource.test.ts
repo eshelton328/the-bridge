@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest'
-import { isNotBuilt, readState, readsLive } from './dataSource.ts'
+import { describe, expect, it, onTestFinished, vi } from 'vitest'
+import { isNotBuilt, readState, readsLive, readsLiveServer, stateParam } from './dataSource.ts'
 
 const states = { first: { n: 1 }, second: { n: 2 } }
 
@@ -97,6 +97,43 @@ describe('readState', () => {
     expect(readsLive({ state: 'second', source: 'live' }, options)).toBe(true)
     expect(readsLive({ state: undefined, source: undefined }, { built: ['live'] })).toBe(false)
     expect(readsLive({ state: undefined, source: 'live' })).toBe(false)
+  })
+})
+
+describe('readsLiveServer (d-134)', () => {
+  const build = (mode: string) => {
+    vi.stubEnv('DEV', false)
+    vi.stubEnv('MODE', mode)
+    onTestFinished(() => {
+      vi.unstubAllEnvs()
+    })
+  }
+  const live = { built: ['live' as const], default: 'live' as const }
+
+  it('reads the live server in development and in a served build, not in another build', () => {
+    expect(readsLiveServer()).toBe(true)
+    build('served')
+    expect(readsLiveServer()).toBe(true)
+    build('production')
+    expect(readsLiveServer()).toBe(false)
+  })
+
+  it('keeps ?state= in development and drops it as the URL is parsed in any build', () => {
+    expect(stateParam.parse('phoneHome')).toBe('phoneHome')
+    build('served')
+    expect(stateParam.parse('phoneHome')).toBeUndefined()
+    build('production')
+    expect(stateParam.parse('phoneHome')).toBeUndefined()
+  })
+
+  it("reads a served build's live home for a ?state=, as only development reads ?state=", () => {
+    build('served')
+    expect(readsLive({ state: 'second', source: undefined }, live)).toBe(true)
+    expect(readState(states, { state: 'second', source: undefined }, 'first', live)).toEqual({
+      ok: true,
+      value: { key: 'first', state: states.first, live: true },
+    })
+    expect(readsLive({ state: undefined, source: 'fixtures' }, live)).toBe(false)
   })
 })
 

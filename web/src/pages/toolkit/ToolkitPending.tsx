@@ -12,6 +12,7 @@ import { useVisibleNavPages } from '../../state/settingsStore.ts'
 import { toolkitHome } from './home.ts'
 import { ToolkitScreen } from './screens/ToolkitScreen.tsx'
 import { useToolkitActions, useToolkitPendingUi } from './toolkitStore.ts'
+import { readsLiveServer } from '../../lib/dataSource.ts'
 
 const reportCopy = (error: unknown) => {
   report(error, 'handler')
@@ -20,7 +21,7 @@ const reportCopy = (error: unknown) => {
 export function ToolkitPending() {
   const navPages = useVisibleNavPages()
   const navigate = useNavigate()
-  const railBadge = useInboxBadge(toolkitHome.data.railBadge, import.meta.env.DEV)
+  const railBadge = useInboxBadge(toolkitHome.data.railBadge, readsLiveServer())
   const changed = useToolkitPendingUi()
   const { changePending } = useToolkitActions()
   return (

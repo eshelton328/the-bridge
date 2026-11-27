@@ -40,7 +40,7 @@ Every error path of the app (d-084).
   Retry in another (`app/WorkspacesRouteRecovery.test.tsx`, audit W-10).
 - `clientErrorSender.ts` posts each report to `POST /api/client-errors`
   (d-115), added by `main.ts` only in a build that reads the live server
-  (`readsLiveServer`, d-117). A report holds the error's name, the stack
+  (`readsLiveServer`: development or a served build, d-117, d-134). A report holds the error's name, the stack
   frames with no header and the route's path. Only the errors on the
   allowlist (`ownMessage`: the JS built-ins, `ShellDiagnosticError`,
   `FixtureError`) send their own message; the transcript, layout, live,

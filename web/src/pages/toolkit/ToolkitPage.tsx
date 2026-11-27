@@ -13,6 +13,7 @@ import type { ToolkitUi } from './types.ts'
 import { navRoute } from '../../lib/navRoutes.ts'
 import { useVisibleNavPages } from '../../state/settingsStore.ts'
 import { useToolkitActions, useToolkitPendingUi } from './toolkitStore.ts'
+import { readsLiveServer } from '../../lib/dataSource.ts'
 
 const route = getRouteApi('/toolkit')
 
@@ -29,7 +30,7 @@ export function ToolkitPage() {
   // its Inbox badge is the app's live count; a state or a source keeps the state's number (lib/inboxFeed.ts).
   const railBadge = useInboxBadge(
     state.data.railBadge,
-    import.meta.env.DEV && search.state === undefined && search.source === undefined,
+    readsLiveServer() && search.state === undefined && search.source === undefined,
   )
   const navPages = useVisibleNavPages()
   const navigate = route.useNavigate()

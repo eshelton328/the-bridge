@@ -22,6 +22,15 @@ const dataSourceKinds = ['fixtures', 'mock-api', 'live'] as const
  */
 export const dataSourceParam = z.coerce.string().optional()
 
+/**
+ * A page's `?state=` search param: a state file's key, which only development reads. Any build drops it as the URL
+ * is parsed, so a page entry, its stores and its drafts see the same no-state home its loader reads (d-134).
+ */
+export const stateParam = z
+  .string()
+  .optional()
+  .transform((state) => (import.meta.env.DEV ? state : undefined))
+
 type DataSourceKind = (typeof dataSourceKinds)[number]
 
 /**
@@ -69,20 +78,22 @@ export function isNotBuilt(data: unknown): data is z.infer<typeof NotBuiltMiss> 
 export type PageHome<S> = string | { readonly key: string; readonly state: S }
 
 /**
- * Whether this build can read the live server: a development build. A production build reads every page from its
- * fixtures until the server ships with the build (d-117), so it reads no server and sends it nothing, not even an
- * error report (errors/clientErrorSender.ts).
+ * Whether this build can read the live server: a development build, or a build in the served mode (`vite build
+ * --mode served`, d-134), which the served app runs. Any other production build reads every page from its fixtures
+ * (d-117), so it reads no server and sends it nothing, not even an error report (errors/clientErrorSender.ts).
  */
-export const readsLiveServer = (): boolean => import.meta.env.DEV
+export const readsLiveServer = (): boolean => import.meta.env.DEV || import.meta.env.MODE === 'served'
 
 /**
- * The source a request reads: `fixtures` in a production build; in development the one `?source=` names, else the
- * page's `default` when no `?state=` is named, else `fixtures`. A value that is not a source comes back as it is.
+ * The source a request reads: `fixtures` in a build that reads no live server; else the one `?source=` names, else
+ * the page's `default` when no `?state=` is named, else `fixtures`. Only development reads `?state=`, so a served
+ * build reads the page's default with one. A value that is not a source comes back as it is.
  */
 function requestedSource(request: DataSourceRequest, options: DataSourceOptions = {}): string {
   if (!readsLiveServer()) return 'fixtures'
   if (request.source !== undefined) return request.source
-  return request.state === undefined ? (options.default ?? 'fixtures') : 'fixtures'
+  const state = import.meta.env.DEV ? request.state : undefined
+  return state === undefined ? (options.default ?? 'fixtures') : 'fixtures'
 }
 
 /** The request reads the live source of a page that built it, as `readState` gives `live: true` for it. */
