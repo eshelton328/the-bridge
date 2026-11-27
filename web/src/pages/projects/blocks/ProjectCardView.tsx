@@ -39,7 +39,7 @@ export function ProjectCardView({ project, words, layout, menuOpen, onMenuOpenCh
         title={project.name}
         media={
           <div className={media}>
-            <ProjectTile name={project.name} icon={project.icon} phone={phone} />
+            <ProjectTile name={project.name} icon={project.icon} size={phone ? 'phone' : 'wide'} />
             <div className={corner} data-figma={`project menu · ${project.name}`}>
               <Menu
                 trigger={

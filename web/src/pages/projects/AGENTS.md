@@ -1,8 +1,9 @@
 # Projects page
 
 The Projects app's home (f-008 increment one, d-133): one card per brain
-project, the pinned ones first. Its frames are PNG references in
-`references/projects/` (D10, T10, T10b, M10), read with
+project, the pinned ones first; and a project's page (`/projects/<slug>`,
+R4). Its frames are PNG references in `references/projects/` (D10, T10,
+T10b, M10 for the home, D01 for a project's page), read with
 [../AGENTS.md](../AGENTS.md) and `references/AGENTS.md`.
 
 ## Rules
@@ -17,7 +18,11 @@ project, the pinned ones first. Its frames are PNG references in
   `deviations.md`.
 - New project and Edit details show as the frames draw them and do
   nothing: both are increment four (d-133). A card opens no project page
-  yet; R4 is a later issue.
+  yet.
+- A project's page is `ui.open` on the same state, so it shares the
+  home's data and screen. It shows the header and the tabs of increment
+  one, Overview and Ideas (d-133); their panels are NCC-130's and
+  NCC-132's, and Quick chat does nothing yet. Its route comes next.
 - In development the home reads the live projects (`liveProjects.ts`), as
   the Artifacts home does (d-117): with no `?state=` and no `?source=`, and
   with `?source=live`; `?source=fixtures` shows the sample data, and a

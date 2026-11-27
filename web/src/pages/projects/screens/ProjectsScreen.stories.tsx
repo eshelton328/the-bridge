@@ -72,3 +72,20 @@ export const ProjectsPhone: Story = {
     await expect(canvas.getByRole('button', { name: 'Actions for omni' })).toBeInTheDocument()
   },
 }
+
+/** What a project's page shows (R4): Back to Projects, the name, Quick chat and only the tabs Overview and Ideas. */
+async function expectProject(canvas: Canvas) {
+  await expect(canvas.getByRole('button', { name: 'Back to Projects' })).toBeVisible()
+  await expect(canvas.getByRole('heading', { level: 1, name: 'NCC-1701' })).toBeVisible()
+  await expect(canvas.getByRole('button', { name: 'Quick chat' })).toBeVisible()
+  await expect(canvas.getAllByRole('tab').map((t) => t.textContent)).toEqual(['Overview', 'Ideas'])
+  await expect(canvas.getByRole('tab', { name: 'Overview' })).toHaveAttribute('aria-selected', 'true')
+}
+
+export const ProjectOverview: Story = {
+  name: "D01: NCC-1701's page on the desktop, on its Overview tab",
+  args: { data: projectsStates.projectOverview.data, ui: projectsStates.projectOverview.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expectProject(canvas)
+  },
+}

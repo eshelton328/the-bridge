@@ -51,23 +51,36 @@ const tileStyle = css.raw({
   color: 'fg.muted',
   textStyle: 'heading',
 })
-// M10's tile is shorter than D10's.
-const tile = { wide: css(tileStyle), phone: css(tileStyle, { py: '32' }) }
+// M10's tile is shorter than D10's; the project page's picture (D01) is a 64 px square with a border.
+const tile = {
+  wide: css(tileStyle),
+  phone: css(tileStyle, { py: '32' }),
+  picture: css(tileStyle, {
+    py: '0',
+    flexShrink: '0',
+    w: 'thumbnail.sm',
+    h: 'thumbnail.sm',
+    borderWidth: 'default',
+    borderStyle: 'solid',
+    borderColor: 'border.default',
+    rounded: 'lg',
+  }),
+}
 
 export type ProjectTileProps = {
   name: string
   icon: string | null
-  /** The phone's tile is shorter (M10). */
-  phone?: boolean | undefined
+  /** `wide` on a card (D10), `phone` on a phone's shorter card (M10), `picture` on the project page (D01). */
+  size?: keyof typeof tile | undefined
 }
 
 /** The first letter of `name`, in capitals: "omni" draws O. */
 const tileLetter = (name: string) => (name.at(0) ?? '').toUpperCase()
 
-export function ProjectTile({ name, icon, phone = false }: ProjectTileProps) {
+export function ProjectTile({ name, icon, size = 'wide' }: ProjectTileProps) {
   const Icon = icon !== null && Object.hasOwn(projectIcons, icon) ? projectIcons[icon] : undefined
   return (
-    <div className={phone ? tile.phone : tile.wide} data-figma={`project tile · ${name}`} aria-hidden="true">
+    <div className={tile[size]} data-figma={`project tile · ${name}`} aria-hidden="true">
       {Icon === undefined ? tileLetter(name) : <Icon size="24" />}
     </div>
   )

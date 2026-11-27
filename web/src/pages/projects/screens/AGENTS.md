@@ -3,7 +3,8 @@
 The props-only screens of the Projects page and their stories. The entry
 is `ProjectsScreen.tsx`: it lays the page out by its width
 (`ViewportFrame`) with the shared rail, tab bar and More drawer, and draws
-`ProjectsHome.tsx` in the shell's detail.
+`ProjectsHome.tsx` in the shell's detail, or `ProjectDetail.tsx` (a
+project's header and tabs) when `ui.open` names a card.
 
 - `ProjectsScreen.stories.tsx` holds one story per state
   (`Pages/Projects/States`); `ProjectsScreens.stories.tsx` holds one story

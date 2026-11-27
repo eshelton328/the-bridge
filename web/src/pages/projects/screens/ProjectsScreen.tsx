@@ -15,6 +15,7 @@ import { reportShellDiagnostic } from '../../../errors/shellDiagnostic.ts'
 import { type BarPage, defaultVisiblePages, navLayout } from '../../../lib/deviceSettings.ts'
 import type { Viewport } from '../../../lib/screenState.ts'
 import type { ProjectsData, ProjectsUi } from '../types.ts'
+import { ProjectDetail } from './ProjectDetail.tsx'
 import { ProjectsHome } from './ProjectsHome.tsx'
 
 export type ProjectsScreenProps = {
@@ -31,6 +32,10 @@ export type ProjectsScreenProps = {
   onUiChange?: ((change: Partial<ProjectsUi>) => void) | undefined
   /** Pin to top or Unpin was picked on the card `slug` (R3). */
   onPin?: ((slug: string, pinned: boolean) => void) | undefined
+  /** Back to Projects was pressed on a project's page. */
+  onBack?: (() => void) | undefined
+  /** Quick chat was pressed on a project's page. */
+  onQuickChat?: (() => void) | undefined
 }
 
 export function ProjectsScreen({
@@ -42,7 +47,11 @@ export function ProjectsScreen({
   navPages = defaultVisiblePages,
   onUiChange,
   onPin,
+  onBack,
+  onQuickChat,
 }: ProjectsScreenProps) {
+  // The project page of `ui.open` (R4); the home when it names no card.
+  const open = data.projects.find((p) => p.slug === ui.open)
   return (
     <ViewportFrame initial={viewport}>
       {(layout) => {
@@ -80,7 +89,21 @@ export function ProjectsScreen({
                   />
                 )
               }
-              detail={<ProjectsHome data={data} ui={ui} layout={layout} onUiChange={onUiChange} onPin={onPin} />}
+              detail={
+                open === undefined ? (
+                  <ProjectsHome data={data} ui={ui} layout={layout} onUiChange={onUiChange} onPin={onPin} />
+                ) : (
+                  <ProjectDetail
+                    project={open}
+                    data={data}
+                    ui={ui}
+                    layout={layout}
+                    onUiChange={onUiChange}
+                    onBack={onBack}
+                    onQuickChat={onQuickChat}
+                  />
+                )
+              }
             />
             {/* The tablet's and the phone's More open the shared More drawer (d-119). */}
             <MoreDrawer

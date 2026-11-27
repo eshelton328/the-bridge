@@ -4,10 +4,12 @@ import { menuOpen } from './menuOpen.ts'
 import { projectsTablet } from './projectsTablet.ts'
 import { projectsTabletWide } from './projectsTabletWide.ts'
 import { projectsPhone } from './projectsPhone.ts'
+import { projectOverview } from './projectOverview.ts'
 
 export const projectsStates = {
   menuOpen,
   projectsTablet,
   projectsTabletWide,
   projectsPhone,
+  projectOverview,
 }
