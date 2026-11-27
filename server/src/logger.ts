@@ -35,6 +35,7 @@ const logMessages = [
   'push failed',
   'push watch ended',
   'chat restarted',
+  'chat tags not written',
   'artifacts store failed',
   'inbox read failed',
   'projects read failed',

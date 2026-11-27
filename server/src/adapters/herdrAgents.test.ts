@@ -11,7 +11,7 @@ import {
 import { tmpdir } from 'node:os'
 import { basename, join } from 'node:path'
 import { TabId, ChatId, MachineId, type StartChatRequest, WorkspaceId } from '@bridge/contract'
-import { ok } from '@bridge/shared'
+import { err, ok, type Result } from '@bridge/shared'
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
 import type { AgentEvent, SideRunner } from '../services/agentPort.ts'
 import { describeAgentPort } from './agentPortContract.ts'
@@ -2663,6 +2663,123 @@ describe('herdr agents: a new chat (slice W3)', () => {
     const bare = await setup({ chatRoot: undefined })
     await bare.adapter.createWorkspace('loops').finally(() => bare.socket.close())
     expect(bare.sent('workspace.create')).toEqual([{ label: 'loops', focus: false }])
+  })
+})
+
+describe('herdr agents: a project start (NCC-129)', () => {
+  const root = '/home/dev/ncc-1701'
+  const folder = `${root}/projects/example-project`
+  // The folder checks are a stub: each path's real folder, so a link out of the root and a missing folder need no disk.
+  const real: Readonly<Record<string, string>> = {
+    [root]: root,
+    [folder]: folder,
+    [`${folder}/the-bridge`]: `${folder}/the-bridge`,
+    [`${root}/projects/linked-out`]: '/home/dev/elsewhere',
+  }
+  const project = (slug: string): StartChatRequest['place'] => ({ in: 'project', project: slug })
+  const newPane = { pane_id: 'w17:p9', terminal_id: 'term_9' }
+  const waited = (status: string) => ({
+    type: 'agent_info',
+    agent: {
+      agent: 'claude',
+      agent_session: { agent: 'claude', kind: 'id', source: 'herdr:claude', value: 'session-new' },
+      agent_status: status,
+      interactive_ready: true,
+      cwd: folder,
+      name: 'quick',
+      pane_id: 'w17:p9',
+      terminal_id: 'term_9',
+      workspace_id: 'w20',
+    },
+  })
+  const setup = async (firstPanes: Readonly<Record<string, string>>, tag: Result<void, string> = ok(undefined)) => {
+    const socket = await startFakeHerdrSocket({
+      ...results,
+      'pane.list': {
+        ...results['pane.list'],
+        panes: results['pane.list'].panes.map((p) => ({ ...p, cwd: firstPanes[p.pane_id] ?? `${folder}/the-bridge` })),
+      },
+      'tab.create': { type: 'tab_created', tab: { tab_id: 'w18:t2' }, root_pane: newPane },
+      'workspace.create': { type: 'workspace_created', workspace: { workspace_id: 'w20' }, root_pane: newPane },
+      'agent.start': { type: 'agent_started', agent: { pane_id: 'w17:p9', launch_pending: true } },
+      'agent.wait': waited('idle'),
+    })
+    const tags: (readonly string[])[] = []
+    const logged = memoryLogger()
+    const adapter = createHerdrAgents({
+      socket: socket.path,
+      machine,
+      log: logged.log,
+      claudeProjects: projects,
+      home,
+      chatRoot: root,
+      realFolder: (path) => Promise.resolve(real[path] ?? null),
+      herdrCli: (args) => (tags.push(args), Promise.resolve(tag)),
+    })
+    const sent = (method: string) =>
+      socket
+        .requests()
+        .filter((r) => r.method === method)
+        .map((r) => r.params)
+    return { socket, adapter, sent, tags, logged }
+  }
+  const tagArgs = ['pane', 'report-metadata', 'w17:p9', '--source', 'ncc-tags', '--token', 'project=example-project']
+
+  it('starts nothing for a project with no folder, or whose folder is a link out of the chat root', async () => {
+    const { socket, adapter, sent, tags } = await setup({})
+    const refused = await Promise.all([
+      adapter.startChat({ kind: 'claude', place: project('no-folder') }),
+      adapter.startChat({ kind: 'claude', place: project('linked-out') }),
+    ])
+    await socket.close()
+    expect(refused).toEqual([ok('notFound'), ok('notFound')])
+    expect([...sent('workspace.create'), ...sent('tab.create'), ...sent('agent.start'), ...tags]).toEqual([])
+  })
+
+  it('opens a new tab in the workspace whose first pane is in the project folder, and tags the pane', async () => {
+    const { socket, adapter, sent, tags } = await setup({ 'w18:p1': folder })
+    const started = await adapter.startChat({ kind: 'claude', name: 'quick', place: project('example-project') })
+    await socket.close()
+    expect(started).toMatchObject({ ok: true, value: { chat: 'test-mac/session-new', state: 'ready' } })
+    expect(sent('tab.create')).toEqual([{ workspace_id: 'w18', cwd: folder, focus: false }])
+    expect(sent('workspace.create')).toEqual([])
+    expect(tags).toEqual([tagArgs])
+  })
+
+  it('makes a workspace labelled with the slug when no first pane is in the folder, and keeps a trust prompt as needsYou', async () => {
+    const { socket, adapter, sent, tags } = await setup({})
+    socket.set('agent.wait', waited('blocked'))
+    const started = await adapter.startChat({ kind: 'claude', name: 'quick', place: project('example-project') })
+    await socket.close()
+    expect(started).toMatchObject({ ok: true, value: { state: 'needsYou' } })
+    expect(sent('workspace.create')).toEqual([{ label: 'example-project', cwd: folder, focus: false }])
+    expect(sent('tab.create')).toEqual([])
+    expect(sent('agent.start')[0]).toMatchObject({ pane_id: 'w17:p9' })
+    expect(sent('agent.send_keys')).toEqual([])
+    expect(tags).toEqual([tagArgs])
+  })
+
+  it('writes no tag for a start beside a chat or in a tab', async () => {
+    const { socket, adapter, tags } = await setup({ 'w17:p1': root, 'w17:p2': root })
+    socket.set('pane.split', { type: 'pane_info', pane: newPane })
+    await adapter.startChat({ kind: 'claude', place: { in: 'tab', workspace: WorkspaceId.parse('test-mac/w17') } })
+    await adapter.startChat({
+      kind: 'claude',
+      place: { in: 'split', beside: ChatId.parse('test-mac/term_2'), direction: 'row' },
+    })
+    await socket.close()
+    expect(tags).toEqual([])
+  })
+
+  it('answers the chat and its state when the tag write fails, and logs only the errno code', async () => {
+    const { socket, adapter, tags, logged } = await setup({ 'w18:p1': folder }, err('ENOENT'))
+    const started = await adapter.startChat({ kind: 'claude', name: 'quick', place: project('example-project') })
+    await socket.close()
+    expect(started).toMatchObject({ ok: true, value: { chat: 'test-mac/session-new', state: 'ready' } })
+    expect(tags).toEqual([tagArgs])
+    const line = logged.lines().find((l) => l.msg === 'chat tags not written')
+    expect(line).toMatchObject({ code: 'ENOENT' })
+    expect(JSON.stringify(line)).not.toMatch(/example-project|\/home\/dev|w17:p9/)
   })
 })
 

@@ -591,7 +591,12 @@ export function fakeWorkspacesServer(
     const gone = () =>
       errorAnswer({ kind: 'not-found', path: '/api/chats', message: 'Not found', requestId: 'r-404' }, 404)
     const beside = place.in === 'split' ? placeOf(place.beside) : undefined
-    const workspace = place.in === 'split' ? beside?.workspace : place.workspace
+    const workspace =
+      place.in === 'split'
+        ? beside?.workspace
+        : place.in === 'tab'
+          ? place.workspace
+          : response.workspaces.find((w) => w.label === place.project)?.id
     if (workspace === undefined || !response.workspaces.some((w) => w.id === workspace)) return gone()
     const listed = response.workspaces.flatMap((w) => w.chats)
     const named = name ?? title

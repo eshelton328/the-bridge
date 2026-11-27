@@ -382,9 +382,13 @@ export function createFakeAgents(
       parent: null,
       pane,
     })
-    // The fake has one tab in each workspace, so a start in a new tab splits that tab beside its first chat.
+    // The fake has one tab in each workspace, so a start in a new tab splits that tab beside its first chat; a project
+    // start goes to the workspace labelled with its slug.
     const beside =
-      place.in === 'split' ? place.beside : (data ?? []).find((w) => w.id === place.workspace)?.chats[0]?.id
+      place.in === 'split'
+        ? place.beside
+        : (data ?? []).find((w) => (place.in === 'tab' ? w.id === place.workspace : w.label === place.project))
+            ?.chats[0]?.id
     const started =
       beside === undefined ? undefined : addPane(beside, place.in === 'split' ? place.direction : 'row', make)
     return Promise.resolve(

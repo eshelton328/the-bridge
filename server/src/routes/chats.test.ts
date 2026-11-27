@@ -26,6 +26,7 @@ import { createApp } from '../app.ts'
 import { memoryLogger } from '../logger.ts'
 import { maxSmallJsonBytes } from './jsonBody.ts'
 import type { AgentPortError, RestartOutcome } from '../services/agentPort.ts'
+import { noProjects } from '../services/projects.ts'
 
 const machine = MachineId.parse('test-mac')
 const owner = 'owner@example.com'
@@ -629,6 +630,24 @@ describe('POST /api/chats (slice W3)', () => {
       400,
     )
     expect((await start(app, { kind: 'claude', place: beside, args: ['--model', 'opus'] })).status).toBe(400)
+  })
+
+  it("starts a project chat only for a slug of the brain's project list: 404 for another, 500 on a list fault (NCC-129)", async () => {
+    const listed = (slugs: readonly string[]) => () =>
+      Promise.resolve(
+        ok({ projects: slugs.map((slug) => ({ slug, name: slug, purpose: '', icon: null, pinned: false })) }),
+      )
+    const logged = memoryLogger()
+    const agents = createFakeAgents(machine)
+    const app = createApp({ agents, owner, log: logged.log, projects: { ...noProjects, list: listed(['omni-brain']) } })
+    const known = await start(app, { kind: 'claude', name: 'quick', place: { in: 'project', project: 'omni-brain' } })
+    expect([known.status, StartChatResponse.parse(await known.json()).state]).toEqual([201, 'ready'])
+    const unknown = await start(app, { kind: 'claude', place: { in: 'project', project: 'not-listed' } })
+    expect([unknown.status, ErrorBody.parse(await unknown.json()).error.kind]).toEqual([404, 'not-found'])
+    const faulty = createApp({ agents, owner, log: logged.log })
+    const fault = await start(faulty, { kind: 'claude', place: { in: 'project', project: 'omni-brain' } })
+    expect([fault.status, ErrorBody.parse(await fault.json()).error.kind]).toEqual([500, 'internal'])
+    expect(logged.lines().find((l) => l.msg === 'projects read failed')).toMatchObject({ code: 'no-store' })
   })
 })
 

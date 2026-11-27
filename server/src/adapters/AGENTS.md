@@ -260,7 +260,12 @@ client of a socket or a file sits beside them.
   every folder. A
   blocked start is `needsYou` and stays so: the adapter sends no key
   and answers no prompt of it, such as Claude's folder trust question
-  (`herdrAgents.test.ts`). A fork starts so beside a Claude chat, adding
+  (`herdrAgents.test.ts`). A project start (NCC-129) needs the real
+  folder `<chat root>/projects/<slug>` in the root (else `notFound`,
+  never made) and opens a tab in the first workspace whose first pane is
+  that folder, else `workspace.create` labelled with the slug; then
+  `herdrCli.ts` tags the pane `project=<slug>` (`pane report-metadata`,
+  an argument list), and a failed tag logs its code only. A fork starts so beside a Claude chat, adding
   only `--resume <session> --fork-session`; a Codex chat, a shell and a
   session with no saved file (no turn yet, so `--resume` starts nothing)
   are `noSession`, with no pane made. The default name is the first
