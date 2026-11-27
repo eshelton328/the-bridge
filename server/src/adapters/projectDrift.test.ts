@@ -79,6 +79,22 @@ describe('findingsFor', () => {
   it('makes paths relative with the longest root first', () => {
     expect(relativeLines('x /r/real/a\n', ['/r/real', '/r'], undefined)).toEqual(['x a'])
   })
+
+  it('gives "<path>" for an absolute path outside the root and the home folder', () => {
+    expect(
+      relativeLines(
+        'lock in /private/tmp/example/lock.json and (/var/example) and /r/real/a\n',
+        ['/r/real'],
+        '/home/dev',
+      ),
+    ).toEqual(['lock in <path> and (<path>) and a'])
+  })
+
+  it('keeps the projects/<slug> part of a hidden path, so the finding still names its project', () => {
+    const lines = relativeLines('not in its place: /tmp/projects/example-project/stray\n', ['/r'], '/home/dev')
+    expect(lines).toEqual(['not in its place: <path>/projects/example-project/stray'])
+    expect(findingsFor('example-project', [], lines).map((f) => f.text)).toEqual(lines)
+  })
 })
 
 describe('a drift run', () => {
