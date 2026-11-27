@@ -1,4 +1,4 @@
-import { ChatId, type ChatSummary, InboxId, MachineId, WorkspaceId } from '@bridge/contract'
+import { ChatId, type ChatSummary, InboxId, MachineId, ProjectSlug, WorkspaceId } from '@bridge/contract'
 import { err, ok } from '@bridge/shared'
 import { describe, expect, it } from 'vitest'
 import { createFakeAgents } from '../adapters/fakeAgents.ts'
@@ -9,6 +9,16 @@ const question = ChatId.parse('test-mac/drift-check')
 const themes = ChatId.parse('test-mac/bridge-themes')
 /** The same turn end for each chat asked for, as the turns port gives it. */
 const endsFor = (chats: readonly ChatSummary[], end: string | null) => new Map(chats.map((c) => [c.id, end]))
+
+/** The brain's project folders, as the projects port lists them. */
+const brainProjects = (...slugs: string[]) => ({
+  list: () =>
+    Promise.resolve(
+      ok(
+        slugs.map((slug) => ({ slug: ProjectSlug.parse(slug), name: slug, purpose: '', icon: null, repositories: [] })),
+      ),
+    ),
+})
 
 const request: BrainRequest = {
   id: InboxId.parse('fedcba9876543210'),
@@ -22,7 +32,12 @@ const request: BrainRequest = {
 }
 
 function setup(
-  options: { requests?: BrainRequest[]; turnEnd?: string | null; fault?: 'marks' | 'brain' | 'turns' } = {},
+  options: {
+    requests?: BrainRequest[]
+    turnEnd?: string | null
+    fault?: 'marks' | 'brain' | 'turns'
+    projects?: string[]
+  } = {},
 ) {
   const agents = createFakeAgents(machine)
   let stored: InboxMarks = {}
@@ -53,6 +68,7 @@ function setup(
         return Promise.resolve(ok(undefined))
       },
     },
+    ...(options.projects === undefined ? {} : { projects: brainProjects(...options.projects) }),
     now: () => time,
   })
   const list = async () => {
@@ -113,6 +129,115 @@ describe('the inbox', () => {
       ['brain', 'example-project', space],
       ['brain', 'other-project', null],
     ])
+  })
+
+  it("names a chat item's project from its pane's project tag, only for a project of the brain (d-120)", async () => {
+    const { agents, list } = setup({ projects: ['example-project', 'ncc-1701'] })
+    agents.setStatus(themes, 'done')
+    agents.setChatTags(question, { project: 'ncc-1701', area: 'bridge' })
+    // An untagged chat (themes) names none; a brain item keeps its record's project.
+    const projects = async () => (await list()).items.map((i) => [i.chat ?? i.source, i.project])
+    expect(await projects()).toEqual(
+      expect.arrayContaining([
+        [question, 'ncc-1701'],
+        [themes, null],
+        ['brain', 'example-project'],
+      ]),
+    )
+    // A tag that names no project of the brain, or one not written as a slug is, gives none.
+    agents.setChatTags(question, { project: 'not-a-project' })
+    agents.setChatTags(themes, { project: 'NCC-1701' })
+    expect(await projects()).toEqual(
+      expect.arrayContaining([
+        [question, null],
+        [themes, null],
+        ['brain', 'example-project'],
+      ]),
+    )
+    expect(await projects()).toHaveLength(3)
+  })
+
+  it('names no chat project where the inbox has no projects port, and reads no tags then', async () => {
+    const { agents, list } = setup()
+    let reads = 0
+    const tags = agents.chatTags.bind(agents)
+    agents.setChatTags(question, { project: 'example-project' })
+    Object.assign(agents, { chatTags: () => ((reads += 1), tags()) })
+    expect((await list()).items.map((i) => [i.source, i.project])).toEqual([
+      ['chat', null],
+      ['brain', 'example-project'],
+    ])
+    expect(reads).toBe(0)
+  })
+
+  it('reads the tags with one pane list and the projects once for a build (NCC-138)', async () => {
+    const agents = createFakeAgents(machine)
+    agents.setChatTags(question, { project: 'example-project' })
+    const reads = { tags: 0, projects: 0, lists: 0 }
+    const inbox = createInbox({
+      agents: {
+        ...agents,
+        listWorkspaces: () => ((reads.lists += 1), agents.listWorkspaces()),
+        chatTags: () => ((reads.tags += 1), agents.chatTags()),
+      },
+      brain: { list: () => Promise.resolve(ok([])), body: () => Promise.resolve(ok(null)) },
+      turns: { endsOf: (chats) => Promise.resolve(ok(endsFor(chats, '2026-11-21T10:00:00.000Z'))) },
+      marks: { load: () => Promise.resolve(ok({})), save: () => Promise.resolve(ok(undefined)) },
+      projects: { list: () => ((reads.projects += 1), brainProjects('example-project').list()) },
+    })
+    const [one, two] = await Promise.all([inbox.list(), inbox.list()])
+    expect(one.ok && one.value.items.map((i) => i.project)).toEqual(['example-project'])
+    expect(two).toEqual(one)
+    expect(reads).toEqual({ tags: 1, projects: 1, lists: 1 })
+  })
+
+  it('starts the tags and projects reads with the workspace list, not after it (NCC-138)', async () => {
+    const agents = createFakeAgents(machine)
+    agents.setChatTags(question, { project: 'example-project' })
+    const started: string[] = []
+    let release: () => void = () => undefined
+    const held = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    const inbox = createInbox({
+      agents: {
+        ...agents,
+        listWorkspaces: async () => (started.push('list'), await held, agents.listWorkspaces()),
+        chatTags: () => (started.push('tags'), agents.chatTags()),
+      },
+      brain: { list: () => Promise.resolve(ok([])), body: () => Promise.resolve(ok(null)) },
+      turns: { endsOf: (chats) => Promise.resolve(ok(endsFor(chats, '2026-11-21T10:00:00.000Z'))) },
+      marks: { load: () => Promise.resolve(ok({})), save: () => Promise.resolve(ok(undefined)) },
+      projects: { list: () => (started.push('projects'), brainProjects('example-project').list()) },
+    })
+    const read = inbox.list()
+    await new Promise((resolve) => setImmediate(resolve))
+    // While the workspace list waits, the tags and the projects are already read.
+    expect([...started].sort()).toEqual(['list', 'projects', 'tags'])
+    release()
+    const listed = await read
+    expect(listed.ok && listed.value.items.map((i) => i.project)).toEqual(['example-project'])
+  })
+
+  it('fails the read when the tags or the projects fail, by their fault', async () => {
+    const agents = createFakeAgents(machine)
+    const deps = {
+      brain: { list: () => Promise.resolve(ok([])), body: () => Promise.resolve(ok(null)) },
+      marks: { load: () => Promise.resolve(ok({})), save: () => Promise.resolve(ok(undefined)) },
+    }
+    const down = { reason: 'unreachable' as const, message: 'down' }
+    const noTags = createInbox({
+      ...deps,
+      agents: { ...agents, chatTags: () => Promise.resolve(err(down)) },
+      projects: brainProjects('example-project'),
+    })
+    expect(await noTags.list()).toEqual(err(down))
+    const noProjects = createInbox({
+      ...deps,
+      agents,
+      projects: { list: () => Promise.resolve(err({ reason: 'failed' as const, code: 'EACCES' })) },
+    })
+    expect(await noProjects.list()).toEqual(err({ reason: 'failed', code: 'EACCES' }))
   })
 
   it('lists a done chat as a review that is not on the badge, and drops it when the chat works again', async () => {

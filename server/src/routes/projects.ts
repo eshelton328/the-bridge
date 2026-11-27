@@ -17,7 +17,7 @@ import {
   RunDriftRequest,
 } from '@bridge/contract'
 import { type Context, Hono } from 'hono'
-import { type AppEnv, errorJson, internalMessage } from '../errors.ts'
+import { type AppEnv, agentErrorJson, errorJson, internalMessage } from '../errors.ts'
 import type { Logger } from '../logger.ts'
 import type { ProjectFault, Projects } from '../services/projects.ts'
 import { jsonBody, jsonOnly, smallJson } from './jsonBody.ts'
@@ -59,7 +59,8 @@ export function projectsRoutes(projects: Projects, log: Logger) {
       const slug = slugOf(c)
       if (!slug.success) return noProject(c)
       const chats = await projects.chats(slug.data)
-      if (!chats.ok) return failed(c, chats.error)
+      // herdr's fault is 503 or 502, as on the workspaces routes; a fault of the brain is 500.
+      if (!chats.ok) return chats.error.reason === 'failed' ? failed(c, chats.error) : agentErrorJson(c, chats.error)
       if (chats.value === 'notFound') return noProject(c)
       return c.json(ProjectChatsResponse.parse(chats.value), 200)
     })

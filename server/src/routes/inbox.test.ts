@@ -1,6 +1,14 @@
 // API tests of /api/inbox (R20), in process with the fake agents, a made-up
 // brain request and marks in memory.
-import { ChatId, ErrorBody, InboxDetailResponse, InboxId, InboxResponse, MachineId } from '@bridge/contract'
+import {
+  ChatId,
+  ErrorBody,
+  InboxDetailResponse,
+  InboxId,
+  InboxResponse,
+  MachineId,
+  ProjectSlug,
+} from '@bridge/contract'
 import { err, ok } from '@bridge/shared'
 import { describe, expect, it } from 'vitest'
 import { createFakeAgents } from '../adapters/fakeAgents.ts'
@@ -48,6 +56,14 @@ function setup(options: { failing?: boolean } = {}) {
       body: () => Promise.resolve(ok('# Example\n\nThe body.')),
     },
     marks: { load: () => Promise.resolve(ok(stored)), save: (m) => ((stored = m), Promise.resolve(ok(undefined))) },
+    projects: {
+      list: () =>
+        Promise.resolve(
+          ok([
+            { slug: ProjectSlug.parse('example-project'), name: 'Example', purpose: '', icon: null, repositories: [] },
+          ]),
+        ),
+    },
   })
   const app = createApp({ agents, owner: 'owner@example.com', log: logger.log, inbox })
   const list = async () => InboxResponse.parse(await (await app.request('/api/inbox', { headers: local })).json())
@@ -57,7 +73,7 @@ function setup(options: { failing?: boolean } = {}) {
     '/api/inbox',
     inboxRoutes(inbox, logger.log, () => told.push('inbox.changed')),
   )
-  return { app, list, logger, routed, told }
+  return { agents, app, list, logger, routed, told }
 }
 
 describe('/api/inbox', () => {
@@ -138,6 +154,16 @@ describe('/api/inbox', () => {
       body: '{"until":"soon"}',
     })
     expect(bad.status).toBe(400)
+  })
+
+  it("names a tagged chat's project and logs no tag value (d-120)", async () => {
+    const { agents, list, logger } = setup()
+    agents.setChatTags(themes, { project: 'example-project', area: 'marker-tag-7731' })
+    const listed = await list()
+    expect(listed.items.find((i) => i.chat === themes)?.project).toBe('example-project')
+    expect(logger.lines().some((l) => l.msg === 'request')).toBe(true)
+    expect(logger.text()).not.toContain('marker-tag-7731')
+    expect(logger.text()).not.toContain('example-project')
   })
 
   it('answers 500 for a brain fault and logs its code only', async () => {

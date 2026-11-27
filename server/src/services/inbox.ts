@@ -4,8 +4,10 @@
 // so the next turn is a new item and a mark of the last one no longer
 // hides it. A brain item is an open or snoozed attention request, read
 // through a port that only reads; it takes no action here. The owner's
-// marks (snoozed, done, dismissed) are kept in a store. Nothing reads on a
-// timer (d-112), and no prompt or transcript text is read.
+// marks (snoozed, done, dismissed) are kept in a store. A chat item names
+// the project of its pane's `project` tag (d-120) when the brain has that
+// project. Nothing reads on a timer (d-112), and no prompt or transcript
+// text is read.
 import { createHash } from 'node:crypto'
 import {
   ChatId,
@@ -23,6 +25,7 @@ import {
 } from '@bridge/contract'
 import { err, ok, type Result } from '@bridge/shared'
 import type { AgentPort, AgentPortError } from './agentPort.ts'
+import { type BrainProjects, chatTagsOf } from './projects.ts'
 
 /** An attention request of the brain, as the records port reads its front matter. */
 export type BrainRequest = {
@@ -70,6 +73,8 @@ type Deps = {
   /** When each chat's turn ended; the agents' `turnEnds` when not given. */
   readonly turns?: ChatTurns
   readonly marks: InboxMarkStore
+  /** The brain's projects, which a chat's `project` tag must name; with none, each chat item has no project. */
+  readonly projects?: Pick<BrainProjects, 'list'>
   readonly now?: () => Date
 }
 
@@ -91,7 +96,14 @@ const chatTurns = (agents: AgentPort): ChatTurns => ({ endsOf: (chats) => agents
 const chatActions: readonly InboxAction[] = ['snooze', 'done', 'dismiss']
 const hashId = (text: string) => InboxId.parse(createHash('sha256').update(text).digest('hex').slice(0, 16))
 
-export function createInbox({ agents, brain, turns = chatTurns(agents), marks, now = () => new Date() }: Deps): Inbox {
+export function createInbox({
+  agents,
+  brain,
+  turns = chatTurns(agents),
+  marks,
+  projects: brainProjects,
+  now = () => new Date(),
+}: Deps): Inbox {
   // The time the server first saw a chat in a status, shown as the item's time when the turn port cannot tell
   // the turn's end. Such an item takes no action: the server sees no status change between reads, so a mark
   // could hide the chat's next turn, and the time is lost on a restart.
@@ -103,6 +115,24 @@ export function createInbox({ agents, brain, turns = chatTurns(agents), marks, n
     return next
   }
 
+  /**
+   * Each tagged chat's project, by its pane: one pane list and one read of the brain's projects for a build. A tag
+   * that names no project of the brain gives none. No tag value is logged.
+   */
+  const chatProjects = async (): Promise<Result<ReadonlyMap<string, string>, InboxError>> => {
+    if (brainProjects === undefined) return ok(new Map())
+    const [tags, known] = await Promise.all([agents.chatTags(), brainProjects.list()])
+    if (!tags.ok) return tags
+    if (!known.ok) return known
+    const slugs = new Set<string>(known.value.map((p) => p.slug))
+    const named = new Map<string, string>()
+    for (const [pane, tokens] of tags.value) {
+      const project = chatTagsOf(tokens).find((t) => t.key === 'project')?.value
+      if (project !== undefined && slugs.has(project)) named.set(pane, project)
+    }
+    return ok(named)
+  }
+
   type Built = {
     items: InboxItem[]
     chats: Map<InboxId, { chat: ChatId; workspace: WorkspaceId; summary: ChatSummary }>
@@ -110,16 +140,18 @@ export function createInbox({ agents, brain, turns = chatTurns(agents), marks, n
   }
   /** The items now, with the marks that still name one; a mark of an ended turn is dropped. */
   const build = async (): Promise<Result<Built, InboxError>> => {
-    const [listed, requests, stored, projects] = await Promise.all([
+    const [listed, requests, stored, projects, tagged] = await Promise.all([
       agents.listWorkspaces(),
       brain.list(),
       marks.load(),
       agents.projectWorkspaces(),
+      chatProjects(),
     ])
     if (!listed.ok) return listed
     if (!projects.ok) return projects
     if (!requests.ok) return requests
     if (!stored.ok) return stored
+    if (!tagged.ok) return tagged
     const at = now()
     const items: InboxItem[] = []
     const chats: Built['chats'] = new Map()
@@ -152,7 +184,9 @@ export function createInbox({ agents, brain, turns = chatTurns(agents), marks, n
           source: 'chat',
           kind: chat.status === 'needsYou' ? 'question' : 'review',
           title: (chat.title || chat.id).slice(0, maxInboxTitle),
-          project: null,
+          // InboxItem.project: a brain item's is its record's; a chat item's is its pane's `project` tag (d-120),
+          // only when the brain has that project, else null.
+          project: tagged.value.get(chat.pane) ?? null,
           tags: [],
           needsYou: chat.status === 'needsYou' && snoozed === null,
           snoozedUntil: snoozed,
