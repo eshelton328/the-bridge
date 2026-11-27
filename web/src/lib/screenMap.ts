@@ -20,6 +20,14 @@ export const frameSizes = {
   phone: { width: 390, height: 844 },
 } as const satisfies Record<Viewport, { width: number; height: number }>
 
+/** The iPad in landscape (Settings T3, Projects T10b): a tablet frame of a screen that sets `landscape`. */
+const landscapeTabletSize = { width: 1133, height: 744 } as const
+
+/** The frame size of `device` in `screen`: the landscape iPad for a landscape screen's tablet, else the device's. */
+export function frameSizeOf(screen: Screen<string>, device: Viewport): { width: number; height: number } {
+  return device === 'tablet' && screen.landscape === true ? landscapeTabletSize : frameSizes[device]
+}
+
 /** The label Storybook shows over each device's frame. */
 export const deviceLabels = { desktop: 'Desktop', tablet: 'Tablet', phone: 'Phone' } as const satisfies Record<
   Viewport,
@@ -30,7 +38,11 @@ export const deviceLabels = { desktop: 'Desktop', tablet: 'Tablet', phone: 'Phon
  * One screen: its name and the state id for each device it has. At least
  * one device is set.
  */
-export type Screen<State extends string> = { readonly title: string } & (
+export type Screen<State extends string> = {
+  readonly title: string
+  /** The tablet state is an iPad in landscape, so its frame is `landscapeTabletSize`. */
+  readonly landscape?: true
+} & (
   | { readonly desktop: State; readonly tablet?: State; readonly phone?: State }
   | { readonly desktop?: undefined; readonly tablet: State; readonly phone?: State }
   | { readonly desktop?: undefined; readonly tablet?: undefined; readonly phone: State }

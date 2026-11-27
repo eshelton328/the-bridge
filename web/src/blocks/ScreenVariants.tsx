@@ -9,7 +9,7 @@
 // names each state's story.
 import { storyNameFromExport, toId } from 'storybook/internal/csf'
 import { css } from '../../styled-system/css/index.js'
-import { deviceLabels, frameSizes, type Screen, screenStates } from '../lib/screenMap.ts'
+import { deviceLabels, frameSizeOf, type Screen, screenStates } from '../lib/screenMap.ts'
 
 // The gap between two frames, as `gap: '32'` below.
 const gapPx = 32
@@ -36,7 +36,7 @@ function stateStoryId(statesTitle: string, state: string): string {
 export function ScreenVariants({ screen, statesTitle, mode }: ScreenVariantsProps) {
   const variants = screenStates(screen)
   // Zoom scales the frames, not the gaps between them, so the gaps come off the free width first.
-  const frameWidths = variants.reduce((sum, v) => sum + frameSizes[v.device].width, 0)
+  const frameWidths = variants.reduce((sum, v) => sum + frameSizeOf(screen, v.device).width, 0)
   const gaps = gapPx * (variants.length - 1)
   const inPreview = window.location.pathname.endsWith('/iframe.html')
   // The React Compiler memoizes this ref callback, so it reruns only when the widths change.
@@ -57,7 +57,7 @@ export function ScreenVariants({ screen, statesTitle, mode }: ScreenVariantsProp
   return (
     <div ref={measure} className={row}>
       {variants.map(({ device, state }) => {
-        const size = frameSizes[device]
+        const size = frameSizeOf(screen, device)
         const storyId = stateStoryId(statesTitle, state)
         return (
           <figure key={device} className={figure}>
