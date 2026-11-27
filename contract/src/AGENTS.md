@@ -161,7 +161,10 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
   kind `idea` and the state `open`. A `DriftRun` lists findings only when
   its result is `findings`; each finding's paths are relative to the root
   of the chat tree. The pin and drift run bodies are strict objects
-  (`projects.test.ts`). `projects.changed` on `/api/events` says that a
+  (`projects.test.ts`). A `RepositorySection` (increment two) gives a
+  repository's visibility, newest release (an https github.com link),
+  open PR and worktree counts, each null when not read or off GitHub, and
+  `unread` names the parts not read. `projects.changed` on `/api/events` says that a
   project's open PRs changed: read the project again (NCC-156).
 - The QA tab (f-008 increment three, `qa.ts`): an issue is named by its
   Linear key (`QaIssueId`, such as `NCC-12`), so a path word such as

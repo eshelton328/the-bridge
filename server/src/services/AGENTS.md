@@ -136,4 +136,8 @@ from the outside world.
   chats tagged `project=<slug>` in the workspaces' order; of a pane's
   tags only `project`, `area` and `role` with a slug-shaped value are
   kept (`chatTagsOf`), and no tag value goes into a log. The slug is
-  checked against the brain's list before any read.
+  checked against the brain's list before any read. The Repositories tab
+  (increment two) joins each repository of `project.yaml` with its GitHub
+  facts (kept 5 minutes, `keptFacts`), its open PR count and its worktree
+  count; a part that does not read is named in `unread`, never a fault
+  (`projectsPulls.test.ts`, `../routes/projects.test.ts`).

@@ -1,6 +1,16 @@
 import { err, ok, type Result } from '@bridge/shared'
 import { describe, expect, it } from 'vitest'
-import { keptPulls, type OpenPull, type ProjectFault, type PullSource, pullsKeptMs } from './projects.ts'
+import {
+  aboutKeptMs,
+  keptFacts,
+  keptPulls,
+  type OpenPull,
+  type ProjectFault,
+  type PullSource,
+  pullsKeptMs,
+  type RepositoryAbout,
+  type RepositoryFacts,
+} from './projects.ts'
 
 const repo = { owner: 'example', name: 'example-repo' }
 const pull = (n: number): OpenPull => ({
@@ -114,5 +124,28 @@ describe('keptPulls', () => {
     await settle()
     expect(calls).toBe(3)
     expect(await pulls.open(repo)).toEqual(ok([pull(1)]))
+  })
+})
+
+describe('keptFacts', () => {
+  it('shares one gh run between requests that cross, keeps it 5 minutes, and runs again after a fault', async () => {
+    let time = 0
+    const waiting: ((result: Result<RepositoryAbout, ProjectFault>) => void)[] = []
+    const source: RepositoryFacts = { about: () => new Promise((resolve) => waiting.push(resolve)) }
+    const facts = keptFacts(source, () => new Date(time))
+    const first = facts.about(repo)
+    void facts.about(repo)
+    expect(waiting).toHaveLength(1)
+    waiting[0]?.(ok({ visibility: 'public', release: null }))
+    expect(await first).toEqual(ok({ visibility: 'public', release: null }))
+    time = aboutKeptMs - 1
+    await facts.about(repo)
+    expect(waiting).toHaveLength(1)
+    time = aboutKeptMs
+    const failed = facts.about(repo)
+    waiting[1]?.(err({ reason: 'failed', code: 'exit-1' }))
+    await failed
+    void facts.about(repo)
+    expect(waiting).toHaveLength(3)
   })
 })

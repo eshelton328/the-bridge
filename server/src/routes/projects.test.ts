@@ -14,10 +14,12 @@ import {
   ProjectChatsResponse,
   ProjectDetailResponse,
   ProjectsResponse,
+  RepositoriesResponse,
 } from '@bridge/contract'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createBrainProjects, createDiskDriftStore, createDiskPins } from '../adapters/diskProjects.ts'
 import { createFakeAgents } from '../adapters/fakeAgents.ts'
+import { createDiskWorktrees } from '../adapters/diskWorktrees.ts'
 import { createGhPulls } from '../adapters/ghPulls.ts'
 import { createNccCheck } from '../adapters/projectDrift.ts'
 import { createApp } from '../app.ts'
@@ -121,6 +123,7 @@ function server() {
     pulls: createGhPulls({ command: join(bin, 'gh'), env: process.env }),
     check: createNccCheck({ command: join(bin, 'ncc'), root: join(dir, 'root'), env: process.env }),
     drift: createDiskDriftStore(data),
+    worktrees: createDiskWorktrees(join(dir, 'root')),
     now: () => new Date('2026-11-22T09:00:00.000Z'),
   })
   const app = createApp({ agents, owner: 'owner@example.com', log: logger.log, projects })
@@ -370,5 +373,58 @@ describe('/api/projects', () => {
       expect(ErrorBody.parse(await bad.json()).error.kind).toBe('herdr-bad-reply')
       expect(logger.text()).not.toContain('marker-5150')
     })
+  })
+})
+
+describe('/api/projects/:slug/repositories', () => {
+  it('gives each repository in project.yaml order with its counts, and names the facts it has no source for', async () => {
+    const worktrees = join(dir, 'root', 'projects', 'example-project', 'example-repo-worktrees')
+    for (const name of ['feature-a', 'feature-b']) {
+      await mkdir(join(worktrees, name), { recursive: true })
+      await writeFile(join(worktrees, name, '.git'), 'gitdir: elsewhere\n')
+    }
+    const { app } = server()
+    const res = await read(app, '/api/projects/example-project/repositories')
+    expect(res.status).toBe(200)
+    expect(RepositoriesResponse.parse(await res.json()).repositories).toEqual([
+      {
+        id: 'example-repo',
+        role: 'the app',
+        github: { owner: 'example-owner', name: 'example-repo' },
+        visibility: null,
+        release: null,
+        openPulls: 2,
+        worktrees: 2,
+        unread: ['about'],
+      },
+      {
+        id: 'local-repo',
+        role: 'a local folder',
+        github: null,
+        visibility: null,
+        release: null,
+        openPulls: null,
+        worktrees: 0,
+        unread: [],
+      },
+    ])
+  })
+
+  it('names the GitHub parts it could not read, and answers 200', async () => {
+    await writeFile(join(bin, 'gh'), '#!/bin/sh\necho "marker-5150" >&2\nexit 1\n')
+    const { app, logger } = server()
+    const res = await read(app, '/api/projects/example-project/repositories')
+    expect(res.status).toBe(200)
+    const [first] = RepositoriesResponse.parse(await res.json()).repositories
+    expect(first).toMatchObject({ visibility: null, release: null, openPulls: null, unread: ['about', 'pulls'] })
+    expect(JSON.stringify(logger.lines())).not.toContain('marker-5150')
+  })
+
+  it('is 404 for a slug that names no project', async () => {
+    const { app } = server()
+    expect((await read(app, '/api/projects/no-such-project/repositories')).status).toBe(404)
+    expect(ErrorBody.parse(await (await read(app, '/api/projects/Bad%20Slug/repositories')).json()).error.kind).toBe(
+      'not-found',
+    )
   })
 })

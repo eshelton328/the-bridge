@@ -20,7 +20,12 @@ import type {
   ProjectSlug,
   ProjectsResponse,
   ProjectSummary,
+  RepositoriesResponse,
   RepositoryId,
+  RepositoryPart,
+  RepositoryRelease,
+  RepositorySection,
+  RepositoryVisibility,
 } from '@bridge/contract'
 import { maxDriftFindings } from '@bridge/contract'
 import { err, ok, type Result } from '@bridge/shared'
@@ -64,6 +69,19 @@ export type PullSource = {
   }): Promise<Result<readonly OpenPull[], ProjectFault>>
 }
 
+/** A GitHub repository's visibility and newest release (R2). */
+export type RepositoryAbout = { readonly visibility: RepositoryVisibility; readonly release: RepositoryRelease | null }
+
+/** What GitHub says about one repository. */
+export type RepositoryFacts = {
+  about(repository: { readonly owner: string; readonly name: string }): Promise<Result<RepositoryAbout, ProjectFault>>
+}
+
+/** The number of git worktrees of one repository of a project, in its `-worktrees` folder of the chat root. */
+export type WorktreeCount = {
+  count(slug: ProjectSlug, repository: RepositoryId): Promise<Result<number, ProjectFault>>
+}
+
 /**
  * One run of the layout check (`ncc check`): each problem line, with each path in it relative to the root of the
  * chat tree. An empty list is a clean layout.
@@ -83,6 +101,10 @@ type Deps = {
   readonly pulls: PullSource
   readonly check: LayoutCheck
   readonly drift: DriftStore
+  /** GitHub's facts of each repository; with none, each is a part not read. */
+  readonly facts?: RepositoryFacts
+  /** The worktree counts; with none, each is a part not read. */
+  readonly worktrees?: WorktreeCount
   /** The chats and their tags; none (each chats read fails) where an app has no agents to give. */
   readonly agents?: Pick<AgentPort, 'listWorkspaces' | 'chatTags'>
   readonly now?: () => Date
@@ -100,6 +122,8 @@ export type Projects = {
   ideas(slug: ProjectSlug): Promise<Result<IdeasResponse | NotFound, ProjectFault>>
   idea(slug: ProjectSlug, id: IdeaId): Promise<Result<IdeaDetailResponse | NotFound, ProjectFault>>
   drift(slug: ProjectSlug): Promise<Result<DriftResponse | NotFound, ProjectFault>>
+  /** The Repositories tab (R2, R5, R8): a part that does not read is named in `unread`, never a fault. */
+  repositories(slug: ProjectSlug): Promise<Result<RepositoriesResponse | NotFound, ProjectFault>>
   runDrift(slug: ProjectSlug): Promise<Result<DriftRunOutcome | NotFound, ProjectFault>>
   /** A fault of the agents is the port's own, so the route answers it as the workspaces routes do. */
   chats(slug: ProjectSlug): Promise<Result<ProjectChatsResponse | NotFound, ProjectFault | AgentPortError>>
@@ -170,6 +194,30 @@ export function keptPulls(source: PullSource, now: () => Date, changed: () => vo
   }
 }
 
+/** How long a repository's visibility and release are kept before gh runs again for it. */
+export const aboutKeptMs = 300_000
+
+/** The facts source with each repository's answer kept for `aboutKeptMs`, as `keptPulls` keeps the PRs. */
+export function keptFacts(source: RepositoryFacts, now: () => Date): RepositoryFacts {
+  type Kept = { readonly at: number; readonly answer: Promise<Result<RepositoryAbout, ProjectFault>> }
+  const kept = new Map<string, Kept>()
+  return {
+    about(repository) {
+      const key = `${repository.owner}/${repository.name}`
+      const at = now().getTime()
+      const last = kept.get(key)
+      if (last !== undefined && at - last.at < aboutKeptMs) return last.answer
+      const answer = source.about(repository)
+      const entry = { at, answer }
+      kept.set(key, entry)
+      void answer.then((result) => {
+        if (!result.ok && kept.get(key) === entry) kept.delete(key)
+      })
+      return answer
+    },
+  }
+}
+
 const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 /**
@@ -201,12 +249,37 @@ export function createProjects({
   check,
   drift,
   agents,
+  facts: factsSource,
+  worktrees,
   now = () => new Date(),
 }: Deps): Projects {
   const watchers = new Set<() => void>()
   const pulls = keptPulls(source, now, () => {
     for (const watcher of [...watchers]) watcher()
   })
+  const facts = factsSource === undefined ? undefined : keptFacts(factsSource, now)
+  const notRead = Promise.resolve(err({ reason: 'failed' as const, code: 'no-source' }))
+
+  const sectionOf = async (slug: ProjectSlug, repository: ProjectRepository): Promise<RepositorySection> => {
+    const github = repository.github
+    const [about, open, count] = await Promise.all([
+      github === null ? null : (facts?.about(github) ?? notRead),
+      github === null ? null : pulls.open(github),
+      worktrees?.count(slug, repository.id) ?? notRead,
+    ])
+    const unread: RepositoryPart[] = []
+    if (about !== null && !about.ok) unread.push('about')
+    if (open !== null && !open.ok) unread.push('pulls')
+    if (!count.ok) unread.push('worktrees')
+    return {
+      ...repository,
+      visibility: about?.ok === true ? about.value.visibility : null,
+      release: about?.ok === true ? about.value.release : null,
+      openPulls: open?.ok === true ? open.value.length : null,
+      worktrees: count.ok ? count.value : null,
+      unread,
+    }
+  }
   // One store change at a time, so two pins or two runs that cross keep both.
   let queue: Promise<unknown> = Promise.resolve()
   const serial = <T>(work: () => Promise<T>): Promise<T> => {
@@ -322,6 +395,13 @@ export function createProjects({
       return ok({ last: Object.hasOwn(runs.value, slug) ? (runs.value[slug] ?? null) : null })
     },
 
+    async repositories(slug) {
+      const record = await recordOf(slug)
+      if (!record.ok) return record
+      if (record.value === 'notFound') return ok('notFound')
+      return ok({ repositories: await Promise.all(record.value.repositories.map((r) => sectionOf(slug, r))) })
+    },
+
     async runDrift(slug) {
       const record = await recordOf(slug)
       if (!record.ok) return record
@@ -391,6 +471,7 @@ export const noProjects: Projects = (() => {
     ideas: fault,
     idea: fault,
     drift: fault,
+    repositories: fault,
     runDrift: fault,
     chats: fault,
     watch,

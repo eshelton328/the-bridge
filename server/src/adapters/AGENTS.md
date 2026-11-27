@@ -458,3 +458,7 @@ client of a socket or a file sits beside them.
   is made relative to the root or starts with "~", and any other absolute
   path is "<path>" with its `projects/…` part kept (`ghPulls.test.ts`,
   `projectDrift.test.ts`, stub programs).
+  `diskWorktrees.ts` (increment two) counts the folders with a `.git` entry under
+  `<chat root>/projects/<slug>/<repo>-worktrees`, 3 levels down at most,
+  follows no symlink and refuses a folder whose real path leaves the chat
+  root (`diskWorktrees.test.ts`).

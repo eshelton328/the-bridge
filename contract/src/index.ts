@@ -101,7 +101,12 @@ export {
   ProjectsResponse,
   ProjectSummary,
   PullStatus,
+  RepositoriesResponse,
   RepositoryId,
+  RepositoryPart,
+  RepositoryRelease,
+  RepositorySection,
+  RepositoryVisibility,
   RunDriftRequest,
 } from './projects.ts'
 export {
