@@ -111,4 +111,20 @@ describe('Quick chat (R8)', () => {
     expect(chats.prompts).toEqual([{ chat: 'test-box/new1', text: 'Look at the open PRs' }])
     expect(getReports().map((r) => r.error.message)).toEqual(['A chat start missed: internal 500'])
   })
+
+  it('says a retry of a start that still runs (duplicateCreate) is starting, and keeps the text', async () => {
+    const { workspaces, chats } = withServer()
+    // The first answer is lost after the chat was made, so the server answers the retry 409 duplicateCreate.
+    workspaces.answerNextStart(
+      () => errorAnswer({ kind: 'internal', message: 'Failed', requestId: 'r-500' }, 500),
+      true,
+    )
+    const { router, box } = await quickChat(1440, 900)
+    await userEvent.click(box.getByRole('button', { name: 'Retry' }))
+    await expect.element(box.getByRole('status')).toHaveTextContent('The chat is still starting; see Workspaces')
+    await expect.element(box.getByRole('textbox', { name: 'First message' })).toHaveValue('Look at the open PRs')
+    expect(workspaces.starts).toEqual([workspaces.starts[0], workspaces.starts[0]])
+    expect(chats.prompts).toEqual([])
+    expect(router.state.location.pathname).toBe('/projects/alpha')
+  })
 })
