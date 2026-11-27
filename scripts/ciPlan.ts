@@ -43,10 +43,15 @@ export function scriptInputs(read: (path: string) => string | undefined, starts:
   return new Set([...seen].filter((path) => path.startsWith('scripts/') && !path.startsWith('scripts/fidelity/')))
 }
 
-/** The fidelity scripts and the hand-written code files of web/, the starts of scriptInputs. */
+/**
+ * The fidelity scripts, the text size check (its CI job runs when fidelity does, NCC-143) and the hand-written
+ * code files of web/: the starts of scriptInputs.
+ */
 export function fidelityStarts(list: (dir: string) => readonly string[]): string[] {
   const skip = /(?:^|\/)(?:node_modules|styled-system|dist|storybook-static)\//
-  return [...list('scripts/fidelity'), ...list('web')].filter((path) => codeFile.test(path) && !skip.test(path))
+  return [...list('scripts/fidelity'), 'scripts/checkTextSizes.ts', ...list('web')].filter(
+    (path) => codeFile.test(path) && !skip.test(path),
+  )
 }
 
 /**

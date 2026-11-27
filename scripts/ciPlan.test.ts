@@ -51,6 +51,12 @@ void test('in this repo the fidelity scripts import genRegistry.ts, and it is an
   for (const path of imports) assert.equal(isFidelityInput(path, imports), true, path)
 })
 
+void test('the text size check and the files it imports are inputs, so its job runs when they change', () => {
+  const imports = scriptInputs(readRepo, starts)
+  for (const path of ['scripts/checkTextSizes.ts', 'scripts/textSizesLib.ts', 'scripts/textSizesAccepted.ts'])
+    assert.equal(isFidelityInput(path, imports), true, path)
+})
+
 void test('web, references, fidelity, shared, config, lockfile and workflow files are inputs', () => {
   const imports = scriptInputs(readRepo, starts)
   for (const path of [

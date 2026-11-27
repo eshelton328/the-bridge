@@ -19,6 +19,10 @@ camelCase (the lint's file-name rule).
 - `viteConfig.test.ts` holds web/vite.config.ts's `/api` proxy rule: no
   default target, so `vite` and `vite preview` stop without
   `BRIDGE_SERVER_URL`, and the build, Vitest and Storybook start without it.
+- `checkTextSizes.ts` fails on a new cut at Default or Large that
+  `textSizesAccepted.ts` does not accept, and on an entry place there
+  that no longer has its cut. An entry cites the decision that accepts
+  the cut (d-131); a cut that we plan to fix never goes in the file.
 - `keyboardTracePlugin.ts` is a dev-server plugin (`apply: 'serve'`); a
   build must never include it. No client text may reach a trace file's
   path (`keyboardTracePlugin.test.ts`). Its build read (git, the

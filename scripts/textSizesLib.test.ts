@@ -11,6 +11,7 @@ import {
   coversByDesign,
   overlapsOf,
   shownBox,
+  splitAccepted,
   problemsOf,
   type SizeCounts,
   type TextMeasure,
@@ -214,4 +215,84 @@ void test('a planted overlay over text that is no named drag-time layer still co
     ['overlap'],
   )
   assert.deepEqual(overlapsOf(pairs, [run(chip.key, 'resizeReadout', 'none')]), [])
+})
+
+void test('splitAccepted keeps an accepted cut out of the failures, only at its state, size, kind and text', () => {
+  const cut = {
+    states: ['workspaces/phoneChat'],
+    sizes: ['large'],
+    kind: 'truncated',
+    text: 'Read notes.md',
+    reason: 'd-131: a tool-call line stays one line',
+  } as const
+  const at = (state: string, size: 'default' | 'large', kind: 'truncated' | 'overlap', text: string) => ({
+    key: 'div:0',
+    text,
+    kind,
+    by: 0,
+    state,
+    size,
+  })
+  const result = splitAccepted(
+    [
+      at('workspaces/phoneChat', 'large', 'truncated', 'Read notes.md'),
+      at('workspaces/phoneChat', 'default', 'truncated', 'Read notes.md'),
+      at('workspaces/phoneFork', 'large', 'truncated', 'Read notes.md'),
+      at('workspaces/phoneChat', 'large', 'overlap', 'Read notes.md'),
+      at('workspaces/phoneChat', 'large', 'truncated', 'Read other.md'),
+    ],
+    [cut],
+  )
+  assert.equal(result.accepted, 1)
+  assert.deepEqual(
+    result.open.map((p) => `${p.state} ${p.size} ${p.kind} ${p.text}`),
+    [
+      'workspaces/phoneChat default truncated Read notes.md',
+      'workspaces/phoneFork large truncated Read notes.md',
+      'workspaces/phoneChat large overlap Read notes.md',
+      'workspaces/phoneChat large truncated Read other.md',
+    ],
+  )
+  assert.deepEqual(result.unused, [])
+})
+
+void test('splitAccepted names an entry place that the app no longer cuts, but not one of a page --page leaves out', () => {
+  const cut = {
+    states: ['toolkit/skillFiles', 'workspaces/phoneChat'],
+    sizes: ['default', 'large'],
+    kind: 'truncated',
+    text: 'chat-sourced-first-person/',
+    reason: 'd-131: a file tree name may truncate',
+  } as const
+  const result = splitAccepted(
+    [
+      {
+        key: 'div:0',
+        text: 'chat-sourced-first-person/',
+        kind: 'truncated',
+        by: 0,
+        state: 'toolkit/skillFiles',
+        size: 'large',
+      },
+    ],
+    [cut],
+    'toolkit',
+  )
+  assert.equal(result.accepted, 1)
+  assert.deepEqual(result.open, [])
+  assert.deepEqual(result.unused, ['toolkit/skillFiles default truncated chat-sourced-first-person/'])
+})
+
+void test('a full run names an entry place of a state or a page that the app no longer has', () => {
+  const cut = {
+    states: ['toolkit/renamedState', 'removedPage/someState'],
+    sizes: ['large'],
+    kind: 'truncated',
+    text: 'chat-sourced-first-person/',
+    reason: 'd-131: a file tree name may truncate',
+  } as const
+  assert.deepEqual(splitAccepted([], [cut]).unused, [
+    'removedPage/someState large truncated chat-sourced-first-person/',
+    'toolkit/renamedState large truncated chat-sourced-first-person/',
+  ])
 })

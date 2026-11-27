@@ -250,3 +250,54 @@ export function addCounts(
     large: c.large + fresh.large.length,
   }
 }
+
+/** A size that the check compares with Small. */
+export type LargerSize = 'default' | 'large'
+
+/**
+ * A cut that a decision accepts (NCC-143): the same text and kind in each named state at each named size. `reason`
+ * cites the decision, such as d-131's named exceptions (a tool-call line stays one line, a file tree name may
+ * truncate). A cut that we plan to fix never goes here: it stays a failure until the fix.
+ */
+export type AcceptedCut = {
+  states: readonly string[]
+  sizes: readonly LargerSize[]
+  kind: TextProblem['kind']
+  text: string
+  reason: string
+}
+
+/** One new problem of one state at one size, as the check collects them. */
+export type StateProblem = TextProblem & { state: string; size: LargerSize }
+
+/**
+ * Splits the new problems into the open ones (the check fails on them) and the accepted ones, and names each
+ * entry place (state and size) of `accepted` that matched nothing: every place on a full run, and those of `page`
+ * on a run with --page. An unused place fails the check too, so the file only lists cuts that the app still has.
+ */
+export function splitAccepted(
+  problems: readonly StateProblem[],
+  accepted: readonly AcceptedCut[],
+  page?: string,
+): { open: StateProblem[]; accepted: number; unused: string[] } {
+  const place = (state: string, size: string, kind: string, text: string) => `${state} ${size} ${kind} ${text}`
+  // A full run checks every entry, so an entry of a removed or renamed state or page is unused; a run with --page
+  // skips only the entries of the other pages.
+  const places = new Set<string>()
+  for (const cut of accepted)
+    for (const state of cut.states)
+      if (page === undefined || state.split('/')[0] === page)
+        for (const size of cut.sizes) places.add(place(state, size, cut.kind, cut.text))
+  const used = new Set<string>()
+  const open: StateProblem[] = []
+  for (const p of problems) {
+    const at = place(p.state, p.size, p.kind, p.text)
+    if (places.has(at)) used.add(at)
+    else open.push(p)
+  }
+  return {
+    open,
+    accepted: problems.length - open.length,
+    unused: [...places].filter((at) => !used.has(at)).sort(),
+  }
+}
