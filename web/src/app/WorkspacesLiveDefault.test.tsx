@@ -463,6 +463,8 @@ describe('a served build reads the live source; any other build the fixtures (d-
     await openApp('/workspaces?state=phoneHome')
     await expect.element(page.getByText('plan the slice')).toBeVisible()
     await expectNoSample()
+    // The page entry, its stores and its drafts see no state either, as the loader does (review of #577).
+    expect(router?.state.matches.some((m) => JSON.stringify(m.search).includes('phoneHome'))).toBe(false)
   })
 
   it('shows the sample rows in a production build and reads no server', async () => {

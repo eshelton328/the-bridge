@@ -22,6 +22,15 @@ const dataSourceKinds = ['fixtures', 'mock-api', 'live'] as const
  */
 export const dataSourceParam = z.coerce.string().optional()
 
+/**
+ * A page's `?state=` search param: a state file's key, which only development reads. Any build drops it as the URL
+ * is parsed, so a page entry, its stores and its drafts see the same no-state home its loader reads (d-134).
+ */
+export const stateParam = z
+  .string()
+  .optional()
+  .transform((state) => (import.meta.env.DEV ? state : undefined))
+
 type DataSourceKind = (typeof dataSourceKinds)[number]
 
 /**
