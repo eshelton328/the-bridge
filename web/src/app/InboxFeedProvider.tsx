@@ -28,6 +28,7 @@ import { report } from '../errors/reporter.ts'
 import { reconnectGraceMs } from '../lib/eventFrames.ts'
 import type { InboxMiss } from '../lib/inboxClient.ts'
 import { type InboxFeed, InboxFeedContext } from '../lib/inboxFeed.ts'
+import { readsLiveServer } from '../lib/dataSource.ts'
 
 /** A badge read whose reply the contract refused, with no part of the reply. */
 class InboxRefusedError extends Error {
@@ -74,7 +75,7 @@ export function InboxFeedProvider({ children }: { children: ReactNode }) {
   const [count, setCount] = useState<number | undefined>(undefined)
   const hubRef = useRef<Hub>(newHub())
   useEffect(() => {
-    if (!import.meta.env.DEV) return undefined
+    if (!readsLiveServer()) return undefined
     const hub = hubRef.current
     let unlisten: (() => void) | undefined
     let gone = false

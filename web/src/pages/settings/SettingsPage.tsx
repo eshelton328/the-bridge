@@ -22,6 +22,7 @@ import {
 } from '../../state/settingsStore.ts'
 import { SettingsScreen } from './screens/SettingsScreen.tsx'
 import type { SettingsUi } from './types.ts'
+import { readsLiveServer } from '../../lib/dataSource.ts'
 
 const route = getRouteApi('/settings')
 
@@ -43,7 +44,7 @@ export function SettingsPage() {
   const pushPreview = useSettingsPushPreview()
   const push = usePushSwitch(pushPreview, actions.setPushPreview)
   // The Inbox badge: the app's live count on the home in development, the state's number otherwise (lib/inboxFeed.ts).
-  const railBadge = useInboxBadge(state.data.railBadge, import.meta.env.DEV && own && search.source === undefined)
+  const railBadge = useInboxBadge(state.data.railBadge, readsLiveServer() && own && search.source === undefined)
   const [changed, setChanged] = useState<Changed>({ of: search.state, ui: {} })
   const ui = { ...state.ui, ...(changed.of === search.state ? changed.ui : {}) }
   const settings = own ? { mode, textSize, chatWidth, richText, nav: [...nav], chat, pushPreview } : state.data.settings

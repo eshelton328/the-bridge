@@ -6,7 +6,7 @@
 // router's `signal` ends a live read when the owner leaves the page.
 import { notFound } from '@tanstack/react-router'
 import { parseState } from '../../errors/parseState.ts'
-import { type DataSourceOptions, readState } from '../../lib/dataSource.ts'
+import { type DataSourceOptions, readsLiveServer, readState } from '../../lib/dataSource.ts'
 import type { ScreenState } from '../../lib/screenState.ts'
 import { workspacesHome } from './home.ts'
 import { workspacesStates } from './states/index.ts'
@@ -29,7 +29,7 @@ export function loadWorkspacesState(
   if (!read.ok) throw notFound({ data: read.error })
   const name = `workspaces/${read.value.key}`
   // The live source merges the server's workspaces into the state first, so the page schema checks what shows.
-  if (import.meta.env.DEV && read.value.live)
+  if (readsLiveServer() && read.value.live)
     return import('./liveWorkspaces.ts')
       .then((live) => live.withLiveWorkspaces(read.value.state, { signal }))
       .then((merged) => parseState(WorkspacesState, merged, `${name} (live)`))

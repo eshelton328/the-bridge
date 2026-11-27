@@ -3,7 +3,7 @@ import '@fontsource-variable/geist-mono'
 import '../index.css'
 import { type LayoutNode, WorkspacesResponse } from '@bridge/contract'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
 import { ErrorTray } from '../errors/ErrorTray.tsx'
 import { clearReports } from '../errors/reporter.ts'
@@ -437,6 +437,40 @@ describe('Workspaces on the live source by default (d-117)', () => {
       await view?.unmount()
       view = undefined
     }
+    expect(server.reads).toEqual([])
+  })
+})
+
+// d-134: the served app is a build in the served mode (`vite build --mode served`), which reads the live server as
+// development does, and ignores ?state= as every build does. Any other build stays on the fixtures.
+describe('a served build reads the live source; any other build the fixtures (d-134)', () => {
+  const build = (mode: string) => {
+    vi.stubEnv('DEV', false)
+    vi.stubEnv('MODE', mode)
+    onTestFinished(() => {
+      vi.unstubAllEnvs()
+    })
+  }
+
+  it("lists the server's chats in a served build, also with a ?state=, which a build ignores", async () => {
+    build('served')
+    fakeServer(ok([plan, logs]))
+    await tapWorkspacesOnPhone()
+    await expect.element(page.getByText('plan the slice')).toBeVisible()
+    await expectNoSample()
+    await view?.unmount()
+    view = undefined
+    await openApp('/workspaces?state=phoneHome')
+    await expect.element(page.getByText('plan the slice')).toBeVisible()
+    await expectNoSample()
+  })
+
+  it('shows the sample rows in a production build and reads no server', async () => {
+    build('production')
+    const server = fakeServer(ok([plan]))
+    await tapWorkspacesOnPhone()
+    await expect.element(page.getByText('release notes')).toBeVisible()
+    await expect.element(page.getByText('plan the slice')).not.toBeInTheDocument()
     expect(server.reads).toEqual([])
   })
 })

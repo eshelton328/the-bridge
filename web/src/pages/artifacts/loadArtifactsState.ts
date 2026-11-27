@@ -7,7 +7,7 @@
 // owner leaves the page.
 import { notFound } from '@tanstack/react-router'
 import { parseState } from '../../errors/parseState.ts'
-import { type DataSourceOptions, readState } from '../../lib/dataSource.ts'
+import { type DataSourceOptions, readsLiveServer, readState } from '../../lib/dataSource.ts'
 import type { ScreenState } from '../../lib/screenState.ts'
 import { artifactsHome } from './home.ts'
 import { artifactsStates } from './states/index.ts'
@@ -30,7 +30,7 @@ export function loadArtifactsState(
   if (!read.ok) throw notFound({ data: read.error })
   const name = `artifacts/${read.value.key}`
   // The live source puts the server's library on the state first, so the page schema checks what shows.
-  if (import.meta.env.DEV && read.value.live)
+  if (readsLiveServer() && read.value.live)
     return import('./liveArtifacts.ts')
       .then((live) => live.withLiveArtifacts(read.value.state, { signal }))
       .then((merged) => parseState(ArtifactsState, merged, `${name} (live)`))

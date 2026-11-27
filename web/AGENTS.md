@@ -52,6 +52,11 @@ Run these in `web/`; the root `package.json` has neither.
   `?source=fixtures` shows their sample data).
 - `pnpm storybook`: Storybook on http://localhost:6007. Each story is
   also a Vitest browser test.
+- `pnpm build:served`: the app built in the served mode (d-134), which
+  reads the live server as `pnpm dev` does, starts push and the Inbox
+  feed, and ignores `?state=`. `pnpm preview` serves it with the same
+  `/api` proxy and the same `BRIDGE_SERVER_URL` rule. `pnpm build` stays
+  on fixtures. The keyboard trace runs only under `pnpm dev`.
 
 ## Folders
 

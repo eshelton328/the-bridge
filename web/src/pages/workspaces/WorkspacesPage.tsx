@@ -42,7 +42,7 @@ import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { report } from '../../errors/reporter.ts'
 import { copyText } from '../../lib/copyText.ts'
-import { readsLive } from '../../lib/dataSource.ts'
+import { readsLive, readsLiveServer } from '../../lib/dataSource.ts'
 import { useInboxBadge, useInboxStreamHost } from '../../lib/inboxFeed.ts'
 import { workspacesSources } from './loadWorkspacesState.ts'
 import { MarkdownChatsContext } from '../../blocks/markdownChats.ts'
@@ -132,7 +132,7 @@ export function WorkspacesPage() {
   useEffect(() => {
     let stop: (() => void) | undefined
     let gone = false
-    if (import.meta.env.DEV && live) {
+    if (readsLiveServer() && live) {
       void import('./liveWorkspaces.ts').then((live) => {
         if (!gone) stop = live.watchLiveWorkspaces({ onChange: () => void router.invalidate(), onInbox: inboxChanged })
       })
@@ -147,7 +147,7 @@ export function WorkspacesPage() {
   // Each live Claude chat's model (W10): while a restart runs, the chat's composer is off and says so.
   // A restarted chat reads its transcript again, as its stream may have ended (not-found) while the chat restarted.
   const retryTranscriptRef = useRef<(liveChat: string) => void>(() => undefined)
-  const models = useLiveModel(import.meta.env.DEV && live, state.data, (liveChat) => {
+  const models = useLiveModel(readsLiveServer() && live, state.data, (liveChat) => {
     retryTranscriptRef.current(liveChat)
   })
   // A chat whose restart runs stays on its pane for pane follow, even while the list shows a shell there.
@@ -181,7 +181,7 @@ export function WorkspacesPage() {
       layoutsSeen: layoutsSeenOf(loadedRef.current),
     })
   }
-  const { data: liveData, transcripts } = useLiveTranscripts(import.meta.env.DEV && live, state.data)
+  const { data: liveData, transcripts } = useLiveTranscripts(readsLiveServer() && live, state.data)
   useLayoutEffect(() => {
     retryTranscriptRef.current = (liveChat) => {
       transcripts?.retry(liveChat)
@@ -189,19 +189,19 @@ export function WorkspacesPage() {
   })
   // A tab the workbench follows a moved chat to (W2d) shows in place of herdr's active tab, drawn from each layout read.
   const { data, ui: shownUi } = useMemo(() => withShownTabs(liveData, ui), [liveData, ui])
-  const files = useLiveUploads(import.meta.env.DEV && live)
-  const pendings = useLivePending(import.meta.env.DEV && live, search.state, drafts)
+  const files = useLiveUploads(readsLiveServer() && live)
+  const pendings = useLivePending(readsLiveServer() && live, search.state, drafts)
   // Each live Claude chat's terminal dialog while it needs the owner (R69).
-  const dialogs = useLiveDialogs(import.meta.env.DEV && live)
+  const dialogs = useLiveDialogs(readsLiveServer() && live)
   // Each live Claude chat's "/" list, read from the server each time it opens (review R34).
-  const skillLists = useLiveSkills(import.meta.env.DEV && live)
+  const skillLists = useLiveSkills(readsLiveServer() && live)
   // Each live Claude chat's effort (W10): a set level shows until the next list read.
-  const efforts = useLiveEffort(import.meta.env.DEV && live, state.data)
+  const efforts = useLiveEffort(readsLiveServer() && live, state.data)
   // The Inbox badge: the app's live count on the live home, the shown state's number on fixtures (lib/inboxFeed.ts).
   const railBadge = useInboxBadge(data.railBadge, live)
   // The live side chats (backend #460): the side chat of the chat the owner opened it for, while that chat is a live
   // Claude chat; none for a Codex chat or a shell, and the fixtures keep their own.
-  const sides = useSideChats(import.meta.env.DEV && live)
+  const sides = useSideChats(readsLiveServer() && live)
   const sidePane = data.panes.find((p) => p.id === shownUi.sideChatFor)
   const sideChat =
     sides === undefined
@@ -210,7 +210,7 @@ export function WorkspacesPage() {
         ? sides.sideChatOf(sidePane.id, sidePane.liveChat, sidePane.head.title)
         : undefined
   const screenData = withRestarting({ ...data, railBadge, sideChat }, models.isRestarting)
-  const layoutWrites = useLayoutWrites(import.meta.env.DEV && live, data, (workspace, chat, tab) => {
+  const layoutWrites = useLayoutWrites(readsLiveServer() && live, data, (workspace, chat, tab) => {
     changeUi(followTab(liveData, uiRef.current, workspace, chat, tab))
   })
   // The live list's edits (R41, R42): renames, the workspaces' order and a close, shown from the next list read.
@@ -241,7 +241,7 @@ export function WorkspacesPage() {
     },
   })
   const workspaceEdits = useWorkspaceEdits(
-    import.meta.env.DEV && live,
+    readsLiveServer() && live,
     data,
     (chat, next) => {
       const owner = next.workspaces.find((w) => w.chats?.some((c) => c.id === chat))?.id
@@ -282,7 +282,7 @@ export function WorkspacesPage() {
   // A chat made since the page last read the list is not in the list it comes back with: the link reads it again.
   const readAgain = useCallback(
     async (chat: string) => {
-      if (!(import.meta.env.DEV && live)) return false
+      if (!(readsLiveServer() && live)) return false
       const listed = await import('./liveWorkspaces.ts').then((l) => l.serverListsChat(chat))
       if (listed) void router.invalidate()
       return listed
@@ -306,7 +306,7 @@ export function WorkspacesPage() {
   }
   // The server ID of the live Claude chat whose pane is `chat`, read when its composer sends: none for a sample chat.
   const liveChatOf = (chat: string) => {
-    if (!import.meta.env.DEV || !live) return undefined
+    if (!readsLiveServer() || !live) return undefined
     const pane = data.panes.find((p) => p.id === chat)
     return pane?.type === 'chat' ? pane.liveChat : undefined
   }
@@ -374,7 +374,7 @@ export function WorkspacesPage() {
           )
         })
   // New chat (W3): Start chat starts a live Claude chat and opens it when the list shows it (useNewChat.ts).
-  const newChat = useNewChat(import.meta.env.DEV && live, {
+  const newChat = useNewChat(readsLiveServer() && live, {
     data,
     herdrTabs: liveData.liveTabs,
     open: ui.newChatOpen === true,
