@@ -24,6 +24,7 @@ export const menuOpen = {
       tabs: 'Project sections',
       overview: 'Overview',
       ideas: 'Ideas',
+      repositories: 'Repositories',
       message: 'First message',
       retry: 'Retry',
       panels: {
@@ -52,6 +53,15 @@ export const menuOpen = {
         chips: 'Filter by area',
         noMatch: 'No chat matches',
       },
+      noRepositories: 'No repositories',
+      visibility: { public: 'Public', private: 'Private', internal: 'Internal' },
+      counts: {
+        openPull: '{n} open PR',
+        openPulls: '{n} open PRs',
+        worktree: '{n} worktree',
+        worktrees: '{n} worktrees',
+      },
+      unread: { about: 'GitHub facts not read', pulls: 'Open PRs not read', worktrees: 'Worktrees not read' },
     },
     projects: [
       {

@@ -35,6 +35,7 @@ export const ProjectPageWords = z.object({
   tabs: z.string(),
   overview: z.string(),
   ideas: z.string(),
+  repositories: z.string(),
   /** Quick chat's words (R8). */
   message: z.string(),
   retry: z.string(),
@@ -59,11 +60,19 @@ export const ProjectPageWords = z.object({
     chips: z.string(),
     noMatch: z.string(),
   }),
+  /**
+   * The Repositories tab (increment two, R2, R8): the empty list, each visibility, and each count with `{n}` and the
+   * line of a part not read.
+   */
+  noRepositories: z.string(),
+  visibility: z.record(z.enum(['public', 'private', 'internal']), z.string()),
+  counts: z.record(z.enum(['openPull', 'openPulls', 'worktree', 'worktrees']), z.string()),
+  unread: z.record(z.enum(['about', 'pulls', 'worktrees']), z.string()),
 })
 export type ProjectPageWords = z.infer<typeof ProjectPageWords>
 
-/** A project page's tab (R4): Overview and Ideas only, the tabs of increment one (d-133). */
-export const ProjectTab = z.enum(['overview', 'ideas'])
+/** A project page's tab (R4): Overview and Ideas of increment one, and Repositories of increment two (d-133). */
+export const ProjectTab = z.enum(['overview', 'repositories', 'ideas'])
 export type ProjectTab = z.infer<typeof ProjectTab>
 
 /** An Inbox panel row (R5): the item's kind tile, title, project and age ("5d"). */
@@ -136,6 +145,25 @@ export type IdeaRow = z.infer<typeof IdeaRow>
 export const ProjectIdeas = z.object({ rows: z.array(IdeaRow), notRead: z.string().optional() })
 export type ProjectIdeas = z.infer<typeof ProjectIdeas>
 
+/**
+ * One repository of the Repositories tab (increment two, R2, R8), as the server gives it: each count or fact null when
+ * not read or off GitHub, and `unread` naming the parts not read.
+ */
+export const RepositoryRow = z.object({
+  id: z.string().min(1),
+  role: z.string(),
+  visibility: z.enum(['public', 'private', 'internal']).nullable(),
+  release: z.string().nullable(),
+  openPulls: z.number().int().nonnegative().nullable(),
+  worktrees: z.number().int().nonnegative().nullable(),
+  unread: z.array(z.enum(['about', 'pulls', 'worktrees'])),
+})
+export type RepositoryRow = z.infer<typeof RepositoryRow>
+
+/** The Repositories tab's rows in `project.yaml` order, or none and the line of a read that missed. */
+export const ProjectRepositories = z.object({ rows: z.array(RepositoryRow), notRead: z.string().optional() })
+export type ProjectRepositories = z.infer<typeof ProjectRepositories>
+
 export const ProjectsData = z.object({
   title: z.string(),
   /** New project: drawn as the frames do; it has no action until increment four (d-133). */
@@ -154,6 +182,8 @@ export const ProjectsData = z.object({
   overview: ProjectOverview.optional(),
   /** The open project's Ideas tab (R10), read when the tab shows; with none the tab draws nothing. */
   ideas: ProjectIdeas.optional(),
+  /** The open project's Repositories tab (increment two), read when the tab shows; with none the tab draws nothing. */
+  repositories: ProjectRepositories.optional(),
   /** The line of a read or a pin that missed, such as "Projects not read — the server answered 500". */
   notice: z.string().optional(),
 })

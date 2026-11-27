@@ -28,6 +28,10 @@ moves to `web/src/blocks/`.
   state and tags in the meta, the age at the end). It takes only the
   words it draws. The frames' table (D08, T08, T08b, M08) is a later
   issue's.
+- `RepositoriesList` is the Repositories tab: compact `ListRow` rows (role,
+  visibility and release in the meta, the counts at the end, or after the
+  meta on the phone, each part not read named). The frames' sections and
+  tiles are later PRs'.
 - `ContextDrift` is the Context drift panel (R9): `PageHeader` with the
   secondary Run check and its `RefreshIcon` (off while `busy`) over a
   `Panel` with the check's time and scope and a compact `ListRow` for each

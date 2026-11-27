@@ -69,7 +69,7 @@ describe('a project page (R4)', () => {
     ['the tablet', 1024, 1366],
     ['the phone', 390, 844],
   ] as const) {
-    it(`opens from its card with the header and the two tabs on ${name}, and Back opens the home`, async () => {
+    it(`opens from its card with the header and the three tabs on ${name}, and Back opens the home`, async () => {
       await setViewport(width, height)
       const server = withServer()
       const router = await renderAt('/projects')
@@ -83,7 +83,7 @@ describe('a project page (R4)', () => {
           .getByRole('tab')
           .elements()
           .map((t) => t.textContent),
-      ).toEqual(['Overview', 'Ideas'])
+      ).toEqual(['Overview', 'Repositories', 'Ideas'])
       expect(server.calls('detail').map((c) => c.path)).toEqual(['/api/projects/alpha'])
       await userEvent.click(page.getByRole('button', { name: 'Back to Projects' }))
       await expect.poll(() => router.state.location.pathname).toBe('/projects')

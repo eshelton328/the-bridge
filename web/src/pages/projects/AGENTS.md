@@ -20,8 +20,8 @@ T10b, M10 for the home, D01, T01, T01b, M01 for a project's page), read with
   nothing: both are increment four (d-133). A click on a card opens its
   project's page.
 - A project's page is `ui.open` on the same state, so it shares the
-  home's data and screen. It shows the header and the tabs of increment
-  one, Overview and Ideas (d-133). The Overview draws the Inbox and Queue
+  home's data and screen. It shows the header and the tabs Overview,
+  Repositories (increment two) and Ideas (d-133). The Overview draws the Inbox and Queue
   panels (R5, R6) from `data.overview`: the overview states' rows, or
   the live page's from the server; with none it draws no panel.
   `ProjectPage.tsx` is its
@@ -75,6 +75,14 @@ T10b, M10 for the home, D01, T01, T01b, M01 for a project's page), read with
     change shows after a page open until NCC-139; NCC-149 moves the reads.
     The search, the area chips and the 10-row pager work on the rows read
     (`app/ProjectChatsTable.test.tsx`); a read that missed shows no count.
+  - The Repositories tab (increment two; the live slice, plain on every
+    size) is `?tab=repositories`. Only then does the loader read
+    `GET /api/projects/:slug/repositories`: one row per repository, its
+    role, visibility and newest release, its open PR and worktree counts,
+    and the line of each part not read. A miss shows one line
+    ("Repositories not read — the server answered 500").
+    `app/ProjectRepositoriesLive.test.tsx` checks it at 1440, 1024 and
+    390 px with the fake.
   - report() gets only a miss the server answered, as `ProjectsMissError`
     with its step, kind and status, never a name.
 - The home's route test is `app/ProjectsHome.test.tsx` (every menu closed

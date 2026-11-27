@@ -4,7 +4,8 @@
 // page of `slug` open. In development it reads the project from the server
 // (`GET /api/projects/:slug`, liveProjects.ts) unless `?source=fixtures` names
 // the sample data. A slug with no project, or one ProjectSlug refuses (no read), is not found.
-// `?tab=ideas` reads the live Ideas tab (R10).
+// `?tab=ideas` reads the live Ideas tab (R10), `?tab=repositories` the live
+// Repositories tab (increment two).
 import { ProjectSlug } from '@bridge/contract'
 import { notFound } from '@tanstack/react-router'
 import { parseState } from '../../errors/parseState.ts'
@@ -46,11 +47,16 @@ export function loadProjectState(
   if (readsLiveServer() && read.value.live)
     return import('./liveProjects.ts')
       .then(async (live) => {
-        const project = await live.withLiveProject(read.value.state, slug, { signal, chats: view.tab !== 'ideas' })
-        if (view.tab !== 'ideas' || project.data.projects.length === 0) return project
-        const tab: ProjectTab = 'ideas'
+        const tab = view.tab
+        const project = await live.withLiveProject(read.value.state, slug, {
+          signal,
+          chats: tab !== 'ideas' && tab !== 'repositories',
+        })
+        if (tab === undefined || tab === 'overview' || project.data.projects.length === 0) return project
         const shownTab = { ...project, ui: { ...project.ui, tab } }
-        return live.withLiveIdeas(shownTab, slug, { signal })
+        return tab === 'ideas'
+          ? live.withLiveIdeas(shownTab, slug, { signal })
+          : live.withLiveRepositories(shownTab, slug, { signal })
       })
       .then((merged) => shown(merged, `${name} (live)`))
   return shown(read.value.state, name)
