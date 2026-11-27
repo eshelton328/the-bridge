@@ -26,7 +26,11 @@ project, the pinned ones first. Its frames are PNG references in
     ones first, then by name (R2). A list that misses shows no projects,
     never the sample ones, and one line ("Projects not read — the server
     answered 500").
-  - A pin changes nothing yet.
+  - Pin to top (Unpin on a pinned card) sends `PUT /api/projects/:slug/pin`
+    and then reads the list again, so the card moves (R3). The server keeps
+    the pins, so they stay after a reload and on each device. A pin that
+    misses keeps the order and shows one line ("Not pinned — the server did
+    not answer"). On fixtures a pin does nothing.
   - report() gets only a miss the server answered, as `ProjectsMissError`
     with its step, kind and status, never a name.
 - The home's route test is `app/ProjectsHome.test.tsx` (every menu closed
@@ -34,7 +38,7 @@ project, the pinned ones first. Its frames are PNG references in
   to `home.ts`, the loader or a screen.
 - The rail, the tab bar and the More drawer open `/projects` through
   `lib/navRoutes.ts` (R1); `app/ProjectsRoute.test.tsx` taps each one.
-- `app/ProjectsLive.test.tsx` covers the live home (R2)
+- `app/ProjectsLive.test.tsx` covers the live home (R2, R3, the misses)
   with the fake `lib/fakeProjectsServer.ts`.
 
 ## Folders

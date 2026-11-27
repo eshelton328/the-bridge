@@ -1,14 +1,18 @@
-// A fake of the server's Projects list route (f-008 R2), for tests:
+// A fake of the server's Projects home routes (f-008 R2, R3), for tests:
 // `GET /api/projects` (the pinned projects first, then the others, each part
-// by name, as the server sorts them). Every project and answer is checked
-// against the contract, so a test cannot get what the server would not.
-// `answerNext` answers the next request of one kind with a
+// by name, as the server sorts them) and `PUT /api/projects/:slug/pin` (the
+// card as it is now). Every project, body and answer is checked against the
+// contract, so a test cannot send or get what the server would not: a body the
+// contract refuses is 400 invalid-input, and an unknown slug is 404. The pins
+// live in the fake, as the server keeps them in a file, so a new page (a
+// reload) reads them. `answerNext` answers the next request of one kind with a
 // test's answer, and `requests` records each one with its body. A test plugs
 // `handle` into its `fetch` stub.
-import { ProjectsResponse, ProjectSummary } from '@bridge/contract'
+import { PinProjectRequest, ProjectsResponse, ProjectSummary } from '@bridge/contract'
+import { errorAnswer } from './fakeTranscriptServer.ts'
 
 /** A request kind the fake takes. */
-export type ProjectsCall = 'list'
+export type ProjectsCall = 'list' | 'pin'
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } })
@@ -20,6 +24,9 @@ const bodyOf = (init: RequestInit | undefined): unknown => {
     return undefined
   }
 }
+
+const invalid = () =>
+  errorAnswer({ kind: 'invalid-input', issues: ['the body'], message: 'Invalid input', requestId: 'r-400' }, 400)
 
 /** The server's order: pinned first, then by name, by code point. */
 const byPinThenName = (a: ProjectSummary, b: ProjectSummary) =>
@@ -33,9 +40,19 @@ export function fakeProjectsServer(projects: readonly unknown[] = []) {
     }),
   )
   const answers = new Map<ProjectsCall, () => Response | Promise<Response>>()
-  // Each call by its name, so a test can ask for any.
-  const requests: { call: string; path: string; body: unknown }[] = []
+  const requests: { call: ProjectsCall; path: string; body: unknown }[] = []
   const shown = () => [...stored.values()].sort(byPinThenName)
+
+  const pin = (slug: string, path: string, init: RequestInit | undefined): Response => {
+    const parsed = PinProjectRequest.safeParse(bodyOf(init))
+    if (new Headers(init?.headers).get('content-type') !== 'application/json' || !parsed.success) return invalid()
+    const project = stored.get(slug)
+    if (project === undefined)
+      return errorAnswer({ kind: 'not-found', path, message: 'no project has this slug', requestId: 'r-404' }, 404)
+    const next = ProjectSummary.parse({ ...project, pinned: parsed.data.pinned })
+    stored.set(slug, next)
+    return json({ project: next })
+  }
 
   return {
     requests,
@@ -50,7 +67,9 @@ export function fakeProjectsServer(projects: readonly unknown[] = []) {
     /** The answer to a request for `path`, or undefined when it is not a Projects home route. */
     handle: (path: string, init?: RequestInit): Response | Promise<Response> | undefined => {
       const method = (init?.method ?? 'GET').toUpperCase()
-      const call: ProjectsCall | undefined = path === '/api/projects' && method === 'GET' ? 'list' : undefined
+      const pinPath = /^\/api\/projects\/([^/]+)\/pin$/.exec(path)
+      const call: ProjectsCall | undefined =
+        path === '/api/projects' && method === 'GET' ? 'list' : pinPath !== null && method === 'PUT' ? 'pin' : undefined
       if (call === undefined) return undefined
       requests.push({ call, path, body: bodyOf(init) })
       const next = answers.get(call)
@@ -58,7 +77,8 @@ export function fakeProjectsServer(projects: readonly unknown[] = []) {
         answers.delete(call)
         return next()
       }
-      return json(ProjectsResponse.parse({ projects: shown() }))
+      if (call === 'list') return json(ProjectsResponse.parse({ projects: shown() }))
+      return pin(decodeURIComponent(pinPath?.[1] ?? ''), path, init)
     },
   }
 }

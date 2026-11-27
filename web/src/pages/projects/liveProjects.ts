@@ -2,9 +2,11 @@
 // `?source=live` (as the Artifacts home, d-117). The loader reads the brain's
 // projects from the-bridge server (`GET /api/projects`) through the typed RPC
 // client and puts them on the home's cards, in the server's order: the pinned
-// ones first, then by name (R2).
+// ones first, then by name (R2). A pin (`pinProject`) sends
+// `PUT /api/projects/:slug/pin`; the entry then reads the list again, so the
+// card moves (R3). The pins are a server file, so each device sees them.
 //
-// A read that misses shows one short line by status ("Projects not
+// A read or a pin that misses shows one short line by status ("Projects not
 // read — the server answered 500"), and a list that misses shows no projects,
 // never the sample ones. report() gets only a miss the server answered, as
 // `ProjectsMissError` with the step, kind and status, never a name. A reply the
@@ -16,7 +18,7 @@ import { api } from '../../lib/api.ts'
 import type { ScreenState } from '../../lib/screenState.ts'
 import type { ProjectCard, ProjectsData, ProjectsUi } from './types.ts'
 
-/** How long a read waits for the server, in ms, as the Artifacts reads do. */
+/** How long a read or a pin waits for the server, in ms, as the Artifacts reads do. */
 const projectsTimeoutMs = 8000
 
 /** A request that missed: its error kind (or `unreachable`, `timeout`, `status`) and the HTTP status, if one came. */
@@ -25,7 +27,7 @@ type ProjectsMiss = {
   readonly status: number | undefined
 }
 
-type ProjectsStep = 'list'
+type ProjectsStep = 'list' | 'pin'
 
 /** A miss for report(): a stable name and, in its message, only the step, the kind and the status. */
 class ProjectsMissError extends Error {
@@ -106,4 +108,14 @@ export async function withLiveProjects(
   }
   const { projects } = ProjectsResponse.parse(readJson(answer.value))
   return { ...state, data: { ...state.data, projects: projects.map(projectCard), live: {} } }
+}
+
+/** Pins or unpins the project `slug` (`PUT /api/projects/:slug/pin`); a miss gives its line. */
+export async function pinProject(slug: string, pinned: boolean): Promise<Result<void, string>> {
+  const sent = await send((signal) =>
+    api.api.projects[':slug'].pin.$put({ param: { slug }, json: { pinned } }, { init: { signal } }),
+  )
+  if (sent.ok) return ok(undefined)
+  reportMiss('pin', sent.error)
+  return err(missLine(pinned ? 'Not pinned' : 'Not unpinned', sent.error))
 }

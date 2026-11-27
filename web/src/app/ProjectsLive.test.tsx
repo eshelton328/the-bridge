@@ -74,6 +74,14 @@ async function tapProjects(device: Device) {
   expect(router.state.location.searchStr).toBe('')
 }
 
+/** Opens /projects in a new router, as a reload does. */
+async function reload() {
+  await unmountRendered()
+  const router = createRouter({ routeTree, history: createMemoryHistory({ initialEntries: ['/projects'] }) })
+  const view = await testRender(<RouterProvider router={router} />)
+  onTestFinished(view.unmount)
+}
+
 const shown = () =>
   [...document.querySelectorAll('[data-figma^="project card · "]')].map((el) =>
     el.getAttribute('data-figma')?.replace('project card · ', ''),
@@ -97,5 +105,57 @@ describe('the live Projects home', () => {
       expect(server.calls('list')).toHaveLength(1)
       expect(getReports()).toEqual([])
     })
+
+    it(`moves a card first when the owner pins it, and keeps it first after a reload (R3), on ${device.name}`, async () => {
+      const server = withServer()
+      await tapProjects(device)
+      await expect.poll(shown).toEqual(['Alpha', 'Beta'])
+      await userEvent.click(page.getByRole('button', { name: 'Actions for Beta' }))
+      await userEvent.click(page.getByRole('menuitem', { name: 'Pin to top' }))
+      await expect.poll(shown).toEqual(['Beta', 'Alpha'])
+      expect(server.calls('pin').map((c) => [c.path, c.body])).toEqual([['/api/projects/beta/pin', { pinned: true }]])
+      expect(server.calls('list')).toHaveLength(2)
+      await expect.element(page.getByText('Pinned')).toBeVisible()
+      await reload()
+      await expect.poll(shown).toEqual(['Beta', 'Alpha'])
+      await expect.element(page.getByText('Pinned')).toBeVisible()
+      // Unpin puts it back by name.
+      await userEvent.click(page.getByRole('button', { name: 'Actions for Beta' }))
+      await userEvent.click(page.getByRole('menuitem', { name: 'Unpin' }))
+      await expect.poll(shown).toEqual(['Alpha', 'Beta'])
+      expect(getReports()).toEqual([])
+    })
   }
+
+  it('says in one line that a list read missed, with no sample project, and reports its kind and status', async () => {
+    const server = withServer()
+    server.answerNext(
+      'list',
+      () =>
+        new Response(JSON.stringify({ error: { kind: 'internal', message: 'Failed', requestId: 'r-500' } }), {
+          status: 500,
+          headers: { 'content-type': 'application/json' },
+        }),
+    )
+    await tapProjects(devices[0])
+    await expect
+      .element(page.getByRole('status').filter({ hasText: 'Projects not read — the server answered 500' }))
+      .toBeVisible()
+    expect(shown()).toEqual([])
+    expect(getReports().map((r) => r.error.message)).toEqual(['A projects request missed: list internal 500'])
+  })
+
+  it('keeps the order and says so when a pin misses', async () => {
+    const server = withServer()
+    await tapProjects(devices[0])
+    await expect.poll(shown).toEqual(['Alpha', 'Beta'])
+    server.answerNext('pin', () => Promise.reject(new TypeError('Load failed')))
+    await userEvent.click(page.getByRole('button', { name: 'Actions for Beta' }))
+    await userEvent.click(page.getByRole('menuitem', { name: 'Pin to top' }))
+    await expect
+      .element(page.getByRole('status').filter({ hasText: 'Not pinned — the server did not answer' }))
+      .toBeVisible()
+    expect(shown()).toEqual(['Alpha', 'Beta'])
+    expect(getReports()).toEqual([])
+  })
 })
