@@ -1,13 +1,11 @@
-// The Overview's Chats panel (f-008 R7, NCC-130 B1): the herdr chats tagged
-// with the project, each with its workspace and status pill; a press opens
-// it. No chat gives one muted line, a missed read its line. Props only.
+// The Overview's Chats panel (f-008 R7): the project's tagged chats with workspace and status; a press opens one.
+// No chat gives one muted line, a missed read its line. Props only.
 import { ListRow, PageHeader, Panel, Stack, StatusPill } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
 import type { ProjectOverview, ProjectPageWords } from '../types.ts'
 
-// The heading row as the Inbox and Queue panels have it: 32 high (44 on touch), 16 over the panel. In the
-// Overview's grid the panel spans both desktop columns, under them; one column puts it last.
+// The heading row as Inbox and Queue have it (32 high, 44 on touch); the panel spans the desktop's two columns.
 const column = css({ display: 'flex', flexDirection: 'column', gap: '16', minW: '[0]', gridColumn: '[1 / -1]' })
 const head = {
   desktop: css({ display: 'flex', alignItems: 'center', minH: 'control.md' }),
@@ -26,11 +24,10 @@ export type ChatsPanelProps = {
 }
 
 export function ChatsPanel({ chats, words, layout, onChatOpen }: ChatsPanelProps) {
-  const title = words.title
   return (
-    <section className={column} aria-label={title}>
+    <section className={column} aria-label={words.title}>
       <div className={layout === 'desktop' ? head.desktop : head.touch}>
-        <PageHeader title={title} count={chats.rows.length} level={2} size="pane" />
+        <PageHeader title={words.title} count={chats.rows.length} level={2} size="pane" />
       </div>
       <Panel>
         <Stack gap="0">
@@ -42,13 +39,7 @@ export function ChatsPanel({ chats, words, layout, onChatOpen }: ChatsPanelProps
               title={c.title}
               meta={c.workspace}
               trailing={<StatusPill label={words.statuses[c.status]} tone={tones[c.status]} dot />}
-              onSelect={
-                onChatOpen === undefined
-                  ? undefined
-                  : () => {
-                      onChatOpen(c.id)
-                    }
-              }
+              onSelect={onChatOpen?.bind(undefined, c.id)}
             />
           ))}
           {chats.rows.length === 0 && chats.notRead === undefined ? <p className={line}>{words.none}</p> : null}
