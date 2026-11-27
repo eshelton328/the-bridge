@@ -55,8 +55,11 @@ export const ProjectsTabletWide: Story = {
     ui: projectsStates.projectsTabletWide.ui,
     viewport: 'tablet',
   },
-  play: async ({ canvas }) => {
+  play: async ({ canvas, canvasElement }) => {
     await expectHome(canvas)
     await expect(canvas.queryByRole('menu')).toBeNull()
+    // In landscape the header starts 24 down, as T10b draws it; in portrait (T10) 40.
+    const home = canvasElement.querySelector('[data-figma="header"]')?.parentElement
+    await expect(home === null || home === undefined ? '' : getComputedStyle(home).paddingTop).toBe('24px')
   },
 }
