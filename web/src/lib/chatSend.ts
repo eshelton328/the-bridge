@@ -194,6 +194,8 @@ async function missOf(
     case 'qa-not-ready':
     case 'linear-bad-reply':
     case 'linear-unavailable':
+    case 'project-not-ready':
+    case 'brain-busy':
     case 'workspace-not-ready':
       // Only an upload, an Inbox or a QA action gets these kinds, never a send, a stop, a clear or a command.
       return unexpected(fault, action, error.kind, res.status)

@@ -165,7 +165,14 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
   repository's visibility, newest release (an https github.com link),
   open PR and worktree counts, each null when not read or off GitHub, and
   `unread` names the parts not read. `projects.changed` on `/api/events` says that a
-  project's open PRs changed: read the project again (NCC-156).
+  project's open PRs changed: read the project again (NCC-156). Increment four: a create or edit body holds a
+  one-line name and purpose (no control character, the contract's
+  limits) and an icon or null, never a slug or a path. The Queue
+  (`queue.ts`): an item is named by a `QueueItemId` (16 hex characters of
+  a sha256 the server makes) and an issue by its `QaIssueId`, a priority
+  is an integer 0 to 4, and a PR is `local` exactly when it names no
+  issue. An idea state body is `parked` or `open`
+  only. `queue.changed` carries only the slug.
 - The QA tab (f-008 increment three, `qa.ts`): an issue is named by its
   Linear key (`QaIssueId`, such as `NCC-12`), so a path word such as
   `stop` is never one, and a draft by a 16-hex `QaDraftId`. An item

@@ -14,6 +14,7 @@ export {
   TabId,
   ToolkitFileId,
   ToolkitItemId,
+  QueueItemId,
   UploadId,
   WorkspaceId,
 } from './ids.ts'
@@ -84,8 +85,15 @@ export {
   IdeaState,
   ChatTag,
   maxChatTags,
+  FeatureId,
+  IdeaStateRequest,
+  IdeaStateResponse,
+  MakeFeatureRequest,
+  MakeFeatureResponse,
   ProjectChat,
   ProjectChatsResponse,
+  ProjectDetailsRequest,
+  ProjectDetailsResponse,
   maxDriftFindings,
   maxIdeaBody,
   maxProjectSummary,
@@ -108,7 +116,20 @@ export {
   RepositorySection,
   RepositoryVisibility,
   RunDriftRequest,
+  SlugQuery,
+  SlugResponse,
 } from './projects.ts'
+export {
+  LinearPriority,
+  maxQueueIssues,
+  MoveToLinearRequest,
+  MoveToLinearResponse,
+  QueueIssue,
+  QueuePriorityRequest,
+  QueueProject,
+  QueuePull,
+  QueueResponse,
+} from './queue.ts'
 export {
   maxQaAnchor,
   maxQaStep,
@@ -236,6 +257,7 @@ export {
   LiveEvent,
   ProjectsChangedEvent,
   QaChangedEvent,
+  QueueChangedEvent,
   ToolkitChangedEvent,
   WorkspacesChangedEvent,
 } from './liveEvents.ts'

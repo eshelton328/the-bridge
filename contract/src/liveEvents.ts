@@ -42,6 +42,9 @@ export type ProjectsChangedEvent = z.infer<typeof ProjectsChangedEvent>
 /** A QA launch of the project started, ran, failed or stopped: read `GET /api/projects/:slug/qa` again. */
 export const QaChangedEvent = eventOf('qa.changed', z.object({ project: ProjectSlug }))
 export type QaChangedEvent = z.infer<typeof QaChangedEvent>
+/** A project's Queue changed (a priority write or a Move to Linear): read `GET /api/projects/:slug/queue` again. */
+export const QueueChangedEvent = eventOf('queue.changed', z.strictObject({ slug: ProjectSlug }))
+export type QueueChangedEvent = z.infer<typeof QueueChangedEvent>
 
 /** One event of the stream. Its `type` is also the SSE event name, and its `seq` the SSE id. */
 export const LiveEvent = z.discriminatedUnion('type', [
@@ -50,6 +53,7 @@ export const LiveEvent = z.discriminatedUnion('type', [
   LayoutChangedEvent,
   ProjectsChangedEvent,
   QaChangedEvent,
+  QueueChangedEvent,
   ToolkitChangedEvent,
   WorkspacesChangedEvent,
 ])

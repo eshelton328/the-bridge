@@ -121,6 +121,8 @@ async function missOf(action: LayoutWrite, res: Response): Promise<WriteAnswer> 
     case 'qa-not-ready':
     case 'linear-bad-reply':
     case 'linear-unavailable':
+    case 'project-not-ready':
+    case 'brain-busy':
     case 'workspace-not-ready':
       // The page sends only bodies the contract takes, for a chat it lists: the server's refusal is a bug.
       return reported(action, error.kind, res.status)

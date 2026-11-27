@@ -98,6 +98,18 @@ export const ErrorKind = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('upload-conflict'), ...common }),
   /** The server's disk has no space for the file (507). */
   z.object({ kind: z.literal('storage-full'), ...common }),
+  /**
+   * The project cannot take the request now (409): another project or machine folder has the slug (`slugTaken`),
+   * `project.yaml` names no Linear team (`noTeam`), the project has no `product/features/` folder (`noFeatures`), or
+   * the idea already links a feature (`hasFeature`).
+   */
+  z.object({
+    kind: z.literal('project-not-ready'),
+    state: z.enum(['slugTaken', 'noTeam', 'noFeatures', 'hasFeature']),
+    ...common,
+  }),
+  /** Another git command runs in the brain, or its index is locked (503); try again. */
+  z.object({ kind: z.literal('brain-busy'), ...common }),
   /** The Inbox item cannot take this action here (409): a brain item changes in the brain, not in the app. */
   z.object({ kind: z.literal('inbox-read-only'), ...common }),
   /**
@@ -136,6 +148,8 @@ export const errorStatus = {
   'unsupported-media': 415,
   'upload-conflict': 409,
   'storage-full': 507,
+  'project-not-ready': 409,
+  'brain-busy': 503,
   'inbox-read-only': 409,
   'qa-not-ready': 409,
   'linear-bad-reply': 502,

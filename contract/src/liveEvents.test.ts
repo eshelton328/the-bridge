@@ -1,5 +1,11 @@
 import { describe, expect, expectTypeOf, it } from 'vitest'
-import { ChatStatusEvent, LayoutChangedEvent, LiveEvent, WorkspacesChangedEvent } from './liveEvents.ts'
+import {
+  ChatStatusEvent,
+  LayoutChangedEvent,
+  LiveEvent,
+  QueueChangedEvent,
+  WorkspacesChangedEvent,
+} from './liveEvents.ts'
 
 const status = {
   source: 'mac-mini/herdr',
@@ -33,6 +39,14 @@ describe('live events', () => {
   it('parses projects.changed, which holds no data', () => {
     const projects = { source: 'mac-mini/agents', seq: 6, type: 'projects.changed', data: {} }
     expect(LiveEvent.parse(projects).type).toBe('projects.changed')
+  })
+
+  it('parses a queue change that carries only the slug', () => {
+    const queue = { source: 'mac-mini/server', seq: 6, type: 'queue.changed', data: { slug: 'after-dark' } }
+    expect(QueueChangedEvent.parse(queue)).toEqual(queue)
+    expect(LiveEvent.parse(queue).type).toBe('queue.changed')
+    expect(LiveEvent.safeParse({ ...queue, data: { slug: 'after-dark', name: 'After dark' } }).success).toBe(false)
+    expect(LiveEvent.safeParse({ ...queue, data: { slug: '../x' } }).success).toBe(false)
   })
 
   it('refuses an unknown type, a status the app does not know and a chat ID without its machine', () => {

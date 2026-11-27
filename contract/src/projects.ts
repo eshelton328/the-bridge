@@ -1,6 +1,7 @@
-// The Projects app (f-008, increment one, d-133): the brain's projects, the
-// owner's pins, a project's open PRs, its idea records and its context
-// drift. A URL names a project by its folder name (its slug) and an idea by
+// The Projects app (f-008, increments one and four, d-133): the brain's
+// projects, the owner's pins, a project's open PRs, its idea records, its
+// context drift, New project and Edit details and the idea actions; the
+// Queue is in queue.ts. A URL names a project by its folder name (its slug) and an idea by
 // its record ID, never by a path. No local path goes in a response: a
 // repository gives its GitHub owner and name only, and a drift finding a
 // path relative to the root of the chat tree.
@@ -220,3 +221,64 @@ export type DriftResponse = z.infer<typeof DriftResponse>
 /** The body of `POST /api/projects/:slug/drift`. */
 export const RunDriftRequest = z.strictObject({})
 export type RunDriftRequest = z.infer<typeof RunDriftRequest>
+
+// Increment four (f-008): New project, Edit details, the Queue on Linear priorities and the idea actions.
+
+/** A line break, a control character or a Unicode line or paragraph separator. */
+const notOneLine = /[\p{Cc}\p{Zl}\p{Zp}]/u
+
+/** One line of text that the owner types: trimmed, no line break and no control character. */
+const oneLine = (min: number, max: number) =>
+  z
+    .string()
+    .trim()
+    .min(min)
+    .max(max)
+    .refine((s) => !notOneLine.test(s), 'one line, with no control characters')
+
+/**
+ * The body of `POST /api/projects` (New project, R2) and `PATCH /api/projects/:slug` (Edit details, R8): the name,
+ * the description (`purpose` in `project.yaml`, may be empty) and the icon, or null for the name's first letter. The
+ * server makes the slug from the name and checks that the library has the icon (R4).
+ */
+export const ProjectDetailsRequest = z.strictObject({
+  name: oneLine(1, maxProjectTitle),
+  purpose: oneLine(0, maxProjectSummary),
+  icon: ProjectIcon.nullable(),
+})
+export type ProjectDetailsRequest = z.infer<typeof ProjectDetailsRequest>
+
+/** The answer of a create (201) or an edit (200): the project's card. */
+export const ProjectDetailsResponse = z.strictObject({ project: ProjectSummary })
+export type ProjectDetailsResponse = z.infer<typeof ProjectDetailsResponse>
+
+/** The query of `GET /api/projects/-/slug`: the name as the owner types it. */
+export const SlugQuery = z.strictObject({ name: z.string().max(maxProjectTitle) })
+export type SlugQuery = z.infer<typeof SlugQuery>
+
+/**
+ * The answer of `GET /api/projects/-/slug` (R2, R3): the slug of the name, or null when the name gives no valid
+ * slug, and whether no brain project or machine folder has it.
+ */
+export const SlugResponse = z.strictObject({ slug: ProjectSlug.nullable(), free: z.boolean() })
+export type SlugResponse = z.infer<typeof SlugResponse>
+
+/** The body of `PUT /api/projects/:slug/ideas/:id/state` (R17): Park or Reopen only. */
+export const IdeaStateRequest = z.strictObject({ state: z.enum(['parked', 'open']) })
+export type IdeaStateRequest = z.infer<typeof IdeaStateRequest>
+
+/** The answer of an idea state change: the idea's row. */
+export const IdeaStateResponse = z.strictObject({ idea: Idea })
+export type IdeaStateResponse = z.infer<typeof IdeaStateResponse>
+
+/** A feature's ID, such as "f-009". */
+export const FeatureId = z.string().regex(/^f-[0-9]{3,}$/)
+export type FeatureId = z.infer<typeof FeatureId>
+
+/** The body of `POST /api/projects/:slug/ideas/:id/feature` (R15). */
+export const MakeFeatureRequest = z.strictObject({})
+export type MakeFeatureRequest = z.infer<typeof MakeFeatureRequest>
+
+/** The answer of Make a feature (201): the new feature's ID and the idea's row, now In design (R16). */
+export const MakeFeatureResponse = z.strictObject({ feature: FeatureId, idea: Idea })
+export type MakeFeatureResponse = z.infer<typeof MakeFeatureResponse>

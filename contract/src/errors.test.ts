@@ -18,6 +18,8 @@ describe('error bodies', () => {
     expect(errorStatus['herdr-unavailable']).toBe(503)
     expect(errorStatus['too-many-requests']).toBe(429)
     expect(errorStatus['chat-not-ready']).toBe(409)
+    expect(errorStatus['project-not-ready']).toBe(409)
+    expect(errorStatus['brain-busy']).toBe(503)
   })
 
   it("reads a chat-not-ready body only with the chat's state", () => {

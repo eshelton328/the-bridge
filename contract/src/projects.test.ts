@@ -2,11 +2,17 @@ import { describe, expect, it } from 'vitest'
 import {
   DriftRun,
   Idea,
+  IdeaStateRequest,
+  MakeFeatureRequest,
+  MakeFeatureResponse,
+  maxProjectTitle,
   PinProjectRequest,
+  ProjectDetailsRequest,
   ProjectDetailResponse,
   ProjectSlug,
   ProjectSummary,
   RunDriftRequest,
+  SlugResponse,
 } from './projects.ts'
 
 const card = { slug: 'example-project', name: 'Example', purpose: 'marker-5150', icon: null, pinned: false }
@@ -80,5 +86,41 @@ describe('the projects contract', () => {
     expect(PinProjectRequest.safeParse({ pinned: true, slug: 'x' }).success).toBe(false)
     expect(RunDriftRequest.safeParse({}).success).toBe(true)
     expect(RunDriftRequest.safeParse({ command: 'rm' }).success).toBe(false)
+  })
+})
+
+describe('the increment four contract', () => {
+  const details = { name: 'After dark', purpose: 'A party game.', icon: 'rocket' }
+
+  it('takes a one-line name and purpose with an icon or none, and refuses line breaks and control characters', () => {
+    expect(ProjectDetailsRequest.safeParse(details).success).toBe(true)
+    expect(ProjectDetailsRequest.safeParse({ ...details, purpose: '', icon: null }).success).toBe(true)
+    expect(ProjectDetailsRequest.safeParse({ ...details, name: '' }).success).toBe(false)
+    expect(ProjectDetailsRequest.safeParse({ ...details, name: 'two\nlines' }).success).toBe(false)
+    expect(ProjectDetailsRequest.safeParse({ ...details, purpose: 'bell\u{7}' }).success).toBe(false)
+    expect(ProjectDetailsRequest.safeParse({ ...details, purpose: 'a\u{2028}b' }).success).toBe(false)
+    expect(ProjectDetailsRequest.safeParse({ ...details, name: 'x'.repeat(maxProjectTitle + 1) }).success).toBe(false)
+    expect(ProjectDetailsRequest.safeParse({ ...details, slug: 'after-dark' }).success).toBe(false)
+  })
+
+  it('gives a slug or none for a name', () => {
+    expect(SlugResponse.safeParse({ slug: 'after-dark', free: true }).success).toBe(true)
+    expect(SlugResponse.safeParse({ slug: null, free: false }).success).toBe(true)
+    expect(SlugResponse.safeParse({ slug: '../x', free: true }).success).toBe(false)
+  })
+
+  it('takes Park and Reopen only, and a feature ID of the f-NNN form', () => {
+    expect(IdeaStateRequest.safeParse({ state: 'parked' }).success).toBe(true)
+    expect(IdeaStateRequest.safeParse({ state: 'open' }).success).toBe(true)
+    expect(IdeaStateRequest.safeParse({ state: 'decided' }).success).toBe(false)
+    expect(MakeFeatureResponse.safeParse({ feature: 'f-009', idea: { ...idea, state: 'in-design' } }).success).toBe(
+      true,
+    )
+    expect(MakeFeatureResponse.safeParse({ feature: 'f-9', idea }).success).toBe(false)
+  })
+
+  it('takes strict empty bodies only', () => {
+    expect(MakeFeatureRequest.safeParse({}).success).toBe(true)
+    expect(MakeFeatureRequest.safeParse({ path: 'x' }).success).toBe(false)
   })
 })
