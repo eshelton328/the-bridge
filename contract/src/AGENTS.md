@@ -161,4 +161,5 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
   kind `idea` and the state `open`. A `DriftRun` lists findings only when
   its result is `findings`; each finding's paths are relative to the root
   of the chat tree. The pin and drift run bodies are strict objects
-  (`projects.test.ts`).
+  (`projects.test.ts`). `projects.changed` on `/api/events` says that a
+  project's open PRs changed: read the project again (NCC-156).

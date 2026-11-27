@@ -48,6 +48,8 @@ export type AppDeps = {
   readonly inbox?: Inbox
   /** Watches the brain's inbox folders while a client of `/api/events` is open; main.ts gives the disk watch. */
   readonly watchInbox?: InboxWatch
+  /** The projects service's watch of its PR answers; none in a test without it. */
+  readonly watchProjects?: InboxWatch
   /** The files a message can link to; with none, each files route answers 500. main.ts gives git's index of the brain. */
   readonly files?: Files
   /** The Projects app (f-008); with none, each projects route answers 500. main.ts gives the brain, gh, ncc and the disk stores. */
@@ -115,10 +117,11 @@ export function createApp({
   artifacts = noArtifacts(agents),
   inbox = noInbox(agents),
   watchInbox,
+  watchProjects,
   files = noFiles,
   projects = noProjects,
 }: AppDeps) {
-  const live = createLiveEvents(agents, watchInbox)
+  const live = createLiveEvents(agents, watchInbox, watchProjects)
   return (
     new Hono<AppEnv>()
       // Each response carries an X-Request-Id, and the request's log line has the same ID (d-115).

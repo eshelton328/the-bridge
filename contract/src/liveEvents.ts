@@ -35,11 +35,16 @@ export type InboxChangedEvent = z.infer<typeof InboxChangedEvent>
 export const ToolkitChangedEvent = eventOf('toolkit.changed', z.object({}))
 export type ToolkitChangedEvent = z.infer<typeof ToolkitChangedEvent>
 
+/** A project's open PRs changed (NCC-156): read `GET /api/projects/:slug` again. */
+export const ProjectsChangedEvent = eventOf('projects.changed', z.object({}))
+export type ProjectsChangedEvent = z.infer<typeof ProjectsChangedEvent>
+
 /** One event of the stream. Its `type` is also the SSE event name, and its `seq` the SSE id. */
 export const LiveEvent = z.discriminatedUnion('type', [
   ChatStatusEvent,
   InboxChangedEvent,
   LayoutChangedEvent,
+  ProjectsChangedEvent,
   ToolkitChangedEvent,
   WorkspacesChangedEvent,
 ])

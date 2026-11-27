@@ -112,3 +112,26 @@ describe('the Inbox events', () => {
     expect(a.events).toEqual([])
   })
 })
+
+describe('the projects events', () => {
+  it('watches the PR answers only while a client is open, and sends projects.changed on each change', () => {
+    const state: { open: number; tell: (() => void) | undefined } = { open: 0, tell: undefined }
+    const watch = (onChange: () => void) => {
+      state.open += 1
+      state.tell = onChange
+      return () => {
+        state.open -= 1
+      }
+    }
+    const agents = createFakeAgents(machine)
+    const live = createLiveEvents(agents, undefined, watch)
+    expect(state.open).toBe(0)
+    const a = client()
+    live.connect(a)
+    expect(state.open).toBe(1)
+    state.tell?.()
+    expect(a.events.map((e) => e.type)).toEqual(['projects.changed'])
+    agents.endAll({ reason: 'unreachable', message: 'down' })
+    expect(state.open).toBe(0)
+  })
+})

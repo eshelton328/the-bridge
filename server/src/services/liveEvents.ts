@@ -5,7 +5,9 @@
 // ends every client's stream; each browser connects again after its retry
 // time, and the first one opens a new subscription. The Inbox changes with
 // each chat status, each owner mark and each write in the brain's inbox
-// folders, which it watches only while a client is open (R20).
+// folders, which it watches only while a client is open (R20). It sends
+// projects.changed when a background gh run finds other open PRs (NCC-156),
+// through a watch it also holds only while a client is open.
 import { type ChatId, EventSource, type LiveEvent } from '@bridge/contract'
 import type { AgentEvent, AgentPort, AgentPortError, AgentSubscription } from './agentPort.ts'
 
@@ -28,12 +30,13 @@ export type LiveEvents = {
   readonly inboxChanged: () => void
 }
 
-export function createLiveEvents(agents: AgentPort, watchInbox?: InboxWatch): LiveEvents {
+export function createLiveEvents(agents: AgentPort, watchInbox?: InboxWatch, watchProjects?: InboxWatch): LiveEvents {
   const source = EventSource.parse(`${agents.machine}/agents`)
   const clients = new Set<LiveClient>()
   let seq = 0
   let subscription: AgentSubscription | undefined
   let unwatch: (() => void) | undefined
+  let unwatchProjects: (() => void) | undefined
 
   const envelope = (event: AgentEvent): LiveEvent => {
     const base = { source, seq: seq++ }
@@ -60,7 +63,8 @@ export function createLiveEvents(agents: AgentPort, watchInbox?: InboxWatch): Li
   }
   const stopWatch = () => {
     unwatch?.()
-    unwatch = undefined
+    unwatchProjects?.()
+    unwatch = unwatchProjects = undefined
   }
 
   const ended = (error: AgentPortError) => {
@@ -76,6 +80,9 @@ export function createLiveEvents(agents: AgentPort, watchInbox?: InboxWatch): Li
       clients.add(client)
       subscription ??= agents.subscribe(broadcast, ended)
       unwatch ??= watchInbox?.(inboxChanged)
+      unwatchProjects ??= watchProjects?.(() => {
+        send({ source, seq: seq++, type: 'projects.changed', data: {} })
+      })
       return () => {
         if (!clients.delete(client) || clients.size > 0) return
         subscription?.close()

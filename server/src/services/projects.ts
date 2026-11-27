@@ -103,6 +103,8 @@ export type Projects = {
   runDrift(slug: ProjectSlug): Promise<Result<DriftRunOutcome | NotFound, ProjectFault>>
   /** A fault of the agents is the port's own, so the route answers it as the workspaces routes do. */
   chats(slug: ProjectSlug): Promise<Result<ProjectChatsResponse | NotFound, ProjectFault | AgentPortError>>
+  /** Calls `onChange` each time a run in the background finds other open PRs (NCC-156); the result stops it. */
+  watch(onChange: () => void): () => void
 }
 
 const tagKeys = ['project', 'area', 'role'] as const
@@ -119,29 +121,48 @@ export function chatTagsOf(tokens: Readonly<Record<string, string>>): ChatTag[] 
   })
 }
 
-/** How long the open PRs of one repository are kept before `gh` runs again for it. */
+/** How old a repository's kept answer may be before a read starts a new `gh` run for it. */
 export const pullsKeptMs = 30_000
 
 /**
- * The pull source with each repository's answer kept for `pullsKeptMs`, and one run shared by the requests that
- * ask while it runs, so a reload or a second device starts no new `gh` run. A failed run is not kept.
+ * The pull source with each repository's last answer kept (NCC-156): the first read waits for its run, and the
+ * requests that cross share it; a failed first run is not kept. After that a read gets the kept answer at once,
+ * at any age, and a read of one older than `pullsKeptMs` also starts one run in the background, one at a time.
+ * When that run's PRs differ from the kept ones, `changed` is called; a failed one keeps the answer.
  */
-export function keptPulls(source: PullSource, now: () => Date): PullSource {
-  type Kept = { readonly at: number; readonly answer: Promise<Result<readonly OpenPull[], ProjectFault>> }
+export function keptPulls(source: PullSource, now: () => Date, changed: () => void = () => undefined): PullSource {
+  type Answer = Result<readonly OpenPull[], ProjectFault>
+  type Kept = { at: number; answer: Promise<Answer>; running: boolean }
   const kept = new Map<string, Kept>()
+  const refresh = (entry: Kept, repository: Parameters<PullSource['open']>[0]) => {
+    entry.running = true
+    void Promise.all([entry.answer, source.open(repository)])
+      .then(([before, after]) => {
+        if (!after.ok) return
+        entry.at = now().getTime()
+        entry.answer = Promise.resolve(after)
+        if (!before.ok || JSON.stringify(before.value) !== JSON.stringify(after.value)) changed()
+      })
+      .finally(() => {
+        entry.running = false
+      })
+  }
   return {
     open(repository) {
       const key = `${repository.owner}/${repository.name}`
       const at = now().getTime()
       const last = kept.get(key)
-      if (last !== undefined && at - last.at < pullsKeptMs) return last.answer
-      const answer = source.open(repository)
-      const entry = { at, answer }
+      if (last !== undefined) {
+        if (!last.running && at - last.at >= pullsKeptMs) refresh(last, repository)
+        return last.answer
+      }
+      const entry: Kept = { at, answer: source.open(repository), running: true }
       kept.set(key, entry)
-      void answer.then((result) => {
+      void entry.answer.then((result) => {
+        entry.running = false
         if (!result.ok && kept.get(key) === entry) kept.delete(key)
       })
-      return answer
+      return entry.answer
     },
   }
 }
@@ -179,7 +200,10 @@ export function createProjects({
   agents,
   now = () => new Date(),
 }: Deps): Projects {
-  const pulls = keptPulls(source, now)
+  const watchers = new Set<() => void>()
+  const pulls = keptPulls(source, now, () => {
+    for (const watcher of [...watchers]) watcher()
+  })
   // One store change at a time, so two pins or two runs that cross keep both.
   let queue: Promise<unknown> = Promise.resolve()
   const serial = <T>(work: () => Promise<T>): Promise<T> => {
@@ -340,11 +364,32 @@ export function createProjects({
       )
       return ok({ chats })
     },
+
+    watch(onChange) {
+      const watcher = () => {
+        onChange()
+      }
+      watchers.add(watcher)
+      return () => {
+        watchers.delete(watcher)
+      }
+    },
   }
 }
 
 /** The service of an app with none: each call fails, so each projects route answers 500 and is logged. */
 export const noProjects: Projects = (() => {
   const fault = () => Promise.resolve(err({ reason: 'failed' as const, code: 'no-store' }))
-  return { list: fault, get: fault, pin: fault, ideas: fault, idea: fault, drift: fault, runDrift: fault, chats: fault }
+  const watch = () => () => undefined
+  return {
+    list: fault,
+    get: fault,
+    pin: fault,
+    ideas: fault,
+    idea: fault,
+    drift: fault,
+    runDrift: fault,
+    chats: fault,
+    watch,
+  }
 })()
