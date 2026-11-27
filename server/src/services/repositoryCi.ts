@@ -15,7 +15,8 @@ type WorkflowRun = {
   readonly updatedAt: string
 }
 type MergedPull = { readonly createdAt: string; readonly mergedAt: string }
-type JobRun = { readonly name: string; readonly conclusion: string | null; readonly minutes: number }
+/** A job's minutes are null while it has not ended, never 0. */
+type JobRun = { readonly name: string; readonly conclusion: string | null; readonly minutes: number | null }
 
 type Repository = { readonly owner: string; readonly name: string }
 

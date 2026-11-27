@@ -63,8 +63,8 @@ const Jobs = z.object({
     z.object({
       name: z.string(),
       conclusion: z.string().nullable(),
-      started_at: z.string(),
-      completed_at: z.string().nullable(),
+      started_at: z.iso.datetime({ offset: true }),
+      completed_at: z.iso.datetime({ offset: true }).nullable(),
     }),
   ),
 })
@@ -161,7 +161,9 @@ export function createGhCi(options: GhOptions): CiSource {
           name: j.name,
           conclusion: j.conclusion,
           minutes:
-            j.completed_at === null ? 0 : Math.max(0, Date.parse(j.completed_at) - Date.parse(j.started_at)) / 60_000,
+            j.completed_at === null
+              ? null
+              : Math.max(0, Date.parse(j.completed_at) - Date.parse(j.started_at)) / 60_000,
         })),
       )
     },

@@ -91,6 +91,18 @@ describe('createGhCi', () => {
     expect(await ci.jobs(repo, 7)).toEqual({ ok: true, value: [{ name: 'lint', conclusion: 'success', minutes: 3 }] })
   })
 
+  it('gives null minutes for a job that has not ended, and EBADDATA for a bad time', async () => {
+    const gh = join(dir, 'gh')
+    const reply = (completed: string) =>
+      `{"total_count":1,"jobs":[{"name":"test","conclusion":null,"started_at":"2026-11-21T10:00:00Z","completed_at":${completed}}]}`
+    await writeFile(gh, `#!/bin/sh\necho '${reply('null')}'\n`)
+    await chmod(gh, 0o755)
+    const open = createGhCi({ command: gh, env: process.env })
+    expect(await open.jobs(repo, 7)).toEqual({ ok: true, value: [{ name: 'test', conclusion: null, minutes: null }] })
+    await writeFile(gh, `#!/bin/sh\necho '${reply('"soon"')}'\n`)
+    expect(await open.jobs(repo, 7)).toEqual({ ok: false, error: { reason: 'failed', code: 'EBADDATA' } })
+  })
+
   it('is a fault with its code only when gh fails', async () => {
     const gh = join(dir, 'gh')
     await writeFile(gh, '#!/bin/sh\necho "marker-5150" >&2\nexit 1\n')
