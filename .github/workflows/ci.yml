@@ -271,6 +271,34 @@ jobs:
           path: reports/fidelity/${{ matrix.page }}/
           retention-days: 7
 
+  # The text size check (d-122, d-131): every page state at Small, Default
+  # and Large, failing on a new cut that scripts/textSizesAccepted.ts does
+  # not accept (NCC-143). It runs when fidelity does, as the same inputs
+  # change its result: the plan job counts scripts/checkTextSizes.ts and
+  # its imports as fidelity inputs.
+  text-sizes:
+    needs: plan
+    if: ${{ !cancelled() && needs.plan.outputs.skip != 'true' }}
+    runs-on: ${{ needs.plan.outputs.fidelity == 'false' && 'ubuntu-slim' || 'ubuntu-24.04' }}
+    timeout-minutes: 30
+    steps:
+      - if: needs.plan.outputs.fidelity == 'false'
+        run: echo "::notice::No changed file can change the text size result (plan job); the check passes without a run."
+      - if: needs.plan.outputs.fidelity != 'false'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - if: needs.plan.outputs.fidelity != 'false'
+        uses: ./.github/actions/setup
+        timeout-minutes: 10
+        with:
+          packages-token: ${{ secrets.GITHUB_TOKEN }}
+          browser: "true"
+      - if: needs.plan.outputs.fidelity != 'false'
+        run: pnpm codegen
+      - if: needs.plan.outputs.fidelity != 'false'
+        run: pnpm build-storybook
+      - if: needs.plan.outputs.fidelity != 'false'
+        run: pnpm check:text-sizes --skip-build
+
   build:
     needs: plan
     if: ${{ !cancelled() && needs.plan.outputs.skip != 'true' }}

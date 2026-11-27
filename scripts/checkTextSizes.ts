@@ -6,7 +6,9 @@
 // the built Storybook as `pnpm fidelity` does; pass --skip-build to reuse
 // web/storybook-static. Heavy: run it through the bridge-verify lock.
 // Prints one JSON line, with each page's counts at Small (every problem)
-// and at Default and Large (the new ones), and exits 1 on a new problem.
+// and at Default and Large (the new ones), and exits 1 on a new problem
+// that scripts/textSizesAccepted.ts does not accept, or on an entry place
+// of that file that no longer has its cut (NCC-143).
 import { execFileSync } from 'node:child_process'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -25,11 +27,14 @@ import {
   overlapsOf,
   problemsOf,
   type SizeCounts,
+  splitAccepted,
+  type StateProblem,
   type TextMeasure,
   type TextProblem,
   type TopRun,
   windows,
 } from './textSizesLib.ts'
+import { accepted } from './textSizesAccepted.ts'
 
 const { values } = parseArgs({ options: { 'skip-build': { type: 'boolean' }, page: { type: 'string' } } })
 const pagesDir = join(repoRoot, 'web', 'src', 'pages')
@@ -260,7 +265,8 @@ if (values['skip-build'] !== true || !existsSync(join(storybookDir, 'index.json'
 const indexJson = readFileSync(join(storybookDir, 'index.json'), 'utf8')
 const server = await serveStatic(storybookDir)
 const browser = await chromium.launch({ args: ['--font-render-hinting=none'] })
-const problems: (TextProblem & { state: string; size: string })[] = []
+const problems: StateProblem[] = []
+const checkedStates = new Set<string>()
 const errors: string[] = []
 const counts: Record<string, SizeCounts> = {}
 let checked = 0
@@ -298,6 +304,7 @@ try {
         }
       }
       addCounts(counts, page, small, fresh)
+      checkedStates.add(`${page}/${state}`)
       checked += 1
     } catch (error) {
       errors.push(`${page}/${state}: ${error instanceof Error ? error.message : String(error)}`)
@@ -309,6 +316,17 @@ try {
   await browser.close()
   await server.close()
 }
-const ok = problems.length === 0 && errors.length === 0 && checked > 0
-console.log(JSON.stringify({ ok, checked, counts, problems, errors }))
+const split = splitAccepted(problems, accepted, checkedStates)
+const ok = split.open.length === 0 && split.unused.length === 0 && errors.length === 0 && checked > 0
+console.log(
+  JSON.stringify({
+    ok,
+    checked,
+    counts,
+    accepted: split.accepted,
+    problems: split.open,
+    unused: split.unused,
+    errors,
+  }),
+)
 process.exitCode = ok ? 0 : 1
