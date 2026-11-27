@@ -3,11 +3,11 @@ import '@fontsource-variable/geist-mono'
 import '../index.css'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
-import { userEvent } from 'vitest/browser'
+import { cdp, userEvent } from 'vitest/browser'
 import { testRender, unmountRendered } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
-import { setViewport } from '../lib/rendering.ts'
+import { afterRendering, setViewport } from '../lib/rendering.ts'
 
 // The Links tab of an open item through the real route (D19, `links` 482:539): the graph and the two panels side by
 // side, a tap on an item opening it from writer, a tap on a link's file and line opening the Files tab, and Show on
@@ -38,6 +38,12 @@ function box(root: HTMLElement, selector: string) {
   const el = root.querySelector(selector)
   if (el === null) throw new Error(`no ${selector}`)
   return el.getBoundingClientRect()
+}
+
+function pressed(root: HTMLElement) {
+  return [...root.querySelectorAll('[data-figma="links graph"] button')]
+    .filter((n) => n.getAttribute('aria-pressed') === 'true')
+    .map((n) => n.textContent)
 }
 
 function button(root: HTMLElement, name: string, within = '[data-figma="links"]') {
@@ -656,5 +662,26 @@ describe('the open item’s name in the links graph (D19, T29, M32)', () => {
     expect(open.name).toBe('writing-reviewer')
     expect(open.whole).toBe(true)
     expect(open.rect.height).toBe(40)
+  })
+})
+
+// A mouse that stays where the graph draws selects no side item (NCC-158): Chromium sends pointerover to the node
+// drawn under it, and only a move selects. Earlier tests leave the mouse where they clicked.
+describe('a mouse that does not move over the links graph (D19)', () => {
+  it('keeps writer selected when the graph draws under a still mouse, and selects a side item once it moves', async () => {
+    const first = await renderToolkit('skillLinks')
+    const place = button(first.root, 'writing', '[data-figma="links graph"]').getBoundingClientRect()
+    await unmountRendered()
+    await cdp().send('Input.dispatchMouseEvent', {
+      type: 'mouseMoved',
+      x: place.left + place.width / 2,
+      y: place.top + place.height / 2,
+    })
+    const { root } = await renderToolkit('skillLinks')
+    await afterRendering()
+    await afterRendering()
+    expect(pressed(root)).toEqual(['writer'])
+    await userEvent.hover(button(root, 'writing', '[data-figma="links graph"]'))
+    await expect.poll(() => pressed(root)).toEqual(['writing'])
   })
 })
