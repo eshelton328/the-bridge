@@ -2,7 +2,7 @@
   "rules": [
     {
       "rule": "hiddenOverflow",
-      "selector": "article.card__root > div.card__body:nth-of-type(2) > div.card__meta:nth-of-type(2) > p > div.clamp",
+      "selector": "article.card__root > div.card__body:nth-of-type(2) > div.card__meta:nth-of-type(2) > div > div.clamp",
       "reason": "M10 cuts each card's purpose at two lines, as frame.png draws NCC-1701's and Pinpoint's; the render cuts it at two lines with an ellipsis (the library's Clamp, lines 2)."
     }
   ]
