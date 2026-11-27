@@ -51,7 +51,6 @@ import type {
   PromptOutcome,
   SideRunner,
 } from '../services/agentPort.ts'
-import type { HerdrCli } from './herdrCli.ts'
 import { type SocketFailure, type HerdrStream, herdrRequest, herdrSubscribe } from './herdrSocket.ts'
 import {
   boxKeys,
@@ -378,8 +377,6 @@ export type HerdrAgentsOptions = {
   readonly now?: () => number
   /** Answers a side question from a copy of a session; with none, a side question of a saved session is `unreachable`. */
   readonly runSide?: SideRunner
-  /** Runs the herdr CLI, for a project start's tags (NCC-129); with none, no tag is written. */
-  readonly herdrCli?: HerdrCli
   /** A folder's real path, or null when it is none; a test gives a map. */
   readonly realFolder?: (path: string) => Promise<string | null>
 }
@@ -439,7 +436,6 @@ export function createHerdrAgents({
   serverPids = () => Promise.resolve(new Set<number>()),
   guardedAgents = [],
   runSide,
-  herdrCli,
   realFolder = realFolderOf,
 }: HerdrAgentsOptions): AgentPort {
   const unknownSeen = new Set<string>()
@@ -1269,18 +1265,19 @@ export function createHerdrAgents({
     if (made.value === 'notFound') return ok('notFound')
     const pane = 'pane' in made.value ? made.value.pane : made.value.root_pane
     forgetPlaces()
-    if (place.in === 'project' && herdrCli !== undefined) {
-      // The pane's tag (d-120) as an argument list; a fault keeps the start and logs its code only.
-      const tagged = await herdrCli([
-        'pane',
-        'report-metadata',
-        pane.pane_id,
-        '--source',
-        'ncc-tags',
-        '--token',
-        `project=${place.project}`,
-      ])
-      if (!tagged.ok) log.warn('chat tags not written', { code: tagged.error })
+    if (place.in === 'project') {
+      // The pane's tag (d-120), with no time limit; a fault keeps the start and logs its code only, never its message.
+      const tagged = await herdrRequest(socket, 'pane.report_metadata', {
+        pane_id: pane.pane_id,
+        source: 'ncc-tags',
+        tokens: { project: place.project },
+      })
+      if (!tagged.ok) {
+        const failure = tagged.error
+        // herdr's error code or the socket's errno code, else the failure's kind.
+        const code = 'code' in failure && failure.code !== undefined ? failure.code : failure.kind
+        log.warn('chat tags not written', { code })
+      }
     }
     // An argument list, never a shell line: the name, model alias and fork flags only; no flag that skips a permission.
     const args = ['-n', chatName, ...(model === undefined ? [] : ['--model', model]), ...extra]

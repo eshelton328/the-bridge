@@ -17,7 +17,6 @@ import { createNccCheck } from './adapters/projectDrift.ts'
 import { createDiskUploads } from './adapters/diskUploads.ts'
 import { createWebPushSender } from './adapters/webPushSender.ts'
 import { createHerdrAgents } from './adapters/herdrAgents.ts'
-import { createHerdrCli } from './adapters/herdrCli.ts'
 import { processAncestors } from './adapters/processAncestors.ts'
 import { sipsConvert } from './adapters/sipsConvert.ts'
 import { createApp } from './app.ts'
@@ -63,8 +62,6 @@ const agents = createHerdrAgents({
   guardedAgents: ['bridge-coord'],
   // A side question runs `claude -p` on a fork of the chat's session that is not saved, with the read tools only.
   runSide: claudeSideRunner({ model: 'sonnet', env: process.env, log }),
-  // A project start tags its pane with the herdr CLI on the same socket (NCC-129).
-  herdrCli: createHerdrCli({ command: 'herdr', socket: herdrSocket, env: process.env }),
 })
 const uploads = createDiskUploads({ root: uploadsRoot, convert: sipsConvert })
 // The VAPID keys and push subscriptions go beside the database too, 0700 and 0600 (d-118). The notifier

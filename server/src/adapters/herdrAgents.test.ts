@@ -11,7 +11,7 @@ import {
 import { tmpdir } from 'node:os'
 import { basename, join } from 'node:path'
 import { TabId, ChatId, MachineId, type StartChatRequest, WorkspaceId } from '@bridge/contract'
-import { err, ok, type Result } from '@bridge/shared'
+import { ok } from '@bridge/shared'
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
 import type { AgentEvent, SideRunner } from '../services/agentPort.ts'
 import { describeAgentPort } from './agentPortContract.ts'
@@ -2692,7 +2692,7 @@ describe('herdr agents: a project start (NCC-129)', () => {
       workspace_id: 'w20',
     },
   })
-  const setup = async (firstPanes: Readonly<Record<string, string>>, tag: Result<void, string> = ok(undefined)) => {
+  const setup = async (firstPanes: Readonly<Record<string, string>>) => {
     const socket = await startFakeHerdrSocket({
       ...results,
       'pane.list': {
@@ -2703,8 +2703,8 @@ describe('herdr agents: a project start (NCC-129)', () => {
       'workspace.create': { type: 'workspace_created', workspace: { workspace_id: 'w20' }, root_pane: newPane },
       'agent.start': { type: 'agent_started', agent: { pane_id: 'w17:p9', launch_pending: true } },
       'agent.wait': waited('idle'),
+      'pane.report_metadata': { type: 'ok' },
     })
-    const tags: (readonly string[])[] = []
     const logged = memoryLogger()
     const adapter = createHerdrAgents({
       socket: socket.path,
@@ -2714,16 +2714,15 @@ describe('herdr agents: a project start (NCC-129)', () => {
       home,
       chatRoot: root,
       realFolder: (path) => Promise.resolve(real[path] ?? null),
-      herdrCli: (args) => (tags.push(args), Promise.resolve(tag)),
     })
     const sent = (method: string) =>
       socket
         .requests()
         .filter((r) => r.method === method)
         .map((r) => r.params)
-    return { socket, adapter, sent, tags, logged }
+    return { socket, adapter, sent, tags: () => sent('pane.report_metadata'), logged }
   }
-  const tagArgs = ['pane', 'report-metadata', 'w17:p9', '--source', 'ncc-tags', '--token', 'project=example-project']
+  const tagParams = { pane_id: 'w17:p9', source: 'ncc-tags', tokens: { project: 'example-project' } }
 
   it('starts nothing for a project with no folder, or whose folder is a link out of the chat root', async () => {
     const { socket, adapter, sent, tags } = await setup({})
@@ -2733,7 +2732,7 @@ describe('herdr agents: a project start (NCC-129)', () => {
     ])
     await socket.close()
     expect(refused).toEqual([ok('notFound'), ok('notFound')])
-    expect([...sent('workspace.create'), ...sent('tab.create'), ...sent('agent.start'), ...tags]).toEqual([])
+    expect([...sent('workspace.create'), ...sent('tab.create'), ...sent('agent.start'), ...tags()]).toEqual([])
   })
 
   it('opens a new tab in the workspace whose first pane is in the project folder, and tags the pane', async () => {
@@ -2743,7 +2742,7 @@ describe('herdr agents: a project start (NCC-129)', () => {
     expect(started).toMatchObject({ ok: true, value: { chat: 'test-mac/session-new', state: 'ready' } })
     expect(sent('tab.create')).toEqual([{ workspace_id: 'w18', cwd: folder, focus: false }])
     expect(sent('workspace.create')).toEqual([])
-    expect(tags).toEqual([tagArgs])
+    expect(tags()).toEqual([tagParams])
   })
 
   it('makes a workspace labelled with the slug when no first pane is in the folder, and keeps a trust prompt as needsYou', async () => {
@@ -2756,7 +2755,7 @@ describe('herdr agents: a project start (NCC-129)', () => {
     expect(sent('tab.create')).toEqual([])
     expect(sent('agent.start')[0]).toMatchObject({ pane_id: 'w17:p9' })
     expect(sent('agent.send_keys')).toEqual([])
-    expect(tags).toEqual([tagArgs])
+    expect(tags()).toEqual([tagParams])
   })
 
   it('writes no tag for a start beside a chat or in a tab', async () => {
@@ -2768,17 +2767,20 @@ describe('herdr agents: a project start (NCC-129)', () => {
       place: { in: 'split', beside: ChatId.parse('test-mac/term_2'), direction: 'row' },
     })
     await socket.close()
-    expect(tags).toEqual([])
+    expect(tags()).toEqual([])
   })
 
-  it('answers the chat and its state when the tag write fails, and logs only the errno code', async () => {
-    const { socket, adapter, tags, logged } = await setup({ 'w18:p1': folder }, err('ENOENT'))
+  it('answers the chat and its state when the tag write fails, and logs only its code once', async () => {
+    const { socket, adapter, tags, logged } = await setup({ 'w18:p1': folder })
+    socket.failOnce('pane.report_metadata', 'pane_not_found', 'no pane w17:p9 for example-project')
     const started = await adapter.startChat({ kind: 'claude', name: 'quick', place: project('example-project') })
     await socket.close()
     expect(started).toMatchObject({ ok: true, value: { chat: 'test-mac/session-new', state: 'ready' } })
-    expect(tags).toEqual([tagArgs])
-    const line = logged.lines().find((l) => l.msg === 'chat tags not written')
-    expect(line).toMatchObject({ code: 'ENOENT' })
+    expect(tags()).toEqual([tagParams])
+    const warned = logged.lines().filter((l) => l.level === 40)
+    expect(warned).toHaveLength(1)
+    const line = warned[0]
+    expect(line).toMatchObject({ msg: 'chat tags not written', code: 'pane_not_found' })
     expect(JSON.stringify(line)).not.toMatch(/example-project|\/home\/dev|w17:p9/)
   })
 })
