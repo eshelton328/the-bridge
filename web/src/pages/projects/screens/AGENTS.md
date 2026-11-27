@@ -11,7 +11,7 @@ is `ProjectsScreen.tsx`: it lays the page out by its width
 - The home runs under the tab bar on a tablet or phone (AppShell
   `tabBarOverlay`).
 - The grid has four columns on the desktop, two on a tablet and one on a
-  phone. A tablet in landscape starts the header 24 down (`_landscape`), in
-  portrait 40.
+  phone. An iPad in landscape (1133 px) draws the tablet layout, with the
+  header 24 down (`_landscape`), as T10b has it, where T10 has 40.
 - A hidden h2 ("All projects", `data.cardsHeading`) keeps the heading
   levels 1, 2, 3 between the page title and the cards' titles.

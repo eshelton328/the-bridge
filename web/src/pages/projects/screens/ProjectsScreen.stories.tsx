@@ -38,3 +38,28 @@ export const MenuOpen: Story = {
     await expect(within(menu).getByRole('menuitem', { name: 'Edit details' })).toBeVisible()
   },
 }
+
+export const ProjectsTablet: Story = {
+  name: 'T10: The Projects home on an iPad in portrait',
+  args: { data: projectsStates.projectsTablet.data, ui: projectsStates.projectsTablet.ui, viewport: 'tablet' },
+  play: async ({ canvas }) => {
+    await expectHome(canvas)
+    await expect(canvas.queryByRole('menu')).toBeNull()
+  },
+}
+
+export const ProjectsTabletWide: Story = {
+  name: 'T10b: The Projects home on an iPad in landscape',
+  args: {
+    data: projectsStates.projectsTabletWide.data,
+    ui: projectsStates.projectsTabletWide.ui,
+    viewport: 'tablet',
+  },
+  play: async ({ canvas, canvasElement }) => {
+    await expectHome(canvas)
+    await expect(canvas.queryByRole('menu')).toBeNull()
+    // In landscape the header starts 24 down, as T10b draws it; in portrait (T10) 40.
+    const home = canvasElement.querySelector('[data-figma="header"]')?.parentElement
+    await expect(home === null || home === undefined ? '' : getComputedStyle(home).paddingTop).toBe('24px')
+  },
+}

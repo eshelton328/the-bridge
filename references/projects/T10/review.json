@@ -1,0 +1,100 @@
+{
+  "frameId": "T10",
+  "inputs": "4befee0e157da27ccc05b75e48544c80609954b15b437f25cfa4beb145e15aad",
+  "library": "1.0.0-beta.135",
+  "recordSha256": "9d9ea6b857615c3797ba88415e7fcc40ba02d98c775528b80dc2a1d25cbd588a",
+  "record": {
+    "verdict": "match",
+    "viewport": "744 CSS px tablet (iPad portrait), projects/T10",
+    "inputs": {
+      "layout": "separate",
+      "reference": "references/projects/T10/frame.png",
+      "render": "reports/fidelity/projects/T10.render.png",
+      "reference_side": null
+    },
+    "summary": "Apart from the accepted deviations, the render matches the reference: the header, the three cards, their spacing and the tab bar have the same content and layout.",
+    "findings": [],
+    "accepted_deviations": [
+      {
+        "id": "A1",
+        "as_given": "New project shows as the frame draws it and does nothing: making a project is increment four, as it needs a back-end script for the brain and the folders (d-133, f-008 increment one, Out of scope).",
+        "status": "as-described",
+        "finding": null,
+        "note": "The button has the same text, colour, size and position as in the reference. A static image cannot show what it does."
+      },
+      {
+        "id": "A2",
+        "as_given": "Edit details shows in each card's menu and does nothing: editing a project's details is increment four (d-133).",
+        "status": "not-seen",
+        "finding": null,
+        "note": "The menus are closed in both images."
+      },
+      {
+        "id": "A3",
+        "as_given": "Pin icon. The library has no pin icon, so a pinned card shows the 16 px pill \"Pinned\" after its name, which keeps the name's line height, so its name and purpose sit level with the other cards'.",
+        "status": "as-described",
+        "finding": null,
+        "note": "A \"Pinned\" pill comes after NCC-1701 where the reference has a pin icon. The NCC-1701 name and purpose sit level with Pinpoint's (title at about y 239, purpose at about y 267)."
+      },
+      {
+        "id": "A4",
+        "as_given": "Tile. The letter tile is shorter than the frame's and its letter is the heading style, smaller than the frame's; no token has the frame's height or letter size.",
+        "status": "as-described",
+        "finding": null,
+        "note": "The tile is about 121 px tall in the render and 206 px in the reference, and its letter is smaller. Because the tiles are shorter, the cards and the second row are higher on the page. The gaps between the tile, title, purpose and card edge stay the same (22 px and 28 px)."
+      },
+      {
+        "id": "A5",
+        "as_given": "Purpose. The purpose is a bodySm paragraph in the card's meta row, as the library's Card description shows only one or two lines.",
+        "status": "as-described",
+        "finding": null,
+        "note": "Each card shows its full purpose with no truncation."
+      },
+      {
+        "id": "A6",
+        "as_given": "Purpose wraps. The purpose is bodySm (13/20), whose glyphs are about 4 % narrower than the frame's, so on the frame's 297 px text column Pinpoint's and omni's purposes break at other words than the frame's, as in D10, and NCC-1701's purpose (\"The owner's\" in place of the name) wraps differently too. The line height (20 px) is the frame's.",
+        "status": "as-described",
+        "finding": null,
+        "note": "Pinpoint and omni break at other words and still take 3 lines. NCC-1701 takes 4 lines where the reference has 3. The first row's cards have the same height, and no text is cut off."
+      },
+      {
+        "id": "A7",
+        "as_given": "Unpin. A pinned card's menu says Unpin in place of Pin to top. No frame draws a pinned card's menu.",
+        "status": "not-seen",
+        "finding": null,
+        "note": "The menus are closed in both images."
+      },
+      {
+        "id": "A8",
+        "as_given": "Owner's name. NCC-1701's purpose starts \"The owner's personal workspace\" in the state file, where the frame has the owner's name: the secret scan's personal-term rule keeps the name out of web/. The live home shows the brain's own words.",
+        "status": "as-described",
+        "finding": null,
+        "note": "The render shows \"The owner's personal workspace for thinking, learning, managing projects and directing AI agents, plus the shared template for new projects.\""
+      },
+      {
+        "id": "A9",
+        "as_given": "Cards heading. A heading \"All projects\" that only a screen reader reads sits between the page title and the cards, so the heading levels go 1, 2, 3 (the stories' accessibility check). No frame draws it.",
+        "status": "as-described",
+        "finding": null,
+        "note": "No visible heading appears between the title and the cards, which agrees with a heading that only a screen reader reads."
+      },
+      {
+        "id": "A10",
+        "as_given": "Tab bar. The tab bar is the app's shared one in the default order (d-105, d-119): Home, Inbox, Workspaces, Projects, Artifacts and More. The frame draws Inbox, Workspaces, Projects and More.",
+        "status": "as-described",
+        "finding": null,
+        "note": "The render shows six tabs and Projects is selected. The Inbox badge still says 9. The tabs sit at other x positions because the bar has more of them."
+      },
+      {
+        "id": "A11",
+        "as_given": "Background. The page sits on the library's Backdrop, as every page of the app does (Inbox, Artifacts, Settings); the page never draws its own. The frame is a render of the design's HTML, whose backdrop has its own glow and star dots, so the glow sits further left and lower, the ring arcs do not show, and the dots are smaller and dimmer in the render.",
+        "status": "as-described",
+        "finding": null,
+        "note": "In the render the glow sits further left and lower, the ring arcs do not show, and the star dots are smaller and dimmer."
+      }
+    ],
+    "limits": [
+      "The card menus are closed in both images, so the menu items (Edit details, Unpin) could not be checked."
+    ]
+  }
+}
