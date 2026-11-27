@@ -121,4 +121,9 @@ from the outside world.
   lines about the project (`findingsFor`: a path in `projects/<slug>`,
   "project <slug>" or one of its repositories named alone), one check runs at a time, and a failed check is a
   `failed` run. One store change at a time (`projectDrift.test.ts`,
-  `../routes/projects.test.ts`).
+  `../routes/projects.test.ts`). A project's chats join the port's
+  `chatTags()` with its workspace list, by each chat's pane, and keep the
+  chats tagged `project=<slug>` in the workspaces' order; of a pane's
+  tags only `project`, `area` and `role` with a slug-shaped value are
+  kept (`chatTagsOf`), and no tag value goes into a log. The slug is
+  checked against the brain's list before any read.

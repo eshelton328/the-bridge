@@ -4,12 +4,14 @@ import { chmod, mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
+  ChatId,
   DriftResponse,
   ErrorBody,
   IdeaDetailResponse,
   IdeasResponse,
   MachineId,
   PinProjectResponse,
+  ProjectChatsResponse,
   ProjectDetailResponse,
   ProjectsResponse,
 } from '@bridge/contract'
@@ -111,7 +113,9 @@ afterEach(() => rm(dir, { recursive: true, force: true }))
 /** An app on the fixture brain; a second call is a new server process on the same data folder. */
 function server() {
   const logger = memoryLogger()
+  const agents = createFakeAgents(MachineId.parse('test-mac'))
   const projects = createProjects({
+    agents,
     brain: createBrainProjects(brain),
     pins: createDiskPins(data),
     pulls: createGhPulls({ command: join(bin, 'gh'), env: process.env }),
@@ -119,13 +123,8 @@ function server() {
     drift: createDiskDriftStore(data),
     now: () => new Date('2026-11-22T09:00:00.000Z'),
   })
-  const app = createApp({
-    agents: createFakeAgents(MachineId.parse('test-mac')),
-    owner: 'owner@example.com',
-    log: logger.log,
-    projects,
-  })
-  return { app, logger }
+  const app = createApp({ agents, owner: 'owner@example.com', log: logger.log, projects })
+  return { app, logger, agents }
 }
 
 const read = async (app: ReturnType<typeof server>['app'], path: string) => app.request(path, { headers: local })
@@ -269,5 +268,99 @@ describe('/api/projects', () => {
     const lines = logger.text()
     expect(lines).toContain('EBADDATA')
     expect(lines).not.toContain('marker-5150')
+  })
+
+  describe('GET /:slug/chats (R7)', () => {
+    const chat = (local: string) => ChatId.parse(`test-mac/${local}`)
+
+    it("lists the chats tagged with the project, in the workspaces' order, with their workspace and tags", async () => {
+      const { app, agents } = server()
+      agents.setChatTags(chat('brain-git'), { project: 'example-project', role: 'builder' })
+      agents.setChatTags(chat('bridge-themes'), { project: 'example-project', area: 'bridge' })
+      agents.setChatTags(chat('drift-check'), { project: 'another-project' })
+      const response = await read(app, '/api/projects/example-project/chats')
+      expect(response.status).toBe(200)
+      const { chats } = ProjectChatsResponse.parse(await response.json())
+      expect(chats.map((c) => [c.title, c.workspace.label, c.tags])).toEqual([
+        [
+          'bridge themes',
+          'omni-brain',
+          [
+            { key: 'project', value: 'example-project' },
+            { key: 'area', value: 'bridge' },
+          ],
+        ],
+        [
+          'brain git',
+          'omni',
+          [
+            { key: 'project', value: 'example-project' },
+            { key: 'role', value: 'builder' },
+          ],
+        ],
+      ])
+    })
+
+    it('keeps only the project, area and role tags with a slug value, at most 3, and logs no tag value', async () => {
+      const { app, agents, logger } = server()
+      agents.setChatTags(chat('bridge-themes'), {
+        project: 'example-project',
+        area: 'Bad Value marker-5150',
+        role: 'builder',
+        Project: 'example-project',
+        token: 'secret-marker-5150',
+        owner: 'marker-5150',
+      })
+      agents.setChatTags(chat('brain-git'), { project: '../example-project' })
+      const { chats } = ProjectChatsResponse.parse(
+        await (await read(app, '/api/projects/example-project/chats')).json(),
+      )
+      expect(chats.map((c) => [c.title, c.tags])).toEqual([
+        [
+          'bridge themes',
+          [
+            { key: 'project', value: 'example-project' },
+            { key: 'role', value: 'builder' },
+          ],
+        ],
+      ])
+      expect(logger.text()).not.toContain('marker-5150')
+    })
+
+    it('answers 404 for an unknown project as the detail does, and reads no chats for a bad slug', async () => {
+      const { app, agents } = server()
+      for (const slug of ['no-such-project', 'Bad%20Slug']) {
+        const [chats, detail] = await Promise.all([
+          read(app, `/api/projects/${slug}/chats`),
+          read(app, `/api/projects/${slug}`),
+        ])
+        expect([chats.status, detail.status]).toEqual([404, 404])
+        const kindAndMessage = async (r: Response) => {
+          const { kind, message } = ErrorBody.parse(await r.json()).error
+          return { kind, message }
+        }
+        expect(await kindAndMessage(chats)).toEqual(await kindAndMessage(detail))
+      }
+      expect(agents.reads()).toBe(0)
+    })
+
+    it('answers 500 when the agents do not answer, and logs the code only', async () => {
+      const { agents, logger } = server()
+      const failing = createProjects({
+        brain: createBrainProjects(brain),
+        pins: createDiskPins(data),
+        pulls: createGhPulls({ command: join(bin, 'gh'), env: process.env }),
+        check: createNccCheck({ command: join(bin, 'ncc'), root: join(dir, 'root'), env: process.env }),
+        drift: createDiskDriftStore(data),
+        agents: createFakeAgents(MachineId.parse('test-mac'), {
+          error: { reason: 'unreachable', message: 'herdr is down marker-5150' },
+        }),
+      })
+      const down = createApp({ agents, owner: 'owner@example.com', log: logger.log, projects: failing })
+      const response = await read(down, '/api/projects/example-project/chats')
+      expect(response.status).toBe(500)
+      expect(logger.text()).toContain('agents-unreachable')
+      expect(logger.text()).not.toContain('marker-5150')
+    })
   })
 })

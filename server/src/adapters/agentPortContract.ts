@@ -92,6 +92,14 @@ export function describeAgentPort(name: string, setup: () => Promise<ContractSet
       await untilAsync('the prompt to arrive', async () => (await received()).includes('text:Run the tests.'))
     })
 
+    it('gives tags only by the pane of a listed chat (d-120)', async () => {
+      const { port } = await setup()
+      const [tags, read] = await Promise.all([port.chatTags(), port.listWorkspaces()])
+      if (!tags.ok || !read.ok) throw new Error('the reads failed')
+      const panes = new Set(read.value.flatMap((w) => w.chats.map((c) => c.pane)))
+      for (const pane of tags.value.keys()) expect(panes.has(pane)).toBe(true)
+    })
+
     it('maps a project only to a workspace that the list has (R49)', async () => {
       const { port } = await setup()
       const [projects, read] = await Promise.all([port.projectWorkspaces(), port.listWorkspaces()])

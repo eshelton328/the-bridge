@@ -221,6 +221,8 @@ const PaneList = z.object({
       label: z.string().nullable().optional(),
       // Read only to guard a workspace close; a shell's title never leaves the adapter.
       terminal_title_stripped: z.string().nullable().optional(),
+      // The pane's tags (d-120), every source merged; a map this adapter cannot read is no tags, never a failed list.
+      tokens: z.record(z.string(), z.string()).optional().catch(undefined),
     }),
   ),
 })
@@ -1804,6 +1806,17 @@ export function createHerdrAgents({
       const { path, working, cwd } = located.value
       if (path === undefined) return ok(page.before === undefined ? { entries: [], earlier: false } : 'entryNotFound')
       return ok(await readClaudeTranscriptPage(path, { working, cwd, home, uploads }, page))
+    },
+    async chatTags() {
+      const panes = await call('pane.list', PaneList)
+      if (!panes.ok) return panes
+      return ok(
+        new Map(
+          panes.value.panes.flatMap((p) =>
+            p.tokens === undefined || Object.keys(p.tokens).length === 0 ? [] : [[paneIdOf(p.terminal_id), p.tokens]],
+          ),
+        ),
+      )
     },
     async turnEnds(chats) {
       const ends = new Map<ChatId, string | null>(chats.map((chat) => [chat, null]))

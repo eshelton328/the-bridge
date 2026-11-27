@@ -88,7 +88,8 @@ const inbox = createInbox({
   marks: createDiskInboxMarks(join(dirname(dbFile), 'inbox')),
 })
 // The Projects app reads the brain's project folders and idea records, the open PRs with gh and the layout with
-// `ncc check` on the chat tree; the pins and the last drift runs go beside the database too (f-008).
+// `ncc check` on the chat tree, and a project's chats by their herdr tags; the pins and the last drift runs go beside
+// the database too (f-008).
 const projectsRoot = join(dirname(dbFile), 'projects')
 const projects = createProjects({
   brain: createBrainProjects(config.value.brainDir),
@@ -96,6 +97,7 @@ const projects = createProjects({
   pulls: createGhPulls({ command: 'gh', env: process.env }),
   check: createNccCheck({ command: 'ncc', root: config.value.chatRoot, env: process.env }),
   drift: createDiskDriftStore(projectsRoot),
+  agents,
 })
 const server = serve(
   {

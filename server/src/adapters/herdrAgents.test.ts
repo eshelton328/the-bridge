@@ -93,11 +93,18 @@ const results = {
       },
     ],
   },
-  // Every pane, the agents' too: w18:p2 is a shell with no agent.
+  // Every pane, the agents' too: w18:p2 is a shell with no agent. w17:p1 has tags (d-120), every source merged.
   'pane.list': {
     type: 'pane_list',
     panes: [
-      { pane_id: 'w17:p1', terminal_id: 'term_1', workspace_id: 'w17', agent: 'claude', agent_status: 'blocked' },
+      {
+        pane_id: 'w17:p1',
+        terminal_id: 'term_1',
+        workspace_id: 'w17',
+        agent: 'claude',
+        agent_status: 'blocked',
+        tokens: { project: 'example-project', area: 'bridge', note: 'Not a tag' },
+      },
       { pane_id: 'w17:p2', terminal_id: 'term_2', workspace_id: 'w17', agent: 'codex', agent_status: 'idle' },
       {
         pane_id: 'w18:p1',
@@ -749,6 +756,25 @@ describe('herdr agents: input to a chat', () => {
         socket.onRequest(undefined)
         socket.set('agent.list', undefined)
       }
+    })
+
+    it("gives each tagged pane's tags by its chat's pane, from one pane list", async () => {
+      const listed = await port().listWorkspaces()
+      if (!listed.ok) throw new Error(listed.error.message)
+      const before = socket.requests().length
+      const tags = await port().chatTags()
+      if (!tags.ok) throw new Error(tags.error.message)
+      expect(
+        socket
+          .requests()
+          .slice(before)
+          .map((r) => r.method),
+      ).toEqual(['pane.list'])
+      const tagged = listed.value.flatMap((w) => w.chats).filter((c) => tags.value.has(c.pane))
+      expect(tagged.map((c) => tags.value.get(c.pane))).toEqual([
+        { project: 'example-project', area: 'bridge', note: 'Not a tag' },
+      ])
+      expect(tags.value.size).toBe(1)
     })
 
     it('reads the turn ends of many chats with one agent list (NCC-138)', async () => {

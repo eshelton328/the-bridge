@@ -5,6 +5,8 @@
 // repository gives its GitHub owner and name only, and a drift finding a
 // path relative to the root of the chat tree.
 import { z } from 'zod'
+import { WorkspaceId } from './ids.ts'
+import { ChatSummary } from './workspaces.ts'
 
 /** The most characters of a project's name, an idea's title and a PR's title. */
 export const maxProjectTitle = 200
@@ -89,6 +91,28 @@ export const ProjectDetailResponse = z.strictObject({
   }),
 })
 export type ProjectDetailResponse = z.infer<typeof ProjectDetailResponse>
+
+/** A chat tag the app reads (d-120): the key `project`, `area` or `role`, and a value written as a slug is. */
+export const ChatTag = z.strictObject({
+  key: z.enum(['project', 'area', 'role']),
+  value: z.string().regex(/^[a-z0-9][a-z0-9._-]{0,63}$/),
+})
+export type ChatTag = z.infer<typeof ChatTag>
+/** The most tags a chat shows: one for each key. */
+export const maxChatTags = 3
+
+/** One chat of a project's Chats panel (R7): the chat, its workspace and its tags, `project` among them. */
+export const ProjectChat = z.strictObject({
+  ...ChatSummary.pick({ id: true, kind: true, title: true, model: true, contextUsed: true, status: true, pane: true })
+    .shape,
+  workspace: z.strictObject({ id: WorkspaceId, label: z.string() }),
+  tags: z.array(ChatTag).max(maxChatTags),
+})
+export type ProjectChat = z.infer<typeof ProjectChat>
+
+/** The response of `GET /api/projects/:slug/chats`: the chats tagged with the project, in the workspaces' order. */
+export const ProjectChatsResponse = z.strictObject({ chats: z.array(ProjectChat) })
+export type ProjectChatsResponse = z.infer<typeof ProjectChatsResponse>
 
 /** The body of `PUT /api/projects/:slug/pin`. */
 export const PinProjectRequest = z.strictObject({ pinned: z.boolean() })

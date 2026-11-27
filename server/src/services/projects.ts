@@ -1,9 +1,11 @@
 // The Projects app (f-008, increment one): the brain's projects with the
 // owner's pins, each project's open PRs, its idea records and its context
-// drift. Each part comes through a port that reads only when a request asks
+// drift, and its chats: those whose pane is tagged project=<slug> (d-120).
+// Each part comes through a port that reads only when a request asks
 // (d-112). The pins and the last drift run of each project are kept in
 // stores, so every device sees the same pins and a restart keeps both.
 import type {
+  ChatTag,
   DriftFinding,
   DriftResponse,
   DriftRun,
@@ -11,6 +13,7 @@ import type {
   IdeaDetailResponse,
   IdeaId,
   IdeasResponse,
+  ProjectChatsResponse,
   ProjectDetailResponse,
   ProjectPull,
   ProjectRepository,
@@ -21,6 +24,7 @@ import type {
 } from '@bridge/contract'
 import { maxDriftFindings } from '@bridge/contract'
 import { err, ok, type Result } from '@bridge/shared'
+import type { AgentPort, AgentPortError } from './agentPort.ts'
 
 export type ProjectFault = { readonly reason: 'failed'; readonly code: string }
 
@@ -79,6 +83,8 @@ type Deps = {
   readonly pulls: PullSource
   readonly check: LayoutCheck
   readonly drift: DriftStore
+  /** The chats and their tags; none (each chats read fails) where an app has no agents to give. */
+  readonly agents?: Pick<AgentPort, 'listWorkspaces' | 'chatTags'>
   readonly now?: () => Date
 }
 
@@ -95,7 +101,21 @@ export type Projects = {
   idea(slug: ProjectSlug, id: IdeaId): Promise<Result<IdeaDetailResponse | NotFound, ProjectFault>>
   drift(slug: ProjectSlug): Promise<Result<DriftResponse | NotFound, ProjectFault>>
   runDrift(slug: ProjectSlug): Promise<Result<DriftRunOutcome | NotFound, ProjectFault>>
+  chats(slug: ProjectSlug): Promise<Result<ProjectChatsResponse | NotFound, ProjectFault>>
 }
+
+const tagKeys = ['project', 'area', 'role'] as const
+const tagValue = /^[a-z0-9][a-z0-9._-]{0,63}$/
+
+/** The tags the app reads (d-120), in key order: `project`, `area` and `role` with a value written as a slug is. */
+function chatTagsOf(tokens: Readonly<Record<string, string>>): ChatTag[] {
+  return tagKeys.flatMap((key) => {
+    const value = Object.hasOwn(tokens, key) ? tokens[key] : undefined
+    return value !== undefined && tagValue.test(value) ? [{ key, value }] : []
+  })
+}
+
+const agentFault = (error: AgentPortError): ProjectFault => ({ reason: 'failed', code: `agents-${error.reason}` })
 
 /** How long the open PRs of one repository are kept before `gh` runs again for it. */
 export const pullsKeptMs = 30_000
@@ -148,7 +168,15 @@ export function findingsFor(
 
 const byName = (a: { name: string }, b: { name: string }) => a.name.localeCompare(b.name)
 
-export function createProjects({ brain, pins, pulls: source, check, drift, now = () => new Date() }: Deps): Projects {
+export function createProjects({
+  brain,
+  pins,
+  pulls: source,
+  check,
+  drift,
+  agents,
+  now = () => new Date(),
+}: Deps): Projects {
   const pulls = keptPulls(source, now)
   // One store change at a time, so two pins or two runs that cross keep both.
   let queue: Promise<unknown> = Promise.resolve()
@@ -290,11 +318,31 @@ export function createProjects({ brain, pins, pulls: source, check, drift, now =
         return ok({ drift: { last: run }, code: lines.ok ? null : lines.error.code })
       })
     },
+    async chats(slug) {
+      const record = await recordOf(slug)
+      if (!record.ok) return record
+      if (record.value === 'notFound') return ok('notFound')
+      if (agents === undefined) return err({ reason: 'failed', code: 'no-agents' })
+      const [spaces, tags] = await Promise.all([agents.listWorkspaces(), agents.chatTags()])
+      if (!spaces.ok) return err(agentFault(spaces.error))
+      if (!tags.ok) return err(agentFault(tags.error))
+      const chats = spaces.value.flatMap((w) =>
+        w.chats.flatMap((c) => {
+          const kept = chatTagsOf(tags.value.get(c.pane) ?? {})
+          if (!kept.some((t) => t.key === 'project' && t.value === slug)) return []
+          const { id, kind, title, model, contextUsed, status, pane } = c
+          return [
+            { id, kind, title, model, contextUsed, status, pane, workspace: { id: w.id, label: w.label }, tags: kept },
+          ]
+        }),
+      )
+      return ok({ chats })
+    },
   }
 }
 
 /** The service of an app with none: each call fails, so each projects route answers 500 and is logged. */
 export const noProjects: Projects = (() => {
   const fault = () => Promise.resolve(err({ reason: 'failed' as const, code: 'no-store' }))
-  return { list: fault, get: fault, pin: fault, ideas: fault, idea: fault, drift: fault, runDrift: fault }
+  return { list: fault, get: fault, pin: fault, ideas: fault, idea: fault, drift: fault, runDrift: fault, chats: fault }
 })()
