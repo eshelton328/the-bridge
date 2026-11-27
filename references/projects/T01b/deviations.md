@@ -14,9 +14,27 @@ What differs from the frame after round 1 of the fidelity loop
 
 ## Deviations
 
-- **Panels.** The Overview tab shows no Inbox, Queue, Context drift or
-  Chats panel: they are NCC-130's (the Inbox, Queue and Chats panels) and
-  NCC-131's (Context drift). Under the tabs the page is empty.
+- **Panels.** The Overview tab shows the Inbox and Queue panels (R5, R6)
+  and no Context drift or Chats panel: those are NCC-131's (Context drift)
+  and NCC-130's next PR (Chats, with its pager; `LIBRARY_GAPS.md`).
+- **Queue.** "In progress" lists the open PRs with their pills, and no
+  priority mark or owner chat on a row ("the-bridge#535" without
+  "· bridge-workbench"): both come from Linear, which is out of scope.
+  There is no "Up next" group, so the Queue counts its open PRs: 3 where
+  the frame says 8, and "In progress" 3 where the frame says 4 over three
+  rows.
+- **To review.** The group shows as the frame draws it, closed with 17. On
+  the live page it is empty until backend-coord decides how a chat's
+  Inbox item names its project.
+- **Columns.** The Inbox panel is over the Queue panel, where the frame
+  draws them side by side: at 1133 px the page has the tablet layout
+  (`ViewportFrame`), which has one column, as T10b's card grid follows the
+  tablet layout too. No token gives a panel's least width.
+- **Panel headings.** "Inbox" and "Queue" are `PageHeader` at its pane
+  size (15 px, the count in mono), where the frame has an 18/24 heading
+  and a 13 px count: no text style is 18 px (`LIBRARY_GAPS.md`).
+- **Panel gap.** One panel over the other, they are 24 apart where the
+  frame has 28, which no spacing token has (`LIBRARY_GAPS.md`).
 - **Tabs.** The tab row shows Overview and Ideas, where the frame shows
   Overview, Repositories, Architecture and QA: only the tabs of shipped
   increments show (d-133), and Ideas is increment one's.

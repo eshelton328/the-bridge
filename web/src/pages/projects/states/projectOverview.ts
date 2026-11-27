@@ -16,8 +16,8 @@ const ask = (kind: 'question' | 'action' | 'review', title: string, age: string)
 const pr = (meta: string, title: string, status: 'draft' | 'ciFailed' | 'inReview') => ({ meta, title, status })
 
 // D01's panels: the three requests that need the owner, 17 chats to review (closed, so only counted) and the PRs;
-// the overview states show them.
-const overviewRows = {
+// the overview states share them.
+export const overviewRows = {
   inbox: {
     needsYou: [
       ask('question', 'Context bar: another way to show context use?', '5d'),

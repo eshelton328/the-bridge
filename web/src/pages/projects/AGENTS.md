@@ -23,7 +23,7 @@ T10b, M10 for the home, D01, T01, T01b, M01 for a project's page), read with
   home's data and screen. It shows the header and the tabs of increment
   one, Overview and Ideas (d-133). The Overview draws the Inbox and Queue
   panels (R5, R6) from `data.overview`, which only the overview states
-  have; with none it draws no panel. Only the desktop draws them for now.
+  have; with none it draws no panel. The phone draws none yet.
   The Ideas list is NCC-132's.
   `ProjectPage.tsx` is its
   entry, on the route `projects_.$slug.tsx` (not nested in `/projects`);
