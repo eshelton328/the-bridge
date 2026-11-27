@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { ProjectSlug, RepositoryId } from '@bridge/contract'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createDiskWorktrees } from './diskWorktrees.ts'
+import { createDiskWorktrees, insideRoot } from './diskWorktrees.ts'
 
 let dir: string
 let root: string
@@ -54,5 +54,15 @@ describe('createDiskWorktrees', () => {
       ok: false,
       error: { reason: 'failed', code: 'outside-root' },
     })
+  })
+})
+
+describe('insideRoot', () => {
+  it('takes a folder under the root, the file system root too, and refuses the root itself or a neighbour', () => {
+    expect(insideRoot('/', '/srv/chats/projects/p/r-worktrees')).toBe(true)
+    expect(insideRoot('/srv/chats', '/srv/chats/projects/p/r-worktrees')).toBe(true)
+    expect(insideRoot('/srv/chats', '/srv/chats')).toBe(false)
+    expect(insideRoot('/srv/chats', '/srv/chats-old/projects')).toBe(false)
+    expect(insideRoot('/srv/chats', '/etc')).toBe(false)
   })
 })
