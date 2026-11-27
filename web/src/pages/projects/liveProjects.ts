@@ -6,7 +6,9 @@
 // `PUT /api/projects/:slug/pin`; the entry then reads the list again, so the
 // card moves (R3). The pins are a server file, so each device sees them.
 // A project's page reads its project (`GET /api/projects/:slug`, R4); a slug
-// the server does not know is not found.
+// the server does not know is not found. Its open PRs are the Queue panel (R6),
+// and the Inbox panel (R5) is the project's items of `GET /api/inbox`, read
+// with it and again on each `inbox.changed` (ProjectPage.tsx; NCC-138).
 //
 // A read or a pin that misses shows one short line by status ("Projects not
 // read — the server answered 500"), and a list that misses shows no projects,
@@ -17,14 +19,16 @@ import {
   ErrorBody,
   type ErrorKind,
   ProjectDetailResponse,
+  type ProjectPull,
   ProjectsResponse,
   type ProjectSummary,
 } from '@bridge/contract'
 import { err, ok, type Result } from '@bridge/shared'
 import { report } from '../../errors/reporter.ts'
 import { api } from '../../lib/api.ts'
+import { InboxMissError, readInboxList } from '../../lib/inboxClient.ts'
 import type { ScreenState } from '../../lib/screenState.ts'
-import type { ProjectCard, ProjectsData, ProjectsUi } from './types.ts'
+import type { ProjectCard, ProjectOverview, ProjectsData, ProjectsUi } from './types.ts'
 
 /** How long a read or a pin waits for the server, in ms, as the Artifacts reads do. */
 const projectsTimeoutMs = 8000
@@ -101,6 +105,41 @@ const projectCard = (p: ProjectSummary): ProjectCard => ({
 
 type ProjectsState = ScreenState<ProjectsData, ProjectsUi>
 
+/** How long ago `iso` was at `now`, short, as the Inbox rows write it: "4m", "3h", "2d", "1w". */
+function ageOf(iso: string, now: Date): string {
+  const minutes = Math.max(1, Math.floor((now.getTime() - Date.parse(iso)) / 60_000))
+  if (minutes < 60) return `${String(minutes)}m`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${String(hours)}h`
+  const days = Math.floor(hours / 24)
+  return days < 7 ? `${String(days)}d` : `${String(Math.floor(days / 7))}w`
+}
+
+export type ProjectInbox = { readonly inbox: ProjectOverview['inbox']; readonly count: number }
+
+/** The Inbox panel (R5): project `slug`'s items that need the owner, and the needs-you count; undefined on a miss. */
+export async function readProjectInbox(slug: string, signal?: AbortSignal): Promise<ProjectInbox | undefined> {
+  const answer = await readInboxList('list', signal)
+  if (!answer.ok) {
+    if (answer.error.status !== undefined) report(new InboxMissError('list', answer.error), 'live')
+    return undefined
+  }
+  const now = new Date()
+  const row = (i: (typeof answer.value.items)[number]) => ({
+    kind: i.kind,
+    title: i.title,
+    meta: slug,
+    age: ageOf(i.createdAt, now),
+  })
+  const mine = answer.value.items.filter((i) => i.project === slug)
+  const needsYou = mine.filter((i) => i.needsYou).map(row)
+  // A done chat is a review; since #559 a chat's item names its pane's tagged project.
+  const toReview = mine.filter((i) => !i.needsYou && i.kind === 'review').map(row)
+  return { inbox: { needsYou, toReview }, count: answer.value.counts.needsYou }
+}
+
+const pullRow = (p: ProjectPull) => ({ title: p.title, meta: `${p.repository}#${String(p.number)}`, status: p.status })
+
 /** `state` with the server's projects in place of the sample ones, or with none and the miss's line. */
 export async function withLiveProjects(
   state: ProjectsState,
@@ -127,10 +166,10 @@ export async function withLiveProject(
   slug: string,
   { signal }: { readonly signal?: AbortSignal | undefined } = {},
 ): Promise<ProjectsState> {
-  const answer = await send(
-    (init) => api.api.projects[':slug'].$get({ param: { slug } }, { init: { signal: init } }),
-    signal,
-  )
+  const [answer, inbox] = await Promise.all([
+    send((init) => api.api.projects[':slug'].$get({ param: { slug } }, { init: { signal: init } }), signal),
+    readProjectInbox(slug, signal),
+  ])
   const ui = { ...state.ui, open: slug }
   if (!answer.ok) {
     if (answer.error.kind === 'not-found') return { ...state, ui, data: { ...state.data, projects: [], live: {} } }
@@ -138,8 +177,15 @@ export async function withLiveProject(
     const notice = missLine('Project not read', answer.error)
     return { ...state, ui, data: { ...state.data, projects: [], live: {}, notice } }
   }
-  const { project } = ProjectDetailResponse.parse(readJson(answer.value))
-  return { ...state, ui, data: { ...state.data, projects: [projectCard(project)], live: {} } }
+  const { project, queue } = ProjectDetailResponse.parse(readJson(answer.value))
+  const overview = {
+    inbox: inbox?.inbox ?? { needsYou: [], toReview: [] },
+    queue: {
+      inProgress: queue.inProgress.map(pullRow),
+      ...(queue.unread.length === 0 ? {} : { unread: `PRs not read: ${queue.unread.join(', ')}` }),
+    },
+  }
+  return { ...state, ui, data: { ...state.data, projects: [projectCard(project)], live: {}, overview } }
 }
 
 /** Pins or unpins the project `slug` (`PUT /api/projects/:slug/pin`); a miss gives its line. */
