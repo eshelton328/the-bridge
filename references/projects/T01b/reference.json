@@ -1,0 +1,17 @@
+{
+  "frameId": "T01b",
+  "code": "T01b",
+  "name": "Project Overview \u00b7 iPad mini landscape \u00b7 Dark",
+  "device": "tablet",
+  "w": 1133,
+  "h": 1620,
+  "mode": "dark",
+  "tolerance": 4,
+  "source": "saved design render ov-L01.dc.html (d-133)",
+  "original": {
+    "file": "ov-L01.png",
+    "w": 1133,
+    "h": 1620,
+    "sha256": "fef0fc9696bd009f451d269f96f0a52f3e4c5a1a942831f5e253aebf8057e012"
+  }
+}

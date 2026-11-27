@@ -1,0 +1,17 @@
+{
+  "frameId": "T09",
+  "code": "T09",
+  "name": "Idea page \u00b7 iPad mini portrait \u00b7 Dark",
+  "device": "tablet",
+  "w": 744,
+  "h": 1300,
+  "mode": "dark",
+  "tolerance": 4,
+  "source": "saved design render ov-T09.dc.html (d-133)",
+  "original": {
+    "file": "ov-T09.png",
+    "w": 744,
+    "h": 1300,
+    "sha256": "a8da261cb968a741ac6d77b833ed479285450e460fda1d635bf6ac6d5f2c9ab2"
+  }
+}

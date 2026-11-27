@@ -1,0 +1,17 @@
+{
+  "frameId": "T10b",
+  "code": "T10b",
+  "name": "Projects home \u00b7 iPad mini landscape \u00b7 Dark",
+  "device": "tablet",
+  "w": 1133,
+  "h": 744,
+  "mode": "dark",
+  "tolerance": 4,
+  "source": "Figma yJaVpShE9RVoQwUeUBnMQ4 node 39:2 (d-133)",
+  "original": {
+    "file": "home-39-2.png",
+    "w": 1133,
+    "h": 744,
+    "sha256": "71673fb70cad2004044c18a099ae7b394b9fefd3bdc6579ca7664447c63936cb"
+  }
+}

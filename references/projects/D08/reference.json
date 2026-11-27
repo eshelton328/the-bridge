@@ -1,0 +1,17 @@
+{
+  "frameId": "D08",
+  "code": "D08",
+  "name": "Project Ideas \u00b7 desktop \u00b7 Dark",
+  "device": "desktop",
+  "w": 1512,
+  "h": 1060,
+  "mode": "dark",
+  "tolerance": 4,
+  "source": "saved design render ov-D08.dc.html (d-133)",
+  "original": {
+    "file": "ov-D08.png",
+    "w": 1512,
+    "h": 1060,
+    "sha256": "224017e299c773d2849869c72755f96b04d234059c9adf0c7dc9313ff632eae8"
+  }
+}

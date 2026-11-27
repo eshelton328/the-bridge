@@ -1,0 +1,17 @@
+{
+  "frameId": "D09",
+  "code": "D09",
+  "name": "Idea page \u00b7 desktop \u00b7 Dark",
+  "device": "desktop",
+  "w": 1512,
+  "h": 800,
+  "mode": "dark",
+  "tolerance": 4,
+  "source": "saved design render ov-D09.dc.html (d-133)",
+  "original": {
+    "file": "ov-D09.png",
+    "w": 1512,
+    "h": 800,
+    "sha256": "5ccb2af3c3f6486fc1a4fba70099eb8300d5335d35ea17077da0b4de692e7eb8"
+  }
+}

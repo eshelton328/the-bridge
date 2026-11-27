@@ -1,0 +1,17 @@
+{
+  "frameId": "M08",
+  "code": "M08",
+  "name": "Project Ideas \u00b7 phone \u00b7 Dark",
+  "device": "phone",
+  "w": 390,
+  "h": 1640,
+  "mode": "dark",
+  "tolerance": 4,
+  "source": "saved design render ov-M08.dc.html (d-133)",
+  "original": {
+    "file": "ov-M08.png",
+    "w": 390,
+    "h": 1640,
+    "sha256": "a01da65611526309a3be933136d789f974a728ab509a6446a1f17a8c13e98bc8"
+  }
+}

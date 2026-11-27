@@ -1,0 +1,17 @@
+{
+  "frameId": "D01",
+  "code": "D01",
+  "name": "Project Overview \u00b7 desktop \u00b7 Dark",
+  "device": "desktop",
+  "w": 1512,
+  "h": 1530,
+  "mode": "dark",
+  "tolerance": 4,
+  "source": "saved design render ov-D01.dc.html (d-133)",
+  "original": {
+    "file": "ov-D01.png",
+    "w": 1512,
+    "h": 1530,
+    "sha256": "04d7afc827dba48c12b97ef450ad18a7af2a3a202e256903f3d184e8a72428d3"
+  }
+}
