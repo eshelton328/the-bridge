@@ -109,8 +109,10 @@ from the outside world.
   projects and idea records (read only), the pins, the open PRs of a
   GitHub repository, the layout check and the last drift run of each
   project. The pinned cards come first, each part by name; the PRs of a
-  project's repositories newest first. A drift run keeps only the check's
-  lines about the project (`findingsFor`: a path in `projects/<slug>` or
-  "project <slug>"), one check runs at a time, and a failed check is a
+  project's repositories newest first; each repository's PRs are kept
+  30 s, and requests that cross share one run (`keptPulls`, a failed run
+  is not kept; `projectsPulls.test.ts`). A drift run keeps only the check's
+  lines about the project (`findingsFor`: a path in `projects/<slug>`,
+  "project <slug>" or one of its repositories named alone), one check runs at a time, and a failed check is a
   `failed` run. One store change at a time (`projectDrift.test.ts`,
   `../routes/projects.test.ts`).

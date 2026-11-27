@@ -97,6 +97,33 @@ export type Projects = {
   runDrift(slug: ProjectSlug): Promise<Result<DriftRunOutcome | NotFound, ProjectFault>>
 }
 
+/** How long the open PRs of one repository are kept before `gh` runs again for it. */
+export const pullsKeptMs = 30_000
+
+/**
+ * The pull source with each repository's answer kept for `pullsKeptMs`, and one run shared by the requests that
+ * ask while it runs, so a reload or a second device starts no new `gh` run. A failed run is not kept.
+ */
+export function keptPulls(source: PullSource, now: () => Date): PullSource {
+  type Kept = { readonly at: number; readonly answer: Promise<Result<readonly OpenPull[], ProjectFault>> }
+  const kept = new Map<string, Kept>()
+  return {
+    open(repository) {
+      const key = `${repository.owner}/${repository.name}`
+      const at = now().getTime()
+      const last = kept.get(key)
+      if (last !== undefined && at - last.at < pullsKeptMs) return last.answer
+      const answer = source.open(repository)
+      const entry = { at, answer }
+      kept.set(key, entry)
+      void answer.then((result) => {
+        if (!result.ok && kept.get(key) === entry) kept.delete(key)
+      })
+      return answer
+    },
+  }
+}
+
 const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 /**
@@ -121,7 +148,8 @@ export function findingsFor(
 
 const byName = (a: { name: string }, b: { name: string }) => a.name.localeCompare(b.name)
 
-export function createProjects({ brain, pins, pulls, check, drift, now = () => new Date() }: Deps): Projects {
+export function createProjects({ brain, pins, pulls: source, check, drift, now = () => new Date() }: Deps): Projects {
+  const pulls = keptPulls(source, now)
   // One store change at a time, so two pins or two runs that cross keep both.
   let queue: Promise<unknown> = Promise.resolve()
   const serial = <T>(work: () => Promise<T>): Promise<T> => {

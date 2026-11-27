@@ -3,8 +3,8 @@
 // only PATH, HOME, LANG and NCC_ROOT of the server's environment. Exit 0 is
 // a clean layout and exit 1 its problem lines; any other end is a fault
 // with its code only. Each path in a line is made relative to the root (or
-// starts with "~" for one under the home folder), so no local path leaves
-// this adapter.
+// starts with "~" for one under the home folder), and any other absolute
+// path is "<path>", so no local path leaves this adapter.
 import { execFile } from 'node:child_process'
 import { realpath } from 'node:fs/promises'
 import { err, ok, type Result } from '@bridge/shared'
@@ -22,13 +22,17 @@ export type NccCheckOptions = {
   readonly env: Readonly<Record<string, string | undefined>>
 }
 
+/** An absolute path that starts a line or follows a space, a quote, "(", "=" or ":". */
+const otherPath = /(^|[\s'"(=:])\/[^\s'"),;]+/g
+
 /** Each line with the root (and its real path) cut off its paths, and the home folder as "~". */
 export function relativeLines(stdout: string, roots: readonly string[], home: string | undefined): string[] {
   const cut = (line: string) => {
     let out = line
     for (const root of roots) out = out.replaceAll(`${root}/`, '').replaceAll(root, '.')
     if (home !== undefined && home.length > 1) out = out.replaceAll(home, '~')
-    return out.trim()
+    // A path outside the root and the home folder would show where the machine keeps files: only "<path>" leaves.
+    return out.replace(otherPath, '$1<path>').trim()
   }
   return stdout
     .split('\n')

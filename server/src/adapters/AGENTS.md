@@ -441,5 +441,6 @@ client of a socket or a file sits beside them.
   list` and `projectDrift.ts` runs `ncc check` (NCC_ROOT is the chat
   root), each with an argument list, a time limit and only the variables
   it needs; a failed run is its code only, and each path of a check line
-  is made relative to the root or starts with "~" (`ghPulls.test.ts`,
+  is made relative to the root or starts with "~", and any other absolute
+  path is "<path>" (`ghPulls.test.ts`,
   `projectDrift.test.ts`, stub programs).
