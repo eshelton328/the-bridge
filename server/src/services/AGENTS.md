@@ -92,7 +92,11 @@ from the outside world.
   the record names none), `live` when the workspace list has that chat
   now; one of another machine is null. Its `workspace` is the port's
   workspace for its project (`projectWorkspaces`), else null. One change at a time; a fault is its
-  code only (`inbox.test.ts`).
+  code only. A read asks the turn ends once for all the waiting chats,
+  and lists that cross share one build that has not started to read (a
+  list during a read gets the next build); an act moves a version when
+  it is called, so a list after it builds again (`inbox.test.ts`,
+  NCC-138).
 - `sideAnswers.ts` keeps side answers in memory as they come from the
   port: one question of a chat at a time and three in all (`busy`),
   each stopped after 120 s (`timedOut`) or by the owner's stop

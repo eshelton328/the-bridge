@@ -1805,13 +1805,25 @@ export function createHerdrAgents({
       if (path === undefined) return ok(page.before === undefined ? { entries: [], earlier: false } : 'entryNotFound')
       return ok(await readClaudeTranscriptPage(path, { working, cwd, home, uploads }, page))
     },
-    async turnEnd(chat) {
-      const located = await locate(chat)
-      if (!located.ok) return located
-      const path = located.value?.path
-      if (path === undefined) return ok(null)
-      const mtime = await mtimeOf(path)
-      return ok(mtime < 0 ? null : new Date(mtime).toISOString())
+    async turnEnds(chats) {
+      const ends = new Map<ChatId, string | null>(chats.map((chat) => [chat, null]))
+      const here = chats.filter((chat) => splitId(chat).machine === machine)
+      if (here.length === 0) return ok(ends)
+      // One agent list for all the chats (NCC-138): a shell or a chat that herdr does not list has no session file.
+      const agents = await call('agent.list', AgentList)
+      if (!agents.ok) return agents
+      const shared = sharedSessions(agents.value.agents)
+      const byChat = new Map(agents.value.agents.filter(isChat).map((a) => [chatIdOf(a, shared), a]))
+      await Promise.all(
+        here.map(async (chat) => {
+          const agent = byChat.get(chat)
+          const path = agent?.agent === 'claude' ? sessionPath(agent) : undefined
+          if (path === undefined) return
+          const mtime = await mtimeOf(path)
+          if (mtime >= 0) ends.set(chat, new Date(mtime).toISOString())
+        }),
+      )
+      return ok(ends)
     },
     async readSkills(chat) {
       const located = await locate(chat)

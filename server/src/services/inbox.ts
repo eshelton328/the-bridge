@@ -50,8 +50,10 @@ export type BrainRequests = {
   body(id: InboxId): Promise<Result<string | null, Fault>>
 }
 
-/** When a chat's turn ended (its session file's last write); null when the adapter cannot tell. */
-type ChatTurns = { endOf(chat: ChatSummary): Promise<Result<string | null, AgentPortError>> }
+/** When each chat's turn ended (its session file's last write); null when the adapter cannot tell. One call per read. */
+type ChatTurns = {
+  endsOf(chats: readonly ChatSummary[]): Promise<Result<ReadonlyMap<ChatId, string | null>, AgentPortError>>
+}
 
 /** The owner's mark of one chat item. */
 type Mark = { readonly state: 'done' | 'dismissed' } | { readonly state: 'snoozed'; readonly until: string }
@@ -65,7 +67,7 @@ export type InboxMarkStore = {
 type Deps = {
   readonly agents: AgentPort
   readonly brain: BrainRequests
-  /** When a chat's turn ended; the agents' `turnEnd` when not given. */
+  /** When each chat's turn ended; the agents' `turnEnds` when not given. */
   readonly turns?: ChatTurns
   readonly marks: InboxMarkStore
   readonly now?: () => Date
@@ -84,7 +86,7 @@ export type Inbox = {
 }
 
 /** The turn ends that the agents port gives. A port fault fails the read, so no mark is dropped meanwhile. */
-const chatTurns = (agents: AgentPort): ChatTurns => ({ endOf: (chat) => agents.turnEnd(chat.id) })
+const chatTurns = (agents: AgentPort): ChatTurns => ({ endsOf: (chats) => agents.turnEnds(chats.map((c) => c.id)) })
 
 const chatActions: readonly InboxAction[] = ['snooze', 'done', 'dismiss']
 const hashId = (text: string) => InboxId.parse(createHash('sha256').update(text).digest('hex').slice(0, 16))
@@ -122,15 +124,17 @@ export function createInbox({ agents, brain, turns = chatTurns(agents), marks, n
     const items: InboxItem[] = []
     const chats: Built['chats'] = new Map()
     const kept: Record<string, Mark> = {}
+    const waits = (chat: ChatSummary) => chat.kind !== 'shell' && (chat.status === 'needsYou' || chat.status === 'done')
+    // One turn-end read for all the waiting chats, never one for each (NCC-138).
+    const ends = await turns.endsOf(listed.value.flatMap((w) => w.chats.filter(waits)))
+    if (!ends.ok) return ends
     for (const workspace of listed.value)
       for (const chat of workspace.chats) {
-        if (chat.kind === 'shell' || (chat.status !== 'needsYou' && chat.status !== 'done')) {
+        if (!waits(chat)) {
           firstSeen.delete(chat.id)
           continue
         }
-        const turn = await turns.endOf(chat)
-        if (!turn.ok) return turn
-        const ended = turn.value
+        const ended = ends.value.get(chat.id) ?? null
         let shownAt = ended
         if (shownAt === null) {
           const seen = firstSeen.get(chat.id)
@@ -194,14 +198,30 @@ export function createInbox({ agents, brain, turns = chatTurns(agents), marks, n
     return ok({ items, chats, kept })
   }
 
+  // Lists that cross share one build (NCC-138), but only one that has not started to read: a list never takes a
+  // build that read its sources before the list was called, so a change in between is never lost. Each act moves the
+  // version when it is called, so a list after an act builds again, after the act in the queue.
+  let version = 0
+  let waiting: { readonly version: number; answer: Promise<Result<InboxResponse, InboxError>> } | undefined
+
   return {
-    list: () =>
-      serial(async () => {
+    list: () => {
+      if (waiting?.version === version) return waiting.answer
+      const entry: { readonly version: number; answer: Promise<Result<InboxResponse, InboxError>> } = {
+        version,
+        answer: Promise.resolve(ok({ items: [], counts: { needsYou: 0, total: 0 } })),
+      }
+      entry.answer = serial(async (): Promise<Result<InboxResponse, InboxError>> => {
+        // It starts to read now: a list from here on waits for the next build.
+        if (waiting === entry) waiting = undefined
         const built = await build()
         if (!built.ok) return built
         const { items } = built.value
         return ok({ items, counts: { needsYou: items.filter((i) => i.needsYou).length, total: items.length } })
-      }),
+      })
+      waiting = entry
+      return entry.answer
+    },
     get: (id) =>
       serial(async (): Promise<Result<Detail | 'notFound', InboxError>> => {
         const built = await build()
@@ -221,8 +241,9 @@ export function createInbox({ agents, brain, turns = chatTurns(agents), marks, n
             : { chat: chat.chat, workspace: chat.workspace, title: chat.summary.title, model: chat.summary.model }
         return ok({ item, detail: { source: 'chat', chat: shown } })
       }),
-    act: (id, change) =>
-      serial(async (): Promise<Result<ActOutcome, InboxError>> => {
+    act: (id, change) => {
+      version += 1
+      return serial(async (): Promise<Result<ActOutcome, InboxError>> => {
         const built = await build()
         if (!built.ok) return built
         const item = built.value.items.find((i) => i.id === id)
@@ -234,6 +255,7 @@ export function createInbox({ agents, brain, turns = chatTurns(agents), marks, n
             : { state: change.action === 'dismiss' ? 'dismissed' : 'done' }
         const saved = await marks.save({ ...built.value.kept, [id]: mark })
         return saved.ok ? ok('done') : err(saved.error)
-      }),
+      })
+    },
   }
 }

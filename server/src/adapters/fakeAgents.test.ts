@@ -229,9 +229,16 @@ describe('the fake turn end', () => {
   it('gives each Claude chat fakeTurnEnd until setTurnEnd changes it, and a Codex chat none', async () => {
     const port = createFakeAgents(machine)
     const claude = ChatId.parse('test-mac/bridge-themes')
-    expect(await port.turnEnd(claude)).toEqual(ok(fakeTurnEnd))
+    const codex = ChatId.parse('test-mac/drift-check')
+    expect(await port.turnEnds([claude, codex])).toEqual(
+      ok(
+        new Map([
+          [claude, fakeTurnEnd],
+          [codex, null],
+        ]),
+      ),
+    )
     port.setTurnEnd(claude, '2026-11-21T11:00:00.000Z')
-    expect(await port.turnEnd(claude)).toEqual(ok('2026-11-21T11:00:00.000Z'))
-    expect(await port.turnEnd(ChatId.parse('test-mac/drift-check'))).toEqual(ok(null))
+    expect(await port.turnEnds([claude])).toEqual(ok(new Map([[claude, '2026-11-21T11:00:00.000Z']])))
   })
 })

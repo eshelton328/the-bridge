@@ -1,4 +1,4 @@
-import { ChatId, InboxId, MachineId, WorkspaceId } from '@bridge/contract'
+import { ChatId, type ChatSummary, InboxId, MachineId, WorkspaceId } from '@bridge/contract'
 import { err, ok } from '@bridge/shared'
 import { describe, expect, it } from 'vitest'
 import { createFakeAgents } from '../adapters/fakeAgents.ts'
@@ -7,6 +7,9 @@ import { type BrainRequest, createInbox, type InboxMarks } from './inbox.ts'
 const machine = MachineId.parse('test-mac')
 const question = ChatId.parse('test-mac/drift-check')
 const themes = ChatId.parse('test-mac/bridge-themes')
+/** The same turn end for each chat asked for, as the turns port gives it. */
+const endsFor = (chats: readonly ChatSummary[], end: string | null) => new Map(chats.map((c) => [c.id, end]))
+
 const request: BrainRequest = {
   id: InboxId.parse('fedcba9876543210'),
   kind: 'review',
@@ -36,8 +39,10 @@ function setup(
       body: (id) => Promise.resolve(ok(id === request.id ? '# Example\n\nThe body.' : null)),
     },
     turns: {
-      endOf: () =>
-        Promise.resolve(options.fault === 'turns' ? err({ reason: 'unreachable', message: 'down' }) : ok(turnEnd)),
+      endsOf: (chats) =>
+        Promise.resolve(
+          options.fault === 'turns' ? err({ reason: 'unreachable', message: 'down' }) : ok(endsFor(chats, turnEnd)),
+        ),
     },
     marks: {
       load: () => Promise.resolve(ok(stored)),
@@ -127,7 +132,7 @@ describe('the inbox', () => {
     const inbox = createInbox({
       agents,
       brain: { list: () => Promise.resolve(ok([])), body: () => Promise.resolve(ok(null)) },
-      turns: { endOf: () => Promise.resolve(ok(turn.end)) },
+      turns: { endsOf: (chats) => Promise.resolve(ok(endsFor(chats, turn.end))) },
       marks: { load: () => Promise.resolve(ok(stored)), save: (m) => ((stored = m), Promise.resolve(ok(undefined))) },
     })
     const first = await inbox.list()
@@ -203,9 +208,11 @@ describe('the inbox', () => {
       agents,
       brain: { list: () => Promise.resolve(ok([])), body: () => Promise.resolve(ok(null)) },
       turns: {
-        endOf: () =>
+        endsOf: (chats) =>
           Promise.resolve(
-            turns.fail ? err({ reason: 'unreachable', message: 'down' }) : ok('2026-11-21T10:00:00.000Z'),
+            turns.fail
+              ? err({ reason: 'unreachable', message: 'down' })
+              : ok(endsFor(chats, '2026-11-21T10:00:00.000Z')),
           ),
       },
       marks: { load: () => Promise.resolve(ok(stored)), save: (m) => ((stored = m), Promise.resolve(ok(undefined))) },
@@ -220,6 +227,119 @@ describe('the inbox', () => {
     turns.fail = false
     const after = await inbox.list()
     expect(after.ok && after.value.items).toEqual([])
+  })
+
+  it('reads the turn ends once for all the waiting chats, never once for each (NCC-138)', async () => {
+    const agents = createFakeAgents(machine)
+    agents.setStatus(themes, 'done')
+    const asked: ChatId[][] = []
+    const inbox = createInbox({
+      agents,
+      brain: { list: () => Promise.resolve(ok([])), body: () => Promise.resolve(ok(null)) },
+      turns: {
+        endsOf: (chats) => {
+          asked.push(chats.map((c) => c.id))
+          return Promise.resolve(ok(endsFor(chats, '2026-11-21T10:00:00.000Z')))
+        },
+      },
+      marks: { load: () => Promise.resolve(ok({})), save: () => Promise.resolve(ok(undefined)) },
+    })
+    const listed = await inbox.list()
+    expect(listed.ok && listed.value.items.map((i) => i.chat)).toEqual(expect.arrayContaining([question, themes]))
+    expect(asked).toHaveLength(1)
+    expect(asked[0]).toEqual(expect.arrayContaining([question, themes]))
+  })
+
+  it('shares one build among lists that cross (NCC-138)', async () => {
+    let builds = 0
+    let release: () => void = () => undefined
+    const held = new Promise<void>((resolve) => (release = resolve))
+    const inbox = createInbox({
+      agents: createFakeAgents(machine),
+      brain: {
+        list: async () => {
+          builds += 1
+          await held
+          return ok([request])
+        },
+        body: () => Promise.resolve(ok(null)),
+      },
+      turns: { endsOf: (chats) => Promise.resolve(ok(endsFor(chats, '2026-11-21T10:00:00.000Z'))) },
+      marks: { load: () => Promise.resolve(ok({})), save: () => Promise.resolve(ok(undefined)) },
+    })
+    const lists = [inbox.list(), inbox.list(), inbox.list()]
+    release()
+    const answers = await Promise.all(lists)
+    expect(builds).toBe(1)
+    expect(answers[1]).toEqual(answers[0])
+    expect(answers[2]).toEqual(answers[0])
+    await inbox.list()
+    expect(builds).toBe(2)
+  })
+
+  it('gives a list that starts while a build reads a new build, so a change in between shows (NCC-138 review)', async () => {
+    let builds = 0
+    let release: () => void = () => undefined
+    let requests: BrainRequest[] = []
+    const inbox = createInbox({
+      agents: createFakeAgents(machine),
+      brain: {
+        list: async () => {
+          builds += 1
+          const now = requests
+          if (builds === 1) await new Promise<void>((resolve) => (release = resolve))
+          return ok(now)
+        },
+        body: () => Promise.resolve(ok(null)),
+      },
+      turns: { endsOf: (chats) => Promise.resolve(ok(endsFor(chats, '2026-11-21T10:00:00.000Z'))) },
+      marks: { load: () => Promise.resolve(ok({})), save: () => Promise.resolve(ok(undefined)) },
+    })
+    const before = inbox.list()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    expect(builds).toBe(1)
+    requests = [request]
+    const after = inbox.list()
+    const alsoAfter = inbox.list()
+    release()
+    const old = await before
+    expect(old.ok && old.value.items.map((i) => i.id)).not.toContain(request.id)
+    const fresh = await after
+    expect(fresh.ok && fresh.value.items.map((i) => i.id)).toContain(request.id)
+    expect(await alsoAfter).toEqual(fresh)
+    expect(builds).toBe(2)
+  })
+
+  it('gives a list that starts after an act a new build, never the one in flight (NCC-138)', async () => {
+    let hold = false
+    let release: () => void = () => undefined
+    let stored: InboxMarks = {}
+    const inbox = createInbox({
+      agents: createFakeAgents(machine),
+      brain: {
+        list: async () => {
+          if (hold) await new Promise<void>((resolve) => (release = resolve))
+          return ok([])
+        },
+        body: () => Promise.resolve(ok(null)),
+      },
+      turns: { endsOf: (chats) => Promise.resolve(ok(endsFor(chats, '2026-11-21T10:00:00.000Z'))) },
+      marks: { load: () => Promise.resolve(ok(stored)), save: (m) => ((stored = m), Promise.resolve(ok(undefined))) },
+    })
+    const first = await inbox.list()
+    const id = first.ok ? first.value.items.find((i) => i.chat === question)?.id : undefined
+    if (id === undefined) throw new Error('no item')
+    hold = true
+    const before = inbox.list()
+    const acted = inbox.act(id, { action: 'dismiss' })
+    const after = inbox.list()
+    hold = false
+    release()
+    expect(await acted).toEqual(ok('done'))
+    const old = await before
+    expect(old.ok && old.value.items.map((i) => i.id)).toContain(id)
+    const fresh = await after
+    expect(fresh.ok && fresh.value.items.map((i) => i.id)).not.toContain(id)
   })
 
   it('gives a fault of the brain or the store by its code', async () => {
