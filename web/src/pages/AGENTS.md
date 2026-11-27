@@ -4,6 +4,8 @@ One folder per page of the-bridge; `structure.ts` lists the pages.
 Start one with `pnpm new page <page> --state <id> --frame <D1>`.
 
 - [inbox/AGENTS.md](inbox/AGENTS.md): read before you work on the Inbox.
+- [projects/AGENTS.md](projects/AGENTS.md): read before you work on the
+  Projects page.
 - [artifacts/AGENTS.md](artifacts/AGENTS.md): read before you work on the
   Artifacts page.
 - [toolkit/AGENTS.md](toolkit/AGENTS.md): read before you work on the
