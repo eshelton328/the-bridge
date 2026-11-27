@@ -81,18 +81,21 @@ const artifacts = createArtifacts({
   }),
   machine,
 })
-// The Inbox reads the brain's attention requests only, and keeps the owner's marks beside the database (R20).
+// The Inbox reads the brain's attention requests only, and keeps the owner's marks beside the database (R20). A
+// chat item names its pane's tagged project when the brain's project folders have it (d-120).
+const brainProjects = createBrainProjects(config.value.brainDir)
 const inbox = createInbox({
   agents,
   brain: createBrainRequests(config.value.brainDir),
   marks: createDiskInboxMarks(join(dirname(dbFile), 'inbox')),
+  projects: brainProjects,
 })
 // The Projects app reads the brain's project folders and idea records, the open PRs with gh and the layout with
 // `ncc check` on the chat tree, and a project's chats by their herdr tags; the pins and the last drift runs go beside
 // the database too (f-008).
 const projectsRoot = join(dirname(dbFile), 'projects')
 const projects = createProjects({
-  brain: createBrainProjects(config.value.brainDir),
+  brain: brainProjects,
   pins: createDiskPins(projectsRoot),
   pulls: createGhPulls({ command: 'gh', env: process.env }),
   check: createNccCheck({ command: 'ncc', root: config.value.chatRoot, env: process.env }),

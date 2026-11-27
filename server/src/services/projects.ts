@@ -107,8 +107,11 @@ export type Projects = {
 const tagKeys = ['project', 'area', 'role'] as const
 const tagValue = /^[a-z0-9][a-z0-9._-]{0,63}$/
 
-/** The tags the app reads (d-120), in key order: `project`, `area` and `role` with a value written as a slug is. */
-function chatTagsOf(tokens: Readonly<Record<string, string>>): ChatTag[] {
+/**
+ * The tags the app reads (d-120), in key order: `project`, `area` and `role` with a value written as a slug is. The
+ * Inbox reads a chat's project with it too.
+ */
+export function chatTagsOf(tokens: Readonly<Record<string, string>>): ChatTag[] {
   return tagKeys.flatMap((key) => {
     const value = Object.hasOwn(tokens, key) ? tokens[key] : undefined
     return value !== undefined && tagValue.test(value) ? [{ key, value }] : []
