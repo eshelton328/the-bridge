@@ -209,11 +209,12 @@ export type AgentPort = {
    */
   readSkills(chat: ChatId): Promise<Result<ChatSkill[] | null, AgentPortError>>
   /**
-   * When one chat's last turn ended, as an ISO time: the last write of a Claude chat's session file. `null` for a
-   * Codex chat, a shell, a chat with no session file yet and a chat this machine does not have. It reads only when
-   * called, and only the file's change time.
+   * When each chat's last turn ended, as an ISO time: the last write of a Claude chat's session file. `null` for a
+   * Codex chat, a shell, a chat with no session file yet and a chat this machine does not have. The map has each
+   * chat asked for. It reads only when called: one list of the agents for all the chats, and each file's change time
+   * (NCC-138).
    */
-  turnEnd(chat: ChatId): Promise<Result<string | null, AgentPortError>>
+  turnEnds(chats: readonly ChatId[]): Promise<Result<ReadonlyMap<ChatId, string | null>, AgentPortError>>
   /**
    * Watches one chat's transcript: `onChange` gets a call each time it may have changed (read it again with
    * `readTranscript`), until `close()`. It watches only that chat's session, with no timer (d-112). When the

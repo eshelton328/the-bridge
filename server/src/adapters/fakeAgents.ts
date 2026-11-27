@@ -427,10 +427,19 @@ export function createFakeAgents(
         ok({ entries: structuredClone(found.entries.slice(start, end)), earlier: start > 0 || found.earlier }),
       )
     },
-    turnEnd(chat) {
+    turnEnds(chats) {
       if ('error' in answer) return Promise.resolve(err(answer.error))
-      const found = (data ?? []).flatMap((w) => w.chats).find((c) => c.id === chat)
-      return Promise.resolve(ok(found?.kind === 'claude' ? (turnEnds.get(chat) ?? fakeTurnEnd) : null))
+      const listed = (data ?? []).flatMap((w) => w.chats)
+      return Promise.resolve(
+        ok(
+          new Map(
+            chats.map((chat) => {
+              const found = listed.find((c) => c.id === chat)
+              return [chat, found?.kind === 'claude' ? (turnEnds.get(chat) ?? fakeTurnEnd) : null]
+            }),
+          ),
+        ),
+      )
     },
     setTurnEnd(chat, at) {
       turnEnds.set(chat, at)

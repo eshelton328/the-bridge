@@ -751,6 +751,25 @@ describe('herdr agents: input to a chat', () => {
       }
     })
 
+    it('reads the turn ends of many chats with one agent list (NCC-138)', async () => {
+      const listed = await port().listWorkspaces()
+      if (!listed.ok) throw new Error(listed.error.message)
+      const chats = listed.value.flatMap((w) => w.chats.map((c) => c.id))
+      expect(chats.length).toBeGreaterThan(2)
+      let lists = 0
+      socket.onRequest((method) => {
+        if (method === 'agent.list' || method === 'pane.list') lists += 1
+      })
+      try {
+        const ends = await port().turnEnds(chats)
+        if (!ends.ok) throw new Error(ends.error.message)
+        expect([...ends.value.keys()]).toEqual(chats)
+        expect(lists).toBe(1)
+      } finally {
+        socket.onRequest(undefined)
+      }
+    })
+
     it("renames a workspace and a chat's pane, and lists the pane's label as the chat's title", async () => {
       expect(await port().renameWorkspace(WorkspaceId.parse(`${machine}/w17`), 'theme explorations')).toEqual({
         ok: true,

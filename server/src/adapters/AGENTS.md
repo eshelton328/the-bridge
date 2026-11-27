@@ -381,8 +381,11 @@ client of a socket or a file sits beside them.
   with a pane whose real folder is under `<chat root>/projects/<project>/`;
   no chat root maps none, and no path leaves the adapter
   (`herdrAgents.test.ts`).
-- A Claude chat's `turnEnd` is its session file's change time; a Codex
-  chat, a shell and a chat with no file get null (`agentPortContract.ts`).
+- `turnEnds` gives each chat asked for its turn end: a Claude chat's
+  session file's change time; a Codex chat, a shell and a chat with no
+  file get null. The herdr adapter reads one agent list for all the
+  chats, then each file's change time (`agentPortContract.ts`,
+  `herdrAgents.test.ts`, NCC-138).
 - `diskInbox.ts` (R20) lists the open and snoozed attention requests in
   `<brain>/projects/<project>/inbox/*.md` from their front matter: plain
   files of at most 256 KiB whose real path stays in that folder, never a
