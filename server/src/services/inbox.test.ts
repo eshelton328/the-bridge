@@ -277,6 +277,39 @@ describe('the inbox', () => {
     expect(builds).toBe(2)
   })
 
+  it('gives a list that starts while a build reads a new build, so a change in between shows (NCC-138 review)', async () => {
+    let builds = 0
+    let release: () => void = () => undefined
+    let requests: BrainRequest[] = []
+    const inbox = createInbox({
+      agents: createFakeAgents(machine),
+      brain: {
+        list: async () => {
+          builds += 1
+          const now = requests
+          if (builds === 1) await new Promise<void>((resolve) => (release = resolve))
+          return ok(now)
+        },
+        body: () => Promise.resolve(ok(null)),
+      },
+      turns: { endsOf: (chats) => Promise.resolve(ok(endsFor(chats, '2026-11-21T10:00:00.000Z'))) },
+      marks: { load: () => Promise.resolve(ok({})), save: () => Promise.resolve(ok(undefined)) },
+    })
+    const before = inbox.list()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    expect(builds).toBe(1)
+    requests = [request]
+    const after = inbox.list()
+    const alsoAfter = inbox.list()
+    release()
+    const old = await before
+    expect(old.ok && old.value.items.map((i) => i.id)).not.toContain(request.id)
+    const fresh = await after
+    expect(fresh.ok && fresh.value.items.map((i) => i.id)).toContain(request.id)
+    expect(await alsoAfter).toEqual(fresh)
+    expect(builds).toBe(2)
+  })
+
   it('gives a list that starts after an act a new build, never the one in flight (NCC-138)', async () => {
     let hold = false
     let release: () => void = () => undefined

@@ -198,28 +198,28 @@ export function createInbox({ agents, brain, turns = chatTurns(agents), marks, n
     return ok({ items, chats, kept })
   }
 
-  // Lists that cross share one build (NCC-138). Each act moves the version when it is called, so a list after an act
-  // never takes a build that started before it: it builds again, after the act in the queue.
+  // Lists that cross share one build (NCC-138), but only one that has not started to read: a list never takes a
+  // build that read its sources before the list was called, so a change in between is never lost. Each act moves the
+  // version when it is called, so a list after an act builds again, after the act in the queue.
   let version = 0
-  let shared: { readonly version: number; readonly answer: Promise<Result<InboxResponse, InboxError>> } | undefined
+  let waiting: { readonly version: number; answer: Promise<Result<InboxResponse, InboxError>> } | undefined
 
   return {
     list: () => {
-      if (shared?.version === version) return shared.answer
-      const entry = {
+      if (waiting?.version === version) return waiting.answer
+      const entry: { readonly version: number; answer: Promise<Result<InboxResponse, InboxError>> } = {
         version,
-        answer: serial(async (): Promise<Result<InboxResponse, InboxError>> => {
-          const built = await build()
-          if (!built.ok) return built
-          const { items } = built.value
-          return ok({ items, counts: { needsYou: items.filter((i) => i.needsYou).length, total: items.length } })
-        }),
+        answer: Promise.resolve(ok({ items: [], counts: { needsYou: 0, total: 0 } })),
       }
-      shared = entry
-      const clear = () => {
-        if (shared === entry) shared = undefined
-      }
-      entry.answer.then(clear, clear)
+      entry.answer = serial(async (): Promise<Result<InboxResponse, InboxError>> => {
+        // It starts to read now: a list from here on waits for the next build.
+        if (waiting === entry) waiting = undefined
+        const built = await build()
+        if (!built.ok) return built
+        const { items } = built.value
+        return ok({ items, counts: { needsYou: items.filter((i) => i.needsYou).length, total: items.length } })
+      })
+      waiting = entry
       return entry.answer
     },
     get: (id) =>
