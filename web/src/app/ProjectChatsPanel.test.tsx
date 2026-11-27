@@ -42,6 +42,7 @@ const chats = [
   chat(2, 'Sample chat that needs you', 'needsYou', 'alpha'),
   chat(1, 'Sample working chat', 'working', 'alpha-docs'),
   chat(3, 'Sample done chat', 'done', 'alpha'),
+  { ...chat(4, 'Sample shell', 'idle', 'alpha'), kind: 'shell' },
 ]
 
 /** The fakes as the page's fetch: Alpha with `list` as its chats, and an Inbox with one of its items. */
@@ -158,6 +159,18 @@ describe("A project's Chats panel (R7)", () => {
     await expect.poll(() => reads(server)).toBe(before + 2)
     await quiet()
     expect(reads(server)).toBe(before + 2)
+  })
+
+  it('leaves no unhandled error when the page closes during an Inbox read after a change', async () => {
+    const server = withServer()
+    await settled(server)
+    const stop: { abort?: (e: unknown) => void } = {}
+    server.inbox.answerNext('list', () => new Promise<Response>((_, reject) => (stop.abort = reject)))
+    server.inbox.emit('inbox.changed')
+    await expect.poll(() => stop.abort).toBeDefined()
+    await unmountRendered()
+    stop.abort?.(new DOMException('The operation was aborted.', 'AbortError'))
+    await quiet() // Vitest fails the run on an unhandled rejection.
   })
 
   it('draws the panel full width under the two columns at 1440, and last at 1024 and 390', async () => {

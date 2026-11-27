@@ -199,7 +199,7 @@ export async function runDrift(slug: string): Promise<Result<ProjectDrift, strin
 
 export type ProjectChats = NonNullable<ProjectOverview['chats']>
 
-/** The Chats panel (R7): project `slug`'s tagged chats, or no rows and the miss's line (a 404 is not found). */
+/** The Chats panel (R7): `slug`'s tagged chats but shells (Workspaces links chat panes only), or the miss's line. */
 export async function readProjectChats(slug: string, signal?: AbortSignal): Promise<ProjectChats> {
   const answer = await send(
     (init) => api.api.projects[':slug'].chats.$get({ param: { slug } }, { init: { signal: init } }),
@@ -210,7 +210,11 @@ export async function readProjectChats(slug: string, signal?: AbortSignal): Prom
     return { rows: [], notRead: missLine('Chats not read', answer.error) }
   }
   const { chats } = ProjectChatsResponse.parse(readJson(answer.value))
-  return { rows: chats.map((c) => ({ id: c.id, title: c.title, workspace: c.workspace.label, status: c.status })) }
+  return {
+    rows: chats
+      .filter((c) => c.kind !== 'shell')
+      .map((c) => ({ id: c.id, title: c.title, workspace: c.workspace.label, status: c.status })),
+  }
 }
 
 const pullRow = (p: ProjectPull) => ({ title: p.title, meta: `${p.repository}#${String(p.number)}`, status: p.status })
