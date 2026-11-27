@@ -37,6 +37,8 @@ const logMessages = [
   'chat restarted',
   'artifacts store failed',
   'inbox read failed',
+  'projects read failed',
+  'drift check failed',
   'files read failed',
 ] as const
 export type LogMessage = (typeof logMessages)[number]

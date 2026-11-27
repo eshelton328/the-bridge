@@ -1,0 +1,273 @@
+// API tests of /api/projects (f-008), in process with the disk adapters on a
+// fixture brain, a stub `gh` and a stub `ncc` (no real GitHub or layout).
+import { chmod, mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import {
+  DriftResponse,
+  ErrorBody,
+  IdeaDetailResponse,
+  IdeasResponse,
+  MachineId,
+  PinProjectResponse,
+  ProjectDetailResponse,
+  ProjectsResponse,
+} from '@bridge/contract'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { createBrainProjects, createDiskDriftStore, createDiskPins } from '../adapters/diskProjects.ts'
+import { createFakeAgents } from '../adapters/fakeAgents.ts'
+import { createGhPulls } from '../adapters/ghPulls.ts'
+import { createNccCheck } from '../adapters/projectDrift.ts'
+import { createApp } from '../app.ts'
+import { memoryLogger } from '../logger.ts'
+import { createProjects } from '../services/projects.ts'
+
+const local = { Host: '127.0.0.1:5181' }
+const json = { ...local, 'Content-Type': 'application/json' }
+const ideaId = '0b7f2c1e-4d3a-4f6b-9a8c-1e2d3c4b5a69'
+
+const projectYaml = (slug: string, name: string, extra = '') =>
+  [
+    'schema_version: 1',
+    `slug: "${slug}"`,
+    `name: "${name}"`,
+    `purpose: "The ${name} project, marker-5150."`,
+    extra,
+    'repositories:',
+    '  - id: example-repo',
+    '    role: the app',
+    '    url: https://github.com/example-owner/example-repo',
+    '  - id: local-repo',
+    '    role: a local folder',
+    '    url: file:///home/dev/local-repo',
+    'linear: []',
+  ].join('\n')
+
+const ghReply = JSON.stringify([
+  {
+    number: 7,
+    title: 'feat: an older example',
+    url: 'https://github.com/example-owner/example-repo/pull/7',
+    headRefName: 'dev/ncc-7-older',
+    isDraft: true,
+    updatedAt: '2026-11-20T10:00:00Z',
+    statusCheckRollup: [],
+  },
+  {
+    number: 9,
+    title: 'fix: a newer example',
+    url: 'https://github.com/example-owner/example-repo/pull/9',
+    headRefName: 'dev/ncc-9-newer',
+    isDraft: false,
+    updatedAt: '2026-11-21T10:00:00Z',
+    statusCheckRollup: [{ __typename: 'CheckRun', status: 'COMPLETED', conclusion: 'FAILURE' }],
+  },
+])
+
+let dir: string
+let brain: string
+let data: string
+let bin: string
+beforeEach(async () => {
+  dir = await mkdtemp(join(tmpdir(), 'bridge-projects-'))
+  brain = join(dir, 'root', 'engine')
+  data = join(dir, 'data', 'projects')
+  bin = join(dir, 'bin')
+  const files: Record<string, string> = {
+    'projects/example-project/project.yaml': projectYaml('example-project', 'Example', 'icon: rocket'),
+    'projects/another-project/project.yaml': projectYaml('another-project', 'Another'),
+    'projects/no-yaml/README.md': '# no project.yaml here\n',
+    'projects/example-project/ideas/an-idea.md': [
+      '---',
+      `id: ${ideaId}`,
+      'type: idea',
+      'title: An example idea',
+      "updated: '2026-11-21T10:00:00Z'",
+      '---',
+      '# An example idea',
+      '',
+      'The first paragraph, marker-5150.',
+      '',
+      '## Open questions',
+      '',
+      '- One?',
+    ].join('\n'),
+  }
+  for (const [path, text] of Object.entries(files)) {
+    await mkdir(join(brain, path, '..'), { recursive: true })
+    await writeFile(join(brain, path), text)
+  }
+  await mkdir(bin, { recursive: true })
+  await writeFile(join(bin, 'gh'), `#!/bin/sh\ncat <<'EOF'\n${ghReply}\nEOF\n`)
+  await writeFile(
+    join(bin, 'ncc'),
+    '#!/bin/sh\necho "not a git clone: $NCC_ROOT/projects/example-project/stray.log (only <repo>/ go here)"\necho "loose file in projects/: $NCC_ROOT/projects/other.txt"\nexit 1\n',
+  )
+  await chmod(join(bin, 'gh'), 0o755)
+  await chmod(join(bin, 'ncc'), 0o755)
+})
+afterEach(() => rm(dir, { recursive: true, force: true }))
+
+/** An app on the fixture brain; a second call is a new server process on the same data folder. */
+function server() {
+  const logger = memoryLogger()
+  const projects = createProjects({
+    brain: createBrainProjects(brain),
+    pins: createDiskPins(data),
+    pulls: createGhPulls({ command: join(bin, 'gh'), env: process.env }),
+    check: createNccCheck({ command: join(bin, 'ncc'), root: join(dir, 'root'), env: process.env }),
+    drift: createDiskDriftStore(data),
+    now: () => new Date('2026-11-22T09:00:00.000Z'),
+  })
+  const app = createApp({
+    agents: createFakeAgents(MachineId.parse('test-mac')),
+    owner: 'owner@example.com',
+    log: logger.log,
+    projects,
+  })
+  return { app, logger }
+}
+
+const read = async (app: ReturnType<typeof server>['app'], path: string) => app.request(path, { headers: local })
+
+describe('/api/projects', () => {
+  it('lists each project folder with a project.yaml, by name, with its icon', async () => {
+    const { app } = server()
+    const listed = ProjectsResponse.parse(await (await read(app, '/api/projects')).json())
+    expect(listed.projects).toEqual([
+      {
+        slug: 'another-project',
+        name: 'Another',
+        purpose: 'The Another project, marker-5150.',
+        icon: null,
+        pinned: false,
+      },
+      {
+        slug: 'example-project',
+        name: 'Example',
+        purpose: 'The Example project, marker-5150.',
+        icon: 'rocket',
+        pinned: false,
+      },
+    ])
+  })
+
+  it('pin survives restart: a pin moves the project first, and a new server process reads it back', async () => {
+    const first = server()
+    const pinned = await first.app.request('/api/projects/example-project/pin', {
+      method: 'PUT',
+      headers: json,
+      body: JSON.stringify({ pinned: true }),
+    })
+    expect(pinned.status).toBe(200)
+    expect(PinProjectResponse.parse(await pinned.json()).project.pinned).toBe(true)
+    const again = server()
+    const listed = ProjectsResponse.parse(await (await read(again.app, '/api/projects')).json())
+    expect(listed.projects.map((p) => [p.slug, p.pinned])).toEqual([
+      ['example-project', true],
+      ['another-project', false],
+    ])
+    await again.app.request('/api/projects/example-project/pin', {
+      method: 'PUT',
+      headers: json,
+      body: JSON.stringify({ pinned: false }),
+    })
+    const unpinned = ProjectsResponse.parse(await (await read(server().app, '/api/projects')).json())
+    expect(unpinned.projects.map((p) => p.pinned)).toEqual([false, false])
+  })
+
+  it('gives the detail with the open PRs of each GitHub repository from gh, newest first, with their status', async () => {
+    const { app } = server()
+    const detail = ProjectDetailResponse.parse(await (await read(app, '/api/projects/example-project')).json())
+    expect(detail.repositories.map((r) => [r.id, r.github])).toEqual([
+      ['example-repo', { owner: 'example-owner', name: 'example-repo' }],
+      ['local-repo', null],
+    ])
+    expect(detail.queue.inProgress.map((p) => [p.repository, p.number, p.status])).toEqual([
+      ['example-repo', 9, 'ciFailed'],
+      ['example-repo', 7, 'draft'],
+    ])
+    expect(detail.queue.unread).toEqual([])
+  })
+
+  it('names a repository whose PRs gh cannot read, and still answers', async () => {
+    await writeFile(join(bin, 'gh'), '#!/bin/sh\necho "marker-5150 gh failed" >&2\nexit 4\n')
+    const { app } = server()
+    const detail = ProjectDetailResponse.parse(await (await read(app, '/api/projects/example-project')).json())
+    expect(detail.queue).toEqual({ inProgress: [], unread: ['example-repo'] })
+  })
+
+  it('lists the ideas and gives one idea with its body', async () => {
+    const { app } = server()
+    const ideas = IdeasResponse.parse(await (await read(app, '/api/projects/example-project/ideas')).json())
+    expect(ideas.ideas.map((i) => [i.title, i.summary, i.state])).toEqual([
+      ['An example idea', 'The first paragraph, marker-5150.', 'open'],
+    ])
+    const one = IdeaDetailResponse.parse(
+      await (await read(app, `/api/projects/example-project/ideas/${ideaId}`)).json(),
+    )
+    expect(one.body).toContain('## Open questions')
+    expect((await read(app, '/api/projects/another-project/ideas')).status).toBe(200)
+  })
+
+  it('runs the layout check, keeps the project findings and gives them again after a restart', async () => {
+    const { app } = server()
+    expect(DriftResponse.parse(await (await read(app, '/api/projects/example-project/drift')).json())).toEqual({
+      last: null,
+    })
+    const ran = await app.request('/api/projects/example-project/drift', { method: 'POST', headers: json, body: '{}' })
+    expect(ran.status).toBe(200)
+    const run = {
+      result: 'findings',
+      checkedAt: '2026-11-22T09:00:00.000Z',
+      findings: [{ text: 'not a git clone: projects/example-project/stray.log (only <repo>/ go here)' }],
+    }
+    expect(DriftResponse.parse(await ran.json())).toEqual({ last: run })
+    const again = server()
+    expect(DriftResponse.parse(await (await read(again.app, '/api/projects/example-project/drift')).json())).toEqual({
+      last: run,
+    })
+  })
+
+  it('answers 404 for a project folder with no project.yaml, a bad name and a bad idea ID, as an ErrorBody', async () => {
+    const { app } = server()
+    for (const path of [
+      '/api/projects/no-yaml',
+      '/api/projects/..%2Fengine',
+      '/api/projects/example-project/ideas/not-a-uuid',
+      '/api/projects/example-project/ideas/1b7f2c1e-4d3a-4f6b-9a8c-1e2d3c4b5a69',
+      '/api/projects/no-yaml/drift',
+    ]) {
+      const response = await read(app, path)
+      expect([path, response.status]).toEqual([path, 404])
+      expect(ErrorBody.parse(await response.json()).error.kind).toBe('not-found')
+    }
+  })
+
+  it('checks the bodies before any work: 400 for a pin with another field or a body that is not JSON', async () => {
+    const { app } = server()
+    const extra = await app.request('/api/projects/example-project/pin', {
+      method: 'PUT',
+      headers: json,
+      body: JSON.stringify({ pinned: true, path: '/home/dev' }),
+    })
+    expect(extra.status).toBe(400)
+    const form = await app.request('/api/projects/example-project/drift', { method: 'POST', headers: local, body: 'x' })
+    expect(form.status).toBe(400)
+    expect(ProjectsResponse.parse(await (await read(app, '/api/projects')).json()).projects.some((p) => p.pinned)).toBe(
+      false,
+    )
+  })
+
+  it('answers 500 with the request ID for a store fault, and logs the code only', async () => {
+    await mkdir(data, { recursive: true })
+    await writeFile(join(data, 'pins.json'), '{ not json marker-5150')
+    const { app, logger } = server()
+    const response = await read(app, '/api/projects')
+    expect(response.status).toBe(500)
+    expect(ErrorBody.parse(await response.json()).error.kind).toBe('internal')
+    const lines = logger.text()
+    expect(lines).toContain('EBADDATA')
+    expect(lines).not.toContain('marker-5150')
+  })
+})
