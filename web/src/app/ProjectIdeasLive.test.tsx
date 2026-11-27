@@ -1,0 +1,135 @@
+import '@fontsource-variable/geist'
+import '@fontsource-variable/geist-mono'
+import '../index.css'
+import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
+import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest'
+import { page, userEvent } from 'vitest/browser'
+import { NotFound } from '../errors/NotFound.tsx'
+import { clearReports, getReports } from '../errors/reporter.ts'
+import { RouteError } from '../errors/RouteError.tsx'
+import { fakeInboxServer } from '../lib/fakeInboxServer.ts'
+import { fakeProjectsServer } from '../lib/fakeProjectsServer.ts'
+import { errorAnswer } from '../lib/fakeTranscriptServer.ts'
+import { answerLateServerReads } from '../lib/lateServerReads.ts'
+import { queryClient } from '../lib/queryClient.ts'
+import { setViewport } from '../lib/rendering.ts'
+import { testRender, unmountRendered } from '../lib/testRender.ts'
+import { resetAllStores } from '../state/resetStores.ts'
+import { withInboxFeed } from './inboxLiveHelpers.ts'
+import { routeTree } from './routeTree.gen.ts'
+
+// A live project's Ideas tab (f-008 R10; NCC-132's live slice) with the contract-checked fakes only: the tab
+// (`?tab=ideas`) lists the project's idea records, and the Overview reads none.
+document.documentElement.classList.add('dark')
+document.documentElement.dataset.pandaTheme = 'viewscreen'
+
+answerLateServerReads()
+
+afterEach(async () => {
+  await unmountRendered()
+  vi.unstubAllGlobals()
+  queryClient.clear()
+  clearReports()
+  resetAllStores()
+  await setViewport(1512, 982)
+})
+
+const speech = '3f0c6a52-6a1e-4d55-9a4e-2f1b8f1d0a01'
+const ideas = [
+  {
+    id: speech,
+    title: 'Sample idea about speech',
+    summary: 'Talk to a chat from the phone.',
+    tags: ['voice'],
+    kind: 'idea',
+    state: 'in-design',
+    updated: '2026-11-25T10:00:00.000Z',
+  },
+  {
+    id: '3f0c6a52-6a1e-4d55-9a4e-2f1b8f1d0a02',
+    title: 'Sample proposal about tags',
+    summary: 'Tag each chat with its project.',
+    tags: [],
+    kind: 'proposal',
+    state: 'open',
+    updated: '2026-11-20T10:00:00.000Z',
+  },
+]
+const body = '# Sample idea about speech\n\nTalk to a chat from the phone.\n\n## Open questions\n\n- Which engine?\n'
+
+/** The fakes as the page's fetch: Alpha with two ideas and an empty Inbox. */
+function withServer() {
+  const projects = fakeProjectsServer(
+    [{ slug: 'alpha', name: 'Alpha', purpose: 'Made up.', icon: null, pinned: false }],
+    { ideas: { alpha: ideas.map((idea) => ({ idea, body: idea.id === speech ? body : '' })) } },
+  )
+  const inbox = fakeInboxServer({ items: [] })
+  vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
+    const path = new URL(url, window.location.origin).pathname
+    const answer = projects.handle(path, init) ?? inbox.handle(path, init)
+    if (answer === undefined) throw new TypeError(`no stub for ${url}`)
+    return answer
+  })
+  return projects
+}
+
+async function open(path: string, width = 1440, height = 900) {
+  await setViewport(width, height)
+  const router = createRouter({
+    routeTree,
+    history: createMemoryHistory({ initialEntries: [path] }),
+    defaultNotFoundComponent: NotFound,
+    defaultErrorComponent: RouteError,
+  })
+  onTestFinished((await testRender(withInboxFeed(<RouterProvider router={router} />))).unmount)
+  return router
+}
+
+const ideaList = () => page.getByRole('list', { name: 'Ideas' })
+
+describe("A project's Ideas tab (R10)", () => {
+  for (const [width, height] of [
+    [1440, 900],
+    [1024, 1366],
+    [390, 844],
+  ] as const) {
+    it(`lists the ideas when the Ideas tab opens at ${String(width)} px`, async () => {
+      const projects = withServer()
+      const router = await open('/projects/alpha', width, height)
+      await userEvent.click(page.getByRole('tab', { name: 'Ideas' }))
+      await expect.element(ideaList().getByText('Sample idea about speech')).toBeVisible()
+      await expect.element(ideaList().getByText('Sample proposal about tags')).toBeVisible()
+      await expect.element(ideaList().getByText('Idea · In design · voice')).toBeVisible()
+      expect(router.state.location.search).toEqual({ tab: 'ideas' })
+      expect(projects.calls('ideas').map((r) => r.path)).toEqual(['/api/projects/alpha/ideas'])
+      expect(getReports()).toEqual([])
+    })
+  }
+
+  it('opens on the Ideas tab from its address, as a reload does, and goes back to the Overview', async () => {
+    withServer()
+    const router = await open('/projects/alpha?tab=ideas')
+    await expect.element(ideaList().getByText('Sample idea about speech')).toBeVisible()
+    await userEvent.click(page.getByRole('tab', { name: 'Overview' }))
+    await expect.poll(() => router.state.location.search).toEqual({})
+    await expect.element(page.getByRole('region', { name: 'Queue' })).toBeVisible()
+  })
+
+  it('reads no ideas while the Overview tab shows', async () => {
+    const projects = withServer()
+    await open('/projects/alpha')
+    await expect.element(page.getByRole('region', { name: 'Queue' })).toBeVisible()
+    expect(projects.calls('ideas')).toEqual([])
+  })
+
+  it('says the ideas were not read when the read misses', async () => {
+    const projects = withServer()
+    projects.answerNext('ideas', () =>
+      errorAnswer({ kind: 'internal', message: 'Internal error', requestId: 'r-500' }, 500),
+    )
+    await open('/projects/alpha?tab=ideas')
+    await expect.element(page.getByRole('status')).toHaveTextContent('Ideas not read — the server answered 500')
+    expect(getReports().map((r) => r.error.message)).toContain('A projects request missed: ideas internal 500')
+  })
+})

@@ -24,5 +24,9 @@ moves to `web/src/blocks/`.
   word (`words.kinds`) as its `title`, so assistive tech names the kind.
   `ProjectDetail` passes the block as the Overview tab's `content`, so the
   tab's `aria-controls` panel holds it.
+- `IdeasList` is the Ideas tab: a list of compact `ListRow` rows (kind,
+  state and tags in the meta, the age at the end). It takes only the
+  words it draws. The frames' table (D08, T08, T08b, M08) is a later
+  issue's.
 - Each card carries `data-figma="project card · <name>"`, which the live
   tests read for the order.

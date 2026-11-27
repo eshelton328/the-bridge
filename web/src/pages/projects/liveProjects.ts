@@ -9,6 +9,7 @@
 // the server does not know is not found. Its open PRs are the Queue panel (R6),
 // and the Inbox panel (R5) is the project's items of `GET /api/inbox`, read
 // with it and again on each `inbox.changed` (ProjectPage.tsx; NCC-138).
+// Its Ideas tab reads `GET /api/projects/:slug/ideas` only while it shows (R10).
 //
 // A read or a pin that misses shows one short line by status ("Projects not
 // read — the server answered 500"), and a list that misses shows no projects,
@@ -18,6 +19,8 @@
 import {
   ErrorBody,
   type ErrorKind,
+  type Idea,
+  IdeasResponse,
   ProjectDetailResponse,
   type ProjectPull,
   ProjectsResponse,
@@ -28,7 +31,7 @@ import { report } from '../../errors/reporter.ts'
 import { api } from '../../lib/api.ts'
 import { InboxMissError, readInboxList } from '../../lib/inboxClient.ts'
 import type { ScreenState } from '../../lib/screenState.ts'
-import type { ProjectCard, ProjectOverview, ProjectsData, ProjectsUi } from './types.ts'
+import type { IdeaRow, ProjectCard, ProjectOverview, ProjectsData, ProjectsUi } from './types.ts'
 
 /** How long a read or a pin waits for the server, in ms, as the Artifacts reads do. */
 const projectsTimeoutMs = 8000
@@ -39,7 +42,7 @@ type ProjectsMiss = {
   readonly status: number | undefined
 }
 
-type ProjectsStep = 'list' | 'pin' | 'detail'
+type ProjectsStep = 'list' | 'pin' | 'detail' | 'ideas'
 
 /** A miss for report(): a stable name and, in its message, only the step, the kind and the status. */
 class ProjectsMissError extends Error {
@@ -193,6 +196,34 @@ export async function withLiveProject(
     },
   }
   return { ...state, ui, data: { ...state.data, projects: [projectCard(project)], live: {}, overview } }
+}
+
+const ideaRow = (i: Idea, now: Date): IdeaRow => ({
+  id: i.id,
+  title: i.title,
+  tags: i.tags,
+  kind: i.kind,
+  state: i.state,
+  age: ageOf(i.updated, now),
+})
+
+/** `state` with project `slug`'s Ideas tab (R10); a list that misses shows no rows and its line. */
+export async function withLiveIdeas(
+  state: ProjectsState,
+  slug: string,
+  { signal }: { readonly signal?: AbortSignal | undefined } = {},
+): Promise<ProjectsState> {
+  const now = new Date()
+  const answer = await send(
+    (init) => api.api.projects[':slug'].ideas.$get({ param: { slug } }, { init: { signal: init } }),
+    signal,
+  )
+  if (!answer.ok) {
+    reportMiss('ideas', answer.error)
+    return { ...state, data: { ...state.data, ideas: { rows: [], notRead: missLine('Ideas not read', answer.error) } } }
+  }
+  const { ideas } = IdeasResponse.parse(readJson(answer.value))
+  return { ...state, data: { ...state.data, ideas: { rows: ideas.map((i) => ideaRow(i, now)) } } }
 }
 
 /** Pins or unpins the project `slug` (`PUT /api/projects/:slug/pin`); a miss gives its line. */

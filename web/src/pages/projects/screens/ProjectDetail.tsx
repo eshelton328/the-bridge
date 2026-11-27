@@ -1,10 +1,12 @@
 // A project's page in the shell's detail (D01, T01, T01b, M01; R4): its
 // header and the tabs of increment one, Overview and Ideas (d-133). The
-// Overview shows the Inbox and Queue panels (R5, R6); its other panels and the
-// Ideas list are later issues'. Props only.
+// Overview shows the Inbox and Queue panels (R5, R6) and the Ideas tab the
+// idea records (R10).
+// The Overview's other panels are later issues'. Props only.
 import { BulbIcon, GridIcon, ItemTabs } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
+import { IdeasList } from '../blocks/IdeasList.tsx'
 import { OverviewPanels } from '../blocks/OverviewPanels.tsx'
 import { ProjectHeader } from '../blocks/ProjectHeader.tsx'
 import { type ProjectCard, ProjectTab, type ProjectsData, type ProjectsUi } from '../types.ts'
@@ -43,6 +45,7 @@ export function ProjectDetail({ project, data, ui, layout, onUiChange, onBack, o
         onGroupOpen={(group, open) => onUiChange?.({ groupsOpen: { ...ui.groupsOpen, [group]: open } })}
       />
     ) : null
+  const ideas = data.ideas === undefined ? null : <IdeasList ideas={data.ideas} words={words} layout={layout} />
   return (
     <div className={page[layout]}>
       <ProjectHeader project={project} words={words} layout={layout} onBack={onBack} onQuickChat={onQuickChat} />
@@ -58,7 +61,7 @@ export function ProjectDetail({ project, data, ui, layout, onUiChange, onBack, o
           }}
           items={[
             { value: 'overview', label: words.overview, icon: <GridIcon />, content: overview },
-            { value: 'ideas', label: words.ideas, icon: <BulbIcon />, content: null },
+            { value: 'ideas', label: words.ideas, icon: <BulbIcon />, content: ideas },
           ]}
         />
       </div>

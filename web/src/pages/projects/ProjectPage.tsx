@@ -4,6 +4,8 @@
 // shown `?state=`, and Back to Projects opens the home. Quick chat works on the
 // live project only (liveQuickChat.ts): each send is a new start, Retry the last.
 // The Inbox panel loads again on each `inbox.changed` burst (no timer, NCC-138).
+// The tab is in the address (`?tab=ideas`), so a reload and the browser's Back
+// keep it (R10).
 import { getRouteApi } from '@tanstack/react-router'
 import { useEffect, useRef, useState } from 'react'
 import { useInboxBadge, useInboxChanges } from '../../lib/inboxFeed.ts'
@@ -24,7 +26,13 @@ export function ProjectPage() {
   const search = route.useSearch()
   const navigate = route.useNavigate()
   const [changed, setChanged] = useState<Changed>({ of: search.state, ui: {} })
-  const ui = { ...state.ui, ...(changed.of === search.state ? changed.ui : {}) }
+  const ui = { ...state.ui, ...(changed.of === search.state ? changed.ui : {}), tab: search.tab ?? state.ui.tab }
+  // The search with `tab` as given; a key with no value is left out, so the address has none.
+  const view = (tab: ProjectsUi['tab']) => ({
+    ...(search.state === undefined ? {} : { state: search.state }),
+    ...(search.source === undefined ? {} : { source: search.source }),
+    ...(tab === undefined || tab === 'overview' ? {} : { tab }),
+  })
   const live = state.data.live !== undefined
   const railBadge = useInboxBadge(state.data.railBadge, live)
   // The Inbox panel's latest read after a change, for the loaded state it replaces.
@@ -83,7 +91,8 @@ export function ProjectPage() {
       }}
       onUiChange={(change) => {
         if ('quickChat' in change && change.quickChat === undefined) runRef.current += 1
-        changeUi(change)
+        if (change.tab !== undefined) void navigate({ search: view(change.tab) })
+        else changeUi(change)
       }}
       onBack={() => void navigate({ to: '/projects', search: { source: search.source } })}
       onQuickChatSend={
