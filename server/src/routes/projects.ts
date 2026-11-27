@@ -1,5 +1,5 @@
 // /api/projects (f-008, increments one and two): the Projects home, a project's page,
-// its pin, its idea records, its context drift, its tagged chats and its repositories. A URL names a project by
+// its pin, its idea records, its context drift, its tagged chats, its repositories and their CI numbers. A URL names a project by
 // its slug and an idea by its record ID; a param the contract does not take
 // is 404, as no project or idea has it. A fault logs its errno code only,
 // never a title, a record's text or a path.
@@ -15,6 +15,8 @@ import {
   ProjectSlug,
   ProjectsResponse,
   RepositoriesResponse,
+  RepositoryCiResponse,
+  RepositoryId,
   RunDriftRequest,
 } from '@bridge/contract'
 import { type Context, Hono } from 'hono'
@@ -32,6 +34,8 @@ export function projectsRoutes(projects: Projects, log: Logger) {
     errorJson(c, 'not-found', { path: c.req.path, message: 'no project has this name' })
   const noIdea = (c: Context<AppEnv>) =>
     errorJson(c, 'not-found', { path: c.req.path, message: 'the project has no idea with this ID' })
+  const noRepository = (c: Context<AppEnv>) =>
+    errorJson(c, 'not-found', { path: c.req.path, message: 'no project has a repository with this name' })
   const slugOf = (c: Context<AppEnv>) => ProjectSlug.safeParse(c.req.param('slug'))
 
   return new Hono<AppEnv>()
@@ -90,6 +94,17 @@ export function projectsRoutes(projects: Projects, log: Logger) {
       if (!sections.ok) return failed(c, sections.error)
       if (sections.value === 'notFound') return noProject(c)
       return c.json(RepositoriesResponse.parse(sections.value), 200)
+    })
+    .get('/:slug/repositories/:repo/ci', async (c) => {
+      const slug = slugOf(c)
+      const repo = RepositoryId.safeParse(c.req.param('repo'))
+      if (!slug.success || !repo.success) return noRepository(c)
+      const read = await projects.ci(slug.data, repo.data)
+      if (!read.ok) return failed(c, read.error)
+      if (read.value === 'notFound') return noRepository(c)
+      // GitHub's fault is a null the page shows; its code goes to the log only.
+      if (read.value.code !== null) log.warn('ci read failed', { requestId: c.get('requestId'), code: read.value.code })
+      return c.json(RepositoryCiResponse.parse(read.value.response), 200)
     })
     .get('/:slug/drift', async (c) => {
       const slug = slugOf(c)

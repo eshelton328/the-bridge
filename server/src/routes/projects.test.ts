@@ -15,7 +15,9 @@ import {
   ProjectDetailResponse,
   ProjectsResponse,
   RepositoriesResponse,
+  RepositoryCiResponse,
 } from '@bridge/contract'
+import { err, ok } from '@bridge/shared'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createBrainProjects, createDiskDriftStore, createDiskPins } from '../adapters/diskProjects.ts'
 import { createFakeAgents } from '../adapters/fakeAgents.ts'
@@ -26,6 +28,7 @@ import { createNccCheck } from '../adapters/projectDrift.ts'
 import { createApp } from '../app.ts'
 import { memoryLogger } from '../logger.ts'
 import { createProjects } from '../services/projects.ts'
+import type { CiSource } from '../services/repositoryCi.ts'
 
 const local = { Host: '127.0.0.1:5181' }
 const json = { ...local, 'Content-Type': 'application/json' }
@@ -134,7 +137,7 @@ beforeEach(async () => {
 afterEach(() => rm(dir, { recursive: true, force: true }))
 
 /** An app on the fixture brain; a second call is a new server process on the same data folder. */
-function server() {
+function server(ci?: CiSource) {
   const logger = memoryLogger()
   const agents = createFakeAgents(MachineId.parse('test-mac'))
   const projects = createProjects({
@@ -146,6 +149,7 @@ function server() {
     drift: createDiskDriftStore(data),
     facts: createGhRepositoryFacts({ command: join(bin, 'gh'), env: process.env }),
     worktrees: createDiskWorktrees(join(dir, 'root')),
+    ...(ci === undefined ? {} : { ci }),
     now: () => new Date('2026-11-22T09:00:00.000Z'),
   })
   const app = createApp({ agents, owner: 'owner@example.com', log: logger.log, projects })
@@ -452,5 +456,72 @@ describe('/api/projects/:slug/repositories', () => {
     expect(ErrorBody.parse(await (await read(app, '/api/projects/Bad%20Slug/repositories')).json()).error.kind).toBe(
       'not-found',
     )
+  })
+})
+
+describe('/api/projects/:slug/repositories/:repo/ci', () => {
+  const at = (minute: number) => new Date(Date.parse('2026-11-21T10:00:00.000Z') + minute * 60_000).toISOString()
+  const run = (id: number, conclusion: string | null, length: number, event = 'pull_request') => ({
+    id,
+    workflow: id,
+    sha: `sha-${String(id)}`,
+    event,
+    branch: 'a-branch',
+    conclusion,
+    startedAt: at(0),
+    updatedAt: at(length),
+  })
+  const fakeCi = (fail?: string) => {
+    const calls: string[] = []
+    const source: CiSource = {
+      runs: (_r, since) => {
+        calls.push(`runs ${since}`)
+        if (fail !== undefined) return Promise.resolve(err({ reason: 'failed', code: fail }))
+        return Promise.resolve(
+          ok([run(1, 'success', 4), run(2, 'failure', 9), run(3, 'cancelled', 1), run(4, 'success', 6, 'schedule')]),
+        )
+      },
+      merged: () => Promise.resolve(ok([{ createdAt: at(0), mergedAt: at(120) }])),
+      jobs: (_r, id) => {
+        calls.push(`jobs ${String(id)}`)
+        return Promise.resolve(ok([{ name: 'lint', conclusion: 'success', minutes: 2 }]))
+      },
+    }
+    return { source, calls }
+  }
+
+  it('gives the window, run counts, run and merge times and the job medians, and keeps them', async () => {
+    const { source, calls } = fakeCi()
+    const { app } = server(source)
+    const res = await read(app, '/api/projects/example-project/repositories/example-repo/ci')
+    expect(res.status).toBe(200)
+    expect(RepositoryCiResponse.parse(await res.json()).ci).toEqual({
+      since: '2026-10-23T09:00:00.000Z',
+      runs: { green: 1, finished: 2 },
+      runMinutes: 4,
+      merge: { count: 1, medianHours: 2, p90Hours: 2 },
+      jobs: [{ name: 'lint', medianMinutes: 2 }],
+      jobRuns: 1,
+    })
+    await read(app, '/api/projects/example-project/repositories/example-repo/ci')
+    expect(calls).toEqual(['runs 2026-10-23T09:00:00.000Z', 'jobs 1'])
+  })
+
+  it('is null for a repository off GitHub, and null with the code in the log when GitHub fails', async () => {
+    const { app } = server(fakeCi().source)
+    const local = await read(app, '/api/projects/example-project/repositories/local-repo/ci')
+    expect(RepositoryCiResponse.parse(await local.json()).ci).toBeNull()
+    const failing = server(fakeCi('exit-1').source)
+    const res = await read(failing.app, '/api/projects/example-project/repositories/example-repo/ci')
+    expect(res.status).toBe(200)
+    expect(RepositoryCiResponse.parse(await res.json()).ci).toBeNull()
+    expect(failing.logger.lines()).toContainEqual(expect.objectContaining({ msg: 'ci read failed', code: 'exit-1' }))
+  })
+
+  it('is 404 for a repository the project does not have', async () => {
+    const { app } = server(fakeCi().source)
+    const res = await read(app, '/api/projects/example-project/repositories/no-repo/ci')
+    expect(ErrorBody.parse(await res.json()).error.kind).toBe('not-found')
+    expect((await read(app, '/api/projects/no-such-project/repositories/example-repo/ci')).status).toBe(404)
   })
 })

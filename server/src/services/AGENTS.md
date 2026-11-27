@@ -145,4 +145,5 @@ from the outside world.
   pull_request workflow runs of one commit, the newest run of each
   workflow only (a PR title edit runs the title check again), timed by
   its longest workflow run, and take the job medians from the newest 10
-  green ones (`repositoryCi.test.ts`).
+  green ones; an answer is kept 10 minutes and shared by the requests
+  that cross, a GitHub fault is not kept (`repositoryCi.test.ts`).
