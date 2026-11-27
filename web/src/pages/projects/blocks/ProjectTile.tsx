@@ -65,7 +65,7 @@ export type ProjectTileProps = {
 const tileLetter = (name: string) => (name.at(0) ?? '').toUpperCase()
 
 export function ProjectTile({ name, icon, phone = false }: ProjectTileProps) {
-  const Icon = icon === null ? undefined : projectIcons[icon]
+  const Icon = icon !== null && Object.hasOwn(projectIcons, icon) ? projectIcons[icon] : undefined
   return (
     <div className={phone ? tile.phone : tile.wide} data-figma={`project tile · ${name}`} aria-hidden="true">
       {Icon === undefined ? tileLetter(name) : <Icon size="24" />}
