@@ -34,6 +34,9 @@ export const ProjectPageWords = z.object({
   tabs: z.string(),
   overview: z.string(),
   ideas: z.string(),
+  /** Quick chat's words (R8). */
+  message: z.string(),
+  retry: z.string(),
 })
 export type ProjectPageWords = z.infer<typeof ProjectPageWords>
 
@@ -60,6 +63,14 @@ export const ProjectsData = z.object({
 })
 export type ProjectsData = z.infer<typeof ProjectsData>
 
+/** Quick chat's composer (R8): open while set, off while busy, and the line of a start kept back. */
+export const QuickChatStatus = z.object({
+  busy: z.boolean().optional(),
+  line: z.string().optional(),
+  retry: z.boolean().optional(),
+})
+export type QuickChatStatus = z.infer<typeof QuickChatStatus>
+
 /** The view state a frame shows. */
 export const ProjectsUi = z.object({
   /** The slug of the card whose ⋯ menu is open (D10: Pinpoint). */
@@ -70,6 +81,7 @@ export const ProjectsUi = z.object({
   open: z.string().optional(),
   /** The project page's selected tab; Overview when not set. */
   tab: ProjectTab.optional(),
+  quickChat: QuickChatStatus.optional(),
 })
 export type ProjectsUi = z.infer<typeof ProjectsUi>
 

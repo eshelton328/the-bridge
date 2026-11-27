@@ -14,5 +14,7 @@ moves to `web/src/blocks/`.
   `picture` size is the 64 px square of a project's page.
 - `ProjectHeader` is a project page's head: `BackRow` with Quick chat at its
   end, then the picture beside the name and purpose.
+- `QuickChat` is Quick chat's composer: the library `Dialog` and `Composer`
+  on every size, as no frame draws it.
 - Each card carries `data-figma="project card · <name>"`, which the live
   tests read for the order.

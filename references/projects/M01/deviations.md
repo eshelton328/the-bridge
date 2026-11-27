@@ -20,8 +20,9 @@ What differs from the frame after round 2 of the fidelity loop
 - **Tabs.** The tab row shows Overview and Ideas, where the frame shows
   Overview, Repositories, Architecture and QA: only the tabs of shipped
   increments show (d-133), and Ideas is increment one's.
-- **Quick chat** shows as the frame draws it and does nothing yet: its
-  composer is a later part of NCC-129.
+- **Quick chat** shows as the frame draws it; no frame draws its
+  composer, so it is the library Dialog on every size, and in a state
+  it opens nothing.
 - **Owner's name.** NCC-1701's purpose starts "The owner's personal
   workspace", where the frame has the owner's name: the secret scan's
   personal-term rule keeps the name out of `web/`, so the purpose breaks
