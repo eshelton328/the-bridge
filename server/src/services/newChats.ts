@@ -45,10 +45,10 @@ export function createNewChats(
       kept.delete(id)
     }
   }
-  const once = async (
+  const once = async <E extends AgentPortError | ProjectFault>(
     createId: SendId | undefined,
-    run: () => Promise<Result<ForkOutcome, AgentPortError>>,
-  ): Promise<Result<StartAnswer, AgentPortError>> => {
+    run: () => Promise<Result<ForkOutcome, E>>,
+  ): Promise<Result<StartAnswer, E>> => {
     prune()
     const first = createId === undefined ? undefined : kept.get(createId)
     if (first !== undefined)
@@ -56,8 +56,12 @@ export function createNewChats(
     const entry: { answer: StartChatResponse | 'pending'; readonly at: number } = { answer: 'pending', at: now() }
     if (createId !== undefined) kept.set(createId, entry)
     const started = await run()
-    // A herdr failure may have made a pane, so its ID stays pending; a refusal made nothing, so its ID is free again.
-    if (!started.ok) return started
+    // A herdr failure may have made a pane, so its ID stays pending; a refusal or a project list fault made nothing, so
+    // its ID is free again.
+    if (!started.ok) {
+      if (started.error.reason === 'failed' && createId !== undefined) kept.delete(createId)
+      return started
+    }
     if (typeof started.value === 'string') {
       if (createId !== undefined) kept.delete(createId)
       return ok(started.value)
@@ -66,15 +70,17 @@ export function createNewChats(
     return ok({ started: started.value, again: false })
   }
   return {
-    async start({ createId, ...request }) {
-      const { place } = request
-      if (place.in === 'project') {
-        const listed = await projects.list()
-        if (!listed.ok) return listed
-        if (!listed.value.projects.some((p) => p.slug === place.project)) return ok('notFound')
-      }
-      return once(createId, () => agents.startChat(request))
-    },
+    // A kept create ID answers before the project list is read, so a retry after a lost answer finds its chat.
+    start: ({ createId, ...request }) =>
+      once<AgentPortError | ProjectFault>(createId, async () => {
+        const { place } = request
+        if (place.in === 'project') {
+          const listed = await projects.list()
+          if (!listed.ok) return listed
+          if (!listed.value.projects.some((p) => p.slug === place.project)) return ok('notFound')
+        }
+        return agents.startChat(request)
+      }),
     fork: (chat, { createId, name, direction }) =>
       once(createId, () => agents.forkChat(chat, { name, direction: direction ?? 'row' })),
   }
