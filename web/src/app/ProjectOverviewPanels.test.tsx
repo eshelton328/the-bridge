@@ -191,4 +191,18 @@ describe("A project's Overview panels (R5, R6)", () => {
     await quiet()
     expect(inbox.calls('list').length - home).toBe(2)
   })
+
+  it('leaves no unhandled error when the page closes during an Inbox read after a change', async () => {
+    const inbox = withServer(items)
+    await openAlpha(1440, 900)
+    await expect.poll(() => inbox.streams()).toBe(1)
+    await quiet()
+    const stop: { abort?: (e: unknown) => void } = {}
+    inbox.answerNext('list', () => new Promise<Response>((_, reject) => (stop.abort = reject)))
+    inbox.emit('inbox.changed')
+    await expect.poll(() => stop.abort).toBeDefined()
+    await unmountRendered()
+    stop.abort?.(new DOMException('The operation was aborted.', 'AbortError'))
+    await quiet() // Vitest fails the run on an unhandled rejection.
+  })
 })

@@ -53,6 +53,10 @@ export function ProjectPage() {
           // A read after a change that missed keeps the rows shown; the loader's miss shows its line.
           if (read.count !== undefined && !reading.signal.aborted) setInbox({ of: state, read })
         })
+        .catch((thrown: unknown) => {
+          // A read that a leave or a later change stopped throws its abort.
+          if (!reading.signal.aborted) throw thrown
+        })
     },
     shown?.count ?? railBadge,
   )
