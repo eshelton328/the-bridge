@@ -69,6 +69,20 @@ export const InboxId = z
   .brand<'InboxId'>()
 export type InboxId = z.infer<typeof InboxId>
 
+/** A QA review draft (f-008): 16 hex characters that the server makes at random. */
+export const QaDraftId = z
+  .string()
+  .regex(/^[0-9a-f]{16}$/)
+  .brand<'QaDraftId'>()
+export type QaDraftId = z.infer<typeof QaDraftId>
+
+/** A file of a QA comment: 16 hex characters of a sha256 that the server makes of its Linear link, so no link goes in a URL. */
+export const QaFileId = z
+  .string()
+  .regex(/^[0-9a-f]{16}$/)
+  .brand<'QaFileId'>()
+export type QaFileId = z.infer<typeof QaFileId>
+
 /** An item of the Toolkit page: 16 hex characters of a sha256 that the server makes of its scope and path. */
 export const ToolkitItemId = z
   .string()

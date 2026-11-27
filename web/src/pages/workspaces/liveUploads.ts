@@ -116,6 +116,9 @@ function missOf(step: Step, status: number, text: string): Miss {
       return { why: error.kind, transient: false, restart: false }
     case 'invalid-input':
     case 'inbox-read-only':
+    case 'qa-not-ready':
+    case 'linear-bad-reply':
+    case 'linear-unavailable':
     case 'workspace-not-ready':
       // The page sends only what the contract takes, and an upload never gets an Inbox answer: a bug.
       return { why: error.kind, transient: false, restart: true, report: { kind: error.kind, status } }

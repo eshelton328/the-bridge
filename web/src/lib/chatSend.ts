@@ -191,8 +191,11 @@ async function missOf(
     case 'unsupported-media':
     case 'storage-full':
     case 'inbox-read-only':
+    case 'qa-not-ready':
+    case 'linear-bad-reply':
+    case 'linear-unavailable':
     case 'workspace-not-ready':
-      // Only an upload or an Inbox action gets these kinds, never a send, a stop, a clear or a command.
+      // Only an upload, an Inbox or a QA action gets these kinds, never a send, a stop, a clear or a command.
       return unexpected(fault, action, error.kind, res.status)
   }
 }

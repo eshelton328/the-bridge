@@ -163,3 +163,15 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
   of the chat tree. The pin and drift run bodies are strict objects
   (`projects.test.ts`). `projects.changed` on `/api/events` says that a
   project's open PRs changed: read the project again (NCC-156).
+- The QA tab (f-008 increment three, `qa.ts`): an issue is named by its
+  Linear key (`QaIssueId`, such as `NCC-12`), so a path word such as
+  `stop` is never one, and a draft by a 16-hex `QaDraftId`. An item
+  gives its launch URL over https on a tailnet host only (a name under
+  `tailnetSuffix`), never a path, and an after-merge item
+  is on the served app (`servedApp`) and nothing else is. A comment's
+  file is a `QaFileId` that the page reads from the server, never a
+  Linear link. A draft request holds text or upload IDs, and a review
+  request the answer only (strict objects). A launch that cannot start
+  is 409 `qa-not-ready` with its reason; a Linear fault is
+  `linear-bad-reply` (502) or `linear-unavailable` (503).
+  `qa.changed` names the project whose list to read again (`qa.test.ts`).

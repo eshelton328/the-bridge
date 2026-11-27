@@ -95,6 +95,9 @@ async function answerOf(res: Response): Promise<ModelAnswer> {
     case 'upload-conflict':
     case 'storage-full':
     case 'inbox-read-only':
+    case 'qa-not-ready':
+    case 'linear-bad-reply':
+    case 'linear-unavailable':
     case 'workspace-not-ready':
       return unexpected(error.kind, res.status)
   }
