@@ -10,7 +10,7 @@ import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
 
 // The Projects home through the real route tree (pages/AGENTS.md, The home state): with no ?state= it shows D10's
-// projects with every menu and the More drawer closed, laid out for the window, with Projects selected.
+// projects (on ?source=fixtures; the live home is ProjectsLive.test.tsx) with every menu and the More drawer closed, laid out for the window, with Projects selected.
 document.documentElement.classList.add('dark')
 document.documentElement.dataset.pandaTheme = 'viewscreen'
 
@@ -28,7 +28,10 @@ describe('the Projects home', () => {
   ] as const) {
     it(`shows the cards with every menu closed on ${name}`, async () => {
       await setViewport(width, height)
-      const router = createRouter({ routeTree, history: createMemoryHistory({ initialEntries: ['/projects'] }) })
+      const router = createRouter({
+        routeTree,
+        history: createMemoryHistory({ initialEntries: ['/projects?source=fixtures'] }),
+      })
       const view = await testRender(<RouterProvider router={router} />)
       onTestFinished(view.unmount)
       await expect.element(page.getByRole('heading', { name: 'NCC-1701' })).toBeVisible()

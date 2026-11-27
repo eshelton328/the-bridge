@@ -23,6 +23,7 @@ const columns = { desktop: '4', tablet: '2', phone: '1' } as const satisfies Rec
 const gap = { desktop: '20', tablet: '20', phone: '12' } as const satisfies Record<Viewport, string>
 // The header to the cards: D10 24, T10 20, M10 12 (Figma 14 from New project's bottom).
 const stackGap = { desktop: '24', tablet: '20', phone: '12' } as const satisfies Record<Viewport, string>
+const noticeLine = css({ textStyle: 'small', color: 'fg.muted' })
 const srOnly = css({ srOnly: true })
 
 export type ProjectsHomeProps = {
@@ -51,6 +52,11 @@ export function ProjectsHome({ data, ui, layout, onUiChange, onPin }: ProjectsHo
           </span>
         </PageHeader>
       </div>
+      {data.notice === undefined ? null : (
+        <p role="status" className={noticeLine}>
+          {data.notice}
+        </p>
+      )}
       <h2 className={srOnly}>{data.cardsHeading}</h2>
       <Grid columns={columns[layout]} gap={gap[layout]} data-figma="project cards">
         {data.projects.map((project) => (

@@ -5,6 +5,6 @@ import { ProjectsPage, projectsSearch, loadProjectsState } from '../pages/projec
 export const Route = createFileRoute('/projects')({
   validateSearch: projectsSearch,
   loaderDeps: ({ search }) => ({ state: search.state, source: search.source }),
-  loader: ({ deps }) => loadProjectsState(deps.state, deps.source),
+  loader: ({ deps, abortController }) => loadProjectsState(deps.state, deps.source, abortController.signal),
   component: ProjectsPage,
 })

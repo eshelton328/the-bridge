@@ -2,7 +2,8 @@
 // reads it with no ?state=, and with ?source=live. Without a stub the read goes through the Vite proxy to whatever
 // server runs on the machine, so the test result depends on that machine (lib/testSetup.ts fails such a read).
 // The Artifacts home reads the live library the same way: the stub answers it with an empty library. The Inbox home
-// reads the live Inbox too: the stub answers it with an empty Inbox.
+// reads the live Inbox too: the stub answers it with an empty Inbox. The Projects home reads the brain's projects: the
+// stub answers it with none.
 import { ArtifactsResponse, type LayoutNode, WorkspacesResponse } from '@bridge/contract'
 import { afterAll, beforeAll } from 'vitest'
 
@@ -125,6 +126,8 @@ export function stubLiveServer(options: LiveServerStubOptions = {}): LiveServerS
         return Promise.resolve(json(options.artifacts ?? emptyLibrary))
       if (url.pathname === '/api/inbox' && (init?.method ?? 'GET') === 'GET')
         return Promise.resolve(json({ items: [], counts: { needsYou: 0, total: 0 } }))
+      if (url.pathname === '/api/projects' && (init?.method ?? 'GET') === 'GET')
+        return Promise.resolve(json({ projects: [] }))
       if (url.pathname === '/api/artifacts/seen' && init?.method === 'POST')
         return Promise.resolve(new Response(null, { status: 204 }))
       if (url.pathname === '/api/client-errors' && init?.method === 'POST') {
