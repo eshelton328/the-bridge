@@ -1,6 +1,7 @@
 import '@fontsource-variable/geist'
 import '@fontsource-variable/geist-mono'
 import '../index.css'
+import { StrictMode } from 'react'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
@@ -167,7 +168,17 @@ describe("A project's Overview panels (R5, R6)", () => {
     const inbox = withServer(items)
     await setViewport(1440, 900)
     const router = createRouter({ routeTree, history: createMemoryHistory({ initialEntries: ['/projects'] }) })
-    onTestFinished((await testRender(withInboxFeed(<RouterProvider router={router} />))).unmount)
+    onTestFinished(
+      (
+        await testRender(
+          withInboxFeed(
+            <StrictMode>
+              <RouterProvider router={router} />
+            </StrictMode>,
+          ),
+        )
+      ).unmount,
+    )
     await expect.poll(() => inbox.streams()).toBe(1)
     await quiet()
     const home = inbox.calls('list').length

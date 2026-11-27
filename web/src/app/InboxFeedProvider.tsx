@@ -168,8 +168,11 @@ export function InboxFeedProvider({ children }: { children: ReactNode }) {
         hub.followers.add(onChange)
         return () => {
           hub.followers.delete(onChange)
-          // The Inbox page left, perhaps with its load of a change still running: the feed reads the count itself.
-          if (hub.followers.size === 0) hub.changed()
+          // The Inbox page left, perhaps with its load of a change still running: the feed reads the count itself. It
+          // waits a microtask, so a follower that comes back at once (StrictMode's second mount) gives no read.
+          queueMicrotask(() => {
+            if (hub.followers.size === 0) hub.changed()
+          })
         }
       },
       publish: (next) => {
