@@ -22,6 +22,8 @@ project, the pinned ones first. Its frames are PNG references in
 - The home's route test is `app/ProjectsHome.test.tsx` (every menu closed
   at 1512, 744 and 390 px). Run it after a change to `home.ts`, the loader
   or a screen.
+- The rail, the tab bar and the More drawer open `/projects` through
+  `lib/navRoutes.ts` (R1); `app/ProjectsRoute.test.tsx` taps each one.
 
 ## Folders
 
