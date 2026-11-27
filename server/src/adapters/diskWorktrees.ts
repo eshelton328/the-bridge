@@ -1,7 +1,7 @@
 // The worktree count of a repository (f-008 increment two, R2's caption):
 // the folders under `<chat root>/projects/<slug>/<repo>-worktrees` that hold
-// a `.git` entry, at most 3 levels down, as a branch name with "/" nests its
-// worktree. A symlink is never followed, and the folder's real path must be
+// a `.git` entry, at most 8 levels down, as a branch name with "/" nests its
+// worktree; a deeper folder with no worktree yet makes the count a fault. A symlink is never followed, and the folder's real path must be
 // in the chat root. A missing folder is 0; a fault is its errno code only.
 import type { Dirent } from 'node:fs'
 import { readdir, realpath } from 'node:fs/promises'
@@ -9,8 +9,8 @@ import { join, sep } from 'node:path'
 import { err, ok } from '@bridge/shared'
 import type { WorktreeCount } from '../services/projects.ts'
 
-/** How deep a worktree may sit under the `-worktrees` folder. */
-const maxDepth = 3
+/** How deep a worktree may sit under the `-worktrees` folder; folders left past it make the count a fault. */
+const maxDepth = 8
 /** The most folders one count reads. */
 const maxFolders = 5_000
 
@@ -50,6 +50,8 @@ export function createDiskWorktrees(chatRoot: string): WorktreeCount {
       } catch (e) {
         return err({ reason: 'failed', code: codeOf(e) })
       }
+      // A folder still unread past the deepest level may hold a worktree: no count beats a wrong one.
+      if (level.length > 0) return err({ reason: 'failed', code: 'too-deep' })
       return ok(count)
     },
   }

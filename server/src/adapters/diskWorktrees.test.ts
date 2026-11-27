@@ -33,6 +33,16 @@ describe('createDiskWorktrees', () => {
     expect(await createDiskWorktrees(root).count(slug, repo)).toEqual({ ok: true, value: 2 })
   })
 
+  it('counts a worktree of a branch with four parts, and is a fault for a folder deeper than 8 levels', async () => {
+    await worktree(join(worktrees(), 'feature', 'team', 'topic', 'issue'))
+    expect(await createDiskWorktrees(root).count(slug, repo)).toEqual({ ok: true, value: 1 })
+    await mkdir(join(worktrees(), 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'), { recursive: true })
+    expect(await createDiskWorktrees(root).count(slug, repo)).toEqual({
+      ok: false,
+      error: { reason: 'failed', code: 'too-deep' },
+    })
+  })
+
   it('is 0 when the repository has no worktrees folder', async () => {
     expect(await createDiskWorktrees(root).count(slug, repo)).toEqual({ ok: true, value: 0 })
   })
