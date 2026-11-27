@@ -4,7 +4,8 @@
 // card as it is now) and `GET /api/projects/:slug` (the project, with no
 // repositories, and the test's open PRs and unread repositories by slug) and
 // `GET /api/projects/:slug/chats` (the test's chats of the project, none by
-// default). Every project, body and answer is checked against the
+// default) and `GET /api/projects/:slug/ideas` (the test's ideas of the
+// project, none by default). Every project, body and answer is checked against the
 // contract, so a test cannot send or get what the server would not: a body the
 // contract refuses is 400 invalid-input, and an unknown slug is 404. The pins
 // live in the fake, as the server keeps them in a file, so a new page (a
@@ -12,6 +13,8 @@
 // test's answer, and `requests` records each one with its body. A test plugs
 // `handle` into its `fetch` stub.
 import {
+  IdeaDetailResponse,
+  IdeasResponse,
   PinProjectRequest,
   ProjectChat,
   ProjectChatsResponse,
@@ -22,7 +25,7 @@ import {
 import { errorAnswer } from './fakeTranscriptServer.ts'
 
 /** A request kind the fake takes. */
-export type ProjectsCall = 'list' | 'pin' | 'detail' | 'chats'
+export type ProjectsCall = 'list' | 'pin' | 'detail' | 'chats' | 'ideas'
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } })
@@ -47,12 +50,17 @@ type FakeProjectsOptions = {
   readonly chats?: Readonly<Record<string, readonly unknown[]>>
   /** Each project's Queue (open PRs and unread repositories) by its slug; none by default. */
   readonly queues?: Readonly<Record<string, unknown>>
+  /** Each project's ideas (`{ idea, body }`) by its slug, in the list's order; each is checked against the contract. */
+  readonly ideas?: Readonly<Record<string, readonly unknown[]>>
 }
 
 export function fakeProjectsServer(
   projects: readonly unknown[] = [],
-  { chats = {}, queues = {} }: FakeProjectsOptions = {},
+  { chats = {}, queues = {}, ideas = {} }: FakeProjectsOptions = {},
 ) {
+  const ideasOf = new Map(
+    Object.entries(ideas).map(([slug, list]) => [slug, list.map((i) => IdeaDetailResponse.parse(i))]),
+  )
   const chatsOf = new Map(Object.entries(chats).map(([slug, list]) => [slug, list.map((c) => ProjectChat.parse(c))]))
   const stored = new Map(
     projects.map((p) => {
@@ -100,6 +108,7 @@ export function fakeProjectsServer(
       const pinPath = /^\/api\/projects\/([^/]+)\/pin$/.exec(path)
       const detailPath = /^\/api\/projects\/([^/]+)$/.exec(path)
       const chatsPath = /^\/api\/projects\/([^/]+)\/chats$/.exec(path)
+      const ideasPath = /^\/api\/projects\/([^/]+)\/ideas$/.exec(path)
       const call: ProjectsCall | undefined =
         path === '/api/projects' && method === 'GET'
           ? 'list'
@@ -109,7 +118,9 @@ export function fakeProjectsServer(
               ? 'detail'
               : chatsPath !== null && method === 'GET'
                 ? 'chats'
-                : undefined
+                : ideasPath !== null && method === 'GET'
+                  ? 'ideas'
+                  : undefined
       if (call === undefined) return undefined
       requests.push({ call, path, body: bodyOf(init) })
       const next = answers.get(call)
@@ -124,6 +135,12 @@ export function fakeProjectsServer(
         if (!stored.has(slug))
           return errorAnswer({ kind: 'not-found', path, message: 'no project has this slug', requestId: 'r-404' }, 404)
         return json(ProjectChatsResponse.parse({ chats: chatsOf.get(slug) ?? [] }))
+      }
+      if (call === 'ideas') {
+        const slug = decodeURIComponent(ideasPath?.[1] ?? '')
+        if (!stored.has(slug))
+          return errorAnswer({ kind: 'not-found', path, message: 'no project has this slug', requestId: 'r-404' }, 404)
+        return json(IdeasResponse.parse({ ideas: (ideasOf.get(slug) ?? []).map((i) => i.idea) }))
       }
       return pin(decodeURIComponent(pinPath?.[1] ?? ''), path, init)
     },

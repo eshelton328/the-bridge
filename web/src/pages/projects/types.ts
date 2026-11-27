@@ -42,6 +42,10 @@ export const ProjectPageWords = z.object({
   pulls: z.record(z.enum(['draft', 'ciFailed', 'ciRunning', 'inReview']), z.string()),
   /** Each Inbox kind's word, the name of its row's kind tile for assistive tech. */
   kinds: z.record(z.enum(['approval', 'question', 'review', 'action']), z.string()),
+  /** The Ideas tab (R10): the empty list, each kind and state. */
+  noIdeas: z.string(),
+  ideaKinds: z.record(z.enum(['idea', 'proposal', 'audit']), z.string()),
+  ideaStates: z.record(z.enum(['open', 'in-design', 'needs-you', 'decided', 'parked']), z.string()),
 })
 export type ProjectPageWords = z.infer<typeof ProjectPageWords>
 
@@ -71,6 +75,21 @@ export const ProjectOverview = z.object({
 })
 export type ProjectOverview = z.infer<typeof ProjectOverview>
 
+/** One idea of the Ideas tab (R10): its record's ID, title, tags, kind, state and age ("2d"). */
+export const IdeaRow = z.object({
+  id: z.string().min(1),
+  title: z.string().min(1),
+  tags: z.array(z.string()),
+  kind: z.enum(['idea', 'proposal', 'audit']),
+  state: z.enum(['open', 'in-design', 'needs-you', 'decided', 'parked']),
+  age: z.string(),
+})
+export type IdeaRow = z.infer<typeof IdeaRow>
+
+/** The Ideas tab's rows, newest first, or none and the line of a read that missed. */
+export const ProjectIdeas = z.object({ rows: z.array(IdeaRow), notRead: z.string().optional() })
+export type ProjectIdeas = z.infer<typeof ProjectIdeas>
+
 export const ProjectsData = z.object({
   title: z.string(),
   /** New project: drawn as the frames do; it has no action until increment four (d-133). */
@@ -87,6 +106,8 @@ export const ProjectsData = z.object({
   live: z.object({}).optional(),
   /** The open project's Overview panels; with none the Overview tab draws none (the home, the live page for now). */
   overview: ProjectOverview.optional(),
+  /** The open project's Ideas tab (R10), read when the tab shows; with none the tab draws nothing. */
+  ideas: ProjectIdeas.optional(),
   /** The line of a read or a pin that missed, such as "Projects not read — the server answered 500". */
   notice: z.string().optional(),
 })

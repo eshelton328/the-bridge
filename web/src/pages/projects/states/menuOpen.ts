@@ -35,6 +35,15 @@ export const menuOpen = {
       },
       pulls: { draft: 'Draft', ciFailed: 'CI failed', ciRunning: 'CI running', inReview: 'In review' },
       kinds: { approval: 'Approval', question: 'Question', review: 'Review', action: 'Action' },
+      noIdeas: 'No ideas yet',
+      ideaKinds: { idea: 'Idea', proposal: 'Proposal', audit: 'Audit' },
+      ideaStates: {
+        open: 'Open',
+        'in-design': 'In design',
+        'needs-you': 'Needs you',
+        decided: 'Decided',
+        parked: 'Parked',
+      },
     },
     projects: [
       {

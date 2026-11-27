@@ -23,7 +23,7 @@ T10b, M10 for the home, D01, T01, T01b, M01 for a project's page), read with
   home's data and screen. It shows the header and the tabs of increment
   one, Overview and Ideas (d-133). The Overview draws the Inbox and Queue
   panels (R5, R6) from `data.overview`: the overview states' rows, or
-  the live page's from the server; with none it draws no panel. The Ideas list is NCC-132's.
+  the live page's from the server; with none it draws no panel.
   `ProjectPage.tsx` is its
   entry, on the route `projects_.$slug.tsx` (not nested in `/projects`);
   `loadProjectState.ts` reads it as the home's loader does, and a slug with
@@ -56,6 +56,12 @@ T10b, M10 for the home, D01, T01, T01b, M01 for a project's page), read with
     one read when the page opens from the home, two on a cold load (the
     loader and the feed's stream open), then one per change
     (`app/ProjectOverviewPanels.test.tsx`).
+  - The Ideas tab (R10; NCC-132's live slice, plain on every size) is in
+    the address, `?tab=ideas`, so a reload and Back keep it. Only then
+    does the loader read `GET /api/projects/:slug/ideas`; the Overview
+    reads none. A list that misses shows one line ("Ideas not read — the
+    server answered 500"). `app/ProjectIdeasLive.test.tsx` checks it at
+    1440, 1024 and 390 px with the fake.
   - report() gets only a miss the server answered, as `ProjectsMissError`
     with its step, kind and status, never a name.
 - The home's route test is `app/ProjectsHome.test.tsx` (every menu closed

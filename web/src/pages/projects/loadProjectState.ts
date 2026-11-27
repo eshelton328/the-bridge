@@ -4,6 +4,7 @@
 // page of `slug` open. In development it reads the project from the server
 // (`GET /api/projects/:slug`, liveProjects.ts) unless `?source=fixtures` names
 // the sample data. A slug with no project, or one ProjectSlug refuses (no read), is not found.
+// `?tab=ideas` reads the live Ideas tab (R10).
 import { ProjectSlug } from '@bridge/contract'
 import { notFound } from '@tanstack/react-router'
 import { parseState } from '../../errors/parseState.ts'
@@ -11,7 +12,7 @@ import { type DataSourceOptions, readState } from '../../lib/dataSource.ts'
 import type { ScreenState } from '../../lib/screenState.ts'
 import { projectsHome } from './home.ts'
 import { projectsStates } from './states/index.ts'
-import { ProjectsState, type ProjectsData, type ProjectsUi } from './types.ts'
+import { type ProjectTab, ProjectsState, type ProjectsData, type ProjectsUi } from './types.ts'
 
 type State = ScreenState<ProjectsData, ProjectsUi>
 
@@ -31,6 +32,7 @@ export function loadProjectState(
   requested: string | undefined,
   source: string | undefined,
   signal?: AbortSignal,
+  view: { readonly tab?: ProjectTab | undefined } = {},
 ): State | Promise<State> {
   if (!ProjectSlug.safeParse(slug).success) throw notFound({ data: 'not a project slug' })
   const read = readState<State>(
@@ -43,7 +45,13 @@ export function loadProjectState(
   const name = `projects/${read.value.key}`
   if (import.meta.env.DEV && read.value.live)
     return import('./liveProjects.ts')
-      .then((live) => live.withLiveProject(read.value.state, slug, { signal }))
+      .then(async (live) => {
+        const project = await live.withLiveProject(read.value.state, slug, { signal })
+        if (view.tab !== 'ideas' || project.data.projects.length === 0) return project
+        const tab: ProjectTab = 'ideas'
+        const shownTab = { ...project, ui: { ...project.ui, tab } }
+        return live.withLiveIdeas(shownTab, slug, { signal })
+      })
       .then((merged) => shown(merged, `${name} (live)`))
   return shown(read.value.state, name)
 }
