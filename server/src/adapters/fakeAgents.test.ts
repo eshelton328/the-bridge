@@ -29,6 +29,10 @@ describeAgentPort('fake', () => {
         return Promise.resolve()
       },
     },
+    tagChat: (tokens) => {
+      port.setChatTags(ChatId.parse('test-mac/drift-check'), tokens)
+      return Promise.resolve()
+    },
     changeLayout: () => {
       port.changeLayout(WorkspaceId.parse('test-mac/omni-brain'))
       return Promise.resolve()

@@ -35,6 +35,9 @@ describeAgentPort('herdr (real session)', () =>
       shell: inject('shellChat'),
     },
     setStatus: reportAgent,
+    tagChat: async (tokens) => {
+      await herdrRequest('pane.report_metadata', { pane_id: inject('statusChat').pane, source: 'bridge-e2e', tokens })
+    },
     changeLayout: renameTab,
     transcript: { chat: inject('fakeChat').title, append: appendTranscript },
     received: () => receivedBy(inject('statusChat').title),

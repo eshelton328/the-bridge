@@ -29,6 +29,8 @@ export type ContractSetup = {
   }
   /** Gives the expected chat `status` (`working` or `idle`), as its agent would. */
   readonly setStatus: (status: 'working' | 'idle') => Promise<void>
+  /** Tags the expected chat's pane with `tokens`, as `herdr report-metadata` would (d-120). */
+  readonly tagChat: (tokens: Readonly<Record<string, string>>) => Promise<void>
   /** Changes the layout of the expected workspace (such as a tab's name), as the owner would in herdr. */
   readonly changeLayout: () => Promise<void>
   /** A chat that has a transcript (its title), and a function that adds an entry to it, as its agent would. */
@@ -98,6 +100,17 @@ export function describeAgentPort(name: string, setup: () => Promise<ContractSet
       if (!tags.ok || !read.ok) throw new Error('the reads failed')
       const panes = new Set(read.value.flatMap((w) => w.chats.map((c) => c.pane)))
       for (const pane of tags.value.keys()) expect(panes.has(pane)).toBe(true)
+    })
+
+    it("keys a tagged chat's tags by the pane that the list gives the chat (d-120)", async () => {
+      const { port, expected, tagChat } = await setup()
+      await tagChat({ project: 'contract-tags' })
+      const [tags, read] = await Promise.all([port.chatTags(), port.listWorkspaces()])
+      if (!tags.ok || !read.ok) throw new Error('the reads failed')
+      const chat = read.value.flatMap((w) => w.chats).find((c) => c.title === expected.chat)
+      if (chat === undefined) throw new Error('the expected chat is not listed')
+      expect([...tags.value.keys()]).toContain(chat.pane)
+      expect(tags.value.get(chat.pane)).toMatchObject({ project: 'contract-tags' })
     })
 
     it('maps a project only to a workspace that the list has (R49)', async () => {
