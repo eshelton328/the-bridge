@@ -126,6 +126,42 @@ export type RepositorySection = z.infer<typeof RepositorySection>
 export const RepositoriesResponse = z.strictObject({ repositories: z.array(RepositorySection) })
 export type RepositoriesResponse = z.infer<typeof RepositoriesResponse>
 
+/** The days of CI history that a repository's CI numbers cover (R4). */
+export const ciWindowDays = 30
+/** The most job names that a repository's CI numbers give. */
+export const maxCiJobs = 50
+
+/**
+ * A repository's CI numbers (R4, R6) from its GitHub Actions runs since `since`: the last `ciWindowDays`, or less when
+ * a busy repository has more runs than one read gives. A CI run is the push or pull_request workflow runs of one commit:
+ * finished when each ended and none was cancelled (a skipped one is left out), green when each passed.
+ */
+export const RepositoryCi = z.strictObject({
+  since: z.iso.datetime(),
+  runs: z.strictObject({ green: z.number().int().min(0), finished: z.number().int().min(0) }),
+  /** The median minutes of a green CI run, its first start to its last end; null with no green run, never 0. */
+  runMinutes: z.number().min(0).nullable(),
+  /** The PRs merged in the window, with the median and p90 hours from open to merge; each null with no PR, never 0. */
+  merge: z.strictObject({
+    count: z.number().int().min(0),
+    medianHours: z.number().min(0).nullable(),
+    p90Hours: z.number().min(0).nullable(),
+  }),
+  /** Each job's median minutes in the newest green CI runs, the slowest first. */
+  jobs: z.array(z.strictObject({ name: z.string().min(1).max(200), medianMinutes: z.number().min(0) })).max(maxCiJobs),
+  /** How many green CI runs the job medians come from. */
+  jobRuns: z.number().int().min(0),
+})
+export type RepositoryCi = z.infer<typeof RepositoryCi>
+
+/**
+ * The response of `GET /api/projects/:slug/repositories/:repo/ci`. `ci` null means not read, as a part in a
+ * `RepositorySection`'s `unread`: GitHub did not answer, or the repository is not on it. The page shows "not read",
+ * never "no CI".
+ */
+export const RepositoryCiResponse = z.strictObject({ ci: RepositoryCi.nullable() })
+export type RepositoryCiResponse = z.infer<typeof RepositoryCiResponse>
+
 /** A chat tag the app reads (d-120): the key `project`, `area` or `role`, and a value written as a slug is. */
 export const ChatTag = z.strictObject({
   key: z.enum(['project', 'area', 'role']),
