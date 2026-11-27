@@ -3,7 +3,8 @@
 // as the home's loader does. With no `?state=` it is the home's state with the
 // page of `slug` open. In development it reads the project from the server
 // (`GET /api/projects/:slug`, liveProjects.ts) unless `?source=fixtures` names
-// the sample data. A slug with no project is not found.
+// the sample data. A slug with no project, or one ProjectSlug refuses (no read), is not found.
+import { ProjectSlug } from '@bridge/contract'
 import { notFound } from '@tanstack/react-router'
 import { parseState } from '../../errors/parseState.ts'
 import { type DataSourceOptions, readState } from '../../lib/dataSource.ts'
@@ -31,6 +32,7 @@ export function loadProjectState(
   source: string | undefined,
   signal?: AbortSignal,
 ): State | Promise<State> {
+  if (!ProjectSlug.safeParse(slug).success) throw notFound({ data: 'not a project slug' })
   const read = readState<State>(
     projectsStates,
     { state: requested, source },

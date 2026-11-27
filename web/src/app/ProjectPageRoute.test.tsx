@@ -33,14 +33,17 @@ afterEach(async () => {
 
 const alpha = { slug: 'alpha', name: 'Alpha', purpose: 'A made-up project.', icon: null, pinned: false }
 const beta = { slug: 'beta', name: 'Beta', purpose: 'Another made-up project.', icon: null, pinned: false }
+const fetched: string[] = [] // Each URL the page fetched.
 
 /** The fake with two projects, as the page's fetch. */
 function withServer(): FakeProjectsServer {
   const server = fakeProjectsServer([alpha, beta])
+  fetched.length = 0
   vi.stubGlobal(
     'fetch',
     vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
+      fetched.push(url)
       const answer = server.handle(new URL(url, window.location.origin).pathname, init)
       return answer === undefined ? Promise.reject(new TypeError(`no stub for ${url}`)) : Promise.resolve(answer)
     }),
@@ -92,6 +95,24 @@ describe('a project page (R4)', () => {
     withServer()
     await renderAt('/projects/no-such-project')
     await expect.element(page.getByRole('heading', { name: 'Page not found' })).toBeVisible()
+  })
+
+  it('says a slug the contract refuses is not found, with no request sent', async () => {
+    withServer()
+    await renderAt('/projects/alpha%2Fideas')
+    await expect.element(page.getByRole('heading', { name: 'Page not found' })).toBeVisible()
+    expect(fetched.filter((url) => url.includes('/api/projects/'))).toEqual([])
+  })
+
+  it('keeps ?source=fixtures when a card opens the page and when Back opens the home', async () => {
+    withServer()
+    const router = await renderAt('/projects?source=fixtures')
+    await userEvent.click(page.getByRole('button', { name: 'Pinpoint', exact: true }))
+    await expect.poll(() => router.state.location.href).toBe('/projects/pinpoint?source=fixtures')
+    await expect.element(page.getByRole('heading', { level: 1, name: 'Pinpoint' })).toBeVisible()
+    await userEvent.click(page.getByRole('button', { name: 'Back to Projects' }))
+    await expect.poll(() => router.state.location.href).toBe('/projects?source=fixtures')
+    expect(fetched.filter((url) => url.includes('/api/projects'))).toEqual([])
   })
 
   it('says in one line that the read missed, and reports its kind and status', async () => {

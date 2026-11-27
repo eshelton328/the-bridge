@@ -37,7 +37,7 @@ export function ProjectPage() {
       onUiChange={(change) => {
         setChanged((c) => ({ of: search.state, ui: { ...(c.of === search.state ? c.ui : {}), ...change } }))
       }}
-      onBack={() => void navigate({ to: '/projects' })}
+      onBack={() => void navigate({ to: '/projects', search: { source: search.source } })}
     />
   )
 }
