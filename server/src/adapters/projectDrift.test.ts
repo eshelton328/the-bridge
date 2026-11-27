@@ -56,9 +56,19 @@ describe('findingsFor', () => {
     'missing or stale projects/example-project/CLAUDE.md (run `ncc check --fix`)',
     'not a git clone: projects/example-project-two/x (only <repo>/ go here)',
     'loose file in projects/: projects/other.txt',
+    'no commit-msg hook in example-repo (run `ncc check --fix`)',
+    'example-repo sets core.hooksPath; add the hook to that folder by hand',
+    'no commit-msg hook in example-repo-two (run `ncc check --fix`)',
   ]
   it('keeps the lines about the project only, not a project whose name starts the same', () => {
-    expect(findingsFor('example-project', lines).map((f) => f.text)).toEqual(lines.slice(0, 3))
+    expect(findingsFor('example-project', [], lines).map((f) => f.text)).toEqual(lines.slice(0, 3))
+  })
+
+  it('keeps a git hook line that names one of the project repositories by its folder name alone', () => {
+    expect(findingsFor('example-project', ['example-repo'], lines.slice(3)).map((f) => f.text)).toEqual([
+      'no commit-msg hook in example-repo (run `ncc check --fix`)',
+      'example-repo sets core.hooksPath; add the hook to that folder by hand',
+    ])
   })
 
   it('makes paths relative with the longest root first', () => {

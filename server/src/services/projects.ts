@@ -101,14 +101,20 @@ const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 /**
  * The lines of a layout check that are about one project: a path in `projects/<slug>` (the code folder or the
- * brain's notes folder) or a line that names "project <slug>".
+ * brain's notes folder), a line that names "project <slug>", or one that names one of its repositories by its folder
+ * name alone, as the git hook lines do ("no commit-msg hook in the-bridge").
  */
-export function findingsFor(slug: ProjectSlug, lines: readonly string[]): DriftFinding[] {
+export function findingsFor(
+  slug: ProjectSlug,
+  repositories: readonly string[],
+  lines: readonly string[],
+): DriftFinding[] {
   const s = escape(slug)
   const about = new RegExp(`(^|[\\s/:])projects/${s}([/\\s):]|$)|\\bproject ${s}([\\s:,]|$)`)
+  const repos = repositories.map((r) => new RegExp(`(^|\\s)${escape(r)}(\\s|$)`))
   return lines
     .map((line) => line.trim())
-    .filter((line) => line !== '' && about.test(line))
+    .filter((line) => line !== '' && (about.test(line) || repos.some((r) => r.test(line))))
     .slice(0, maxDriftFindings)
     .map((line) => ({ text: line.slice(0, 1_000) }))
 }
@@ -241,7 +247,8 @@ export function createProjects({ brain, pins, pulls, check, drift, now = () => n
         if (running === started) running = undefined
       })
       const checkedAt = now().toISOString()
-      const findings = lines.ok ? findingsFor(slug, lines.value) : []
+      const repositories = record.value.repositories.map((r) => r.id)
+      const findings = lines.ok ? findingsFor(slug, repositories, lines.value) : []
       const run: DriftRun = {
         result: !lines.ok ? 'failed' : findings.length > 0 ? 'findings' : 'clean',
         checkedAt,
