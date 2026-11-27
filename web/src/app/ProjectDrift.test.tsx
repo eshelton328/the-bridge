@@ -38,8 +38,11 @@ const findings = {
   findings: [{ text: 'not a git clone: projects/alpha/notes.log' }, { text: 'no commit-msg hook in alpha-web' }],
 }
 
-/** The fakes as the page's fetch: Alpha, with `drift` as its last run (none when not given), and an empty Inbox. */
-function withServer(drift?: unknown) {
+/**
+ * The fakes as the page's fetch: Alpha, with `drift` as its last run (none when not given), and an empty Inbox. With
+ * `hold`, each request waits for its promise before the fakes see it, as a slow runner can delay the page's fetch.
+ */
+function withServer(drift?: unknown, hold: () => Promise<void> = () => Promise.resolve()) {
   const projects = fakeProjectsServer(
     [{ slug: 'alpha', name: 'Alpha', purpose: 'Made up.', icon: null, pinned: false }],
     {
@@ -50,6 +53,7 @@ function withServer(drift?: unknown) {
   vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
     const path = new URL(url, window.location.origin).pathname
+    await hold()
     const answer = projects.handle(path, init) ?? inbox.handle(path, init)
     if (answer === undefined) throw new TypeError(`no stub for ${url}`)
     return answer
@@ -99,8 +103,13 @@ describe("A project's Context drift panel (R9)", () => {
   })
 
   it('posts Run check, keeps the button busy while the run is slow, then shows the new result (AC2)', async () => {
-    const server = withServer(findings)
+    // The page is busy before its POST reaches the fakes (NCC-157): the gate holds every request after the page opens.
+    let open: () => void = () => undefined
+    const gate = new Promise<void>((r) => (open = r))
+    let held = false
+    const server = withServer(findings, () => (held ? gate : Promise.resolve()))
     await openAlpha()
+    held = true
     let resolve: (r: Response) => void = () => undefined
     const slow = new Promise<Response>((r) => (resolve = r))
     server.answerNext('runDrift', () => slow)
@@ -108,7 +117,11 @@ describe("A project's Context drift panel (R9)", () => {
     await expect.element(runButton()).toHaveTextContent('Checking…')
     await expect.element(runButton()).toBeDisabled()
     await expect.element(drift()).toHaveAttribute('aria-busy', 'true')
-    expect(server.calls('runDrift')).toEqual([{ call: 'runDrift', path: '/api/projects/alpha/drift', body: {} }])
+    expect(server.calls('runDrift')).toEqual([])
+    open()
+    await expect
+      .poll(() => server.calls('runDrift'))
+      .toEqual([{ call: 'runDrift', path: '/api/projects/alpha/drift', body: {} }])
     resolve(Response.json({ last: { result: 'clean', checkedAt: new Date().toISOString(), findings: [] } }))
     await expect.element(drift().getByText('No drift found')).toBeVisible()
     await expect.element(drift().getByText('Checked just now')).toBeVisible()
