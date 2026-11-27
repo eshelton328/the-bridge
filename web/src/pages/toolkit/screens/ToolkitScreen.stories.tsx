@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, within } from 'storybook/test'
 import { toolkitStates } from '../states/index.ts'
+import { css } from '../../../../styled-system/css/index.js'
 import { viewportForWidth } from '../../../lib/viewport.ts'
 import { ToolkitScreen } from './ToolkitScreen.tsx'
 
@@ -927,6 +928,56 @@ export const ScriptExplainedPhone: Story = {
     await expect(within(item).getByText('one JSON line for each file')).toBeVisible()
     await expect(within(item).getByRole('button', { name: 'line 406' })).toBeVisible()
     await expect(within(item).queryByText('draft against toolkit/rules/writing.md.')).toBeNull()
+  },
+}
+
+// The characters of `text` in `holder`'s text, as one range: the flag may sit in its own element.
+function rangeOf(holder: Element, text: string): Range {
+  const walker = document.createTreeWalker(holder, NodeFilter.SHOW_TEXT)
+  const nodes: Text[] = []
+  for (let node = walker.nextNode(); node !== null; node = walker.nextNode()) if (node instanceof Text) nodes.push(node)
+  const full = nodes.map((n) => n.data).join('')
+  let start = full.indexOf(text)
+  if (start < 0) throw new Error(`no "${text}" in "${full}"`)
+  let end = start + text.length
+  const range = document.createRange()
+  for (const node of nodes) {
+    if (start >= 0 && start <= node.length) range.setStart(node, start)
+    if (end >= 0 && end <= node.length) {
+      range.setEnd(node, end)
+      break
+    }
+    start -= node.length
+    end -= node.length
+  }
+  return range
+}
+
+// The owner's phone (390, as LaunchView and ChatEmpty stories draw it).
+const phoneLarge = css({ w: '[390px]' })
+
+export const ScriptExplainedPhoneLarge: Story = {
+  name: 'M8 at the Large text size: a flag in the In row stays on one line (NCC-145)',
+  args: { data: toolkitStates.scriptExplainedPhone.data, ui: toolkitStates.scriptExplainedPhone.ui, viewport: 'phone' },
+  // The phone's width at Large, where the row "one or more files, --form, --ste" wraps: the line may break between
+  // the flags but never inside one (the owner's phone showed "--" and "ste" on two lines).
+  decorators: [
+    (Story) => (
+      <div className={`text-large ${phoneLarge}`}>
+        <Story />
+      </div>
+    ),
+  ],
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writer' })
+    const value = within(item).getByText(
+      (_, el) => el?.tagName === 'DD' && el.textContent === 'one or more files, --form, --ste',
+    )
+    await expect(value).toBeVisible()
+    // The row wraps at this width, so the check below is a real one.
+    const lines = (range: Range) => new Set([...range.getClientRects()].map((r) => Math.round(r.top))).size
+    await expect(lines(rangeOf(value, 'one or more files, --form, --ste'))).toBeGreaterThan(1)
+    for (const flag of ['--form', '--ste']) await expect(lines(rangeOf(value, flag))).toBe(1)
   },
 }
 
