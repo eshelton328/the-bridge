@@ -344,7 +344,11 @@ export function chatsRoutes(
     })
     .post('/', smallJson, jsonOnly, jsonBody(StartChatRequest), async (c) => {
       const started = await newChats.start(c.req.valid('json'))
-      return started.ok ? startAnswer(c, started.value) : failed(c, started.error)
+      if (started.ok) return startAnswer(c, started.value)
+      if (started.error.reason !== 'failed') return failed(c, started.error)
+      // The brain's project list did not read: its code goes to the log only.
+      log.error('projects read failed', { requestId: c.get('requestId'), code: started.error.code })
+      return errorJson(c, 'internal', { message: internalMessage })
     })
     .post('/:chat/fork', smallJson, jsonOnly, jsonBody(ForkChatRequest), async (c) => {
       const id = chatOf(c)

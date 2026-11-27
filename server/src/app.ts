@@ -25,6 +25,7 @@ import { createFiles, type Files } from './services/files.ts'
 import { createInbox, type Inbox } from './services/inbox.ts'
 import { noProjects, type Projects } from './services/projects.ts'
 import { createLiveEvents, type InboxWatch } from './services/liveEvents.ts'
+import { createNewChats } from './services/newChats.ts'
 import { createPushSeen, type PushSeen, type PushStore } from './services/push.ts'
 import { defaultChunkBytes, type UploadStore } from './services/uploadStore.ts'
 
@@ -146,7 +147,7 @@ export function createApp({
         return undefined
       })
       .route('/api/workspaces', workspacesRoutes(agents, log))
-      .route('/api/chats', chatsRoutes(agents, log, uploads))
+      .route('/api/chats', chatsRoutes(agents, log, uploads, undefined, createNewChats(agents, Date.now, projects)))
       .route('/api/chats', sidesRoutes(createSideAnswers(agents), log))
       .route('/api/uploads', uploadsRoutes(uploads, log))
       .route('/api/events', eventsRoutes(live, log))

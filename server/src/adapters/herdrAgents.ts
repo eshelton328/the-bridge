@@ -113,6 +113,8 @@ const SplitReply = z.object({ pane: z.object({ terminal_id: LocalIdPart }) })
 const NewPane = z.object({ pane_id: z.string(), terminal_id: LocalIdPart })
 const StartSplitReply = z.object({ pane: NewPane })
 const StartTabReply = z.object({ root_pane: NewPane })
+/** herdr's reply to `workspace.create` for a project start: the new workspace's root pane. */
+const StartWorkspaceReply = z.object({ root_pane: NewPane })
 /** herdr's reply to `workspace.create`, of which the adapter reads only the new workspace's ID. */
 const CreatedWorkspace = z.object({ workspace: z.object({ workspace_id: LocalIdPart }) })
 /** The waits before each read of the screen after the effort keys, about 1.5 s in all. */
@@ -128,11 +130,23 @@ async function insideRoot(root: string | undefined, folder: string | undefined):
   if (root === undefined || folder === undefined) return false
   try {
     const [top, real] = await Promise.all([realpath(root), realpath(folder)])
-    // From the root, so a root of "/" holds each folder; ".." first means the folder is outside it.
-    const rel = relative(top, real)
-    return rel === '' || (rel !== '..' && !rel.startsWith(`..${sep}`) && !isAbsolute(rel))
+    return within(top, real)
   } catch {
     return false
+  }
+}
+/** Whether the real path `real` is `top` or in it: from the root, so a root of "/" holds each folder. */
+function within(top: string, real: string): boolean {
+  const rel = relative(top, real)
+  return rel === '' || (rel !== '..' && !rel.startsWith(`..${sep}`) && !isAbsolute(rel))
+}
+/** A folder's real path, or null when the path is no folder. */
+async function realFolderOf(path: string): Promise<string | null> {
+  try {
+    const real = await realpath(path)
+    return (await stat(real)).isDirectory() ? real : null
+  } catch {
+    return null
   }
 }
 /** herdr's reply to a move: whether the pane moved, and why not (`same_tab`, `zoomed_tab`). */
@@ -363,6 +377,8 @@ export type HerdrAgentsOptions = {
   readonly now?: () => number
   /** Answers a side question from a copy of a session; with none, a side question of a saved session is `unreachable`. */
   readonly runSide?: SideRunner
+  /** A folder's real path, or null when it is none; a test gives a map. */
+  readonly realFolder?: (path: string) => Promise<string | null>
 }
 
 /** How long a restart waits for the chat to end after its ctrl+c, and the time between two reads. */
@@ -420,6 +436,7 @@ export function createHerdrAgents({
   serverPids = () => Promise.resolve(new Set<number>()),
   guardedAgents = [],
   runSide,
+  realFolder = realFolderOf,
 }: HerdrAgentsOptions): AgentPort {
   const unknownSeen = new Set<string>()
   /** The chat's status for herdr's `status`; one it does not know is `unknown`, logged once. */
@@ -1193,9 +1210,24 @@ export function createHerdrAgents({
   ): ReturnType<AgentPort['startChat']> => {
     // The new pane's place: beside the chat in its folder, or a new tab in the folder of the workspace's first pane.
     let beside: string | undefined
-    let workspace: string
+    let workspace: string | undefined
     let cwd: string | undefined
-    if (place.in === 'split') {
+    if (place.in === 'project') {
+      // The project's code folder: a real folder in the chat root, never made here. Its workspace is the first one
+      // whose first pane is in that folder; with none, the start makes one.
+      const top = chatRoot === undefined ? null : await realFolder(chatRoot)
+      const real = chatRoot === undefined ? null : await realFolder(join(chatRoot, 'projects', place.project))
+      if (top === null || real === null || !within(top, real)) return ok('notFound')
+      const [spaces, panes] = await Promise.all([call('workspace.list', WorkspaceList), call('pane.list', PaneList)])
+      if (!spaces.ok) return spaces
+      if (!panes.ok) return panes
+      for (const space of spaces.value.workspaces) {
+        const first = panes.value.panes.find((p) => p.workspace_id === space.workspace_id)
+        if (workspace === undefined && first?.cwd != null && (await realFolder(first.cwd)) === real)
+          workspace = space.workspace_id
+      }
+      cwd = real
+    } else if (place.in === 'split') {
       const found = await paneOf(place.beside)
       if (!found.ok) return found
       if (found.value?.workspace === undefined) return ok('notFound')
@@ -1210,25 +1242,43 @@ export function createHerdrAgents({
       workspace = local
       cwd = first.cwd ?? undefined
     }
-    if (cwd === undefined || !(await insideRoot(chatRoot, cwd))) return ok('folderNotAllowed')
+    // A project's folder was checked above, with the same real paths.
+    if (cwd === undefined || (place.in !== 'project' && !(await insideRoot(chatRoot, cwd))))
+      return ok('folderNotAllowed')
     const agents = await call('agent.list', AgentList)
     if (!agents.ok) return agents
     const chatName = name ?? `chat-${randomBytes(3).toString('hex')}`
     if (agents.value.agents.some((a) => a.name === chatName)) return ok('nameTaken')
     // No focus change: herdr's active tab and pane stay as they were.
     const made =
-      beside === undefined
-        ? await paneWrite('tab.create', StartTabReply, { workspace_id: workspace, cwd, focus: false })
-        : await paneWrite('pane.split', StartSplitReply, {
-            target_pane_id: beside,
-            direction: place.in === 'split' && place.direction === 'row' ? 'right' : 'down',
-            focus: false,
-            cwd,
-          })
+      workspace === undefined && place.in === 'project'
+        ? await call('workspace.create', StartWorkspaceReply, { label: place.project, cwd, focus: false })
+        : beside === undefined
+          ? await paneWrite('tab.create', StartTabReply, { workspace_id: workspace, cwd, focus: false })
+          : await paneWrite('pane.split', StartSplitReply, {
+              target_pane_id: beside,
+              direction: place.in === 'split' && place.direction === 'row' ? 'right' : 'down',
+              focus: false,
+              cwd,
+            })
     if (!made.ok) return made
     if (made.value === 'notFound') return ok('notFound')
     const pane = 'pane' in made.value ? made.value.pane : made.value.root_pane
     forgetPlaces()
+    if (place.in === 'project') {
+      // The pane's tag (d-120), with no time limit; a fault keeps the start and logs its code only, never its message.
+      const tagged = await herdrRequest(socket, 'pane.report_metadata', {
+        pane_id: pane.pane_id,
+        source: 'ncc-tags',
+        tokens: { project: place.project },
+      })
+      if (!tagged.ok) {
+        const failure = tagged.error
+        // herdr's error code or the socket's errno code, else the failure's kind.
+        const code = 'code' in failure && failure.code !== undefined ? failure.code : failure.kind
+        log.warn('chat tags not written', { code })
+      }
+    }
     // An argument list, never a shell line: the name, model alias and fork flags only; no flag that skips a permission.
     const args = ['-n', chatName, ...(model === undefined ? [] : ['--model', model]), ...extra]
     const launched = await launchClaude(pane.pane_id, chatName, args)

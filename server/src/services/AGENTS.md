@@ -58,7 +58,9 @@ from the outside world.
   first start runs or after it failed in herdr (it may have made a
   pane). A refusal (`notFound`, `folderNotAllowed`, `nameTaken`)
   made nothing, so it frees the ID. A fork (in a row by default) takes
-  the same rules (`newChats.test.ts`).
+  the same rules (`newChats.test.ts`). A project start takes only a slug
+  of the brain's project list (else `notFound`; a list fault is 500 and
+  frees the ID); a kept create ID answers with no list read.
 - `restarts.ts` holds one lock for each chat with a model restart in
   progress (slice W10, in memory): a confirm of another chat is
   `notConfirmed` with no call to the port, and a second restart of the

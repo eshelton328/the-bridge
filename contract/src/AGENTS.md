@@ -64,7 +64,8 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
   `sent`, `notSubmitted`, `notSent` or `unknown`) holds no text.
 - A start request (slice W3, `newChats.ts`) is a strict object: kind
   `claude`, a name of herdr's form, a `ModelAlias` and a place (beside
-  a chat, or a workspace's new tab), never a path or a flag; the answer
+  a chat, a workspace's new tab, or a project by its `ProjectSlug`,
+  NCC-129), never a path, a flag, tags or a first message; the answer
   gives the pane, the chat once it has a session, and the state
   (`newChats.test.ts`). A model restart request (slice W10) is a
   `ModelAlias` and a `confirm` that must be the chat's ID; its answer

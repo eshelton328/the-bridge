@@ -10,6 +10,19 @@ describe('a start request', () => {
     expect(StartChatRequest.safeParse({ kind: 'claude', place: split }).success).toBe(true)
   })
 
+  it('takes a project place by its slug only: no path, no tags and no first message (NCC-129)', () => {
+    const project = { in: 'project', project: 'example-project' }
+    expect(StartChatRequest.safeParse({ kind: 'claude', place: project }).success).toBe(true)
+    for (const body of [
+      { kind: 'claude', place: { in: 'project', project: '/home/dev/ncc-1701/projects/example-project' } },
+      { kind: 'claude', place: { in: 'project', project: '../example-project' } },
+      { kind: 'claude', place: { ...project, cwd: '/home/dev' } },
+      { kind: 'claude', place: project, tags: { project: 'example-project' } },
+      { kind: 'claude', place: project, text: 'hello' },
+    ])
+      expect(StartChatRequest.safeParse(body).success).toBe(false)
+  })
+
   it('refuses a name or a model with a space or a quote, a flag, another kind and an extra field', () => {
     for (const body of [
       { kind: 'claude', name: 'my chat', place },

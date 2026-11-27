@@ -8,6 +8,7 @@
 import { z } from 'zod'
 import { ChatId, PaneId, SendId, WorkspaceId } from './ids.ts'
 import { SplitDirection } from './layout.ts'
+import { ProjectSlug } from './projects.ts'
 import { ModelAlias } from './workspaces.ts'
 
 /** A chat's name in herdr and in Claude Code: a small letter, then at most 31 small letters, digits, "-" or "_". */
@@ -16,7 +17,9 @@ export const ChatName = z.string().regex(/^[a-z][a-z0-9_-]{0,31}$/)
 /**
  * The body of `POST /api/chats`: a Claude chat with an optional name (the server picks one when it has none) and
  * model, in a new pane beside the chat `beside` (in its folder) or in a new tab of `workspace` (in the folder of
- * its first pane), with no focus change; herdr labels a new tab with its next number. `createId` is the page's ID of
+ * its first pane), with no focus change; herdr labels a new tab with its next number. A `project` place (NCC-129)
+ * starts it in the brain project's code folder: a new tab of the workspace whose first pane is in that folder, else a
+ * new workspace labelled with the slug; the server tags the pane with the project. `createId` is the page's ID of
  * this start, so a retry starts no second chat.
  */
 export const StartChatRequest = z.strictObject({
@@ -26,6 +29,7 @@ export const StartChatRequest = z.strictObject({
   place: z.discriminatedUnion('in', [
     z.strictObject({ in: z.literal('split'), beside: ChatId, direction: SplitDirection }),
     z.strictObject({ in: z.literal('tab'), workspace: WorkspaceId }),
+    z.strictObject({ in: z.literal('project'), project: ProjectSlug }),
   ]),
   createId: SendId.optional(),
 })

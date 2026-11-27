@@ -74,4 +74,31 @@ describe('new chats', () => {
     answers[2]?.(ok(answer))
     expect(await later).toEqual(ok({ started: answer, again: false }))
   })
+
+  it('answers a repeated project start from its kept result with no list read; a new create ID reads the list', async () => {
+    let reads = 0
+    let listOk = true
+    const projects = {
+      list: () => {
+        reads += 1
+        return Promise.resolve(
+          listOk
+            ? ok({ projects: [{ slug: 'example-project', name: 'Example', purpose: '', icon: null, pinned: false }] })
+            : err({ reason: 'failed' as const, code: 'EIO' }),
+        )
+      },
+    }
+    const port: AgentPort = { ...createFakeAgents(machine), startChat: () => Promise.resolve(ok(answer)) }
+    const chats = createNewChats(port, Date.now, projects)
+    const start = (project: string, id: string) =>
+      chats.start({ kind: 'claude', place: { in: 'project', project }, createId: SendId.parse(id) })
+    expect(await start('example-project', 'create-0001')).toEqual(ok({ started: answer, again: false }))
+    expect(await start('not-listed', 'create-0002')).toEqual(ok('notFound'))
+    listOk = false
+    expect(await start('example-project', 'create-0001')).toEqual(ok({ started: answer, again: true }))
+    expect(reads).toBe(2)
+    expect(await start('example-project', 'create-0003')).toEqual(err({ reason: 'failed', code: 'EIO' }))
+    listOk = true
+    expect(await start('example-project', 'create-0003')).toEqual(ok({ started: answer, again: false }))
+  })
 })
