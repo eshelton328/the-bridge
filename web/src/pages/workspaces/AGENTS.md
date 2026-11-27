@@ -312,7 +312,11 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   until an entry follows it. A call without a kind (the fixtures, an
   older server) draws as Figma's tool line and is never grouped
   (`app/WorkspacesToolRows.test.tsx`; LIBRARY_GAPS.md: Tool row icon and
-  label, Tool group row).
+  label, Tool group row). Such a line and an event line stay one line
+  (d-131), and when that line is cut, as on the phone at Large, it is a
+  button with a chevron whose tap shows the full text under it, wrapped
+  (`blocks/CutToolLine.tsx`, NCC-147); a line that fits stays as Figma
+  draws it (`app/WorkspacesCutLineTap.test.tsx`).
 - A live Claude chat sends and stops (W1): `lib/chatSend.ts` posts
   `POST /api/chats/:chat/prompt` with `{ text }` and `.../stop` with `{}`
   to the chat whose composer sent it, read at send time. The box empties

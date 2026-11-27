@@ -11,11 +11,12 @@
 // chips (`SentFileChip`). The caller names the entry's Figma layer. Memoised by
 // the entry's identity (review R28), so a keystroke in the composer or another
 // entry's change does not render it again. Props only.
-import { Inline, Message, ProposalBlock, ProposalCommand, Stack, ToolLine } from '@eshelton328/component-library-1701'
+import { Inline, Message, ProposalBlock, ProposalCommand, Stack } from '@eshelton328/component-library-1701'
 import { memo } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { CopyTextResult } from '../../../lib/copyText.ts'
 import type { ChatEntry } from '../types.ts'
+import { CutToolLine } from './CutToolLine.tsx'
 import { EntryText } from './EntryText.tsx'
 import { NoteLine } from './NoteLine.tsx'
 import { PeerEntry } from './PeerEntry.tsx'
@@ -83,9 +84,10 @@ export const ChatEntryView = memo(function ChatEntryView({ entry, figma, onAct, 
       )
     }
     case 'tool':
-      // A live call with its kind draws its icon, title and label (R32); one without draws as Figma's tool line.
+      // A live call with its kind draws its icon, title and label (R32); one without draws as Figma's tool line,
+      // which opens its full text on a tap when it is cut (NCC-147).
       return entry.kind === undefined ? (
-        <ToolLine name={entry.name} target={entry.target} state={entry.running === true ? 'running' : 'done'} />
+        <CutToolLine name={entry.name} target={entry.target} state={entry.running === true ? 'running' : 'done'} />
       ) : (
         <ToolRow
           kind={entry.kind}
@@ -96,10 +98,11 @@ export const ChatEntryView = memo(function ChatEntryView({ entry, figma, onAct, 
         />
       )
     case 'event':
-      // Figma draws the event as a tool line: the done dot and the text in mono (D16 417:718).
+      // Figma draws the event as a tool line: the done dot and the text in mono (D16 417:718). A cut one opens its
+      // full text on a tap (NCC-147).
       return (
         <div className={eventLine} data-figma={figma}>
-          <ToolLine name={entry.text} state="done" stateLabel={entry.label} />
+          <CutToolLine name={entry.text} state="done" stateLabel={entry.label} />
         </div>
       )
     case 'note':

@@ -4,11 +4,11 @@
 // a size) that no longer has its cut fails the check, so remove it with the fix that removes the cut.
 import type { AcceptedCut } from './textSizesLib.ts'
 
-const toolLine = 'd-131: a tool-call line stays one line'
+const toolLine = 'd-131: a tool-call line stays one line, and a tap opens its full text (NCC-147)'
 
 export const accepted: readonly AcceptedCut[] = [
   {
-    // NCC-147: d-131 says a tool line expands on tap, but the phone transcript has no tap yet; fixed there.
+    // The closed line stays one line and cut; a tap on it opens its full text (NCC-147, CutToolLine).
     states: [
       'workspaces/phoneChat',
       'workspaces/phoneChatActions',
@@ -27,7 +27,7 @@ export const accepted: readonly AcceptedCut[] = [
     reason: toolLine,
   },
   {
-    // NCC-147: d-131 says a tool line expands on tap, but the phone transcript has no tap yet; fixed there.
+    // The closed line stays one line and cut; a tap on it opens its full text (NCC-147, CutToolLine).
     states: ['workspaces/phoneSubagentTranscript'],
     sizes: ['large'],
     kind: 'truncated',
@@ -36,7 +36,7 @@ export const accepted: readonly AcceptedCut[] = [
   },
   {
     // The transcript draws an event as the library's ToolLine (Figma D16 417:718), so it is a tool line too.
-    // NCC-147: d-131 says a tool line expands on tap, but the phone transcript has no tap yet; fixed there.
+    // The closed line stays one line and cut; a tap on it opens its full text (NCC-147, CutToolLine).
     states: ['workspaces/phoneSubtaskRunning'],
     sizes: ['default', 'large'],
     kind: 'truncated',
