@@ -5,7 +5,7 @@ import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/rea
 import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
 import { clearReports, getReports } from '../errors/reporter.ts'
-import { fakeInboxServer } from '../lib/fakeInboxServer.ts'
+import { fakeInboxServer, inboxError } from '../lib/fakeInboxServer.ts'
 import { fakeProjectsServer } from '../lib/fakeProjectsServer.ts'
 import { answerLateServerReads } from '../lib/lateServerReads.ts'
 import { queryClient } from '../lib/queryClient.ts'
@@ -73,6 +73,11 @@ const items = [
   { ...mine(4, 'Sample snoozed request of Alpha'), needsYou: false, snoozedUntil: '2099-01-01T00:00:00.000Z' },
   { ...chatItem(6, 'Sample done chat of Alpha', 'review', 10), project: 'alpha' },
   chatItem(7, 'Sample done chat of no project', 'review', 15),
+  {
+    ...chatItem(8, 'Sample snoozed done chat of Alpha', 'review', 20),
+    project: 'alpha',
+    snoozedUntil: '2099-01-01T00:00:00.000Z',
+  },
 ]
 
 async function openAlpha(width: number, height: number) {
@@ -99,12 +104,23 @@ describe("A project's Overview panels (R5, R6)", () => {
     expect(getReports()).toEqual([])
   })
 
-  it("lists the project's done chats under To review, not another project's or an untagged one", async () => {
+  it("lists the project's unsnoozed done chats under To review, not a snoozed one, another project's or an untagged one", async () => {
     withServer(items)
     await openAlpha(1440, 900)
     await expect.poll(() => titles('Inbox')).toEqual(['Sample request of Alpha'])
     await userEvent.click(page.getByRole('region', { name: 'Inbox' }).getByRole('button', { name: /To review/i }))
     await expect.poll(() => titles('Inbox')).toEqual(['Sample request of Alpha', 'Sample done chat of Alpha'])
+  })
+
+  it("says the Inbox was not read when its read misses, and still shows the project's Queue", async () => {
+    const inbox = withServer(items)
+    inbox.answerNext('list', () => inboxError('internal', 500), 2)
+    await openAlpha(1440, 900)
+    const panel = page.getByRole('region', { name: 'Inbox' })
+    await expect.element(panel.getByRole('status')).toHaveTextContent('Inbox not read — the server answered 500')
+    expect(titles('Inbox')).toEqual([])
+    expect(titles('Queue')).toEqual(['Sample PR in review', 'Sample PR whose CI failed'])
+    expect(getReports().map((r) => r.error.message)).toContain('An inbox request missed: list internal 500')
   })
 
   it('shows each open PR with its pill and the line of the repositories not read', async () => {

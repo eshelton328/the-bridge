@@ -65,7 +65,8 @@ const PullRow = z.object({
 
 /** A project's Overview panels (R5, R6); `unread` is the line of the repositories whose PRs were not read. */
 export const ProjectOverview = z.object({
-  inbox: z.object({ needsYou: z.array(InboxRow), toReview: z.array(InboxRow) }),
+  /** `notRead` is the line of an Inbox read that missed, such as "Inbox not read — the server answered 500". */
+  inbox: z.object({ needsYou: z.array(InboxRow), toReview: z.array(InboxRow), notRead: z.string().optional() }),
   queue: z.object({ inProgress: z.array(PullRow), unread: z.string().optional() }),
 })
 export type ProjectOverview = z.infer<typeof ProjectOverview>

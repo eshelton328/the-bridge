@@ -115,14 +115,20 @@ function ageOf(iso: string, now: Date): string {
   return days < 7 ? `${String(days)}d` : `${String(Math.floor(days / 7))}w`
 }
 
-export type ProjectInbox = { readonly inbox: ProjectOverview['inbox']; readonly count: number }
+export type ProjectInbox = { readonly inbox: ProjectOverview['inbox']; readonly count: number | undefined }
 
-/** The Inbox panel (R5): project `slug`'s items that need the owner, and the needs-you count; undefined on a miss. */
-export async function readProjectInbox(slug: string, signal?: AbortSignal): Promise<ProjectInbox | undefined> {
+/**
+ * The Inbox panel (R5): project `slug`'s items, as the Inbox page groups them, and the needs-you count. On a miss the
+ * panel has no rows and the miss's line, and the count is undefined.
+ */
+export async function readProjectInbox(slug: string, signal?: AbortSignal): Promise<ProjectInbox> {
   const answer = await readInboxList('list', signal)
   if (!answer.ok) {
     if (answer.error.status !== undefined) report(new InboxMissError('list', answer.error), 'live')
-    return undefined
+    return {
+      inbox: { needsYou: [], toReview: [], notRead: missLine('Inbox not read', answer.error) },
+      count: undefined,
+    }
   }
   const now = new Date()
   const row = (i: (typeof answer.value.items)[number]) => ({
@@ -133,8 +139,9 @@ export async function readProjectInbox(slug: string, signal?: AbortSignal): Prom
   })
   const mine = answer.value.items.filter((i) => i.project === slug)
   const needsYou = mine.filter((i) => i.needsYou).map(row)
-  // A done chat is a review; since #559 a chat's item names its pane's tagged project.
-  const toReview = mine.filter((i) => !i.needsYou && i.kind === 'review').map(row)
+  // The Inbox page's To review (liveList.ts): not needing the owner and not snoozed. Since #559 a chat's item names
+  // its pane's tagged project, so a done chat shows here.
+  const toReview = mine.filter((i) => !i.needsYou && i.snoozedUntil === null).map(row)
   return { inbox: { needsYou, toReview }, count: answer.value.counts.needsYou }
 }
 
@@ -179,7 +186,7 @@ export async function withLiveProject(
   }
   const { project, queue } = ProjectDetailResponse.parse(readJson(answer.value))
   const overview = {
-    inbox: inbox?.inbox ?? { needsYou: [], toReview: [] },
+    inbox: inbox.inbox,
     queue: {
       inProgress: queue.inProgress.map(pullRow),
       ...(queue.unread.length === 0 ? {} : { unread: `PRs not read: ${queue.unread.join(', ')}` }),

@@ -41,7 +41,8 @@ export function ProjectPage() {
       void import('./liveProjects.ts')
         .then((m) => m.readProjectInbox(slug, reading.signal))
         .then((read) => {
-          if (read !== undefined && !reading.signal.aborted) setInbox({ of: state, read })
+          // A read after a change that missed keeps the rows shown; the loader's miss shows its line.
+          if (read.count !== undefined && !reading.signal.aborted) setInbox({ of: state, read })
         })
     },
     shown?.count ?? railBadge,
