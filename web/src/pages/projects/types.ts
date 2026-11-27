@@ -37,12 +37,38 @@ export const ProjectPageWords = z.object({
   /** Quick chat's words (R8). */
   message: z.string(),
   retry: z.string(),
+  /** The Overview's panels (R5, R6): headings, group names and the PR pills by status. */
+  panels: z.record(z.enum(['inbox', 'queue', 'needsYou', 'toReview', 'inProgress']), z.string()),
+  pulls: z.record(z.enum(['draft', 'ciFailed', 'ciRunning', 'inReview']), z.string()),
+  /** Each Inbox kind's word, the name of its row's kind tile for assistive tech. */
+  kinds: z.record(z.enum(['approval', 'question', 'review', 'action']), z.string()),
 })
 export type ProjectPageWords = z.infer<typeof ProjectPageWords>
 
 /** A project page's tab (R4): Overview and Ideas only, the tabs of increment one (d-133). */
 export const ProjectTab = z.enum(['overview', 'ideas'])
 export type ProjectTab = z.infer<typeof ProjectTab>
+
+/** An Inbox panel row (R5): the item's kind tile, title, project and age ("5d"). */
+const InboxRow = z.object({
+  kind: z.enum(['approval', 'question', 'review', 'action']),
+  title: z.string(),
+  meta: z.string(),
+  age: z.string(),
+})
+/** An open PR of the Queue panel (R6): its title, `<repository>#<number>` and its pill. */
+const PullRow = z.object({
+  title: z.string(),
+  meta: z.string(),
+  status: z.enum(['draft', 'ciFailed', 'ciRunning', 'inReview']),
+})
+
+/** A project's Overview panels (R5, R6); `unread` is the line of the repositories whose PRs were not read. */
+export const ProjectOverview = z.object({
+  inbox: z.object({ needsYou: z.array(InboxRow), toReview: z.array(InboxRow) }),
+  queue: z.object({ inProgress: z.array(PullRow), unread: z.string().optional() }),
+})
+export type ProjectOverview = z.infer<typeof ProjectOverview>
 
 export const ProjectsData = z.object({
   title: z.string(),
@@ -58,6 +84,8 @@ export const ProjectsData = z.object({
   projects: z.array(ProjectCard),
   /** Set when the cards came from the server (liveProjects.ts), so the entry sends a pin to it. */
   live: z.object({}).optional(),
+  /** The open project's Overview panels; with none the Overview tab draws none (the home, the live page for now). */
+  overview: ProjectOverview.optional(),
   /** The line of a read or a pin that missed, such as "Projects not read — the server answered 500". */
   notice: z.string().optional(),
 })
@@ -82,6 +110,8 @@ export const ProjectsUi = z.object({
   /** The project page's selected tab; Overview when not set. */
   tab: ProjectTab.optional(),
   quickChat: QuickChatStatus.optional(),
+  /** The Overview's groups the owner opened or closed; "Needs you" and "In progress" start open. */
+  groupsOpen: z.partialRecord(z.enum(['needsYou', 'toReview', 'inProgress']), z.boolean()).optional(),
 })
 export type ProjectsUi = z.infer<typeof ProjectsUi>
 

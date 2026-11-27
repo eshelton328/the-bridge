@@ -26,6 +26,15 @@ export const menuOpen = {
       ideas: 'Ideas',
       message: 'First message',
       retry: 'Retry',
+      panels: {
+        inbox: 'Inbox',
+        queue: 'Queue',
+        needsYou: 'Needs you',
+        toReview: 'To review',
+        inProgress: 'In progress',
+      },
+      pulls: { draft: 'Draft', ciFailed: 'CI failed', ciRunning: 'CI running', inReview: 'In review' },
+      kinds: { approval: 'Approval', question: 'Question', review: 'Review', action: 'Action' },
     },
     projects: [
       {

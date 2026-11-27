@@ -1,10 +1,12 @@
 // A project's page in the shell's detail (D01, T01, T01b, M01; R4): its
 // header and the tabs of increment one, Overview and Ideas (d-133). The
-// Overview's panels are NCC-130's and the Ideas list NCC-132's, so each tab
-// shows no panel yet. Props only.
+// Overview shows the Inbox and Queue panels (R5, R6) on the desktop; the tablet
+// and the phone draw them next, and the other panels and the Ideas list are
+// later issues'. Props only.
 import { BulbIcon, GridIcon, ItemTabs } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
+import { OverviewPanels } from '../blocks/OverviewPanels.tsx'
 import { ProjectHeader } from '../blocks/ProjectHeader.tsx'
 import { type ProjectCard, ProjectTab, type ProjectsData, type ProjectsUi } from '../types.ts'
 
@@ -30,6 +32,18 @@ export type ProjectDetailProps = {
 
 export function ProjectDetail({ project, data, ui, layout, onUiChange, onBack, onQuickChat }: ProjectDetailProps) {
   const words = data.page
+  // The panels are the Overview tab's content, so its tab controls them; the tabs' 12 gap and the panels' own
+  // 12 top keep them 24 under the tabs.
+  const overview =
+    layout === 'desktop' && data.overview !== undefined ? (
+      <OverviewPanels
+        overview={data.overview}
+        words={words}
+        layout={layout}
+        groupsOpen={ui.groupsOpen ?? {}}
+        onGroupOpen={(group, open) => onUiChange?.({ groupsOpen: { ...ui.groupsOpen, [group]: open } })}
+      />
+    ) : null
   return (
     <div className={page[layout]}>
       <ProjectHeader project={project} words={words} layout={layout} onBack={onBack} onQuickChat={onQuickChat} />
@@ -44,7 +58,7 @@ export function ProjectDetail({ project, data, ui, layout, onUiChange, onBack, o
             if (picked.success) onUiChange?.({ tab: picked.data })
           }}
           items={[
-            { value: 'overview', label: words.overview, icon: <GridIcon />, content: null },
+            { value: 'overview', label: words.overview, icon: <GridIcon />, content: overview },
             { value: 'ideas', label: words.ideas, icon: <BulbIcon />, content: null },
           ]}
         />

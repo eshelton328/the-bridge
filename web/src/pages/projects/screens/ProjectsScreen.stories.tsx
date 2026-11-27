@@ -85,8 +85,20 @@ async function expectProject(canvas: Canvas) {
 export const ProjectOverview: Story = {
   name: "D01: NCC-1701's page on the desktop, on its Overview tab",
   args: { data: projectsStates.projectOverview.data, ui: projectsStates.projectOverview.ui, viewport: 'desktop' },
-  play: async ({ canvas }) => {
+  play: async ({ canvas, canvasElement }) => {
     await expectProject(canvas)
+    // The panels sit in the Overview tab's panel, and each Inbox row's kind tile is named.
+    const panelId = canvas.getByRole('tab', { name: 'Overview' }).getAttribute('aria-controls')
+    await expect(panelId).toBeTruthy()
+    const named = canvasElement.ownerDocument.getElementById(panelId ?? '')
+    await expect(named).not.toBeNull()
+    if (named === null) return
+    const panel = within(named)
+    await expect(panel.getByRole('heading', { level: 2, name: /^Inbox/ })).toBeVisible()
+    await expect(panel.getByRole('heading', { level: 2, name: /^Queue/ })).toBeVisible()
+    for (const kind of ['Question', 'Action', 'Review']) {
+      await expect(panel.getByRole('img', { name: kind })).toBeVisible()
+    }
   },
 }
 
