@@ -4,8 +4,8 @@
 // M10), whose More opens the shared More drawer. An iPad in landscape (T10b,
 // 1133 px) is narrower than the desktop layout and draws the tablet one. A
 // state's data and ui are its props; the callbacks are optional, so a story or
-// a canvas board needs none. `onPin` reports Pin to top or Unpin; the entry
-// passes none yet, so a pin changes nothing.
+// a canvas board needs none. On the live projects the entry passes `onPin`,
+// which sends a pin to the server.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
 import { AppRail } from '../../../blocks/AppRail.tsx'
 import { AppTabBar } from '../../../blocks/AppTabBar.tsx'
