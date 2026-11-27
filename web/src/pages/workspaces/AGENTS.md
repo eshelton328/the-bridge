@@ -313,7 +313,7 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   older server) draws as Figma's tool line and is never grouped
   (`app/WorkspacesToolRows.test.tsx`; LIBRARY_GAPS.md: Tool row icon and
   label, Tool group row).
-- A live Claude chat sends and stops (W1): `liveSend.ts` posts
+- A live Claude chat sends and stops (W1): `lib/chatSend.ts` posts
   `POST /api/chats/:chat/prompt` with `{ text }` and `.../stop` with `{}`
   to the chat whose composer sent it, read at send time. The box empties
   as the send starts, and the text shows at once after the entries as a
@@ -409,7 +409,7 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
 - That line offers "Clear the terminal input" (R28 part B), which asks
   first in a library confirm dialog (`blocks/ClearInputDialog.tsx`);
   Cancel does nothing. Clear posts `POST /api/chats/:chat/input/clear`
-  with `{}` to the chat the line was made for (`liveSend.ts` binds it at
+  with `{}` to the chat the line was made for (`lib/chatSend.ts` binds it at
   send time), one at a time per chat, and a 204 sends the kept draft
   again through the normal send. A miss keeps the draft and says "Not
   cleared — …" by kind, with Retry (no second question) for a 5xx or no
@@ -534,7 +534,7 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   (`ui.chatDialog`, for the chat in `ui.commandFor`,
   `blocks/ChatCommandDialog.tsx`): /compact with an
   optional one-line instructions field, /clear an `alertdialog` with Clear
-  and Cancel. `liveSend.ts` posts `POST /api/chats/:chat/command` with the
+  and Cancel. `lib/chatSend.ts` posts `POST /api/chats/:chat/command` with the
   contract's `ChatCommandRequest`; a miss keeps the dialog with one line
   ("Not compacted — chat is working", "Not cleared — chat waits for an
   answer in the terminal"); a chat whose terminal input holds text offers
@@ -630,7 +630,7 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   "Not moved — that tab is zoomed", a 404 reads the list, and any other
   miss says "Not moved — <kind>" in the status bar
   (`app/WorkspacesLayoutMove.test.tsx`).
-- New chat (W3, backend #378 to #381, `useNewChat.ts`, `liveNewChat.ts`,
+- New chat (W3, backend #378 to #381, `useNewChat.ts`, `lib/startChat.ts`,
   `liveNewChatForm.ts`, `blocks/newChatStart.ts`): the live page's New
   chat is Figma's form (D3, T7, M7) with what the server can start
   (references D03 and M07 `deviations.md`). The phone's + (M15) and a

@@ -1,5 +1,5 @@
 // New chat on the live page (W3): the form's Start chat posts `POST
-// /api/chats` (liveNewChat.ts) and the page opens the new chat once the
+// /api/chats` (lib/startChat.ts) and the page opens the new chat once the
 // workspace list shows it, matched by its pane.
 //
 // Each Start chat is a new start with a new create ID; Retry after a miss
@@ -17,7 +17,7 @@
 // first message through the composer's send, with a new send ID; a chat that
 // needs the owner gets the line "This chat needs you on the Mac" and the
 // message in its composer. Cancel ends the wait: nothing opens and nothing is
-// sent. Nothing goes to report() here; liveNewChat.ts reports a fault by
+// sent. Only lib/startChat.ts's fault goes to report() here, by
 // kind and status, never a name or a message.
 import { ChatName, StartChatRequest } from '@bridge/contract'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
@@ -125,8 +125,8 @@ export function useNewChat(enabled: boolean, deps: NewChatDeps): NewChatStarter 
     (attempt: Attempt) => {
       const { change, readList } = depsRef.current
       change({ newChatStart: { busy: true } })
-      void import('./liveNewChat.ts')
-        .then((live) => live.startChat(attempt.request))
+      void import('../../lib/startChat.ts')
+        .then((live) => live.startChat(attempt.request, report))
         .then(
           (answer) => {
             // Cancel, or another start, ended this one.

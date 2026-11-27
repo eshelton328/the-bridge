@@ -29,7 +29,7 @@ import type { ComposerNotice } from './blocks/ChatPane.tsx'
 import { type DraftBook, holdsSent } from './blocks/draftBook.ts'
 import { dropSend, type KeptSend, loadSends, sendsToRead } from './draftStorage.ts'
 import { showNotice } from './livePending.ts'
-import { readSendResult } from './liveSend.ts'
+import { readSendResult } from '../../lib/chatSend.ts'
 import { subscribeTranscripts, transcriptViews } from './liveTranscript.ts'
 
 /** How long to wait before reading a `pending` result again. */
@@ -38,7 +38,7 @@ const pendingReadMs = 1500
 const pendingReads = 5
 
 const maybeSent: ComposerNotice = { line: 'This message may have been sent', retry: false }
-/** The line of each result that did not reach the chat: the line a miss of that kind shows (liveSend.ts). */
+/** The line of each result that did not reach the chat: the line a miss of that kind shows (lib/chatSend.ts). */
 const notReached: Record<'notSent' | 'notSubmitted', ComposerNotice> = {
   notSent: { line: 'Not sent — chat not ready', retry: false },
   notSubmitted: { line: 'Not sent — the chat did not take the message', retry: true },
