@@ -2,8 +2,9 @@
 // `GET /api/projects` (the pinned projects first, then the others, each part
 // by name, as the server sorts them), `PUT /api/projects/:slug/pin` (the
 // card as it is now) and `GET /api/projects/:slug` (the project, with no
-// repositories or PRs) and `GET /api/projects/:slug/chats` (the test's chats
-// of the project, none by default). Every project, body and answer is checked against the
+// repositories, and the test's open PRs and unread repositories by slug) and
+// `GET /api/projects/:slug/chats` (the test's chats of the project, none by
+// default). Every project, body and answer is checked against the
 // contract, so a test cannot send or get what the server would not: a body the
 // contract refuses is 400 invalid-input, and an unknown slug is 404. The pins
 // live in the fake, as the server keeps them in a file, so a new page (a
@@ -44,9 +45,14 @@ const byPinThenName = (a: ProjectSummary, b: ProjectSummary) =>
 type FakeProjectsOptions = {
   /** Each project's chats by its slug, in the order the route gives them; each is checked against the contract. */
   readonly chats?: Readonly<Record<string, readonly unknown[]>>
+  /** Each project's Queue (open PRs and unread repositories) by its slug; none by default. */
+  readonly queues?: Readonly<Record<string, unknown>>
 }
 
-export function fakeProjectsServer(projects: readonly unknown[] = [], { chats = {} }: FakeProjectsOptions = {}) {
+export function fakeProjectsServer(
+  projects: readonly unknown[] = [],
+  { chats = {}, queues = {} }: FakeProjectsOptions = {},
+) {
   const chatsOf = new Map(Object.entries(chats).map(([slug, list]) => [slug, list.map((c) => ProjectChat.parse(c))]))
   const stored = new Map(
     projects.map((p) => {
@@ -73,7 +79,9 @@ export function fakeProjectsServer(projects: readonly unknown[] = [], { chats = 
     const project = stored.get(slug)
     if (project === undefined)
       return errorAnswer({ kind: 'not-found', path, message: 'no project has this slug', requestId: 'r-404' }, 404)
-    return json(ProjectDetailResponse.parse({ project, repositories: [], queue: { inProgress: [], unread: [] } }))
+    return json(
+      ProjectDetailResponse.parse({ project, repositories: [], queue: queues[slug] ?? { inProgress: [], unread: [] } }),
+    )
   }
 
   return {

@@ -3,11 +3,13 @@
 // the home. It keeps what the owner changes (the tab, the More drawer) for the
 // shown `?state=`, and Back to Projects opens the home. Quick chat works on the
 // live project only (liveQuickChat.ts): each send is a new start, Retry the last.
+// The Inbox panel loads again on each `inbox.changed` burst (no timer, NCC-138).
 import { getRouteApi } from '@tanstack/react-router'
 import { useEffect, useRef, useState } from 'react'
-import { useInboxBadge } from '../../lib/inboxFeed.ts'
+import { useInboxBadge, useInboxChanges } from '../../lib/inboxFeed.ts'
 import { navRoute } from '../../lib/navRoutes.ts'
 import { useVisibleNavPages } from '../../state/settingsStore.ts'
+import type { ProjectInbox } from './liveProjects.ts'
 import type { QuickChatAttempt } from './liveQuickChat.ts'
 import { ProjectsScreen } from './screens/ProjectsScreen.tsx'
 import type { ProjectsUi } from './types.ts'
@@ -23,7 +25,33 @@ export function ProjectPage() {
   const navigate = route.useNavigate()
   const [changed, setChanged] = useState<Changed>({ of: search.state, ui: {} })
   const ui = { ...state.ui, ...(changed.of === search.state ? changed.ui : {}) }
-  const railBadge = useInboxBadge(state.data.railBadge, state.data.live !== undefined)
+  const live = state.data.live !== undefined
+  const railBadge = useInboxBadge(state.data.railBadge, live)
+  // The Inbox panel's latest read after a change, for the loaded state it replaces.
+  const [inbox, setInbox] = useState<{ of: typeof state; read: ProjectInbox } | undefined>(undefined)
+  const readingRef = useRef<AbortController | undefined>(undefined)
+  const shown = inbox?.of === state ? inbox.read : undefined
+  useInboxChanges(
+    live && state.ui.open !== undefined,
+    () => {
+      const slug = state.ui.open
+      if (slug === undefined) return
+      readingRef.current?.abort()
+      const reading = (readingRef.current = new AbortController())
+      void import('./liveProjects.ts')
+        .then((m) => m.readProjectInbox(slug, reading.signal))
+        .then((read) => {
+          // A read after a change that missed keeps the rows shown; the loader's miss shows its line.
+          if (read.count !== undefined && !reading.signal.aborted) setInbox({ of: state, read })
+        })
+    },
+    shown?.count ?? railBadge,
+  )
+  useEffect(() => () => readingRef.current?.abort(), [])
+  const overview =
+    shown === undefined || state.data.overview === undefined
+      ? state.data.overview
+      : { ...state.data.overview, inbox: shown.inbox }
   const changeUi = (change: Partial<ProjectsUi>) => {
     setChanged((c) => ({ of: search.state, ui: { ...(c.of === search.state ? c.ui : {}), ...change } }))
   }
@@ -46,7 +74,7 @@ export function ProjectPage() {
     <ProjectsScreen
       settingsEntry
       navPages={navPages}
-      data={{ ...state.data, railBadge }}
+      data={{ ...state.data, railBadge, overview }}
       ui={ui}
       viewport="desktop"
       onNavigate={(page) => {

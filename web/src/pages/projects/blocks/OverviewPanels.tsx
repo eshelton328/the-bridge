@@ -97,6 +97,11 @@ export function OverviewPanels({ overview, words, layout, groupsOpen, onGroupOpe
         <>
           {group('needsYou', inbox.needsYou.length, rows(inbox.needsYou))}
           {group('toReview', inbox.toReview.length, rows(inbox.toReview))}
+          {inbox.notRead === undefined ? null : (
+            <p role="status" className={unreadLine}>
+              {inbox.notRead}
+            </p>
+          )}
         </>,
       )}
       {section(
