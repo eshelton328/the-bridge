@@ -201,6 +201,7 @@ export {
   InboxChangedEvent,
   LayoutChangedEvent,
   LiveEvent,
+  ProjectsChangedEvent,
   ToolkitChangedEvent,
   WorkspacesChangedEvent,
 } from './liveEvents.ts'

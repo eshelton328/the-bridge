@@ -112,16 +112,22 @@ from the outside world.
   all clients of `/api/events`, so with no client open (and no push
   subscription stored) no herdr stream is open. It sends `inbox.changed`
   after each `chat.status` and `workspaces.changed`, after each owner's mark (`inboxChanged`) and
-  on each change that the Inbox watch tells; it opens that watch with the
-  first client and closes it with the last (`liveEvents.test.ts`).
+  on each change that the Inbox watch tells, and `projects.changed` on each
+  change of the projects' watch; it opens both watches with the first
+  client and closes them with the last (`liveEvents.test.ts`).
 - `fileStore.ts` is the port of git's tracked files in a root; `files.ts` gives each an ID and reads text only from the index (`files.test.ts`).
 - `projects.ts` is the Projects app (f-008) and its ports: the brain's
   projects and idea records (read only), the pins, the open PRs of a
   GitHub repository, the layout check and the last drift run of each
   project. The pinned cards come first, each part by name; the PRs of a
-  project's repositories newest first; each repository's PRs are kept
-  30 s, and requests that cross share one run (`keptPulls`, a failed run
-  is not kept; `projectsPulls.test.ts`). A drift run keeps only the check's
+  project's repositories newest first; each repository's last PRs are
+  kept, and requests that cross share one run (`keptPulls`, a failed
+  first run is not kept). A read gets the kept answer at once, at any age;
+  one older than 30 s also starts one run in the background, and other PRs
+  from it call the `watch` listeners, so `/api/events` sends
+  `projects.changed` (NCC-156, `projectsPulls.test.ts`). A run that throws
+  is a failed one. A failed background run keeps the old answer at any
+  age, and the page cannot tell: while gh fails, a merged PR still shows. A drift run keeps only the check's
   lines about the project (`findingsFor`: a path in `projects/<slug>`,
   "project <slug>" or one of its repositories named alone), one check runs at a time, and a failed check is a
   `failed` run. One store change at a time (`projectDrift.test.ts`,

@@ -18,6 +18,8 @@ export type InboxFeed = {
    * list load), and the feed reads nothing itself. The result gives the reads back.
    */
   readonly follow: (onChange: () => void) => () => void
+  /** Each `projects.changed` of the feed's stream calls `onChange` (NCC-156); the result stops it. */
+  readonly followProjects: (onChange: () => void) => () => void
   /** The `counts.needsYou` of the list the Inbox page loaded. */
   readonly publish: (count: number) => void
   /**
@@ -74,6 +76,21 @@ export function useInboxChanges(live: boolean, onChange: () => void, count: numb
   useEffect(() => {
     if (live) publish?.(count)
   }, [publish, live, count])
+}
+
+/** A live project page's reads on each `projects.changed` of the app's feed; with no feed it reads none. */
+export function useProjectsChanges(live: boolean, onChange: () => void): void {
+  const followProjects = use(InboxFeedContext)?.followProjects
+  const changeRef = useRef(onChange)
+  useEffect(() => {
+    changeRef.current = onChange
+  })
+  useEffect(() => {
+    if (!readsLiveServer() || !live || followProjects === undefined) return undefined
+    return followProjects(() => {
+      changeRef.current()
+    })
+  }, [followProjects, live])
 }
 
 /**

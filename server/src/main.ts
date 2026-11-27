@@ -115,6 +115,7 @@ const server = serve(
       artifacts,
       inbox,
       watchInbox: watchBrainInbox(config.value.brainDir),
+      watchProjects: (onChange) => projects.watch(onChange),
       files: createFiles(createDiskFiles({ brainDir: config.value.brainDir, env: process.env })),
       projects,
     }).fetch,

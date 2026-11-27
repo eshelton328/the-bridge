@@ -7,9 +7,9 @@
 // The tab is in the address (`?tab=ideas`), so a reload and the browser's Back
 // keep it (R10).
 // Run check (R9) keeps its busy state here, as the server has none.
-import { getRouteApi } from '@tanstack/react-router'
+import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { useEffect, useRef, useState } from 'react'
-import { useInboxBadge, useInboxChanges } from '../../lib/inboxFeed.ts'
+import { useInboxBadge, useInboxChanges, useProjectsChanges } from '../../lib/inboxFeed.ts'
 import { navRoute } from '../../lib/navRoutes.ts'
 import { useVisibleNavPages } from '../../state/settingsStore.ts'
 import type { ProjectInbox } from './liveProjects.ts'
@@ -40,6 +40,9 @@ export function ProjectPage() {
   const [inbox, setInbox] = useState<{ of: typeof state; read: ProjectInbox } | undefined>(undefined)
   const readingRef = useRef<AbortController | undefined>(undefined)
   const shown = inbox?.of === state ? inbox.read : undefined
+  // The server's PR answer changed after a run behind a read (NCC-156): the loader reads the project again.
+  const router = useRouter()
+  useProjectsChanges(live && state.ui.open !== undefined, () => void router.invalidate())
   useInboxChanges(
     live && state.ui.open !== undefined,
     () => {

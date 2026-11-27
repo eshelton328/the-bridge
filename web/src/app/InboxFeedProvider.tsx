@@ -47,6 +47,7 @@ const settleMs = 100
 /** The feed's state that its stream, its reads and its hooks share; it lives as long as the provider. */
 type Hub = {
   followers: Set<() => void>
+  projectFollowers: Set<() => void>
   hosts: number
   /** The feed's own stream, while it is open, and how to open it (once the Inbox client loaded). */
   stop: (() => void) | undefined
@@ -62,6 +63,7 @@ type Hub = {
 
 const newHub = (): Hub => ({
   followers: new Set(),
+  projectFollowers: new Set(),
   hosts: 0,
   stop: undefined,
   open: () => undefined,
@@ -135,6 +137,9 @@ export function InboxFeedProvider({ children }: { children: ReactNode }) {
             onChange: () => {
               hub.changed()
             },
+            onProjects: () => {
+              for (const follower of [...hub.projectFollowers]) follower()
+            },
           })
       }
       const onVisibility = () => {
@@ -174,6 +179,13 @@ export function InboxFeedProvider({ children }: { children: ReactNode }) {
           queueMicrotask(() => {
             if (hub.followers.size === 0) hub.changed()
           })
+        }
+      },
+      followProjects: (onChange) => {
+        const hub = hubRef.current
+        hub.projectFollowers.add(onChange)
+        return () => {
+          hub.projectFollowers.delete(onChange)
         }
       },
       publish: (next) => {

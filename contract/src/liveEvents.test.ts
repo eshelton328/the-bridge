@@ -30,6 +30,11 @@ describe('live events', () => {
     expect(LiveEvent.safeParse({ ...layout, data: { workspace: 'w17' } }).success).toBe(false)
   })
 
+  it('parses projects.changed, which holds no data', () => {
+    const projects = { source: 'mac-mini/agents', seq: 6, type: 'projects.changed', data: {} }
+    expect(LiveEvent.parse(projects).type).toBe('projects.changed')
+  })
+
   it('refuses an unknown type, a status the app does not know and a chat ID without its machine', () => {
     expect(LiveEvent.safeParse({ ...changed, type: 'chat.entry' }).success).toBe(false)
     expect(LiveEvent.safeParse({ ...status, data: { ...status.data, status: 'blocked' } }).success).toBe(false)
