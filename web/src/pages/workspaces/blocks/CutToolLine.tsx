@@ -10,7 +10,7 @@ import { css } from '../../../../styled-system/css/index.js'
 
 // The wrapper holds the ref. It is a box, as the transcript's pin measures each entry's box (`usePinnedEnd`), and it
 // can shrink below the text, so a long line still truncates in the event line's grid.
-const wrap = css({ minW: '0' })
+const wrap = css({ minW: '[0]' })
 
 export type CutToolLineProps = {
   /** The tool, or an event's text. */
