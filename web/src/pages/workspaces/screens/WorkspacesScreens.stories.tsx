@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect } from 'storybook/test'
 import { ScreenVariants } from '../../../blocks/ScreenVariants.tsx'
-import { frameSizes, type Screen, screenStates } from '../../../lib/screenMap.ts'
+import { frameSizeOf, type Screen, screenStates } from '../../../lib/screenMap.ts'
 import { workspacesScreens } from '../states/screens.ts'
 
 // One story per Workspaces screen (screen review R10): its Desktop, Tablet
@@ -31,7 +31,7 @@ function screenStory(screen: Screen<string>): Story {
       for (const [i, { device, state }] of expected.entries()) {
         const story = state.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)
         await expect(frames[i]?.dataset.storyId).toBe(`pages-workspaces-states--${story}`)
-        await expect(frames[i]?.getAttribute('width')).toBe(String(frameSizes[device].width))
+        await expect(frames[i]?.getAttribute('width')).toBe(String(frameSizeOf(screen, device).width))
       }
       // The scaled frames and their gaps fit the row's width.
       const row = canvasElement.firstElementChild

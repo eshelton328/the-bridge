@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { type Screen, type ScreenMap, screenMapProblems, screenStates } from './screenMap.ts'
+import { frameSizeOf, frameSizes, type Screen, type ScreenMap, screenMapProblems, screenStates } from './screenMap.ts'
 
 const frame = (viewport: 'desktop' | 'tablet' | 'phone') => [{ id: 'X1', node: '1:1', viewport }] as const
 const states = {
@@ -65,5 +65,16 @@ describe('screenStates', () => {
       { device: 'desktop', state: 'list' },
       { device: 'phone', state: 'listPhone' },
     ])
+  })
+})
+
+describe('frameSizeOf', () => {
+  it('gives the landscape iPad only for the tablet of a screen that sets landscape', () => {
+    const wide = { title: 'Wide', landscape: true, tablet: 'wide' } as const
+    const plain = { title: 'Plain', tablet: 'plain' } as const
+    expect(frameSizeOf(wide, 'tablet')).toEqual({ width: 1133, height: 744 })
+    expect(frameSizeOf(plain, 'tablet')).toEqual(frameSizes.tablet)
+    expect(frameSizeOf(wide, 'desktop')).toEqual(frameSizes.desktop)
+    expect(frameSizeOf(wide, 'phone')).toEqual(frameSizes.phone)
   })
 })
