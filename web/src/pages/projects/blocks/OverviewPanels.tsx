@@ -17,6 +17,7 @@ import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
 import type { ProjectOverview, ProjectPageWords, ProjectsUi } from '../types.ts'
+import { ContextDrift } from './ContextDrift.tsx'
 
 // The frames' heading row is 32 high (44 on touch) with the title in its middle, 16 over the panel.
 // On the phone the tab list's 2 px padding, the tabs' 12 gap and a 6 top start the heading row 20 under
@@ -50,9 +51,11 @@ export type OverviewPanelsProps = {
   layout: Viewport
   groupsOpen: NonNullable<ProjectsUi['groupsOpen']>
   onGroupOpen?: ((group: Group, open: boolean) => void) | undefined
+  /** Context drift's Run check was pressed (R9). */
+  onRunDrift?: (() => void) | undefined
 }
 
-export function OverviewPanels({ overview, words, layout, groupsOpen, onGroupOpen }: OverviewPanelsProps) {
+export function OverviewPanels({ overview, words, layout, groupsOpen, onGroupOpen, onRunDrift }: OverviewPanelsProps) {
   const { inbox, queue } = overview
   const padding = layout === 'phone' ? 'phoneSides' : undefined
   const open = (group: Group) => groupsOpen[group] ?? group !== 'toReview'
@@ -125,6 +128,7 @@ export function OverviewPanels({ overview, words, layout, groupsOpen, onGroupOpe
           {queue.unread === undefined ? null : <p className={unreadLine}>{queue.unread}</p>}
         </>,
       )}
+      {overview.drift === undefined ? null : <ContextDrift drift={overview.drift} layout={layout} onRun={onRunDrift} />}
     </div>
   )
 }

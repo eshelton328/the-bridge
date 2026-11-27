@@ -4,8 +4,10 @@
 // card as it is now) and `GET /api/projects/:slug` (the project, with no
 // repositories, and the test's open PRs and unread repositories by slug) and
 // `GET /api/projects/:slug/chats` (the test's chats of the project, none by
-// default) and `GET /api/projects/:slug/ideas` (the test's ideas of the
-// project, none by default). Every project, body and answer is checked against the
+// default), `GET /api/projects/:slug/ideas` (the test's ideas of the
+// project, none by default), `GET /api/projects/:slug/drift` (the test's last
+// drift run, none by default) and `POST /api/projects/:slug/drift` (a clean run
+// now, kept as the last). Every project, body and answer is checked against the
 // contract, so a test cannot send or get what the server would not: a body the
 // contract refuses is 400 invalid-input, and an unknown slug is 404. The pins
 // live in the fake, as the server keeps them in a file, so a new page (a
@@ -13,6 +15,7 @@
 // test's answer, and `requests` records each one with its body. A test plugs
 // `handle` into its `fetch` stub.
 import {
+  DriftResponse,
   IdeaDetailResponse,
   IdeasResponse,
   PinProjectRequest,
@@ -21,11 +24,12 @@ import {
   ProjectDetailResponse,
   ProjectsResponse,
   ProjectSummary,
+  RunDriftRequest,
 } from '@bridge/contract'
 import { errorAnswer } from './fakeTranscriptServer.ts'
 
 /** A request kind the fake takes. */
-export type ProjectsCall = 'list' | 'pin' | 'detail' | 'chats' | 'ideas'
+export type ProjectsCall = 'list' | 'pin' | 'detail' | 'chats' | 'ideas' | 'drift' | 'runDrift'
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } })
@@ -52,11 +56,13 @@ type FakeProjectsOptions = {
   readonly queues?: Readonly<Record<string, unknown>>
   /** Each project's ideas (`{ idea, body }`) by its slug, in the list's order; each is checked against the contract. */
   readonly ideas?: Readonly<Record<string, readonly unknown[]>>
+  /** Each project's last drift run (`DriftRun`) by its slug; none (never checked) by default. */
+  readonly drift?: Readonly<Record<string, unknown>>
 }
 
 export function fakeProjectsServer(
   projects: readonly unknown[] = [],
-  { chats = {}, queues = {}, ideas = {} }: FakeProjectsOptions = {},
+  { chats = {}, queues = {}, ideas = {}, drift = {} }: FakeProjectsOptions = {},
 ) {
   const ideasOf = new Map(
     Object.entries(ideas).map(([slug, list]) => [slug, list.map((i) => IdeaDetailResponse.parse(i))]),
@@ -68,6 +74,7 @@ export function fakeProjectsServer(
       return [project.slug, project]
     }),
   )
+  const lastRun = new Map(Object.entries(drift).map(([slug, run]) => [slug, DriftResponse.parse({ last: run }).last]))
   const answers = new Map<ProjectsCall, () => Response | Promise<Response>>()
   const requests: { call: ProjectsCall; path: string; body: unknown }[] = []
   const shown = () => [...stored.values()].sort(byPinThenName)
@@ -92,6 +99,17 @@ export function fakeProjectsServer(
     )
   }
 
+  const driftAnswer = (call: 'drift' | 'runDrift', slug: string, path: string, init: RequestInit | undefined) => {
+    if (!stored.has(slug))
+      return errorAnswer({ kind: 'not-found', path, message: 'no project has this slug', requestId: 'r-404' }, 404)
+    if (call === 'runDrift') {
+      const body = RunDriftRequest.safeParse(bodyOf(init))
+      if (new Headers(init?.headers).get('content-type') !== 'application/json' || !body.success) return invalid()
+      lastRun.set(slug, { result: 'clean', checkedAt: new Date().toISOString(), findings: [] })
+    }
+    return json(DriftResponse.parse({ last: lastRun.get(slug) ?? null }))
+  }
+
   return {
     requests,
     /** The requests of `call` so far. */
@@ -109,6 +127,7 @@ export function fakeProjectsServer(
       const detailPath = /^\/api\/projects\/([^/]+)$/.exec(path)
       const chatsPath = /^\/api\/projects\/([^/]+)\/chats$/.exec(path)
       const ideasPath = /^\/api\/projects\/([^/]+)\/ideas$/.exec(path)
+      const driftPath = /^\/api\/projects\/([^/]+)\/drift$/.exec(path)
       const call: ProjectsCall | undefined =
         path === '/api/projects' && method === 'GET'
           ? 'list'
@@ -120,7 +139,11 @@ export function fakeProjectsServer(
                 ? 'chats'
                 : ideasPath !== null && method === 'GET'
                   ? 'ideas'
-                  : undefined
+                  : driftPath !== null && method === 'GET'
+                    ? 'drift'
+                    : driftPath !== null && method === 'POST'
+                      ? 'runDrift'
+                      : undefined
       if (call === undefined) return undefined
       requests.push({ call, path, body: bodyOf(init) })
       const next = answers.get(call)
@@ -130,6 +153,8 @@ export function fakeProjectsServer(
       }
       if (call === 'list') return json(ProjectsResponse.parse({ projects: shown() }))
       if (call === 'detail') return detail(decodeURIComponent(detailPath?.[1] ?? ''), path)
+      if (call === 'drift' || call === 'runDrift')
+        return driftAnswer(call, decodeURIComponent(driftPath?.[1] ?? ''), path, init)
       if (call === 'chats') {
         const slug = decodeURIComponent(chatsPath?.[1] ?? '')
         if (!stored.has(slug))

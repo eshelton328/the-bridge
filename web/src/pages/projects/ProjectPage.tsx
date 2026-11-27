@@ -6,6 +6,7 @@
 // The Inbox panel loads again on each `inbox.changed` burst (no timer, NCC-138).
 // The tab is in the address (`?tab=ideas`), so a reload and the browser's Back
 // keep it (R10).
+// Run check (R9) keeps its busy state here, as the server has none.
 import { getRouteApi } from '@tanstack/react-router'
 import { useEffect, useRef, useState } from 'react'
 import { useInboxBadge, useInboxChanges } from '../../lib/inboxFeed.ts'
@@ -14,7 +15,7 @@ import { useVisibleNavPages } from '../../state/settingsStore.ts'
 import type { ProjectInbox } from './liveProjects.ts'
 import type { QuickChatAttempt } from './liveQuickChat.ts'
 import { ProjectsScreen } from './screens/ProjectsScreen.tsx'
-import type { ProjectsUi } from './types.ts'
+import type { ProjectDrift, ProjectsUi } from './types.ts'
 
 const route = getRouteApi('/projects_/$slug')
 
@@ -60,6 +61,17 @@ export function ProjectPage() {
     shown === undefined || state.data.overview === undefined
       ? state.data.overview
       : { ...state.data.overview, inbox: shown.inbox }
+  // The Context drift panel after a Run check, for the loaded state it replaces.
+  const [drift, setDrift] = useState<{ of: typeof state; view: ProjectDrift } | undefined>(undefined)
+  const shownDrift = drift?.of === state ? drift.view : state.data.overview?.drift
+  const runDrift = async () => {
+    const slug = state.ui.open
+    if (slug === undefined || shownDrift === undefined || shownDrift.busy === true) return
+    const before = shownDrift
+    setDrift({ of: state, view: { ...before, busy: true, notRead: undefined } })
+    const result = await import('./liveProjects.ts').then((live) => live.runDrift(slug))
+    setDrift({ of: state, view: result.ok ? result.value : { ...before, busy: false, notRead: result.error } })
+  }
   const changeUi = (change: Partial<ProjectsUi>) => {
     setChanged((c) => ({ of: search.state, ui: { ...(c.of === search.state ? c.ui : {}), ...change } }))
   }
@@ -82,7 +94,7 @@ export function ProjectPage() {
     <ProjectsScreen
       settingsEntry
       navPages={navPages}
-      data={{ ...state.data, railBadge, overview }}
+      data={{ ...state.data, railBadge, overview: overview && { ...overview, drift: shownDrift } }}
       ui={ui}
       viewport="desktop"
       onNavigate={(page) => {
@@ -100,6 +112,7 @@ export function ProjectPage() {
           ? undefined
           : (text) => run({ project: slug, text, createId: crypto.randomUUID(), sendId: crypto.randomUUID() })
       }
+      onRunDrift={state.data.live === undefined ? undefined : () => void runDrift()}
       onQuickChatRetry={() => {
         if (attemptRef.current !== undefined) void run(attemptRef.current)
       }}

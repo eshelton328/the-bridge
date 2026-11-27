@@ -10,6 +10,7 @@
 // and the Inbox panel (R5) is the project's items of `GET /api/inbox`, read
 // with it and again on each `inbox.changed` (ProjectPage.tsx; NCC-138).
 // Its Ideas tab reads `GET /api/projects/:slug/ideas` only while it shows (R10).
+// The Context drift panel (R9) reads the last check with it; Run check is `runDrift`.
 //
 // A read or a pin that misses shows one short line by status ("Projects not
 // read — the server answered 500"), and a list that misses shows no projects,
@@ -17,6 +18,8 @@
 // `ProjectsMissError` with the step, kind and status, never a name. A reply the
 // contract refuses throws, for RouteError.
 import {
+  DriftResponse,
+  type DriftRun,
   ErrorBody,
   type ErrorKind,
   type Idea,
@@ -31,10 +34,12 @@ import { report } from '../../errors/reporter.ts'
 import { api } from '../../lib/api.ts'
 import { InboxMissError, readInboxList } from '../../lib/inboxClient.ts'
 import type { ScreenState } from '../../lib/screenState.ts'
-import type { IdeaRow, ProjectCard, ProjectOverview, ProjectsData, ProjectsUi } from './types.ts'
+import type { IdeaRow, ProjectCard, ProjectDrift, ProjectOverview, ProjectsData, ProjectsUi } from './types.ts'
 
 /** How long a read or a pin waits for the server, in ms, as the Artifacts reads do. */
 const projectsTimeoutMs = 8000
+/** How long Run check waits: more than the server's 60 s limit of a check, so a slow check is not a miss. */
+const driftRunTimeoutMs = 75_000
 
 /** A request that missed: its error kind (or `unreachable`, `timeout`, `status`) and the HTTP status, if one came. */
 type ProjectsMiss = {
@@ -42,7 +47,7 @@ type ProjectsMiss = {
   readonly status: number | undefined
 }
 
-type ProjectsStep = 'list' | 'pin' | 'detail' | 'ideas'
+type ProjectsStep = 'list' | 'pin' | 'detail' | 'ideas' | 'drift' | 'runDrift'
 
 /** A miss for report(): a stable name and, in its message, only the step, the kind and the status. */
 class ProjectsMissError extends Error {
@@ -71,12 +76,13 @@ const readJson = (text: string): unknown => {
 const timedOut = (signal: AbortSignal) =>
   signal.aborted && signal.reason instanceof DOMException && signal.reason.name === 'TimeoutError'
 
-/** Sends one request with `projectsTimeoutMs` and gives the body text of a 2xx; another abort throws. */
+/** Sends one request with `timeoutMs` and gives the body text of a 2xx; another abort throws. */
 async function send(
   call: (signal: AbortSignal) => Promise<Answer>,
   signal?: AbortSignal,
+  timeoutMs = projectsTimeoutMs,
 ): Promise<Result<string, ProjectsMiss>> {
-  const timeout = AbortSignal.timeout(projectsTimeoutMs)
+  const timeout = AbortSignal.timeout(timeoutMs)
   const both = signal === undefined ? timeout : AbortSignal.any([signal, timeout])
   try {
     const res = await call(both)
@@ -148,6 +154,47 @@ export async function readProjectInbox(slug: string, signal?: AbortSignal): Prom
   return { inbox: { needsYou, toReview }, count: answer.value.counts.needsYou }
 }
 
+/** The Context drift panel's words. */
+const driftWords = { title: 'Context drift', run: 'Run check', running: 'Checking…' } as const
+
+/** The panel of the last run (null before the first) at `now`. A failed run's code stays in the server's log. */
+function driftView(last: DriftRun | null, now: Date): ProjectDrift {
+  if (last === null) return { ...driftWords, checked: 'Not checked yet', findings: [] }
+  const fresh = now.getTime() - Date.parse(last.checkedAt) < 60_000
+  const checked = fresh ? 'Checked just now' : `Checked ${ageOf(last.checkedAt, now)} ago`
+  const findings = [...new Set(last.findings.map((f) => f.text))]
+  if (last.result === 'findings') return { ...driftWords, checked, findings }
+  const empty = last.result === 'clean' ? 'No drift found' : 'The check did not run'
+  return { ...driftWords, checked, findings, empty }
+}
+
+/** The Context drift panel (R9): project `slug`'s last check; on a miss no check and the miss's line. */
+async function readDrift(slug: string, signal?: AbortSignal): Promise<ProjectDrift> {
+  const answer = await send(
+    (init) => api.api.projects[':slug'].drift.$get({ param: { slug } }, { init: { signal: init } }),
+    signal,
+  )
+  if (!answer.ok) {
+    reportMiss('drift', answer.error)
+    return { ...driftWords, findings: [], notRead: missLine('Drift not read', answer.error) }
+  }
+  return driftView(DriftResponse.parse(readJson(answer.value)).last, new Date())
+}
+
+/** Runs the layout check of project `slug` (Run check, R9) and gives the panel of its run, or the miss's line. */
+export async function runDrift(slug: string): Promise<Result<ProjectDrift, string>> {
+  const sent = await send(
+    (signal) => api.api.projects[':slug'].drift.$post({ param: { slug }, json: {} }, { init: { signal } }),
+    undefined,
+    driftRunTimeoutMs,
+  )
+  if (!sent.ok) {
+    reportMiss('runDrift', sent.error)
+    return err(missLine('Check not run', sent.error))
+  }
+  return ok(driftView(DriftResponse.parse(readJson(sent.value)).last, new Date()))
+}
+
 const pullRow = (p: ProjectPull) => ({ title: p.title, meta: `${p.repository}#${String(p.number)}`, status: p.status })
 
 /** `state` with the server's projects in place of the sample ones, or with none and the miss's line. */
@@ -176,9 +223,10 @@ export async function withLiveProject(
   slug: string,
   { signal }: { readonly signal?: AbortSignal | undefined } = {},
 ): Promise<ProjectsState> {
-  const [answer, inbox] = await Promise.all([
+  const [answer, inbox, drift] = await Promise.all([
     send((init) => api.api.projects[':slug'].$get({ param: { slug } }, { init: { signal: init } }), signal),
     readProjectInbox(slug, signal),
+    readDrift(slug, signal),
   ])
   const ui = { ...state.ui, open: slug }
   if (!answer.ok) {
@@ -194,6 +242,7 @@ export async function withLiveProject(
       inProgress: queue.inProgress.map(pullRow),
       ...(queue.unread.length === 0 ? {} : { unread: `PRs not read: ${queue.unread.join(', ')}` }),
     },
+    drift,
   }
   return { ...state, ui, data: { ...state.data, projects: [projectCard(project)], live: {}, overview } }
 }

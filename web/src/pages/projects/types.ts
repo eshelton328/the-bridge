@@ -67,11 +67,29 @@ const PullRow = z.object({
   status: z.enum(['draft', 'ciFailed', 'ciRunning', 'inReview']),
 })
 
-/** A project's Overview panels (R5, R6); `unread` is the line of the repositories whose PRs were not read. */
+/** The Context drift panel (R9): when the check ran ("Checked 5m ago"), its findings or `empty`, and Run check. */
+export const ProjectDrift = z.object({
+  title: z.string(),
+  checked: z.string().optional(),
+  findings: z.array(z.string()),
+  /** The line in place of findings, such as "No drift found" or "The check did not run". */
+  empty: z.string().optional(),
+  run: z.string(),
+  running: z.string(),
+  /** A check runs: Run check is off and says `running`. */
+  busy: z.boolean().optional(),
+  /** The line of a read or a run that missed, such as "Drift not read — the server answered 500". */
+  notRead: z.string().optional(),
+})
+export type ProjectDrift = z.infer<typeof ProjectDrift>
+
+/** A project's Overview panels (R5, R6, R9); `unread` is the line of the repositories whose PRs were not read. */
 export const ProjectOverview = z.object({
   /** `notRead` is the line of an Inbox read that missed, such as "Inbox not read — the server answered 500". */
   inbox: z.object({ needsYou: z.array(InboxRow), toReview: z.array(InboxRow), notRead: z.string().optional() }),
   queue: z.object({ inProgress: z.array(PullRow), unread: z.string().optional() }),
+  /** The Context drift panel; none on the overview states, which no frame of it has yet. */
+  drift: ProjectDrift.optional(),
 })
 export type ProjectOverview = z.infer<typeof ProjectOverview>
 

@@ -62,6 +62,11 @@ T10b, M10 for the home, D01, T01, T01b, M01 for a project's page), read with
     reads none. A list that misses shows one line ("Ideas not read — the
     server answered 500"). `app/ProjectIdeasLive.test.tsx` checks it at
     1440, 1024 and 390 px with the fake.
+  - The same read fills the Context drift panel (R9) from
+    `GET /api/projects/:slug/drift`. Run check's POST answers when the check
+    ends (at most 60 s), so it waits 75 s; the server keeps no busy state, so
+    `ProjectPage.tsx` keeps Run check off until the answer. A miss shows one
+    line and keeps the last check (`app/ProjectDrift.test.tsx`).
   - report() gets only a miss the server answered, as `ProjectsMissError`
     with its step, kind and status, never a name.
 - The home's route test is `app/ProjectsHome.test.tsx` (every menu closed
