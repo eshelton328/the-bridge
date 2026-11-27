@@ -1,8 +1,7 @@
-// The worktree count of a repository (f-008 increment two, R2's caption):
-// the folders under `<chat root>/projects/<slug>/<repo>-worktrees` that hold
-// a `.git` entry, at most 8 levels down, as a branch name with "/" nests its
-// worktree; a deeper folder with no worktree yet makes the count a fault. A symlink is never followed, and the folder's real path must be
-// in the chat root. A missing folder is 0; a fault is its errno code only.
+// The worktree count of a repository (f-008 increment two): the folders under
+// `<chat root>/projects/<slug>/<repo>-worktrees` with a `.git` entry, 8 levels
+// down at most (a branch with "/" nests). No symlink is followed and the real
+// path stays in the chat root; a missing folder is 0, a fault its code only.
 import type { Dirent } from 'node:fs'
 import { readdir, realpath } from 'node:fs/promises'
 import { isAbsolute, join, relative } from 'node:path'

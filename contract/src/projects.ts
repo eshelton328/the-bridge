@@ -104,10 +104,7 @@ export const RepositoryRelease = z.strictObject({
 })
 export type RepositoryRelease = z.infer<typeof RepositoryRelease>
 
-/**
- * A part of a repository's section that the server could not read now (R8): `about` is the visibility and the
- * release, `pulls` the open PR count and `worktrees` the worktree count.
- */
+/** A part of a section not read now (R8): `about` (visibility, release), `pulls` or `worktrees`. */
 export const RepositoryPart = z.enum(['about', 'pulls', 'worktrees'])
 export type RepositoryPart = z.infer<typeof RepositoryPart>
 

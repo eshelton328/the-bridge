@@ -101,9 +101,8 @@ type Deps = {
   readonly pulls: PullSource
   readonly check: LayoutCheck
   readonly drift: DriftStore
-  /** GitHub's facts of each repository; with none, each is a part not read. */
+  /** GitHub's facts and the worktree counts; with none, that part is not read. */
   readonly facts?: RepositoryFacts
-  /** The worktree counts; with none, each is a part not read. */
   readonly worktrees?: WorktreeCount
   /** The chats and their tags; none (each chats read fails) where an app has no agents to give. */
   readonly agents?: Pick<AgentPort, 'listWorkspaces' | 'chatTags'>
