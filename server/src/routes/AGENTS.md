@@ -215,6 +215,10 @@ Thin Hono sub-apps, one file for each area, named after the area
   `GET /:slug/repositories/:repo/ci` its kept CI numbers at once, with
   `readAt` and `reading` (the code of a failed GitHub read at warn, each
   part's time at debug; 404 for a repository the project lacks),
+  `GET` and `POST /:slug/repositories/:repo/drift` (`{}`) the last
+  `agents-md` check of one repository and a new run: 200, `failed` when a
+  sync or the check did not run (its code goes to the log at warn), 404
+  for a repository ID the project does not list,
   `GET /:slug/chats` the chats whose pane is
   tagged `project=<slug>` (R7, d-120), and `POST /:slug/drift` (`{}`) runs it
   again: 200 with the run, `failed` when the check did not run (its code

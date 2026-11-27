@@ -15,6 +15,7 @@ import {
   type ProjectRepository,
   ProjectSlug,
   RepositoryCi,
+  RepositoryDriftRun,
   RepositoryId,
 } from '@bridge/contract'
 import { err, ok, type Result } from '@bridge/shared'
@@ -27,6 +28,8 @@ import type {
   PinStore,
   ProjectFault,
   ProjectRecord,
+  RepositoryDriftRuns,
+  RepositoryDriftStore,
 } from '../services/projects.ts'
 import type { CiStore, KeptCi } from '../services/repositoryCi.ts'
 import { unquote } from './diskInbox.ts'
@@ -245,4 +248,12 @@ export function createDiskCiStore(root: string): CiStore {
       }
     },
   }
+}
+
+const StoredRepositoryRuns = z.record(ProjectSlug, z.record(RepositoryId, RepositoryDriftRun))
+
+/** The last drift run of each repository, by project slug and repository ID, in `repository-drift.json`. */
+export function createDiskRepositoryDriftStore(root: string): RepositoryDriftStore {
+  const file = jsonFile<RepositoryDriftRuns>(root, 'repository-drift.json', StoredRepositoryRuns, {})
+  return { load: () => file.load(), save: (runs) => file.save(runs) }
 }

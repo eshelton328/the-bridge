@@ -16,6 +16,7 @@ import {
   ProjectsResponse,
   RepositoriesResponse,
   RepositoryCiResponse,
+  RepositoryDriftResponse,
   RepositoryId,
   RunDriftRequest,
 } from '@bridge/contract'
@@ -37,6 +38,7 @@ export function projectsRoutes(projects: Projects, log: Logger) {
   const noRepository = (c: Context<AppEnv>) =>
     errorJson(c, 'not-found', { path: c.req.path, message: 'no project has a repository with this name' })
   const slugOf = (c: Context<AppEnv>) => ProjectSlug.safeParse(c.req.param('slug'))
+  const repositoryOf = (c: Context<AppEnv>) => RepositoryId.safeParse(c.req.param('repo'))
 
   return new Hono<AppEnv>()
     .get('/', async (c) => {
@@ -122,5 +124,26 @@ export function projectsRoutes(projects: Projects, log: Logger) {
       if (run.value.code !== null)
         log.warn('drift check failed', { requestId: c.get('requestId'), code: run.value.code })
       return c.json(DriftResponse.parse(run.value.drift), 200)
+    })
+    .get('/:slug/repositories/:repo/drift', async (c) => {
+      const slug = slugOf(c)
+      const repository = repositoryOf(c)
+      if (!slug.success || !repository.success) return noRepository(c)
+      const drift = await projects.repositoryDrift(slug.data, repository.data)
+      if (!drift.ok) return failed(c, drift.error)
+      if (drift.value === 'notFound') return noRepository(c)
+      return c.json(RepositoryDriftResponse.parse(drift.value), 200)
+    })
+    .post('/:slug/repositories/:repo/drift', smallJson, jsonOnly, jsonBody(RunDriftRequest), async (c) => {
+      const slug = slugOf(c)
+      const repository = repositoryOf(c)
+      if (!slug.success || !repository.success) return noRepository(c)
+      const run = await projects.runRepositoryDrift(slug.data, repository.data)
+      if (!run.ok) return failed(c, run.error)
+      if (run.value === 'notFound') return noRepository(c)
+      // A sync or a check that failed is a `failed` run the page shows; its code goes to the log only.
+      if (run.value.code !== null)
+        log.warn('drift check failed', { requestId: c.get('requestId'), code: run.value.code })
+      return c.json(RepositoryDriftResponse.parse(run.value.drift), 200)
     })
 }

@@ -16,10 +16,16 @@ import {
   ProjectsResponse,
   RepositoriesResponse,
   RepositoryCiResponse,
+  RepositoryDriftResponse,
 } from '@bridge/contract'
 import { err, ok } from '@bridge/shared'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { createBrainProjects, createDiskDriftStore, createDiskPins } from '../adapters/diskProjects.ts'
+import {
+  createBrainProjects,
+  createDiskDriftStore,
+  createDiskPins,
+  createDiskRepositoryDriftStore,
+} from '../adapters/diskProjects.ts'
 import { createFakeAgents } from '../adapters/fakeAgents.ts'
 import { createDiskWorktrees } from '../adapters/diskWorktrees.ts'
 import { createGhPulls } from '../adapters/ghPulls.ts'
@@ -27,7 +33,7 @@ import { createGhRepositoryFacts } from '../adapters/ghRepos.ts'
 import { createNccCheck } from '../adapters/projectDrift.ts'
 import { createApp } from '../app.ts'
 import { memoryLogger } from '../logger.ts'
-import { createProjects } from '../services/projects.ts'
+import { createProjects, type RepositoryCheck, type SnapshotSource } from '../services/projects.ts'
 import type { CiSource, CiStore, KeptCi } from '../services/repositoryCi.ts'
 
 const local = { Host: '127.0.0.1:5181' }
@@ -137,7 +143,12 @@ beforeEach(async () => {
 afterEach(() => rm(dir, { recursive: true, force: true }))
 
 /** An app on the fixture brain; a second call is a new server process on the same data folder. */
-function server(ci?: CiSource, ciStore?: CiStore, brainSource = createBrainProjects(brain)) {
+function server(
+  ci?: CiSource,
+  ciStore?: CiStore,
+  brainSource = createBrainProjects(brain),
+  repositoryDrift?: { snapshots: SnapshotSource; check: RepositoryCheck },
+) {
   const logger = memoryLogger()
   const agents = createFakeAgents(MachineId.parse('test-mac'))
   const projects = createProjects({
@@ -155,10 +166,46 @@ function server(ci?: CiSource, ciStore?: CiStore, brainSource = createBrainProje
       if (event.kind === 'failed') logger.log.warn('ci read failed', { code: event.code })
       else logger.log.debug('ci read timed', { part: event.part, ms: event.ms })
     },
+    ...(repositoryDrift === undefined
+      ? {}
+      : { repositoryDrift: { ...repositoryDrift, store: createDiskRepositoryDriftStore(data) } }),
     now: () => new Date('2026-11-22T09:00:00.000Z'),
   })
   const app = createApp({ agents, owner: 'owner@example.com', log: logger.log, projects })
   return { app, logger, agents, projects }
+}
+
+const commit = 'c'.repeat(40)
+
+/**
+ * A snapshot source and a check that count their calls and say how many run at once; the check gives `answer`,
+ * after `gate` when one is given.
+ */
+function fakeDrift(answer: Awaited<ReturnType<RepositoryCheck['run']>>, gate?: Promise<void>) {
+  const seen = { syncs: 0, checks: 0, active: 0, most: 0 }
+  const enter = () => {
+    seen.active += 1
+    seen.most = Math.max(seen.most, seen.active)
+  }
+  const snapshots: SnapshotSource = {
+    async sync() {
+      enter()
+      seen.syncs += 1
+      await Promise.resolve()
+      seen.active -= 1
+      return { ok: true, value: { dir: '/snapshots/example-repo', commit } }
+    },
+  }
+  const check: RepositoryCheck = {
+    async run() {
+      enter()
+      seen.checks += 1
+      await gate
+      seen.active -= 1
+      return answer
+    },
+  }
+  return { seen, source: { snapshots, check } }
 }
 
 const read = async (app: ReturnType<typeof server>['app'], path: string) => app.request(path, { headers: local })
@@ -663,5 +710,86 @@ describe('/api/projects/:slug/repositories/:repo/ci', () => {
     const res = await read(app, '/api/projects/example-project/repositories/no-repo/ci')
     expect(ErrorBody.parse(await res.json()).error.kind).toBe('not-found')
     expect((await read(app, '/api/projects/no-such-project/repositories/example-repo/ci')).status).toBe(404)
+  })
+})
+
+describe('/api/projects/:slug/repositories/:repo/drift', () => {
+  const driftServer = (drift: { snapshots: SnapshotSource; check: RepositoryCheck }) =>
+    server(undefined, undefined, undefined, drift)
+  const post = (app: ReturnType<typeof server>['app'], repo = 'example-repo') =>
+    app.request(`/api/projects/example-project/repositories/${repo}/drift`, {
+      method: 'POST',
+      headers: json,
+      body: '{}',
+    })
+  const finding = { kind: 'over-budget' as const, path: 'web/AGENTS.md', detail: '(62 > 60 lines)' }
+
+  it("gives null before the first run, then the run with the snapshot's commit, kept over a restart", async () => {
+    const fake = fakeDrift({ ok: true, value: { findings: [finding], total: 1 } })
+    const { app } = driftServer(fake.source)
+    const path = '/api/projects/example-project/repositories/example-repo/drift'
+    expect(RepositoryDriftResponse.parse(await (await read(app, path)).json())).toEqual({ last: null })
+    const ran = await post(app)
+    expect(ran.status).toBe(200)
+    const last = {
+      result: 'findings',
+      checkedAt: '2026-11-22T09:00:00.000Z',
+      commit,
+      findings: [finding],
+      total: 1,
+    }
+    expect(RepositoryDriftResponse.parse(await ran.json())).toEqual({ last })
+    expect(RepositoryDriftResponse.parse(await (await read(driftServer(fake.source).app, path)).json())).toEqual({
+      last,
+    })
+  })
+
+  it('runs one sync and one check for requests that cross, never a sync while a check reads', async () => {
+    let open: () => void = () => undefined
+    const gate = new Promise<void>((resolve) => {
+      open = resolve
+    })
+    const fake = fakeDrift({ ok: true, value: { findings: [], total: 0 } }, gate)
+    const { app } = driftServer(fake.source)
+    const runs = [post(app), post(app), post(app)]
+    await new Promise((resolve) => setTimeout(resolve, 20))
+    open()
+    const bodies = await Promise.all(runs.map(async (r) => RepositoryDriftResponse.parse(await (await r).json())))
+    expect(bodies.map((b) => b.last?.result)).toEqual(['clean', 'clean', 'clean'])
+    expect(fake.seen).toMatchObject({ syncs: 1, checks: 1, most: 1 })
+  })
+
+  it('is a failed run with the code in the warn log for a sync fault, a new kind and a repository off GitHub', async () => {
+    const snapshotFault: SnapshotSource = {
+      sync: () => Promise.resolve({ ok: false, error: { reason: 'failed', code: 'exit-128' } }),
+    }
+    const newKind = fakeDrift({ ok: false, error: { reason: 'failed', code: 'unknown-kind' } })
+    for (const [source, repo, code] of [
+      [{ snapshots: snapshotFault, check: newKind.source.check }, 'example-repo', 'exit-128'],
+      [newKind.source, 'example-repo', 'unknown-kind'],
+      [newKind.source, 'local-repo', 'no-github'],
+    ] as const) {
+      const { app, logger } = driftServer(source)
+      const ran = await post(app, repo)
+      expect([code, ran.status]).toEqual([code, 200])
+      const { last } = RepositoryDriftResponse.parse(await ran.json())
+      expect(last).toMatchObject({ result: 'failed', findings: [], total: 0 })
+      expect(last?.commit).toBe(code === 'unknown-kind' ? commit : null)
+      expect(logger.lines()).toContainEqual(expect.objectContaining({ msg: 'drift check failed', code }))
+    }
+  })
+
+  it('answers 404 for a repository the project does not list, a bad ID and a project with no project.yaml', async () => {
+    const { app } = driftServer(fakeDrift({ ok: true, value: { findings: [], total: 0 } }).source)
+    for (const path of [
+      '/api/projects/example-project/repositories/other-repo/drift',
+      '/api/projects/example-project/repositories/..%2Fx/drift',
+      '/api/projects/no-yaml/repositories/example-repo/drift',
+    ]) {
+      const response = await read(app, path)
+      expect([path, response.status]).toEqual([path, 404])
+      expect(ErrorBody.parse(await response.json()).error.kind).toBe('not-found')
+    }
+    expect((await post(app, 'other-repo')).status).toBe(404)
   })
 })

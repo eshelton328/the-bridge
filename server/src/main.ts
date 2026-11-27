@@ -16,7 +16,10 @@ import {
   createDiskCiStore,
   createDiskDriftStore,
   createDiskPins,
+  createDiskRepositoryDriftStore,
 } from './adapters/diskProjects.ts'
+import { createAgentsMdCheck } from './adapters/agentsMdCheck.ts'
+import { createGitSnapshots } from './adapters/gitSnapshots.ts'
 import { createDiskWorktrees } from './adapters/diskWorktrees.ts'
 import { createGhCi } from './adapters/ghCi.ts'
 import { createGhPulls } from './adapters/ghPulls.ts'
@@ -117,6 +120,11 @@ const projects = createProjects({
   ciLog: (event) => {
     if (event.kind === 'failed') log.warn('ci read failed', { code: event.code })
     else log.debug('ci read timed', { part: event.part, ms: event.ms })
+  },
+  repositoryDrift: {
+    snapshots: createGitSnapshots({ command: 'git', root: join(dirname(dbFile), 'snapshots'), env: process.env }),
+    check: createAgentsMdCheck({ python: 'python3', brainDir: config.value.brainDir, env: process.env }),
+    store: createDiskRepositoryDriftStore(projectsRoot),
   },
   worktrees: createDiskWorktrees(config.value.chatRoot),
   agents,
