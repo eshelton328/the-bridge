@@ -1,0 +1,66 @@
+{
+  "frameId": "T01b",
+  "inputs": "3149b407d537ffc72edf81d800e43dbe44b71a1191c8d16dd0a96aca82f20f1b",
+  "library": "1.0.0-beta.135",
+  "recordSha256": "c4085d81487d1362ea07572164603a8984fc497f1b3a85daff61a04c69f0d2ff",
+  "record": {
+    "verdict": "match",
+    "viewport": "1133x1620 iPad landscape, dark mode",
+    "inputs": {
+      "layout": "separate",
+      "reference": "references/projects/T01b/frame.png",
+      "render": "reports/fidelity/projects/T01b.render.png",
+      "reference_side": null
+    },
+    "summary": "Apart from the six accepted deviations, the render matches the reference. Each deviation shows exactly as described.",
+    "findings": [],
+    "accepted_deviations": [
+      {
+        "id": "A1",
+        "as_given": "Panels: the render has no Inbox, Queue, Context drift or Chats panel under the tabs; the page is empty below the tabs. Those panels are built in later issues.",
+        "status": "as-described",
+        "finding": null,
+        "note": "The render has only the starfield background from below the tabs (y about 210) down to the tab bar at y 1543. There are no stray parts of the panels: no headings, borders or Run check button."
+      },
+      {
+        "id": "A2",
+        "as_given": "Tabs: the render's tab row shows Overview and Ideas, where the reference shows Overview, Repositories, Architecture and QA. Only the tabs of shipped increments show.",
+        "status": "as-described",
+        "finding": null,
+        "note": "Overview is selected and has the same box as in the reference (x 34-143, y 174-210). Ideas has a lightbulb icon and sits right after it in the muted tab style."
+      },
+      {
+        "id": "A3",
+        "as_given": "Quick chat shows as the reference draws it and does nothing yet.",
+        "status": "as-described",
+        "finding": null,
+        "note": "The button has the same cyan fill, icon, label, width (x 975-1101) and height (36 px) as in the reference, and it shows no extra state. A static image cannot show its behaviour."
+      },
+      {
+        "id": "A4",
+        "as_given": "Owner's name: the purpose starts \"The owner's personal workspace\", where the reference has a person's name. A secret-scan rule keeps the name out of the code.",
+        "status": "as-described",
+        "finding": null,
+        "note": "The longer opening makes the line end at about x 1007 instead of x 965. The text still fits on one line and nothing is cut off."
+      },
+      {
+        "id": "A5",
+        "as_given": "Top: the back row with Quick chat, the picture, the name and the purpose sit 4 px higher than in the reference (the design's 28 px top has no spacing token). The tabs are where the reference draws them.",
+        "status": "as-described",
+        "finding": null,
+        "note": "Measured shifts: Projects back link y 45 to 41, Quick chat top y 28 to 24, picture tile y 80-144 to 76-140, name and purpose up about 3-4 px. The tab row stays at y 174-210 in both images."
+      },
+      {
+        "id": "A6",
+        "as_given": "Tab bar: the bottom tab bar is the app's shared one in its default order: Home, Inbox, Workspaces, Projects, Artifacts and More. The reference draws Inbox, Workspaces, Projects and More.",
+        "status": "as-described",
+        "finding": null,
+        "note": "The bar's top edge is at y 1543 in both images, and its height and background match. The six items are centred and Projects is highlighted in cyan, as in the reference."
+      }
+    ],
+    "limits": [
+      "The full images were viewed scaled down. Differences under about 2 px were checked only inside the given crops (top-left, top-right and the bottom strip).",
+      "Quick chat's behaviour and any hover or press states cannot be checked from static images."
+    ]
+  }
+}

@@ -3,7 +3,7 @@
 The Projects app's home (f-008 increment one, d-133): one card per brain
 project, the pinned ones first; and a project's page (`/projects/<slug>`,
 R4). Its frames are PNG references in `references/projects/` (D10, T10,
-T10b, M10 for the home, D01 for a project's page), read with
+T10b, M10 for the home, D01, T01, T01b for a project's page), read with
 [../AGENTS.md](../AGENTS.md) and `references/AGENTS.md`.
 
 ## Rules

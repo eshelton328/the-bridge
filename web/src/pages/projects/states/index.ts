@@ -5,6 +5,8 @@ import { projectsTablet } from './projectsTablet.ts'
 import { projectsTabletWide } from './projectsTabletWide.ts'
 import { projectsPhone } from './projectsPhone.ts'
 import { projectOverview } from './projectOverview.ts'
+import { projectOverviewTablet } from './projectOverviewTablet.ts'
+import { projectOverviewTabletWide } from './projectOverviewTabletWide.ts'
 
 export const projectsStates = {
   menuOpen,
@@ -12,4 +14,6 @@ export const projectsStates = {
   projectsTabletWide,
   projectsPhone,
   projectOverview,
+  projectOverviewTablet,
+  projectOverviewTabletWide,
 }

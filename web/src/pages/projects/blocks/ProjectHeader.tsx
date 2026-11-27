@@ -7,10 +7,15 @@ import type { Viewport } from '../../../lib/screenState.ts'
 import type { ProjectCard, ProjectPageWords } from '../types.ts'
 import { ProjectTile } from './ProjectTile.tsx'
 
-// The picture's top meets the name's line on a desktop or tablet (D01, T01); on a phone it sits at the middle of
-// the name and the purpose (M01).
+// The picture's top meets the name's line on a desktop (D01). On a tablet
+// or a phone it sits at the middle of the name and the purpose (T01, T01b),
+// 16 from them.
 const titleStyle = css.raw({ display: 'flex', alignItems: 'flex-start', gap: '16', pt: '16' })
-const title = { wide: css(titleStyle), phone: css(titleStyle, { alignItems: 'center' }) }
+const title = {
+  desktop: css(titleStyle),
+  tablet: css(titleStyle, { alignItems: 'center' }),
+  phone: css(titleStyle, { alignItems: 'center' }),
+} as const satisfies Record<Viewport, string>
 const name = css({ textStyle: 'heading', color: 'fg.default' })
 const purpose = css({ textStyle: 'body', color: 'fg.muted' })
 
@@ -33,7 +38,7 @@ export function ProjectHeader({ project, words, layout, onBack, onQuickChat }: P
           </Button>
         </span>
       </BackRow>
-      <div className={layout === 'phone' ? title.phone : title.wide}>
+      <div className={title[layout]}>
         <ProjectTile name={project.name} icon={project.icon} size="picture" />
         <div>
           <h1 className={name}>{project.name}</h1>
