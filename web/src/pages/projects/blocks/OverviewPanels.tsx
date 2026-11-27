@@ -18,6 +18,7 @@ import { css } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
 import type { ProjectOverview, ProjectPageWords, ProjectsUi } from '../types.ts'
 import { ContextDrift } from './ContextDrift.tsx'
+import { ChatsPanel } from './ChatsPanel.tsx'
 
 // The frames' heading row is 32 high (44 on touch) with the title in its middle, 16 over the panel.
 // On the phone the tab list's 2 px padding, the tabs' 12 gap and a 6 top start the heading row 20 under
@@ -53,9 +54,11 @@ export type OverviewPanelsProps = {
   onGroupOpen?: ((group: Group, open: boolean) => void) | undefined
   /** Context drift's Run check was pressed (R9). */
   onRunDrift?: (() => void) | undefined
+  onChatOpen?: ((id: string) => void) | undefined
 }
 
-export function OverviewPanels({ overview, words, layout, groupsOpen, onGroupOpen, onRunDrift }: OverviewPanelsProps) {
+export function OverviewPanels(props: OverviewPanelsProps) {
+  const { overview, words, layout, groupsOpen, onGroupOpen, onRunDrift, onChatOpen } = props
   const { inbox, queue } = overview
   const padding = layout === 'phone' ? 'phoneSides' : undefined
   const open = (group: Group) => groupsOpen[group] ?? group !== 'toReview'
@@ -129,6 +132,9 @@ export function OverviewPanels({ overview, words, layout, groupsOpen, onGroupOpe
         </>,
       )}
       {overview.drift === undefined ? null : <ContextDrift drift={overview.drift} layout={layout} onRun={onRunDrift} />}
+      {overview.chats === undefined ? null : (
+        <ChatsPanel chats={overview.chats} words={words.chats} layout={layout} onChatOpen={onChatOpen} />
+      )}
     </div>
   )
 }

@@ -1,4 +1,5 @@
 // The Projects page's view models, display-ready, each from its Zod schema.
+import { ChatStatus } from '@bridge/contract'
 import { z } from 'zod'
 
 /** One card of the Projects home (R2): the project's tile, name and purpose, and whether the owner pinned it (R3). */
@@ -46,6 +47,8 @@ export const ProjectPageWords = z.object({
   noIdeas: z.string(),
   ideaKinds: z.record(z.enum(['idea', 'proposal', 'audit']), z.string()),
   ideaStates: z.record(z.enum(['open', 'in-design', 'needs-you', 'decided', 'parked']), z.string()),
+  /** The Chats panel (R7): its heading, the line with no chat and each status's pill word, as Workspaces words it. */
+  chats: z.object({ title: z.string(), none: z.string(), statuses: z.record(ChatStatus, z.string()) }),
 })
 export type ProjectPageWords = z.infer<typeof ProjectPageWords>
 
@@ -66,6 +69,8 @@ const PullRow = z.object({
   meta: z.string(),
   status: z.enum(['draft', 'ciFailed', 'ciRunning', 'inReview']),
 })
+/** A chat of the Chats panel (R7): a herdr chat tagged with the project, its workspace's label and its status. */
+const ChatRow = z.object({ id: z.string(), title: z.string(), workspace: z.string(), status: ChatStatus })
 
 /** The Context drift panel (R9): when the check ran ("Checked 5m ago"), its findings or `empty`, and Run check. */
 export const ProjectDrift = z.object({
@@ -90,6 +95,8 @@ export const ProjectOverview = z.object({
   queue: z.object({ inProgress: z.array(PullRow), unread: z.string().optional() }),
   /** The Context drift panel; none on the overview states, which no frame of it has yet. */
   drift: ProjectDrift.optional(),
+  /** The Chats panel (R7), from the live page only; `notRead` is the line of a read that missed. */
+  chats: z.object({ rows: z.array(ChatRow), notRead: z.string().optional() }).optional(),
 })
 export type ProjectOverview = z.infer<typeof ProjectOverview>
 

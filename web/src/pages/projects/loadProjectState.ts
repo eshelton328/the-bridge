@@ -46,7 +46,7 @@ export function loadProjectState(
   if (readsLiveServer() && read.value.live)
     return import('./liveProjects.ts')
       .then(async (live) => {
-        const project = await live.withLiveProject(read.value.state, slug, { signal })
+        const project = await live.withLiveProject(read.value.state, slug, { signal, chats: view.tab !== 'ideas' })
         if (view.tab !== 'ideas' || project.data.projects.length === 0) return project
         const tab: ProjectTab = 'ideas'
         const shownTab = { ...project, ui: { ...project.ui, tab } }

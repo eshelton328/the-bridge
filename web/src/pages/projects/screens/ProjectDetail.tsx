@@ -30,18 +30,11 @@ export type ProjectDetailProps = {
   onBack?: (() => void) | undefined
   onQuickChat?: (() => void) | undefined
   onRunDrift?: (() => void) | undefined
+  onChatOpen?: ((id: string) => void) | undefined
 }
 
-export function ProjectDetail({
-  project,
-  data,
-  ui,
-  layout,
-  onUiChange,
-  onBack,
-  onQuickChat,
-  onRunDrift,
-}: ProjectDetailProps) {
+export function ProjectDetail(props: ProjectDetailProps) {
+  const { project, data, ui, layout, onUiChange, onBack, onQuickChat, onRunDrift, onChatOpen } = props
   const words = data.page
   // The panels are the Overview tab's content, so its tab controls them; the tabs' 12 gap and the panels' own
   // top (12, or 6 on a phone) keep them 24 (18) under the tabs.
@@ -54,6 +47,7 @@ export function ProjectDetail({
         groupsOpen={ui.groupsOpen ?? {}}
         onGroupOpen={(group, open) => onUiChange?.({ groupsOpen: { ...ui.groupsOpen, [group]: open } })}
         onRunDrift={onRunDrift}
+        onChatOpen={onChatOpen}
       />
     ) : null
   const ideas = data.ideas === undefined ? null : <IdeasList ideas={data.ideas} words={words} layout={layout} />

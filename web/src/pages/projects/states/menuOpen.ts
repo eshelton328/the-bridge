@@ -44,6 +44,11 @@ export const menuOpen = {
         decided: 'Decided',
         parked: 'Parked',
       },
+      chats: {
+        title: 'Chats',
+        none: 'No chats tagged with this project',
+        statuses: { working: 'Working', needsYou: 'Needs you', idle: 'Idle', done: 'Done', unknown: 'Unknown' },
+      },
     },
     projects: [
       {

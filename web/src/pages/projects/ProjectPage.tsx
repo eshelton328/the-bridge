@@ -3,7 +3,8 @@
 // the home. It keeps what the owner changes (the tab, the More drawer) for the
 // shown `?state=`, and Back to Projects opens the home. Quick chat works on the
 // live project only (liveQuickChat.ts): each send is a new start, Retry the last.
-// The Inbox panel loads again on each `inbox.changed` burst (no timer, NCC-138).
+// The Inbox panel loads again on each `inbox.changed` burst (no timer, NCC-138),
+// and the Chats panel too while the Overview tab is open (NCC-130).
 // The tab is in the address (`?tab=ideas`), so a reload and the browser's Back
 // keep it (R10).
 // Run check (R9) keeps its busy state here, as the server has none.
@@ -12,7 +13,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useInboxBadge, useInboxChanges, useProjectsChanges } from '../../lib/inboxFeed.ts'
 import { navRoute } from '../../lib/navRoutes.ts'
 import { useVisibleNavPages } from '../../state/settingsStore.ts'
-import type { ProjectInbox } from './liveProjects.ts'
+import type { ProjectChats, ProjectInbox } from './liveProjects.ts'
 import type { QuickChatAttempt } from './liveQuickChat.ts'
 import { ProjectsScreen } from './screens/ProjectsScreen.tsx'
 import type { ProjectDrift, ProjectsUi } from './types.ts'
@@ -43,6 +44,38 @@ export function ProjectPage() {
   // The server's PR answer changed after a run behind a read (NCC-156): the loader reads the project again.
   const router = useRouter()
   useProjectsChanges(live && state.ui.open !== undefined, () => void router.invalidate())
+  // The Chats panel's latest read after a change. One read at a time; a change during it gives one more after it.
+  const [chats, setChats] = useState<{ of: typeof state; read: ProjectChats } | undefined>(undefined)
+  const chatsRef = useRef({ busy: false, again: false, gone: false })
+  // The latest render's read, so a tab change counts at once: only while the Overview tab is open.
+  const readChatsRef = useRef<() => void>(() => undefined)
+  useEffect(() => {
+    readChatsRef.current = () => {
+      const [slug, flight] = [state.ui.open, chatsRef.current]
+      if (slug === undefined || (ui.tab ?? 'overview') !== 'overview' || flight.gone) return
+      if (flight.busy) return void (flight.again = true)
+      flight.busy = true
+      void import('./liveProjects.ts')
+        .then((m) => m.readProjectChats(slug))
+        .then((read) => {
+          // A read that missed keeps the rows shown, as the Inbox's does.
+          if (read.notRead === undefined && !flight.gone) setChats({ of: state, read })
+        })
+        .finally(() => {
+          const again = flight.again
+          flight.busy = flight.again = false
+          if (again) readChatsRef.current()
+        })
+    }
+  })
+  // StrictMode runs this cleanup once on mount, so the mount sets the flag back.
+  useEffect(() => {
+    const flight = chatsRef.current
+    flight.gone = false
+    return () => {
+      flight.gone = true
+    }
+  }, [])
   useInboxChanges(
     live && state.ui.open !== undefined,
     () => {
@@ -60,14 +93,17 @@ export function ProjectPage() {
           // A read that a leave or a later change stopped throws its abort.
           if (!reading.signal.aborted) throw thrown
         })
+      readChatsRef.current()
     },
     shown?.count ?? railBadge,
   )
   useEffect(() => () => readingRef.current?.abort(), [])
+  const shownChats = chats?.of === state ? chats.read : undefined
+  const loaded = state.data.overview
   const overview =
-    shown === undefined || state.data.overview === undefined
-      ? state.data.overview
-      : { ...state.data.overview, inbox: shown.inbox }
+    loaded === undefined
+      ? undefined
+      : { ...loaded, inbox: shown?.inbox ?? loaded.inbox, chats: shownChats ?? loaded.chats }
   // The Context drift panel after a Run check, for the loaded state it replaces.
   const [drift, setDrift] = useState<{ of: typeof state; view: ProjectDrift } | undefined>(undefined)
   const shownDrift = drift?.of === state ? drift.view : state.data.overview?.drift
@@ -120,6 +156,7 @@ export function ProjectPage() {
           : (text) => run({ project: slug, text, createId: crypto.randomUUID(), sendId: crypto.randomUUID() })
       }
       onRunDrift={state.data.live === undefined ? undefined : () => void runDrift()}
+      onChatOpen={(chat) => void navigate({ to: '/workspaces', search: { chat } })}
       onQuickChatRetry={() => {
         if (attemptRef.current !== undefined) void run(attemptRef.current)
       }}

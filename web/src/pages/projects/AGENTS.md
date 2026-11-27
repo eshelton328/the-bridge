@@ -69,6 +69,10 @@ T10b, M10 for the home, D01, T01, T01b, M01 for a project's page), read with
     ends (at most 60 s), so it waits 75 s; the server keeps no busy state, so
     `ProjectPage.tsx` keeps Run check off until the answer. A miss shows one
     line and keeps the last check (`app/ProjectDrift.test.tsx`).
+  - The Chats panel (R7) reads `GET /api/projects/:slug/chats` with the
+    page, and again on `inbox.changed` only while the merged `ui.tab` is
+    Overview, one read at a time (`app/ProjectChatsPanel.test.tsx`). A tag
+    change shows after a page open until NCC-139; NCC-149 moves the reads.
   - report() gets only a miss the server answered, as `ProjectsMissError`
     with its step, kind and status, never a name.
 - The home's route test is `app/ProjectsHome.test.tsx` (every menu closed
