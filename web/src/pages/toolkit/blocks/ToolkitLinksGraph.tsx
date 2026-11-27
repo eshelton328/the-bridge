@@ -95,7 +95,10 @@ export function ToolkitLinksGraph({ links, item, layout = 'desktop', onOpenItem 
       // A mouse selects only when it moves: Chromium also sends pointerover to a node drawn under a mouse that stays
       // still, and that must not select it (NCC-158). A touch or a pen over a node is a real contact.
       onPointerOver={(e) => {
-        if (e.pointerType !== 'mouse') point(nodeOf(graph, e))
+        const id = nodeOf(graph, e)
+        if (e.pointerType !== 'mouse') point(id)
+        // A still mouse never selects, but a scroll that moves its node away from it ends that selection.
+        else setPointer((m) => (m !== null && m.item === item.path && m.id !== id ? null : m))
       }}
       onPointerMove={(e) => {
         point(nodeOf(graph, e))

@@ -684,4 +684,16 @@ describe('a mouse that does not move over the links graph (D19)', () => {
     await userEvent.hover(button(root, 'writing', '[data-figma="links graph"]'))
     await expect.poll(() => pressed(root)).toEqual(['writing'])
   })
+
+  it('ends a side item’s selection when a scroll moves it from under a still mouse', async () => {
+    const { root } = await renderToolkit('skillLinks')
+    await setViewport(1512, 600)
+    await afterRendering()
+    const scroller = root.querySelector('.app-shell__detail')
+    if (!(scroller instanceof HTMLElement)) throw new Error('no detail scroller')
+    await userEvent.hover(button(root, 'audit-slop', '[data-figma="links graph"]'))
+    await expect.poll(() => pressed(root)).toEqual(['audit-slop'])
+    scroller.scrollTop += 120
+    await expect.poll(() => pressed(root)).toEqual(['writer'])
+  })
 })
