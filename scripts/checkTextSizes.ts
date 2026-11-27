@@ -65,13 +65,35 @@ function states(): { page: string; state: string; layout: keyof typeof windows }
 /** Measures every run of text on the page, in the browser (see TextMeasure). */
 function measureText(): TextMeasure[] {
   const box = (r: DOMRect) => ({ left: r.left, top: r.top, right: r.right, bottom: r.bottom })
-  const path = (el: Element): string => {
+  // The path from `top` (exclusive) down to `el`, by tag and child index.
+  const pathFrom = (top: Element, el: Element): string => {
     const parts: string[] = []
-    for (let e: Element | null = el; e !== null && e !== document.body; e = e.parentElement) {
+    for (let e: Element | null = el; e !== null && e !== top; e = e.parentElement) {
       const index = e.parentElement === null ? 0 : [...e.parentElement.children].indexOf(e)
       parts.unshift(`${e.tagName.toLowerCase()}:${String(index)}`)
     }
     return parts.join('/')
+  }
+  const path = (el: Element): string => pathFrom(document.body, el)
+  // A root under <body> named by what it holds, never by its place: the story root by its id, a portal by its
+  // first part (data-scope and data-part) and its first role with a label (a dialog's, a menu's). No generated id.
+  const rootName = (root: Element): string => {
+    if (root.id !== '') return `#${root.id}`
+    const part = root.querySelector('[data-scope][data-part]')
+    const role = root.querySelector('[role][aria-label]') ?? root.querySelector('[role]')
+    const name = [root.tagName.toLowerCase()]
+    if (part !== null) name.push(`${part.getAttribute('data-scope') ?? ''}.${part.getAttribute('data-part') ?? ''}`)
+    if (role !== null) name.push(`${role.getAttribute('role') ?? ''}[${role.getAttribute('aria-label') ?? ''}]`)
+    return name.join(' ')
+  }
+  // TextMeasure.match: the root's name, its place among the roots with that name, then the path inside it.
+  const match = (el: Element): string => {
+    let root = el
+    while (root.parentElement !== null && root.parentElement !== document.body) root = root.parentElement
+    if (root.parentElement !== document.body) return path(el)
+    const name = rootName(root)
+    const place = [...document.body.children].filter((c) => rootName(c) === name).indexOf(root)
+    return `${name}~${String(place)}/${pathFrom(root, el)}`
   }
   const out: TextMeasure[] = []
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT)
@@ -120,6 +142,7 @@ function measureText(): TextMeasure[] {
     }
     out.push({
       key: path(holder),
+      match: match(holder),
       text: text.slice(0, 60),
       box: box(rect),
       brokenWords,
@@ -145,6 +168,7 @@ function measureText(): TextMeasure[] {
     const line = s.lineHeight === 'normal' ? parseFloat(s.fontSize) * 1.2 : parseFloat(s.lineHeight)
     out.push({
       key: path(field),
+      match: match(field),
       text: shown.trim().slice(0, 60),
       box: box(rect),
       holder: box(rect),

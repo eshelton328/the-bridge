@@ -8,8 +8,14 @@ export type Edges = { left: number; top: number; right: number; bottom: number }
 
 /** One run of text on the page, as the browser measured it. */
 export type TextMeasure = {
-  /** The element's path from <body> (tag and child index), the same at each text size. */
+  /** The element's path from <body> (tag and child index), which finds the element again in the same page. */
   key: string
+  /**
+   * The element's name for the compare across text sizes (NCC-152): its root under <body> by what the root holds
+   * (an id, or its first part and named role, such as a dialog's), that root's place among roots of the same name,
+   * then the path inside it. A portal that mounts in another order at one size keeps its name, where `key` moves.
+   */
+  match: string
   /** The start of the text, for the report. */
   text: string
   /** The text's own box (a Range over its text node). */
@@ -44,6 +50,8 @@ export type TextMeasure = {
 /** A text run the page cuts or lets spill out of its box. */
 export type TextProblem = {
   key: string
+  /** See TextMeasure.match. */
+  match: string
   text: string
   kind: 'clipped' | 'overflow' | 'truncated' | 'broken-word' | 'field-clipped' | 'overlap'
   by: number
@@ -87,21 +95,23 @@ export function problemsOf(measures: readonly TextMeasure[]): TextProblem[] {
   const out: TextProblem[] = []
   for (const m of measures) {
     if ((m.fieldShort ?? 0) > tolerance) {
-      out.push({ key: m.key, text: m.text, kind: 'field-clipped', by: Math.round(m.fieldShort ?? 0) })
+      out.push({ key: m.key, match: m.match, text: m.text, kind: 'field-clipped', by: Math.round(m.fieldShort ?? 0) })
       continue
     }
-    if ((m.brokenWords ?? 0) > 0) out.push({ key: m.key, text: m.text, kind: 'broken-word', by: m.brokenWords ?? 0 })
+    if ((m.brokenWords ?? 0) > 0)
+      out.push({ key: m.key, match: m.match, text: m.text, kind: 'broken-word', by: m.brokenWords ?? 0 })
     if (m.truncated) {
-      if (m.truncatedCuts) out.push({ key: m.key, text: m.text, kind: 'truncated', by: 0 })
+      if (m.truncatedCuts) out.push({ key: m.key, match: m.match, text: m.text, kind: 'truncated', by: 0 })
       continue
     }
     const clipped = Math.max(0, ...m.clippers.map((c) => outBy(m.box, c)))
     if (clipped > tolerance) {
-      out.push({ key: m.key, text: m.text, kind: 'clipped', by: Math.round(clipped) })
+      out.push({ key: m.key, match: m.match, text: m.text, kind: 'clipped', by: Math.round(clipped) })
       continue
     }
     const spill = m.holderVisible ? Math.max(0, m.box.right - m.holder.right, m.holder.left - m.box.left) : 0
-    if (spill > tolerance) out.push({ key: m.key, text: m.text, kind: 'overflow', by: Math.round(spill) })
+    if (spill > tolerance)
+      out.push({ key: m.key, match: m.match, text: m.text, kind: 'overflow', by: Math.round(spill) })
   }
   return out
 }
@@ -215,18 +225,25 @@ export function overlapsOf(pairs: readonly OverlapPair[], tops: readonly TopRun[
     const [upper, lower] = top === p.a.key ? [p.a, p.b] : [p.b, p.a]
     if (seen.has(upper.key)) return
     seen.add(upper.key)
-    out.push({ key: upper.key, text: `${upper.text} over ${lower.text}`, kind: 'overlap', by: Math.round(p.by) })
+    out.push({
+      key: upper.key,
+      match: upper.match,
+      text: `${upper.text} over ${lower.text}`,
+      kind: 'overlap',
+      by: Math.round(p.by),
+    })
   })
   return out
 }
 
 /**
  * The problems at a larger size that Small does not have. Small is the designs' size, checked by the fidelity tools,
- * so a cut it already shows is the design's (a hidden label, a scrolled list) and not the text size's.
+ * so a cut it already shows is the design's (a hidden label, a scrolled list) and not the text size's. The compare
+ * uses `match`, so a portal that mounts in another order at a larger size does not make Small's cuts look new.
  */
 export function newProblems(small: readonly TextProblem[], larger: readonly TextProblem[]): TextProblem[] {
-  const base = new Set(small.map((p) => `${p.kind} ${p.key}`))
-  return larger.filter((p) => !base.has(`${p.kind} ${p.key}`))
+  const base = new Set(small.map((p) => `${p.kind} ${p.match}`))
+  return larger.filter((p) => !base.has(`${p.kind} ${p.match}`))
 }
 
 /** How many problems one page has at each size: every one at Small, and only the new ones at Default and Large. */
