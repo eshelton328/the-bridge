@@ -32,6 +32,8 @@ export type ProjectsScreenProps = {
   onUiChange?: ((change: Partial<ProjectsUi>) => void) | undefined
   /** Pin to top or Unpin was picked on the card `slug` (R3). */
   onPin?: ((slug: string, pinned: boolean) => void) | undefined
+  /** A card was clicked: open its project's page (R4). */
+  onOpen?: ((slug: string) => void) | undefined
   /** Back to Projects was pressed on a project's page. */
   onBack?: (() => void) | undefined
   /** Quick chat was pressed on a project's page. */
@@ -47,6 +49,7 @@ export function ProjectsScreen({
   navPages = defaultVisiblePages,
   onUiChange,
   onPin,
+  onOpen,
   onBack,
   onQuickChat,
 }: ProjectsScreenProps) {
@@ -91,7 +94,14 @@ export function ProjectsScreen({
               }
               detail={
                 open === undefined ? (
-                  <ProjectsHome data={data} ui={ui} layout={layout} onUiChange={onUiChange} onPin={onPin} />
+                  <ProjectsHome
+                    data={data}
+                    ui={ui}
+                    layout={layout}
+                    onUiChange={onUiChange}
+                    onPin={onPin}
+                    onOpen={onOpen}
+                  />
                 ) : (
                   <ProjectDetail
                     project={open}

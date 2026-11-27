@@ -49,6 +49,7 @@ export function ProjectsPage() {
         if (to !== undefined && to !== '/projects') void navigate({ to })
       }}
       onUiChange={changeUi}
+      onOpen={(slug) => void navigate({ to: '/projects/$slug', params: { slug } })}
       onPin={
         isLive
           ? (slug, pinned) => {

@@ -17,12 +17,16 @@ T10b, M10 for the home, D01, T01, T01b, M01 for a project's page), read with
   use the part under "Used now" and list the difference in the frame's
   `deviations.md`.
 - New project and Edit details show as the frames draw them and do
-  nothing: both are increment four (d-133). A card opens no project page
-  yet.
+  nothing: both are increment four (d-133). A click on a card opens its
+  project's page.
 - A project's page is `ui.open` on the same state, so it shares the
   home's data and screen. It shows the header and the tabs of increment
   one, Overview and Ideas (d-133); their panels are NCC-130's and
-  NCC-132's, and Quick chat does nothing yet. Its route comes next.
+  NCC-132's, and Quick chat does nothing yet. `ProjectPage.tsx` is its
+  entry, on the route `projects_.$slug.tsx` (not nested in `/projects`);
+  `loadProjectState.ts` reads it as the home's loader does, and a slug with
+  no project is not found. `app/ProjectPageRoute.test.tsx` opens it from a
+  card at 1440, 1024 and 390 px.
 - In development the home reads the live projects (`liveProjects.ts`), as
   the Artifacts home does (d-117): with no `?state=` and no `?source=`, and
   with `?source=live`; `?source=fixtures` shows the sample data, and a
@@ -36,6 +40,9 @@ T10b, M10 for the home, D01, T01, T01b, M01 for a project's page), read with
     the pins, so they stay after a reload and on each device. A pin that
     misses keeps the order and shows one line ("Not pinned — the server did
     not answer"). On fixtures a pin does nothing.
+  - A project's page reads `GET /api/projects/:slug` and shows that
+    project. A 404 is not found; another miss shows the home with one line
+    ("Project not read — the server answered 500").
   - report() gets only a miss the server answered, as `ProjectsMissError`
     with its step, kind and status, never a name.
 - The home's route test is `app/ProjectsHome.test.tsx` (every menu closed

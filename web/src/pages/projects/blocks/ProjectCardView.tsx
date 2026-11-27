@@ -3,7 +3,7 @@
 // one, and the purpose. The ⋯ button opens the card's menu: Pin to top (Unpin
 // on a pinned card), which goes out through `onPin`, and Edit details, which
 // the frames draw and increment four builds (d-133), so it does nothing yet.
-// The card opens no project page yet (R4 is NCC-129). Props only.
+// A click on the card opens its project's page through `onOpen` (R4). Props only.
 import { Badge, Button, Card, Clamp, Menu, MoreIcon } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
@@ -14,7 +14,9 @@ import { ProjectTile } from './ProjectTile.tsx'
 const media = css({ position: 'relative' })
 // One grid cell, so the card fills its row's height: the cards of a row end together, as the frames draw them.
 const cell = css({ display: 'grid' })
-const corner = css({ position: 'absolute', top: '8', right: '8' })
+// The ⋯ button lifts over the card's own button, which covers the card once it opens the project (as
+// LibraryCard lifts its alert), so the menu takes its own click.
+const corner = css({ position: 'absolute', top: '8', right: '8', zIndex: '1' })
 // The purpose in the frames' 13/20 text. Card's description shows one line at Small, or two, and D10 shows the
 // whole purpose, so it goes in the meta row until the library's Card has it (LIBRARY_GAPS.md).
 const purpose = css({ flex: '1', minW: '[0]', textStyle: 'bodySm', color: 'fg.muted' })
@@ -28,15 +30,32 @@ export type ProjectCardViewProps = {
   onMenuOpenChange?: ((open: boolean) => void) | undefined
   /** Pin to top or Unpin was picked: the pin the card should have now. */
   onPin?: ((slug: string, pinned: boolean) => void) | undefined
+  /** The card was clicked: open its project's page. Without it the card is not a button. */
+  onOpen?: ((slug: string) => void) | undefined
 }
 
-export function ProjectCardView({ project, words, layout, menuOpen, onMenuOpenChange, onPin }: ProjectCardViewProps) {
+export function ProjectCardView({
+  project,
+  words,
+  layout,
+  menuOpen,
+  onMenuOpenChange,
+  onPin,
+  onOpen,
+}: ProjectCardViewProps) {
   const phone = layout === 'phone'
   const label = words.label.replace('{name}', project.name)
   return (
     <div className={cell} data-figma={`project card · ${project.name}`}>
       <Card
         title={project.name}
+        onSelect={
+          onOpen === undefined
+            ? undefined
+            : () => {
+                onOpen(project.slug)
+              }
+        }
         media={
           <div className={media}>
             <ProjectTile name={project.name} icon={project.icon} size={phone ? 'phone' : 'wide'} />

@@ -7,7 +7,8 @@ moves to `web/src/blocks/`.
 - `ProjectCardView` is the library `Card` with `ProjectTile` as its media
   and the ⋯ menu in the tile's top end corner. Its menu says Pin to top,
   or Unpin on a pinned card, and Edit details, which does nothing
-  (increment four, d-133).
+  (increment four, d-133). With `onOpen` a click on the card opens its
+  project's page; the ⋯ button lifts over the card's button.
 - `ProjectTile` draws the project's library icon when its `icon` names one
   in the tile's list, else the first letter of its name in capitals; its
   `picture` size is the 64 px square of a project's page.

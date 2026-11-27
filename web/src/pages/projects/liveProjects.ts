@@ -5,13 +5,21 @@
 // ones first, then by name (R2). A pin (`pinProject`) sends
 // `PUT /api/projects/:slug/pin`; the entry then reads the list again, so the
 // card moves (R3). The pins are a server file, so each device sees them.
+// A project's page reads its project (`GET /api/projects/:slug`, R4); a slug
+// the server does not know is not found.
 //
 // A read or a pin that misses shows one short line by status ("Projects not
 // read — the server answered 500"), and a list that misses shows no projects,
 // never the sample ones. report() gets only a miss the server answered, as
 // `ProjectsMissError` with the step, kind and status, never a name. A reply the
 // contract refuses throws, for RouteError.
-import { ErrorBody, type ErrorKind, ProjectsResponse, type ProjectSummary } from '@bridge/contract'
+import {
+  ErrorBody,
+  type ErrorKind,
+  ProjectDetailResponse,
+  ProjectsResponse,
+  type ProjectSummary,
+} from '@bridge/contract'
 import { err, ok, type Result } from '@bridge/shared'
 import { report } from '../../errors/reporter.ts'
 import { api } from '../../lib/api.ts'
@@ -27,7 +35,7 @@ type ProjectsMiss = {
   readonly status: number | undefined
 }
 
-type ProjectsStep = 'list' | 'pin'
+type ProjectsStep = 'list' | 'pin' | 'detail'
 
 /** A miss for report(): a stable name and, in its message, only the step, the kind and the status. */
 class ProjectsMissError extends Error {
@@ -108,6 +116,30 @@ export async function withLiveProjects(
   }
   const { projects } = ProjectsResponse.parse(readJson(answer.value))
   return { ...state, data: { ...state.data, projects: projects.map(projectCard), live: {} } }
+}
+
+/**
+ * `state` with the server's project `slug` as its one card, open; with no card and the miss's line when the read
+ * missed, or with no card when the server does not know the slug, so the loader says it is not found.
+ */
+export async function withLiveProject(
+  state: ProjectsState,
+  slug: string,
+  { signal }: { readonly signal?: AbortSignal | undefined } = {},
+): Promise<ProjectsState> {
+  const answer = await send(
+    (init) => api.api.projects[':slug'].$get({ param: { slug } }, { init: { signal: init } }),
+    signal,
+  )
+  const ui = { ...state.ui, open: slug }
+  if (!answer.ok) {
+    if (answer.error.kind === 'not-found') return { ...state, ui, data: { ...state.data, projects: [], live: {} } }
+    reportMiss('detail', answer.error)
+    const notice = missLine('Project not read', answer.error)
+    return { ...state, ui, data: { ...state.data, projects: [], live: {}, notice } }
+  }
+  const { project } = ProjectDetailResponse.parse(readJson(answer.value))
+  return { ...state, ui, data: { ...state.data, projects: [projectCard(project)], live: {} } }
 }
 
 /** Pins or unpins the project `slug` (`PUT /api/projects/:slug/pin`); a miss gives its line. */
