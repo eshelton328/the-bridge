@@ -140,17 +140,17 @@ export function createInbox({
   }
   /** The items now, with the marks that still name one; a mark of an ended turn is dropped. */
   const build = async (): Promise<Result<Built, InboxError>> => {
-    const [listed, requests, stored, projects] = await Promise.all([
+    const [listed, requests, stored, projects, tagged] = await Promise.all([
       agents.listWorkspaces(),
       brain.list(),
       marks.load(),
       agents.projectWorkspaces(),
+      chatProjects(),
     ])
     if (!listed.ok) return listed
     if (!projects.ok) return projects
     if (!requests.ok) return requests
     if (!stored.ok) return stored
-    const tagged = await chatProjects()
     if (!tagged.ok) return tagged
     const at = now()
     const items: InboxItem[] = []

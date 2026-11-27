@@ -95,7 +95,7 @@ from the outside world.
   item's `project` is its pane's `project` tag (d-120, read with
   `projects.ts`'s `chatTagsOf`) only when the brain's projects port
   lists that slug, else null; a build reads one pane list and the
-  projects once, and logs no tag value. One change at a time; a fault is its
+  projects once, at the same time as its other reads, and logs no tag value. One change at a time; a fault is its
   code only. A read asks the turn ends once for all the waiting chats,
   and lists that cross share one build that has not started to read (a
   list during a read gets the next build); an act moves a version when

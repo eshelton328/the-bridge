@@ -191,6 +191,34 @@ describe('the inbox', () => {
     expect(reads).toEqual({ tags: 1, projects: 1, lists: 1 })
   })
 
+  it('starts the tags and projects reads with the workspace list, not after it (NCC-138)', async () => {
+    const agents = createFakeAgents(machine)
+    agents.setChatTags(question, { project: 'example-project' })
+    const started: string[] = []
+    let release: () => void = () => undefined
+    const held = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    const inbox = createInbox({
+      agents: {
+        ...agents,
+        listWorkspaces: async () => (started.push('list'), await held, agents.listWorkspaces()),
+        chatTags: () => (started.push('tags'), agents.chatTags()),
+      },
+      brain: { list: () => Promise.resolve(ok([])), body: () => Promise.resolve(ok(null)) },
+      turns: { endsOf: (chats) => Promise.resolve(ok(endsFor(chats, '2026-11-21T10:00:00.000Z'))) },
+      marks: { load: () => Promise.resolve(ok({})), save: () => Promise.resolve(ok(undefined)) },
+      projects: { list: () => (started.push('projects'), brainProjects('example-project').list()) },
+    })
+    const read = inbox.list()
+    await new Promise((resolve) => setImmediate(resolve))
+    // While the workspace list waits, the tags and the projects are already read.
+    expect([...started].sort()).toEqual(['list', 'projects', 'tags'])
+    release()
+    const listed = await read
+    expect(listed.ok && listed.value.items.map((i) => i.project)).toEqual(['example-project'])
+  })
+
   it('fails the read when the tags or the projects fail, by their fault', async () => {
     const agents = createFakeAgents(machine)
     const deps = {
