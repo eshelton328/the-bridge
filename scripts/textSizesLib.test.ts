@@ -233,7 +233,6 @@ void test('splitAccepted keeps an accepted cut out of the failures, only at its 
     state,
     size,
   })
-  const checked = new Set(['workspaces/phoneChat', 'workspaces/phoneFork'])
   const result = splitAccepted(
     [
       at('workspaces/phoneChat', 'large', 'truncated', 'Read notes.md'),
@@ -243,7 +242,6 @@ void test('splitAccepted keeps an accepted cut out of the failures, only at its 
       at('workspaces/phoneChat', 'large', 'truncated', 'Read other.md'),
     ],
     [cut],
-    checked,
   )
   assert.equal(result.accepted, 1)
   assert.deepEqual(
@@ -258,7 +256,7 @@ void test('splitAccepted keeps an accepted cut out of the failures, only at its 
   assert.deepEqual(result.unused, [])
 })
 
-void test('splitAccepted names an entry place that the app no longer cuts, but not one of an unchecked page', () => {
+void test('splitAccepted names an entry place that the app no longer cuts, but not one of a page --page leaves out', () => {
   const cut = {
     states: ['toolkit/skillFiles', 'workspaces/phoneChat'],
     sizes: ['default', 'large'],
@@ -278,21 +276,23 @@ void test('splitAccepted names an entry place that the app no longer cuts, but n
       },
     ],
     [cut],
-    new Set(['toolkit/skillFiles']),
+    'toolkit',
   )
   assert.equal(result.accepted, 1)
   assert.deepEqual(result.open, [])
   assert.deepEqual(result.unused, ['toolkit/skillFiles default truncated chat-sourced-first-person/'])
 })
 
-void test('splitAccepted names an entry place of a state that a checked page no longer has', () => {
+void test('a full run names an entry place of a state or a page that the app no longer has', () => {
   const cut = {
-    states: ['toolkit/renamedState'],
+    states: ['toolkit/renamedState', 'removedPage/someState'],
     sizes: ['large'],
     kind: 'truncated',
     text: 'chat-sourced-first-person/',
     reason: 'd-131: a file tree name may truncate',
   } as const
-  const result = splitAccepted([], [cut], new Set(['toolkit/skillFiles']))
-  assert.deepEqual(result.unused, ['toolkit/renamedState large truncated chat-sourced-first-person/'])
+  assert.deepEqual(splitAccepted([], [cut]).unused, [
+    'removedPage/someState large truncated chat-sourced-first-person/',
+    'toolkit/renamedState large truncated chat-sourced-first-person/',
+  ])
 })

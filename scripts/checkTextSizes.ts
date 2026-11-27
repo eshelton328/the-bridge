@@ -266,7 +266,6 @@ const indexJson = readFileSync(join(storybookDir, 'index.json'), 'utf8')
 const server = await serveStatic(storybookDir)
 const browser = await chromium.launch({ args: ['--font-render-hinting=none'] })
 const problems: StateProblem[] = []
-const checkedStates = new Set<string>()
 const errors: string[] = []
 const counts: Record<string, SizeCounts> = {}
 let checked = 0
@@ -304,7 +303,6 @@ try {
         }
       }
       addCounts(counts, page, small, fresh)
-      checkedStates.add(`${page}/${state}`)
       checked += 1
     } catch (error) {
       errors.push(`${page}/${state}: ${error instanceof Error ? error.message : String(error)}`)
@@ -316,7 +314,7 @@ try {
   await browser.close()
   await server.close()
 }
-const split = splitAccepted(problems, accepted, checkedStates)
+const split = splitAccepted(problems, accepted, values.page)
 const ok = split.open.length === 0 && split.unused.length === 0 && errors.length === 0 && checked > 0
 console.log(
   JSON.stringify({
