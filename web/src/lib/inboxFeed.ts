@@ -86,7 +86,7 @@ export function useProjectsChanges(live: boolean, onChange: () => void): void {
     changeRef.current = onChange
   })
   useEffect(() => {
-    if (!import.meta.env.DEV || !live || followProjects === undefined) return undefined
+    if (!readsLiveServer() || !live || followProjects === undefined) return undefined
     return followProjects(() => {
       changeRef.current()
     })
