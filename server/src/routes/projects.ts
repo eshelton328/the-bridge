@@ -1,5 +1,5 @@
-// /api/projects (f-008, increment one): the Projects home, a project's page,
-// its pin, its idea records, its context drift and its tagged chats. A URL names a project by
+// /api/projects (f-008, increments one and two): the Projects home, a project's page,
+// its pin, its idea records, its context drift, its tagged chats and its repositories. A URL names a project by
 // its slug and an idea by its record ID; a param the contract does not take
 // is 404, as no project or idea has it. A fault logs its errno code only,
 // never a title, a record's text or a path.
@@ -14,6 +14,7 @@ import {
   ProjectDetailResponse,
   ProjectSlug,
   ProjectsResponse,
+  RepositoriesResponse,
   RunDriftRequest,
 } from '@bridge/contract'
 import { type Context, Hono } from 'hono'
@@ -81,6 +82,14 @@ export function projectsRoutes(projects: Projects, log: Logger) {
       if (!idea.ok) return failed(c, idea.error)
       if (idea.value === 'notFound') return noIdea(c)
       return c.json(IdeaDetailResponse.parse(idea.value), 200)
+    })
+    .get('/:slug/repositories', async (c) => {
+      const slug = slugOf(c)
+      if (!slug.success) return noProject(c)
+      const sections = await projects.repositories(slug.data)
+      if (!sections.ok) return failed(c, sections.error)
+      if (sections.value === 'notFound') return noProject(c)
+      return c.json(RepositoriesResponse.parse(sections.value), 200)
     })
     .get('/:slug/drift', async (c) => {
       const slug = slugOf(c)

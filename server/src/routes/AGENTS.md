@@ -209,7 +209,10 @@ Thin Hono sub-apps, one file for each area, named after the area
   names a repository whose PRs gh could not read); `PUT /:slug/pin`
   (`{ pinned }`) pins or unpins it: 200 with the card. `GET /:slug/ideas`
   and `GET /:slug/ideas/:id` give the idea records. `GET /:slug/drift`
-  gives the last layout check, `GET /:slug/chats` the chats whose pane is
+  gives the last layout check, `GET /:slug/repositories` one section for
+  each repository (increment two: visibility, newest release, open PR and
+  worktree counts, `unread` for a part not read, still 200),
+  `GET /:slug/chats` the chats whose pane is
   tagged `project=<slug>` (R7, d-120), and `POST /:slug/drift` (`{}`) runs it
   again: 200 with the run, `failed` when the check did not run (its code
   goes to the log at warn). A slug or idea ID that the contract does not

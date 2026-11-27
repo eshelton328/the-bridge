@@ -92,6 +92,39 @@ export const ProjectDetailResponse = z.strictObject({
 })
 export type ProjectDetailResponse = z.infer<typeof ProjectDetailResponse>
 
+/** A repository's visibility on GitHub (R2). */
+export const RepositoryVisibility = z.enum(['public', 'private', 'internal'])
+export type RepositoryVisibility = z.infer<typeof RepositoryVisibility>
+
+/** A repository's newest GitHub release, pre-releases included (R2). */
+export const RepositoryRelease = z.strictObject({
+  tag: z.string().min(1).max(255),
+  url: z.url({ protocol: /^https$/, hostname: /^github\.com$/ }),
+  publishedAt: z.iso.datetime(),
+})
+export type RepositoryRelease = z.infer<typeof RepositoryRelease>
+
+/** A part of a section not read now (R8): `about` (visibility, release), `pulls` or `worktrees`. */
+export const RepositoryPart = z.enum(['about', 'pulls', 'worktrees'])
+export type RepositoryPart = z.infer<typeof RepositoryPart>
+
+/** One section of the Repositories tab (R2, R3, R5, R8). A part not read, or with no GitHub repository, is null. */
+export const RepositorySection = z.strictObject({
+  ...ProjectRepository.shape,
+  visibility: RepositoryVisibility.nullable(),
+  release: RepositoryRelease.nullable(),
+  /** The open PRs, at most `maxRepositoryPulls`. */
+  openPulls: z.number().int().min(0).max(maxRepositoryPulls).nullable(),
+  /** The git worktrees in the repository's `-worktrees` folder of the chat root. */
+  worktrees: z.number().int().min(0).nullable(),
+  unread: z.array(RepositoryPart),
+})
+export type RepositorySection = z.infer<typeof RepositorySection>
+
+/** The response of `GET /api/projects/:slug/repositories`: one section for each repository, in `project.yaml`'s order. */
+export const RepositoriesResponse = z.strictObject({ repositories: z.array(RepositorySection) })
+export type RepositoriesResponse = z.infer<typeof RepositoriesResponse>
+
 /** A chat tag the app reads (d-120): the key `project`, `area` or `role`, and a value written as a slug is. */
 export const ChatTag = z.strictObject({
   key: z.enum(['project', 'area', 'role']),
