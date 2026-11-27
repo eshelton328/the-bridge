@@ -8,6 +8,7 @@ const toolLine = 'd-131: a tool-call line stays one line'
 
 export const accepted: readonly AcceptedCut[] = [
   {
+    // NCC-147: d-131 says a tool line expands on tap, but the phone transcript has no tap yet; fixed there.
     states: [
       'workspaces/phoneChat',
       'workspaces/phoneChatActions',
@@ -26,6 +27,7 @@ export const accepted: readonly AcceptedCut[] = [
     reason: toolLine,
   },
   {
+    // NCC-147: d-131 says a tool line expands on tap, but the phone transcript has no tap yet; fixed there.
     states: ['workspaces/phoneSubagentTranscript'],
     sizes: ['large'],
     kind: 'truncated',
@@ -34,6 +36,7 @@ export const accepted: readonly AcceptedCut[] = [
   },
   {
     // The transcript draws an event as the library's ToolLine (Figma D16 417:718), so it is a tool line too.
+    // NCC-147: d-131 says a tool line expands on tap, but the phone transcript has no tap yet; fixed there.
     states: ['workspaces/phoneSubtaskRunning'],
     sizes: ['default', 'large'],
     kind: 'truncated',
