@@ -2,7 +2,7 @@ import '@fontsource-variable/geist'
 import '@fontsource-variable/geist-mono'
 import '../index.css'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
-import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
+import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 import { page } from 'vitest/browser'
 import { setViewport } from '../lib/rendering.ts'
 import { testRender, unmountRendered } from '../lib/testRender.ts'
@@ -27,6 +27,11 @@ describe('the Projects home', () => {
     ['the phone', 390, 844],
   ] as const) {
     it(`shows the cards with every menu closed on ${name}`, async () => {
+      // React's console error for a block inside a <p>, such as Clamp's <div> in the phone's purpose (NCC-146).
+      const errors = vi.spyOn(console, 'error')
+      onTestFinished(() => {
+        errors.mockRestore()
+      })
       await setViewport(width, height)
       const router = createRouter({
         routeTree,
@@ -39,6 +44,11 @@ describe('the Projects home', () => {
       expect(document.querySelector('[role="menu"][data-state="open"]')).toBeNull()
       expect(page.getByRole('dialog').elements()).toHaveLength(0)
       expect(document.querySelector('[aria-current="page"]')?.textContent).toContain('Projects')
+      const nesting = errors.mock.calls
+        .map((c) => c.map(String).join(' '))
+        .filter((m) => m.includes('cannot contain a nested') || m.includes('cannot be a descendant of'))
+      expect(nesting).toEqual([])
+      expect(document.querySelectorAll('p div')).toHaveLength(0)
     })
   }
 })

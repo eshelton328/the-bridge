@@ -84,8 +84,9 @@ export function ProjectCardView({
         // pill fits inside the name's line, so a pinned card's name and purpose sit level with the others' (T10b).
         badge={project.pinned ? <Badge variant="pill" size="xs" label="Pinned" /> : undefined}
         meta={
-          // M10 cuts the purpose at two lines; the desktop and the tablet show it whole.
-          <p className={purpose}>{phone ? <Clamp lines={2}>{project.purpose}</Clamp> : project.purpose}</p>
+          // M10 cuts the purpose at two lines; the desktop and the tablet show it whole. A div, not a p: the phone's
+          // Clamp is a div, which a p may not hold (NCC-146).
+          <div className={purpose}>{phone ? <Clamp lines={2}>{project.purpose}</Clamp> : project.purpose}</div>
         }
       />
     </div>
