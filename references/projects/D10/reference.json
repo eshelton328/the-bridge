@@ -1,0 +1,17 @@
+{
+  "frameId": "D10",
+  "code": "D10",
+  "name": "Projects home \u00b7 desktop \u00b7 Dark",
+  "device": "desktop",
+  "w": 1512,
+  "h": 982,
+  "mode": "dark",
+  "tolerance": 4,
+  "source": "Figma yJaVpShE9RVoQwUeUBnMQ4 node 37:2 (d-133)",
+  "original": {
+    "file": "home-37-2.png",
+    "w": 1512,
+    "h": 982,
+    "sha256": "9ee196f2d04b82756f5044c4752558aa6c9d454b846d845a4cd458b701c8654a"
+  }
+}

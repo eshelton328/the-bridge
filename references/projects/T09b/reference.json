@@ -1,0 +1,17 @@
+{
+  "frameId": "T09b",
+  "code": "T09b",
+  "name": "Idea page \u00b7 iPad mini landscape \u00b7 Dark",
+  "device": "tablet",
+  "w": 1133,
+  "h": 1100,
+  "mode": "dark",
+  "tolerance": 4,
+  "source": "saved design render ov-L09.dc.html (d-133)",
+  "original": {
+    "file": "ov-L09.png",
+    "w": 1133,
+    "h": 1100,
+    "sha256": "784162783e9505d1457be5733c21488a4660aa7f959cfc07c5a6363b0947db77"
+  }
+}

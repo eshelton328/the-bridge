@@ -1,0 +1,17 @@
+{
+  "frameId": "T01",
+  "code": "T01",
+  "name": "Project Overview \u00b7 iPad mini portrait \u00b7 Dark",
+  "device": "tablet",
+  "w": 744,
+  "h": 2120,
+  "mode": "dark",
+  "tolerance": 4,
+  "source": "saved design render ov-T01.dc.html (d-133)",
+  "original": {
+    "file": "ov-T01.png",
+    "w": 744,
+    "h": 2120,
+    "sha256": "7bdadd2d9624fa3d6829b0b72fdb81edd6b1c4690603ebb309a247eb45be6b4f"
+  }
+}

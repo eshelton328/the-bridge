@@ -1,0 +1,17 @@
+{
+  "frameId": "M09",
+  "code": "M09",
+  "name": "Idea page \u00b7 phone \u00b7 Dark",
+  "device": "phone",
+  "w": 390,
+  "h": 1400,
+  "mode": "dark",
+  "tolerance": 4,
+  "source": "saved design render ov-M09.dc.html (d-133)",
+  "original": {
+    "file": "ov-M09.png",
+    "w": 390,
+    "h": 1400,
+    "sha256": "a2068bf01bf4cd081c5073a8366af75c64d5022c5d056d57389a2cef0c9a5e20"
+  }
+}

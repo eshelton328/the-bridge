@@ -1,0 +1,17 @@
+{
+  "frameId": "M01",
+  "code": "M01",
+  "name": "Project Overview \u00b7 phone \u00b7 Dark",
+  "device": "phone",
+  "w": 390,
+  "h": 2560,
+  "mode": "dark",
+  "tolerance": 4,
+  "source": "saved design render ov-M01.dc.html (d-133)",
+  "original": {
+    "file": "ov-M01.png",
+    "w": 390,
+    "h": 2560,
+    "sha256": "e335abd0488e053dc9faa7a49dd27674624133f967270de569e5af8348c2188c"
+  }
+}
