@@ -301,7 +301,8 @@ export function WorkspacesPage() {
     },
     [router, live],
   )
-  useChatLink(search.chat, data, currentUi, changeUi, clearChatLink, readAgain)
+  // A `?chat=` link waits for the first state: the loading layout's home lists no chat (NCC-181 review).
+  useChatLink(settled === undefined ? undefined : search.chat, data, currentUi, changeUi, clearChatLink, readAgain)
   // The sends and stops in flight, by chat: a pane keeps its own guard only while it shows, so a chat opened again while
   // its send or stop is pending must not post a second one. `once` answers `false` (nothing sent) meanwhile. A send and a
   // clear of the chat's terminal input go one after the other: no send starts while a clear is pending, as the clear
