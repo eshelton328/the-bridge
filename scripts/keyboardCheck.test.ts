@@ -1,6 +1,14 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { checkFrames, cubicBezier, type Frame, servedUrl, sheetArgs } from './keyboardCheckLib.ts'
+import {
+  checkFrames,
+  cubicBezier,
+  devServerProblem,
+  type Frame,
+  isViteClient,
+  servedUrl,
+  sheetArgs,
+} from './keyboardCheckLib.ts'
 
 const frame = (over: Partial<Frame>): Frame => ({
   t: 0,
@@ -80,6 +88,20 @@ void test('the served URL comes from --url, then SERVED_APP_URL, and is required
   assert.deepEqual(servedUrl(undefined, 'https://env.example:5180/'), { ok: true, url: 'https://env.example:5180' })
   const missing = servedUrl(undefined, undefined)
   if (missing.ok) assert.fail('no URL must be an error')
-  assert.match(missing.error, /--url <url> or set SERVED_APP_URL/)
+  assert.match(missing.error, /--url <url> or set SERVED_APP_URL to a `pnpm dev`/)
   assert.equal(servedUrl(undefined, '  ').ok, false)
+})
+
+void test('a URL that is not a dev server stops the check with a message that names the reason (d-134)', () => {
+  const text = devServerProblem('https://served.example:5180')
+  assert.match(text, /only a dev server reads, and https:\/\/served\.example:5180 is not one/)
+  assert.match(text, /pnpm dev/)
+})
+
+void test("only a dev server's JavaScript answer to /@vite/client counts: a preview answers 200 with its index.html", () => {
+  assert.equal(isViteClient(200, 'text/javascript'), true)
+  assert.equal(isViteClient(200, 'application/javascript; charset=utf-8'), true)
+  assert.equal(isViteClient(200, 'text/html'), false)
+  assert.equal(isViteClient(404, 'text/javascript'), false)
+  assert.equal(isViteClient(undefined, undefined), false)
 })

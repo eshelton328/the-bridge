@@ -1,17 +1,19 @@
 #!/usr/bin/env node
-// pnpm keyboard:served: the keyboard check of screen review R20 to R22 on the served app. It opens the Workspaces
-// chat and the Inbox chat in Playwright's WebKit as an installed iPhone app, takes the composer's focus with a tap,
-// opens and closes a fake keyboard (window.visualViewport shrinks and grows on iOS's keyboard curve, as iOS
-// Safari's does, like the stand-in of WorkspacesChatDock.test.tsx) and samples every animation frame. It checks
-// that the header never moves, the window never scrolls, the last message stays above the composer and nothing
-// fades (keyboardCheckLib.ts), and tiles a recording of each run into a contact sheet. Prints one JSON line and
-// exits 1 when a check fails. The flags are listed in scripts/AGENTS.md.
+// pnpm keyboard:served: the keyboard check of screen review R20 to R22 on a dev server (a build ignores ?state=).
+// It opens the Workspaces chat and the Inbox chat in Playwright's WebKit as an installed iPhone app, takes the
+// composer's focus with a tap, opens and closes a fake keyboard (window.visualViewport shrinks and grows on iOS's
+// keyboard curve, as iOS Safari's does, like the stand-in of WorkspacesChatDock.test.tsx) and samples every
+// animation frame. It checks that the header never moves, the window never scrolls, the last message stays above
+// the composer and nothing fades (keyboardCheckLib.ts), and tiles a recording of each run into a contact sheet.
+// Prints one JSON line and exits 1 when a check fails. The flags are listed in scripts/AGENTS.md.
 import { execFileSync } from 'node:child_process'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { parseArgs } from 'node:util'
 import { devices, webkit } from 'playwright'
-import { checkFrames, cubicBezier, type Frame, servedUrl, sheetArgs } from './keyboardCheckLib.ts'
+import { isDevServer } from './devServer.ts'
+import { probeInput } from './inputProbe.ts'
+import { checkFrames, cubicBezier, devServerProblem, type Frame, servedUrl, sheetArgs } from './keyboardCheckLib.ts'
 
 const { values } = parseArgs({
   options: {
@@ -88,8 +90,22 @@ function installKeyboard() {
   })
 }
 
+// The pages are `?state=` keys, which only a dev server reads: a build ignores `?state=` (d-134), so a served build
+// would show its live homes (devServer.ts).
+if (!(await isDevServer(url))) {
+  console.error(devServerProblem(url))
+  process.exit(2)
+}
+
 mkdirSync(out, { recursive: true })
 const browser = await webkit.launch()
+// The check takes the composer's focus with a tap: stop when this browser's taps miss (NCC-179).
+const missed = await probeInput(browser, { ...iphone, viewport: screen })
+if (missed !== undefined) {
+  await browser.close()
+  console.error(missed)
+  process.exit(2)
+}
 const pages = []
 for (const target of targets) {
   const context = await browser.newContext({

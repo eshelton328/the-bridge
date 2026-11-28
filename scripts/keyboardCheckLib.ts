@@ -144,8 +144,8 @@ export function sheetArgs(o: {
 }
 
 /**
- * The served app's URL: `--url` first, then the `SERVED_APP_URL` environment variable. The repo holds no host, so
- * with neither set the check stops with a message that names both.
+ * The app's URL: `--url` first, then the `SERVED_APP_URL` environment variable. The repo holds no host, so with
+ * neither set the check stops with a message that names both. It must be a dev server (`devServerProblem`).
  */
 export function servedUrl(
   flag: string | undefined,
@@ -156,8 +156,24 @@ export function servedUrl(
     return {
       ok: false,
       error:
-        'keyboard:served needs the served app URL: pass --url <url> or set SERVED_APP_URL (the served-app facts in the brain give it).',
+        'keyboard:served needs the URL of a dev server: pass --url <url> or set SERVED_APP_URL to a `pnpm dev` in a worktree.',
     }
   }
   return { ok: true, url: value.replace(/\/+$/, '') }
+}
+
+/**
+ * Whether an answer to `/@vite/client` comes from a Vite dev server: a 200 with JavaScript. `vite preview` sends its
+ * `index.html` for any path, so a build answers 200 with HTML.
+ */
+export function isViteClient(status: number | undefined, contentType: string | null | undefined): boolean {
+  return status === 200 && /javascript/i.test(contentType ?? '')
+}
+
+/**
+ * The message when the URL is not a Vite dev server. The check opens `?state=` pages, and a build ignores `?state=`
+ * (d-134), so the served app, a build, would show its live homes in their place.
+ */
+export function devServerProblem(url: string): string {
+  return `keyboard:served opens ?state= pages, which only a dev server reads, and ${url} is not one (no /@vite/client; the served app is a build, d-134). Run \`pnpm dev\` in a worktree with its own BRIDGE_SERVER_URL and pass its URL.`
 }
