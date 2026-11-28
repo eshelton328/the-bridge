@@ -10,6 +10,7 @@ import {
   type ArchitectureScope,
   type ArchitectureScopeResponse,
   type ArchitectureScopeState,
+  maxArchitectureScopes,
   type ProjectRepository,
   type ProjectSlug,
   type RegenerateResponse,
@@ -77,9 +78,11 @@ function cleanModel(model: ArchitectureModel): ArchitectureModel {
   }
 }
 
+// The contract caps the scopes: `@system` and the first repositories of `project.yaml` up to the cap. A repository
+// past it has no diagram (404), so a large project still lists.
 const scopesOf = (project: ProjectRecord): ArchitectureScope[] => [
   systemScope,
-  ...project.repositories.map((r) => r.id),
+  ...project.repositories.slice(0, maxArchitectureScopes - 1).map((r) => r.id),
 ]
 const titleOf = (scope: ArchitectureScope) => (scope === systemScope ? 'How the system works' : `How ${scope} works`)
 const keyOf = ({ slug, scope }: ScopeKey) => `${slug} ${scope}`

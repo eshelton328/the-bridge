@@ -26,7 +26,7 @@ const model: ArchitectureModel = {
 }
 type RunAnswer = Result<{ readonly model: ArchitectureModel; readonly commit: string }, ProjectFault>
 
-function setup() {
+function setup(repositories = [{ id: 'example-repo', role: 'the app', github: null }]) {
   const files = new Map<string, KeptDiagram>()
   const store: ArchitectureStore = {
     load: (key) => Promise.resolve(files.get(`${key.slug} ${key.scope}`) ?? null),
@@ -47,7 +47,7 @@ function setup() {
               name: 'Example',
               purpose: 'An example.',
               icon: null,
-              repositories: [{ id: 'example-repo', role: 'the app', github: null }],
+              repositories,
             },
           ]),
         ),
@@ -104,5 +104,18 @@ describe('/api/projects/:slug/architecture', () => {
   it('takes an empty JSON body only', async () => {
     const { regenerate } = setup()
     expect((await regenerate('%40system', '{"scope":"x"}')).status).toBe(400)
+  })
+
+  it('lists a project of more repositories than the scope cap, and 404s a repository past it', async () => {
+    const many = Array.from({ length: 51 }, (_, i) => ({ id: `repo-${String(i)}`, role: 'a repository', github: null }))
+    const { app } = setup(many)
+    const res = await app.request('/api/projects/example-project/architecture', { headers: local })
+    expect(res.status).toBe(200)
+    const scopes = ArchitectureResponse.parse(await res.json()).scopes.map((s) => s.scope)
+    expect(scopes).toHaveLength(51)
+    expect(scopes.at(-1)).toBe('repo-49')
+    expect((await app.request('/api/projects/example-project/architecture/repo-50', { headers: local })).status).toBe(
+      404,
+    )
   })
 })
