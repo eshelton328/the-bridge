@@ -216,11 +216,6 @@ export function createArchitecture({
   }
 }
 
-/** The runner until the snapshot runner comes (A1b): each run fails with `not-built`. */
-export const unbuiltRunner: ArchitectureRunner = {
-  run: () => Promise.resolve({ ok: false, error: { reason: 'failed', code: 'not-built' } }),
-}
-
 /** The service of an app with none: each read fails, so each route answers 500. */
 export const noArchitecture: Architecture = (() => {
   const fault = () => Promise.resolve(err({ reason: 'failed' as const, code: 'no-store' }))

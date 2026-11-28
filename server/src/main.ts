@@ -36,7 +36,9 @@ import { readConfig } from './config.ts'
 import { createLogger, dailyFiles, type LogSink, teeSinks } from './logger.ts'
 import { formatEntry, parseLine } from './logs.ts'
 import { handleProcessErrors } from './processErrors.ts'
-import { createArchitecture, unbuiltRunner } from './services/architecture.ts'
+import { createSnapshotReader } from './adapters/snapshotReader.ts'
+import { createArchitecture } from './services/architecture.ts'
+import { createSnapshotRunner } from './services/architectureRunner.ts'
 import { createArtifacts } from './services/artifacts.ts'
 import { createFiles } from './services/files.ts'
 import { createInbox } from './services/inbox.ts'
@@ -110,8 +112,9 @@ const inbox = createInbox({
 // `ncc check` on the chat tree, and a project's chats by their herdr tags; the pins and the last drift runs go beside
 // the database too (f-008).
 const projectsRoot = join(dirname(dbFile), 'projects')
-// One lock for each snapshot, which the drift check holds now and the Architecture runner will hold with A1b-2.
+// One lock and one sync for each snapshot, which the drift check and the Architecture runner share.
 const snapshotLock = createSnapshotLock()
+const snapshots = createGitSnapshots({ command: 'git', root: join(dirname(dbFile), 'snapshots'), env: process.env })
 const projects = createProjects({
   brain: brainProjects,
   pins: createDiskPins(projectsRoot),
@@ -127,7 +130,7 @@ const projects = createProjects({
     else log.debug('ci read timed', { part: event.part, ms: event.ms })
   },
   repositoryDrift: {
-    snapshots: createGitSnapshots({ command: 'git', root: join(dirname(dbFile), 'snapshots'), env: process.env }),
+    snapshots,
     check: createAgentsMdCheck({ python: 'python3', brainDir: config.value.brainDir, env: process.env }),
     store: createDiskRepositoryDriftStore(projectsRoot),
   },
@@ -135,12 +138,16 @@ const projects = createProjects({
   agents,
   snapshotLock,
 })
-// The Architecture tab keeps each scope's diagram beside the database; until the snapshot runner (A1b) each run
-// fails with `not-built`, and its code goes to the log.
+// The Architecture tab keeps each scope's diagram beside the database; a run reads the repository's snapshot, and a
+// failed run's code goes to the log.
 const architecture = createArchitecture({
   brain: brainProjects,
   store: createDiskArchitectureStore(projectsRoot),
-  runner: unbuiltRunner,
+  runner: createSnapshotRunner({
+    snapshots,
+    lock: snapshotLock,
+    reader: createSnapshotReader({ command: 'git', env: process.env }),
+  }),
   log: (fault) => {
     log.warn('architecture run failed', { code: fault.code })
   },
