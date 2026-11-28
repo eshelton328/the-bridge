@@ -131,7 +131,7 @@ const byTime = (a: { at: string }, b: { at: string }) => Date.parse(a.at) - Date
  * its parent's thread, in time order. A reply whose parent is an ask, an answer or not in the read starts its own
  * thread. The author is a fixed name, as the key is the owner's and Linear's name would be the owner's on each one.
  */
-export function threadsOf(comments: readonly QaCommentText[]): QaThread[] {
+function threadsOf(comments: readonly QaCommentText[]): QaThread[] {
   const shown = comments.filter((c) => !isQaComment(c))
   const parentOf = new Map(shown.map((c) => [c.id, c.parentId ?? null]))
   const rootOf = (id: string): string => {
