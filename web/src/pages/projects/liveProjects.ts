@@ -218,7 +218,10 @@ export async function readProjectChats(slug: string, signal?: AbortSignal): Prom
   return {
     rows: chats
       .filter((c) => c.kind !== 'shell')
-      .map((c) => ({ id: c.id, title: c.title, workspace: c.workspace.label, status: c.status })),
+      .map((c) => ({
+        ...{ id: c.id, title: c.title, workspace: c.workspace.label, status: c.status },
+        tags: c.tags.filter((t) => t.key !== 'project').map((t) => `${t.key}/${t.value}`),
+      })),
   }
 }
 

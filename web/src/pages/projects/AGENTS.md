@@ -73,6 +73,8 @@ T10b, M10 for the home, D01, T01, T01b, M01 for a project's page), read with
     page, and again on `inbox.changed` only while the merged `ui.tab` is
     Overview, one read at a time (`app/ProjectChatsPanel.test.tsx`). A tag
     change shows after a page open until NCC-139; NCC-149 moves the reads.
+    The search, the area chips and the 10-row pager work on the rows read
+    (`app/ProjectChatsTable.test.tsx`); a read that missed shows no count.
   - report() gets only a miss the server answered, as `ProjectsMissError`
     with its step, kind and status, never a name.
 - The home's route test is `app/ProjectsHome.test.tsx` (every menu closed

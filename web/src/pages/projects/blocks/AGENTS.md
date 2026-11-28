@@ -33,8 +33,12 @@ moves to `web/src/blocks/`.
   `Panel` with the check's time and scope and a compact `ListRow` for each
   finding; `OverviewPanels` draws it under Inbox and Queue, across both
   columns on the desktop.
-- `ChatsPanel` is the Overview's Chats panel (R7): compact `ListRow` rows
-  (title, workspace, a `StatusPill` toned as the Workspaces sidebar does)
-  in a `Panel`; a press calls `onChatOpen`. It spans both desktop columns.
+- `ChatsPanel` is the Overview's Chats panel (R7): a `SearchField` (title
+  or workspace) and `FilterChips` of the chats' area tags over compact
+  `ListRow` rows (title, workspace and tags, a `StatusPill` toned as the
+  Workspaces sidebar does) in a `Panel`, with the library `Pager` (10, 25
+  or 50 rows; no picker on the phone). It keeps the search, chips and page
+  in `useState`; a press calls `onChatOpen`. A read that missed shows its
+  line and no count. It spans both desktop columns.
 - Each card carries `data-figma="project card · <name>"`, which the live
   tests read for the order.
