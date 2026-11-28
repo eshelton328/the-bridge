@@ -28,9 +28,11 @@ moves to `web/src/blocks/`.
   state and tags in the meta, the age at the end). It takes only the
   words it draws. The frames' table (D08, T08, T08b, M08) is a later
   issue's.
-- `ContextDrift` is the Context drift panel (R9): `PageHeader` with Run check
-  (off while `busy`) over a `Panel` of `ListRow` findings; `OverviewPanels`
-  draws it under Inbox and Queue, across both columns on the desktop.
+- `ContextDrift` is the Context drift panel (R9): `PageHeader` with the
+  secondary Run check and its `RefreshIcon` (off while `busy`) over a
+  `Panel` with the check's time and scope and a compact `ListRow` for each
+  finding; `OverviewPanels` draws it under Inbox and Queue, across both
+  columns on the desktop.
 - `ChatsPanel` is the Overview's Chats panel (R7): compact `ListRow` rows
   (title, workspace, a `StatusPill` toned as the Workspaces sidebar does)
   in a `Panel`; a press calls `onChatOpen`. It spans both desktop columns.

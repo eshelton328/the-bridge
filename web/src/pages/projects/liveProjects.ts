@@ -157,7 +157,12 @@ export async function readProjectInbox(slug: string, signal?: AbortSignal): Prom
 }
 
 /** The Context drift panel's words. */
-const driftWords = { title: 'Context drift', run: 'Run check', running: 'Checking…' } as const
+const driftWords = {
+  title: 'Context drift',
+  scope: 'Folder layout and hooks.',
+  run: 'Run check',
+  running: 'Checking…',
+} as const
 
 /** The panel of the last run (null before the first) at `now`. A failed run's code stays in the server's log. */
 function driftView(last: DriftRun | null, now: Date): ProjectDrift {

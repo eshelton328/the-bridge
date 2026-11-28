@@ -14,9 +14,17 @@ What differs from the frame after round 1 of the fidelity loop
 
 ## Deviations
 
-- **Panels.** The Overview tab shows the Inbox and Queue panels (R5, R6)
-  and no Context drift or Chats panel: those are NCC-131's (Context drift)
-  and NCC-130's next PR (Chats, with its pager; `LIBRARY_GAPS.md`).
+- **Panels.** The Overview tab shows the Inbox, Queue and Context drift
+  panels (R5, R6, R9) and no Chats panel: that is NCC-130's next PR (Chats,
+  with its pager; `LIBRARY_GAPS.md`).
+- **Context drift.** `ncc check` gives one line of text for each finding,
+  with no repository and no kind, so the panel has a row for each finding
+  (3 here) where the frame groups 22 findings by repository with a count and
+  a chevron. The line over the rows says when the check ran and what it
+  reads ("Checked 12m ago. Folder layout and hooks."), where the frame has a
+  clock time and other checks ("AGENTS.md length, links and folder
+  layout"), which wait for a later check. The heading is `PageHeader` at
+  its pane size, as Inbox and Queue are.
 - **Queue.** "In progress" lists the open PRs with their pills, and no
   priority mark or owner chat on a row ("the-bridge#535" without
   "· bridge-workbench"): both come from Linear, which is out of scope.

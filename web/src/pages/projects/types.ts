@@ -76,6 +76,8 @@ const ChatRow = z.object({ id: z.string(), title: z.string(), workspace: z.strin
 export const ProjectDrift = z.object({
   title: z.string(),
   checked: z.string().optional(),
+  /** What the check reads, after `checked` on its line, such as "Folder layout and hooks." */
+  scope: z.string().optional(),
   findings: z.array(z.string()),
   /** The line in place of findings, such as "No drift found" or "The check did not run". */
   empty: z.string().optional(),
@@ -93,7 +95,7 @@ export const ProjectOverview = z.object({
   /** `notRead` is the line of an Inbox read that missed, such as "Inbox not read — the server answered 500". */
   inbox: z.object({ needsYou: z.array(InboxRow), toReview: z.array(InboxRow), notRead: z.string().optional() }),
   queue: z.object({ inProgress: z.array(PullRow), unread: z.string().optional() }),
-  /** The Context drift panel; none on the overview states, which no frame of it has yet. */
+  /** The Context drift panel (D01, T01, T01b, M01). */
   drift: ProjectDrift.optional(),
   /** The Chats panel (R7), from the live page only; `notRead` is the line of a read that missed. */
   chats: z.object({ rows: z.array(ChatRow), notRead: z.string().optional() }).optional(),
