@@ -167,6 +167,26 @@ describe("A project's Chats panel (R7)", () => {
     expect(getReports()).toEqual([])
   })
 
+  it('keeps a chat.status that comes during a chats read when the read answers', async () => {
+    const server = withServer()
+    const before = await settled(server)
+    const pills = () =>
+      (['Needs you', 'Working', 'Done'] as const).map((w) => panel().getByText(w, { exact: true }).elements().length)
+    const gate: { open?: () => void } = {}
+    const held = new Promise<void>((resolve) => {
+      gate.open = resolve
+    })
+    // The read answers with the list from before the status change: c1 still working.
+    server.projects.answerNext('chats', () => held.then(() => Response.json({ chats })))
+    server.inbox.emit('workspaces.changed')
+    await expect.poll(() => reads(server)).toBe(before + 1)
+    server.inbox.emit('chat.status', { chat: 'test-box/c1', status: 'done' })
+    await expect.poll(pills).toEqual([1, 0, 2])
+    gate.open?.()
+    await quiet()
+    expect(pills()).toEqual([1, 0, 2])
+  })
+
   it('gives exactly one more read for two workspaces.changed that come during one held read', async () => {
     const server = withServer()
     const before = await settled(server)
