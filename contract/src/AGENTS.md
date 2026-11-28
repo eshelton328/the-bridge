@@ -175,7 +175,7 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
   project's open PRs changed or a CI read of one of its repositories
   ended, good or failed: read the project and its CI numbers again (NCC-156); its data is `{}`. Increment four: a create or edit body holds a
   one-line name and purpose (no control character, the contract's
-  limits) and an icon or null, never a slug or a path. The Queue
+  limits) and one of the library's project icons or null, never a slug or a path. The Queue
   (`queue.ts`): an item is named by a `QueueItemId` (16 hex characters of
   a sha256 the server makes) and an issue by its `QaIssueId`, a priority
   is an integer 0 to 4, and a PR is `local` exactly when it names no

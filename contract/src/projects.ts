@@ -285,15 +285,33 @@ const oneLine = (min: number, max: number) =>
     .max(max)
     .refine((s) => !notOneLine.test(s), 'one line, with no control characters')
 
+/** The library icons a project can pick (R4), by kebab-case name; web maps each one to its component. */
+const projectIconNames = [
+  'book',
+  'brain',
+  'branch',
+  'chart',
+  'code',
+  'compass',
+  'folder',
+  'inbox',
+  'map',
+  'projects',
+  'spark',
+  'terminal',
+  'toolkit',
+  'workspaces',
+] as const
+
 /**
  * The body of `POST /api/projects` (New project, R2) and `PATCH /api/projects/:slug` (Edit details, R8): the name,
  * the description (`purpose` in `project.yaml`, may be empty) and the icon, or null for the name's first letter. The
- * server makes the slug from the name and checks that the library has the icon (R4).
+ * server makes the slug from the name; the icon is one of the library's project icons (R4).
  */
 export const ProjectDetailsRequest = z.strictObject({
   name: oneLine(1, maxProjectTitle),
   purpose: oneLine(0, maxProjectSummary),
-  icon: ProjectIcon.nullable(),
+  icon: z.enum(projectIconNames).nullable(),
 })
 export type ProjectDetailsRequest = z.infer<typeof ProjectDetailsRequest>
 

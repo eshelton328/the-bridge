@@ -733,6 +733,7 @@ describe('New project (increment four)', () => {
     expect((await post(app, { ...details, name: 'Two\nlines' })).status).toBe(400)
     expect((await post(app, { ...details, name: '???' })).status).toBe(400)
     expect((await post(app, { ...details, extra: true })).status).toBe(400)
+    expect((await post(app, { ...details, icon: 'this-icon-does-not-exist' })).status).toBe(400)
     await expect(readFile(`${python()}.args`, 'utf8')).rejects.toThrow()
   })
 

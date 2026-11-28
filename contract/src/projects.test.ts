@@ -91,7 +91,7 @@ describe('the projects contract', () => {
 })
 
 describe('the increment four contract', () => {
-  const details = { name: 'After dark', purpose: 'A party game.', icon: 'rocket' }
+  const details = { name: 'After dark', purpose: 'A party game.', icon: 'spark' }
 
   it('takes a one-line name and purpose with an icon or none, and refuses line breaks and control characters', () => {
     expect(ProjectDetailsRequest.safeParse(details).success).toBe(true)
@@ -102,6 +102,8 @@ describe('the increment four contract', () => {
     expect(ProjectDetailsRequest.safeParse({ ...details, purpose: 'a\u{2028}b' }).success).toBe(false)
     expect(ProjectDetailsRequest.safeParse({ ...details, name: 'x'.repeat(maxProjectTitle + 1) }).success).toBe(false)
     expect(ProjectDetailsRequest.safeParse({ ...details, slug: 'after-dark' }).success).toBe(false)
+    // An icon of the right shape that the library does not have (R4).
+    expect(ProjectDetailsRequest.safeParse({ ...details, icon: 'this-icon-does-not-exist' }).success).toBe(false)
   })
 
   it('gives a slug or none for a name', () => {
