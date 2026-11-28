@@ -32,6 +32,20 @@ export type CiSource = {
   jobs(repository: Repository, run: number): Promise<Result<readonly JobRun[], ProjectFault>>
 }
 
+/** A repository's last CI numbers and the time of the GitHub read that gave them. */
+export type KeptCi = { readonly ci: RepositoryCi; readonly readAt: string }
+
+/**
+ * The last CI answer of each GitHub repository, kept across restarts. A missing or unreadable answer is null, never a
+ * fault, as it is only a copy that the next read writes again.
+ */
+export type CiStore = {
+  load(repository: Repository): Promise<KeptCi | null>
+  save(repository: Repository, kept: KeptCi): Promise<Result<void, ProjectFault>>
+  /** Removes the answer of each repository that `keep` does not name. */
+  prune(keep: readonly Repository[]): Promise<Result<void, ProjectFault>>
+}
+
 /** How many of the newest green CI runs the job medians read. */
 export const jobRunCount = 10
 /** The most workflow runs one read gives: 10 pages of 100. */
