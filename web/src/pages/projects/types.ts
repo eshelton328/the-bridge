@@ -94,7 +94,8 @@ export const ProjectPageWords = z.object({
   unread: z.record(z.enum(['about', 'pulls', 'worktrees']), z.string()),
   /**
    * A repository's CI numbers (R4): the green runs of the finished ones (`{green}`, `{finished}`), a green run's
-   * median minutes (`{n}`), the read's age when it is older than 10 minutes (`{age}`), no run, the first read and
+   * median minutes (`{n}`), the read's age when it is older than 10 minutes (`{age}`), no finished run (runs that
+   * did not end or were cancelled do not count), the first read and
    * a read that missed.
    */
   ci: z.object({

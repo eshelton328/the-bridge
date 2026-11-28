@@ -75,7 +75,7 @@ export const menuOpen = {
         runs: 'CI {green}/{finished} green',
         minutes: '{n} min a run',
         asOf: 'as of {age} ago',
-        none: 'No CI runs in 30 days',
+        none: 'No finished CI runs in 30 days',
         reading: 'Reading CI',
         notRead: 'CI not read',
       },

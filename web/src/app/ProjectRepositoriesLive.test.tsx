@@ -203,7 +203,7 @@ describe("A project's Repositories tab (increment two)", () => {
     })
     inbox.emit('projects.changed')
     await expect.element(repoList().getByText('CI 19/20 green · 6.5 min a run', { exact: true })).toBeVisible()
-    await expect.element(repoList().getByText('No CI runs in 30 days', { exact: true })).toBeVisible()
+    await expect.element(repoList().getByText('No finished CI runs in 30 days', { exact: true })).toBeVisible()
     expect(projects.calls('ci')).toHaveLength(4)
   })
 
