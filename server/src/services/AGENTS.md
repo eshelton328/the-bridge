@@ -167,12 +167,9 @@ from the outside world.
   (build plan PR 11) records them; until then the record is empty, so no
   issue has an answer: each row waits, and "After merge" lists each `Main`
   issue in Done (`qaAsk.test.ts`). No comment text goes into a log.
-- `qa.ts` is the QA list and its Linear port (`LinearIssues`): the issues
-  of the project's `linearTeam` with the label `Branch` (in the state QA,
-  before merge) or `Main` (in Done with no answer, after merge), newest ask
-  first. A team's read is kept 30 s and shared while it runs; a failed one
-  is not kept. A comment whose time is not ISO is left out. With no port
-  (no key), each read is `unavailable`; a row the contract does not take
-  is `badReply`. Launch methods, the owner chat, threads and drafts come
-  in later PRs, so a row before merge is `noAsk`, `noPr` or `noMethod`
+- `qa.ts` lists the `Branch` issues in QA and the `Main` issues in Done
+  with no answer of the project's `linearTeam`, through the Linear port
+  (`LinearIssues`). A read is kept 30 s from its end and shared while it
+  runs; a failed or thrown one is not kept. A comment time that is not ISO
+  is left out; with no port (no key) a read is `unavailable`
   (`../routes/qa.test.ts`, a fake Linear).

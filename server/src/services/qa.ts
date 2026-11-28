@@ -1,8 +1,6 @@
 // The QA tab (f-008 increment three, d-126): the Linear issues of a project's
-// team that wait for the owner's check. Before merge is the `Branch` label in
-// the state QA; after merge is the `Main` label in the state Done with no
-// answer yet. Linear is read through a port only when a request asks (d-112),
-// and one read of a team is kept for `linearKeptMs`.
+// team that wait for the owner's check, read through a port only when a
+// request asks (d-112).
 import { maxProjectTitle, type ProjectSlug, QaItem, type QaListResponse } from '@bridge/contract'
 import { err, ok, type Result } from '@bridge/shared'
 import { z } from 'zod'
@@ -42,30 +40,32 @@ export const noQa: Qa = {
   list: () => Promise.resolve(err({ reason: 'unavailable', code: 'no-qa' })),
 }
 
-/** The port with each team's answer kept for `linearKeptMs`; a read in flight is shared, and a failed one is not kept. */
+/** Each team's answer kept `linearKeptMs` from its end; one in flight is shared, a failed one not kept, a throw `threw`. */
 function kept(linear: LinearIssues, now: () => Date): LinearIssues {
-  const last = new Map<string, { at: number; answer: ReturnType<LinearIssues['qaIssues']> }>()
+  type Entry = { at: number | null; readonly answer: ReturnType<LinearIssues['qaIssues']> }
+  const last = new Map<string, Entry>()
   return {
     qaIssues(team, labels) {
-      const at = now().getTime()
       const entry = last.get(team)
-      if (entry !== undefined && at - entry.at < linearKeptMs) return entry.answer
-      const fresh = { at, answer: linear.qaIssues(team, labels) }
+      if (entry !== undefined && (entry.at === null || now().getTime() - entry.at < linearKeptMs)) return entry.answer
+      const answer = Promise.resolve()
+        .then(() => linear.qaIssues(team, labels))
+        .catch(() => err({ reason: 'failed' as const, code: 'threw' }))
+      const fresh: Entry = { at: null, answer }
       last.set(team, fresh)
-      void fresh.answer.then((result) => {
-        if (!result.ok && last.get(team) === fresh) last.delete(team)
+      void answer.then((result) => {
+        if (last.get(team) !== fresh) return
+        if (result.ok) fresh.at = now().getTime()
+        else last.delete(team)
       })
-      return fresh.answer
+      return answer
     },
   }
 }
 
 const isoTime = z.iso.datetime()
 
-/**
- * The answers that the server posted, by issue key and comment ID. Submit (build plan PR 11) records them; until
- * then the record is empty, so no comment is an answer and each row waits.
- */
+/** The comment IDs of the answers the server posted. Submit (PR 11) records them; until then none, so each row waits. */
 const recordedAnswers: ReadonlySet<string> = new Set()
 
 /** The row of an issue, null when it is not in either table, or 'bad' when the contract does not take it. */
@@ -73,11 +73,10 @@ function builtOf(project: ProjectRecord, issue: LinearIssue): QaItem | null | 'b
   // A comment with a time that is not ISO never reaches a sort as NaN.
   const comments = issue.comments.filter((c) => isoTime.safeParse(c.createdAt).success)
   const answer = answerOf(comments, recordedAnswers)
-  const has = (label: string) => issue.labels.includes(label)
   const phase =
-    has(qaLabels.beforeMerge) && issue.state === 'QA'
+    issue.labels.includes(qaLabels.beforeMerge) && issue.state === 'QA'
       ? 'beforeMerge'
-      : has(qaLabels.afterMerge) && issue.state === 'Done' && answer === null
+      : issue.labels.includes(qaLabels.afterMerge) && issue.state === 'Done' && answer === null
         ? 'afterMerge'
         : null
   if (phase === null) return null
@@ -121,12 +120,12 @@ export function createQa({
   readonly now?: () => Date
 }): Qa {
   const source = linear === null ? null : kept(linear, now)
-  const read = async (slug: ProjectSlug): Promise<Result<readonly QaItem[] | NotFound, LinearFault>> => {
+  const list = async (slug: ProjectSlug): Promise<Result<QaListResponse | NotFound, LinearFault>> => {
     const projects = await brain.list()
     if (!projects.ok) return err({ reason: 'failed', code: projects.error.code })
     const project = projects.value.find((p) => p.slug === slug)
     if (project === undefined) return ok('notFound')
-    if (project.linearTeam === undefined) return ok([])
+    if (project.linearTeam === undefined) return ok({ items: [] })
     if (source === null) return err({ reason: 'unavailable', code: 'no-key' })
     const issues = await source.qaIssues(project.linearTeam, Object.values(qaLabels))
     if (!issues.ok) return issues
@@ -136,13 +135,7 @@ export function createQa({
       if (one === 'bad') return err({ reason: 'badReply', code: 'item' })
       if (one !== null) built.push(one)
     }
-    return ok(built.sort(newestAsk))
+    return ok({ items: built.sort(newestAsk) })
   }
-  return {
-    async list(slug) {
-      const built = await read(slug)
-      if (!built.ok) return built
-      return ok(built.value === 'notFound' ? built.value : { items: [...built.value] })
-    },
-  }
+  return { list }
 }

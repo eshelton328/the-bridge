@@ -2,7 +2,7 @@
 // process with a fake Linear and a fake brain (no real Linear call).
 import { ErrorBody, MachineId, ProjectSlug, QaListResponse, RepositoryId } from '@bridge/contract'
 import { err, ok } from '@bridge/shared'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { createFakeAgents } from '../adapters/fakeAgents.ts'
 import { createFakeLinear, type FakeIssue } from '../adapters/fakeLinear.ts'
 import { createApp } from '../app.ts'
@@ -80,19 +80,6 @@ describe('GET /api/projects/:slug/qa', () => {
     expect(items[0]).toMatchObject({ repository: 'the-bridge', pr: 12, comments: 1, askedAt: at(9), status: 'waiting' })
     expect(items[0]?.launch).toEqual({ url: null, blocked: 'noMethod' })
   })
-  it('makes one Linear read in 30 s, and a new one after (AC5)', async () => {
-    const linear = createFakeLinear({ NCC: issues })
-    let ms = Date.parse(at(12))
-    const { get } = setup(linear, () => new Date(ms))
-    await get('example-project/qa')
-    ms += 29_999
-    await get('example-project/qa')
-    expect(linear.reads()).toBe(1)
-    ms -= 29_999
-    ms += 30_000
-    await get('example-project/qa')
-    expect(linear.reads()).toBe(2)
-  })
   it('answers 503 with no Linear key, 502 for a bad reply and 500 for a key file fault, with the code in the log only (AC4)', async () => {
     const failing = (reason: 'unavailable' | 'badReply' | 'failed', code: string): LinearIssues => ({
       qaIssues: () => Promise.resolve(err({ reason, code })),
@@ -112,6 +99,39 @@ describe('GET /api/projects/:slug/qa', () => {
       expect(JSON.stringify(body)).not.toContain(code)
       expect(text()).toContain(code)
     }
+  })
+  it('keeps a read 30 s from its end and shares one that runs longer; a throw is 500 and not kept (AC5)', async () => {
+    let ms = Date.parse(at(12))
+    let reads = 0
+    let finish: () => void = () => undefined
+    const slow: LinearIssues = {
+      qaIssues: () => {
+        reads += 1
+        if (reads > 1) return Promise.reject(new Error('socket hang up'))
+        return new Promise((resolve) => {
+          finish = () => {
+            resolve(ok([]))
+          }
+        })
+      },
+    }
+    const { get, text } = setup(slow, () => new Date(ms))
+    const first = get('example-project/qa')
+    await vi.waitFor(() => {
+      expect(reads).toBe(1)
+    })
+    ms += 31_000
+    const second = get('example-project/qa')
+    await new Promise((r) => setTimeout(r, 10))
+    finish()
+    expect([(await first).status, (await second).status, reads]).toEqual([200, 200, 1])
+    ms += 29_999
+    expect([(await get('example-project/qa')).status, reads]).toEqual([200, 1])
+    ms += 1
+    expect((await get('example-project/qa')).status).toBe(500)
+    expect((await get('example-project/qa')).status).toBe(500)
+    expect(reads).toBe(3)
+    expect(text()).toContain('threw')
   })
   it('answers 404 for a project that the brain does not have', async () => {
     expect((await setup().get('no-project/qa')).status).toBe(404)
