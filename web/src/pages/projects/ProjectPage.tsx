@@ -37,13 +37,19 @@ export function ProjectPage() {
   const search = route.useSearch()
   const navigate = route.useNavigate()
   const [changed, setChanged] = useState<Changed>({ of: search.state, ui: {} })
-  const ui = { ...state.ui, ...(changed.of === search.state ? changed.ui : {}), tab: search.tab ?? state.ui.tab }
-  // The search with `tab` and `idea` as given; a key with no value is left out, so the address has none.
-  const view = (tab: ProjectsUi['tab'], idea?: string) => ({
+  const ui = {
+    ...state.ui,
+    ...(changed.of === search.state ? changed.ui : {}),
+    tab: search.tab ?? state.ui.tab,
+    scope: search.scope ?? state.ui.scope,
+  }
+  // The search with `tab`, `idea` and `scope` as given; a key with no value is left out, so the address has none.
+  const view = (tab: ProjectsUi['tab'], idea?: string, scope?: string) => ({
     ...(search.state === undefined ? {} : { state: search.state }),
     ...(search.source === undefined ? {} : { source: search.source }),
     ...(tab === undefined || tab === 'overview' ? {} : { tab }),
     ...(idea === undefined ? {} : { idea }),
+    ...(scope === undefined ? {} : { scope }),
   })
   const live = state.data.live !== undefined
   // The owner's rich text settings, for an idea's page (Settings → Rich text).
@@ -190,6 +196,7 @@ export function ProjectPage() {
       onUiChange={(change) => {
         if ('quickChat' in change && change.quickChat === undefined) runRef.current += 1
         if (change.tab !== undefined) void navigate({ search: view(change.tab) })
+        else if (change.scope !== undefined) void navigate({ search: view(ui.tab, undefined, change.scope) })
         else changeUi(change)
       }}
       onBack={() => void navigate({ to: '/projects', search: { source: search.source } })}

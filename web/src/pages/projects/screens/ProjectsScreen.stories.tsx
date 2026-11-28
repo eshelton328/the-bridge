@@ -73,7 +73,7 @@ export const ProjectsPhone: Story = {
   },
 }
 
-/** What a project's page shows (R4): Back to Projects, the name, Quick chat and the tabs Overview, Repositories, QA and Ideas. */
+/** What a project's page shows (R4): Back to Projects, the name, Quick chat and the tabs Overview, Repositories, Architecture, QA and Ideas. */
 async function expectProject(canvas: Canvas) {
   await expect(canvas.getByRole('button', { name: 'Back to Projects' })).toBeVisible()
   await expect(canvas.getByRole('heading', { level: 1, name: 'NCC-1701' })).toBeVisible()
@@ -81,6 +81,7 @@ async function expectProject(canvas: Canvas) {
   await expect(canvas.getAllByRole('tab').map((t) => t.textContent)).toEqual([
     'Overview',
     'Repositories',
+    'Architecture',
     'QA',
     'Ideas',
   ])

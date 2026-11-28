@@ -48,11 +48,11 @@ against the installed library 1.0.0-beta.137), each with its reason. The library
   on the phone).
 - **Panel gap.** One panel over the other, they are 24 apart where the
   frame has 28, which no spacing token has (`LIBRARY_GAPS.md`).
-- **Tabs.** The tab row shows Overview, Repositories, QA and Ideas, where the
-  frame shows Overview, Repositories, Architecture and QA: only the tabs of
-  shipped increments show (d-133). Repositories is increment two's live
-  slice, QA increment three's and Ideas increment one's. So QA sits where
-  the frame draws Architecture, and Ideas where it draws QA.
+- **Tabs.** The tab row shows Overview, Repositories, Architecture, QA and
+  Ideas, where the frame shows Overview, Repositories, Architecture and QA:
+  only the tabs of shipped increments show (d-133). Repositories and
+  Architecture are increment two's live slices, QA increment three's and
+  Ideas increment one's, so Ideas comes after QA.
 - **Quick chat** shows as the frame draws it; no frame draws its
   composer, so it is the library Dialog on every size, and in a state
   it opens nothing.
@@ -68,10 +68,13 @@ against the installed library 1.0.0-beta.137), each with its reason. The library
   picture 56). The name and the purpose keep the frame's 16 px gap, so they
   start 8 px right of the frame's.
 - **Tab padding.** The selected tab is the library's large item tab, 4 px
-  wider than the frame's and 2 px further in from the page's edge
+  wider than the frame's and 2 px further in from the page's edge, and
+  each later tab starts a little further right, Architecture about 12 px
   (`LIBRARY_GAPS.md`, Phone item tabs).
-- **Tab row.** The four tabs run past the right edge, as the frame's
-  row of five does, and the row scrolls.
+- **Tab row.** The five tabs run past the right edge, as the frame's
+  row of five does, and the row scrolls. As in the frame, the row runs to
+  the screen's right edge, past the page's 16 px side, so Architecture
+  shows whole.
 - **Tab bar.** The tab bar is the app's shared one in the default order
   (d-105): Home, Inbox, Workspaces, Projects and More. The frame draws
   Inbox, Workspaces, Projects and More.

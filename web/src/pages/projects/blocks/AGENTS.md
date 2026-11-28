@@ -49,6 +49,11 @@ moves to `web/src/blocks/`.
   `<repository>#<pr>` in the meta, the status and worktree at the end, or
   after the meta on the phone). The frames' tables, search, chips and pager
   are later PRs'.
+- `ArchitectureView` is the Architecture tab: single-choice `FilterChips`
+  ("Diagram scope") over a `Panel` with the scope's title, caption, a
+  compact `ListRow` for each part and a line for each arrow, and a Stack
+  `Panel` of `Badge` groups beside it on the desktop, under it on a
+  tablet or phone. The drawn diagram and its legend are part two's.
 - `ContextDrift` is the Context drift panel (R9): `PageHeader` with the
   secondary Run check and its `RefreshIcon` (off while `busy`) over a
   `Panel` with the check's time and scope and a compact `ListRow` for each

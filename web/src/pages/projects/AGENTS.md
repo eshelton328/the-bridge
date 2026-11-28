@@ -21,7 +21,7 @@ T10b, M10 for the home, D01, T01, T01b, M01 for a project's page), read with
   project's page.
 - A project's page is `ui.open` on the same state, so it shares the
   home's data and screen. It shows the header and the tabs Overview,
-  Repositories (increment two), QA (increment three) and Ideas (d-133). The Overview draws the Inbox and Queue
+  Repositories and Architecture (increment two), QA (increment three) and Ideas (d-133). The Overview draws the Inbox and Queue
   panels (R5, R6) from `data.overview`: the overview states' rows, or
   the live page's from the server; with none it draws no panel.
   `ProjectPage.tsx` is its
@@ -112,6 +112,18 @@ T10b, M10 for the home, D01, T01, T01b, M01 for a project's page), read with
     one line ("QA items not read — the server answered 503" when the server
     has no Linear key). `app/ProjectQaLive.test.tsx` checks it at 1440,
     1024 and 390 px with the fake.
+  - The Architecture tab (increment two, R9, R10, R14, R15; part one,
+    plain on every size) is `?tab=architecture`, and `?scope=` names the
+    shown scope. Only then does the loader read
+    `GET /api/projects/:slug/architecture` (System, then each repository,
+    as chips) and `.../architecture/:scope` for the shown scope, the first
+    one when `?scope=` names none the project has. It shows the scope's
+    title, the caption (view, commit and date) or "No diagram yet", and the
+    diagram as text: its parts and its arrows with their labels, and a
+    repository's Stack. A miss shows one line ("Architecture not read — the
+    server answered 500"). The drawn diagram, Regenerate and the live
+    refresh are part two's. `app/ProjectArchitectureLive.test.tsx` checks
+    it at 1440, 1024 and 390 px with the fake.
   - report() gets only a miss the server answered, as `ProjectsMissError`
     with its step, kind and status, never a name.
 - The home's route test is `app/ProjectsHome.test.tsx` (every menu closed
