@@ -4,6 +4,7 @@
 // library has no project tile, and no token has the frames' 40 px letter or
 // the tile's height, so the tile pads with spacing tokens and draws the
 // letter in `heading` (LIBRARY_GAPS.md). Props only.
+import { ProjectIconName } from '@bridge/contract'
 import {
   BookIcon,
   BrainIcon,
@@ -24,8 +25,8 @@ import {
 import type { ComponentType } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 
-/** The library icons a project can name in `project.yaml`, by their kebab-case name. */
-const projectIcons: Readonly<Record<string, ComponentType<IconProps>>> = {
+/** The library icons a project can name in `project.yaml`, by the contract's names (`projectIconNames`). */
+const projectIcons = {
   book: BookIcon,
   brain: BrainIcon,
   branch: BranchIcon,
@@ -40,7 +41,7 @@ const projectIcons: Readonly<Record<string, ComponentType<IconProps>>> = {
   terminal: TerminalIcon,
   toolkit: ToolkitIcon,
   workspaces: WorkspacesIcon,
-}
+} as const satisfies Record<ProjectIconName, ComponentType<IconProps>>
 
 const tileStyle = css.raw({
   display: 'flex',
@@ -78,7 +79,9 @@ export type ProjectTileProps = {
 const tileLetter = (name: string) => (name.at(0) ?? '').toUpperCase()
 
 export function ProjectTile({ name, icon, size = 'wide' }: ProjectTileProps) {
-  const Icon = icon !== null && Object.hasOwn(projectIcons, icon) ? projectIcons[icon] : undefined
+  // The owner's text: a name such as "constructor" is no icon (ProjectIconName.safeParse reads no Object property).
+  const named = ProjectIconName.safeParse(icon)
+  const Icon = named.success ? projectIcons[named.data] : undefined
   return (
     <div className={tile[size]} data-figma={`project tile · ${name}`} aria-hidden="true">
       {Icon === undefined ? tileLetter(name) : <Icon size="24" />}

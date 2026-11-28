@@ -286,7 +286,7 @@ const oneLine = (min: number, max: number) =>
     .refine((s) => !notOneLine.test(s), 'one line, with no control characters')
 
 /** The library icons a project can pick (R4), by kebab-case name; web maps each one to its component. */
-const projectIconNames = [
+export const projectIconNames = [
   'book',
   'brain',
   'branch',
@@ -302,6 +302,8 @@ const projectIconNames = [
   'toolkit',
   'workspaces',
 ] as const
+export const ProjectIconName = z.enum(projectIconNames)
+export type ProjectIconName = z.infer<typeof ProjectIconName>
 
 /**
  * The body of `POST /api/projects` (New project, R2) and `PATCH /api/projects/:slug` (Edit details, R8): the name,
@@ -311,7 +313,7 @@ const projectIconNames = [
 export const ProjectDetailsRequest = z.strictObject({
   name: oneLine(1, maxProjectTitle),
   purpose: oneLine(0, maxProjectSummary),
-  icon: z.enum(projectIconNames).nullable(),
+  icon: ProjectIconName.nullable(),
 })
 export type ProjectDetailsRequest = z.infer<typeof ProjectDetailsRequest>
 

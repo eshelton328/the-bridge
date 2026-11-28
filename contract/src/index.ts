@@ -103,6 +103,8 @@ export {
   PinProjectResponse,
   ProjectDetailResponse,
   ProjectIcon,
+  ProjectIconName,
+  projectIconNames,
   ProjectPull,
   ProjectRepository,
   ProjectSlug,
