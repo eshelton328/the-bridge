@@ -448,7 +448,17 @@ client of a socket or a file sits beside them.
   project template writes them; the first `linear` team key of capital
   letters is the project's `linearTeam`. `fakeLinear.ts` is the fake of the
   Linear port: the issues of each team with one of the labels, and a count
-  of reads; the real adapter comes with the key file. It keeps the pins (`pins.json`) and the last
+  of reads. `linearGraphql.ts` is the real one: a POST to Linear's GraphQL
+  API, in pages of 50 issues (at most 5, else `too-many`) with 100
+  comments each; an issue with more is `badReply` `comments`, as its newest
+  ask could be past them. The key comes from the 0600 file that
+  `BRIDGE_LINEAR_KEY_FILE` names, read at each request (another mode is
+  `EMODE`), and goes only in the Authorization header. Titles and comment
+  text are cut to the contract limits before the schema reads them, and a
+  comment time must be ISO. A refused key (401, 403) is `failed`, 429 and
+  5xx are `unavailable`, any other reply that the schema does not take is
+  `badReply`; each is a code only. Both run `linearPortContract.ts`
+  (`linearGraphql.test.ts`, a stub fetch and a made-up key). It keeps the pins (`pins.json`) and the last
   drift runs (`drift.json`) in a 0700 folder beside the database, 0600
   and replaced in one rename; a bad file is `EBADDATA`
   (`diskProjects.test.ts`). The last CI answer of each GitHub repository

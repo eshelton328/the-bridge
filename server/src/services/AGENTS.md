@@ -171,5 +171,8 @@ from the outside world.
   with no answer of the project's `linearTeam`, through the Linear port
   (`LinearIssues`). A read is kept 30 s from its end and shared while it
   runs; a failed or thrown one is not kept. A comment time that is not ISO
-  is left out; with no port (no key) a read is `unavailable`
+  is left out; with no port (no key) a read is `unavailable`. One row that
+  `QaItem` refuses makes the list `badReply` (502), never a dropped row:
+  the adapter checks the reply first, so such a row is its fault, and a
+  dropped row would hide an issue that waits for the owner
   (`../routes/qa.test.ts`, a fake Linear).

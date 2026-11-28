@@ -37,6 +37,7 @@ import { createFiles } from './services/files.ts'
 import { createInbox } from './services/inbox.ts'
 import { createProjects } from './services/projects.ts'
 import { createQa } from './services/qa.ts'
+import { createLinearIssues } from './adapters/linearGraphql.ts'
 import { createPushSeen } from './services/push.ts'
 import { createPushNotifier } from './services/pushNotifier.ts'
 
@@ -136,8 +137,12 @@ const server = serve(
       watchProjects: (onChange) => projects.watch(onChange),
       files: createFiles(createDiskFiles({ brainDir: config.value.brainDir, env: process.env })),
       projects,
-      // The Linear adapter comes with the key file (BRIDGE_LINEAR_KEY_FILE) in the next PR; until then each read is 503.
-      qa: createQa({ brain: brainProjects, linear: null }),
+      // With no BRIDGE_LINEAR_KEY_FILE, each QA read of a project with a Linear team is 503.
+      qa: createQa({
+        brain: brainProjects,
+        linear:
+          config.value.linearKeyFile === null ? null : createLinearIssues({ keyFile: config.value.linearKeyFile }),
+      }),
     }).fetch,
     port,
     hostname: '127.0.0.1',
