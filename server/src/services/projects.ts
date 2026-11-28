@@ -24,6 +24,9 @@ import type {
   RepositoriesResponse,
   RepositoryCi,
   RepositoryCiResponse,
+  RepositoryDriftFinding,
+  RepositoryDriftResponse,
+  RepositoryDriftRun,
   RepositoryId,
   RepositoryPart,
   RepositoryRelease,
@@ -110,6 +113,29 @@ export type DriftStore = {
   save(runs: DriftRuns): Promise<Result<void, ProjectFault>>
 }
 
+/** A repository's snapshot on `main`: its folder, for the adapters only, and its commit. */
+type RepositorySnapshot = { readonly dir: string; readonly commit: string }
+
+/** The server's own shallow clones of the GitHub repositories, one for each GitHub repository. */
+export type SnapshotSource = {
+  sync(github: { readonly owner: string; readonly name: string }): Promise<Result<RepositorySnapshot, ProjectFault>>
+}
+
+/** The `agents-md` check of a snapshot folder: its first findings and the count of all of them. */
+export type RepositoryCheck = {
+  run(
+    dir: string,
+  ): Promise<Result<{ readonly findings: readonly RepositoryDriftFinding[]; readonly total: number }, ProjectFault>>
+}
+
+/** The last drift run of each repository, by project slug and repository ID. */
+export type RepositoryDriftRuns = Readonly<Record<string, Readonly<Record<string, RepositoryDriftRun>>>>
+
+export type RepositoryDriftStore = {
+  load(): Promise<Result<RepositoryDriftRuns, ProjectFault>>
+  save(runs: RepositoryDriftRuns): Promise<Result<void, ProjectFault>>
+}
+
 type Deps = {
   readonly brain: BrainProjects
   readonly pins: PinStore
@@ -125,6 +151,12 @@ type Deps = {
   readonly ciStore?: CiStore
   /** Where a CI read tells a fault code or a part's duration; never a repository's owner or name. */
   readonly ciLog?: CiLog
+  /** A repository's drift check (R7); with none, each repository drift read fails. */
+  readonly repositoryDrift?: {
+    readonly snapshots: SnapshotSource
+    readonly check: RepositoryCheck
+    readonly store: RepositoryDriftStore
+  }
   /** The chats and their tags; none (each chats read fails) where an app has no agents to give. */
   readonly agents?: Pick<AgentPort, 'listWorkspaces' | 'chatTags'>
   readonly now?: () => Date
@@ -142,6 +174,9 @@ type CiLog = (
 /** A drift run's answer, and the fault code of a check that failed (for the log), else null. */
 type DriftRunOutcome = { readonly drift: DriftResponse; readonly code: string | null }
 
+/** A repository drift run's answer, and the fault code of a run that failed (for the log), else null. */
+type RepositoryDriftOutcome = { readonly drift: RepositoryDriftResponse; readonly code: string | null }
+
 export type Projects = {
   list(): Promise<Result<ProjectsResponse, ProjectFault>>
   get(slug: ProjectSlug): Promise<Result<ProjectDetailResponse | NotFound, ProjectFault>>
@@ -157,6 +192,16 @@ export type Projects = {
    */
   ci(slug: ProjectSlug, repository: RepositoryId): Promise<Result<RepositoryCiResponse | NotFound, ProjectFault>>
   runDrift(slug: ProjectSlug): Promise<Result<DriftRunOutcome | NotFound, ProjectFault>>
+  /** The last drift check of one repository of the project (R7), null before the first. */
+  repositoryDrift(
+    slug: ProjectSlug,
+    repository: RepositoryId,
+  ): Promise<Result<RepositoryDriftResponse | NotFound, ProjectFault>>
+  /** Syncs the repository's snapshot and checks it; a part that fails is a `failed` run, never a fault. */
+  runRepositoryDrift(
+    slug: ProjectSlug,
+    repository: RepositoryId,
+  ): Promise<Result<RepositoryDriftOutcome | NotFound, ProjectFault>>
   /** A fault of the agents is the port's own, so the route answers it as the workspaces routes do. */
   chats(slug: ProjectSlug): Promise<Result<ProjectChatsResponse | NotFound, ProjectFault | AgentPortError>>
   /** Calls `onChange` each time a run in the background finds other open PRs (NCC-156); the result stops it. */
@@ -289,6 +334,7 @@ export function createProjects({
   ci,
   ciStore,
   ciLog = () => undefined,
+  repositoryDrift,
   now = () => new Date(),
 }: Deps): Projects {
   const watchers = new Set<() => void>()
@@ -401,6 +447,46 @@ export function createProjects({
   }
   // One layout check at a time: a second Run check while one runs gets that run's result.
   let running: Promise<Result<readonly string[], ProjectFault>> | undefined
+
+  type Checked = { readonly commit: string | null; readonly run: Awaited<ReturnType<RepositoryCheck['run']>> }
+  // One lock for each snapshot holds its sync and its check, so a sync never changes files that a check reads; a
+  // second request for a snapshot while its run waits or runs gets that run.
+  // Keyed by the GitHub repository, as its snapshot is: two IDs of one repository share a snapshot and its lock.
+  const snapshotLocks = new Map<string, Promise<unknown>>()
+  const snapshotRuns = new Map<string, Promise<Checked>>()
+  const checkSnapshot = (repository: ProjectRepository): Promise<Checked> => {
+    const github = repository.github
+    const key = github === null ? `id:${repository.id}` : `${github.owner}/${github.name}`.toLowerCase()
+    const joined = snapshotRuns.get(key)
+    if (joined !== undefined) return joined
+    const work = async (): Promise<Checked> => {
+      if (repositoryDrift === undefined) return { commit: null, run: err({ reason: 'failed', code: 'no-source' }) }
+      // No snapshot can come from a repository off GitHub: the file protocol is off, and a main clone is never read.
+      if (github === null) return { commit: null, run: err({ reason: 'failed', code: 'no-github' }) }
+      const snapshot = await repositoryDrift.snapshots.sync(github)
+      if (!snapshot.ok) return { commit: null, run: snapshot }
+      return { commit: snapshot.value.commit, run: await repositoryDrift.check.run(snapshot.value.dir) }
+    }
+    const before = snapshotLocks.get(key) ?? Promise.resolve()
+    const started = before.then(work, work)
+    const held = started.catch(() => undefined)
+    snapshotLocks.set(key, held)
+    snapshotRuns.set(key, started)
+    void held.then(() => {
+      if (snapshotRuns.get(key) === started) snapshotRuns.delete(key)
+      if (snapshotLocks.get(key) === held) snapshotLocks.delete(key)
+    })
+    return started
+  }
+  const repositoryOf = async (
+    slug: ProjectSlug,
+    id: RepositoryId,
+  ): Promise<Result<ProjectRepository | NotFound, ProjectFault>> => {
+    const record = await recordOf(slug)
+    if (!record.ok) return record
+    if (record.value === 'notFound') return ok('notFound')
+    return ok(record.value.repositories.find((r) => r.id === id) ?? 'notFound')
+  }
 
   const summaries = async (): Promise<Result<ProjectSummary[], ProjectFault>> => {
     const [records, pinned] = await Promise.all([brain.list(), pins.load()])
@@ -567,6 +653,42 @@ export function createProjects({
         return ok({ drift: { last: run }, code: lines.ok ? null : lines.error.code })
       })
     },
+    async repositoryDrift(slug, id) {
+      const repository = await repositoryOf(slug, id)
+      if (!repository.ok) return repository
+      if (repository.value === 'notFound') return ok('notFound')
+      if (repositoryDrift === undefined) return err({ reason: 'failed', code: 'no-source' })
+      const runs = await repositoryDrift.store.load()
+      if (!runs.ok) return runs
+      const ofProject = Object.hasOwn(runs.value, slug) ? runs.value[slug] : undefined
+      return ok({ last: ofProject !== undefined && Object.hasOwn(ofProject, id) ? (ofProject[id] ?? null) : null })
+    },
+
+    async runRepositoryDrift(slug, id) {
+      const repository = await repositoryOf(slug, id)
+      if (!repository.ok) return repository
+      if (repository.value === 'notFound') return ok('notFound')
+      if (repositoryDrift === undefined) return err({ reason: 'failed', code: 'no-source' })
+      const store = repositoryDrift.store
+      const { commit, run: checked } = await checkSnapshot(repository.value)
+      const findings = checked.ok ? checked.value.findings : []
+      const run: RepositoryDriftRun = {
+        result: !checked.ok ? 'failed' : findings.length > 0 ? 'findings' : 'clean',
+        checkedAt: now().toISOString(),
+        commit,
+        findings: [...findings],
+        total: checked.ok ? checked.value.total : 0,
+      }
+      return serial(async () => {
+        const runs = await store.load()
+        if (!runs.ok) return runs
+        const ofProject = Object.hasOwn(runs.value, slug) ? runs.value[slug] : undefined
+        const saved = await store.save({ ...runs.value, [slug]: { ...ofProject, [id]: run } })
+        if (!saved.ok) return saved
+        return ok({ drift: { last: run }, code: checked.ok ? null : checked.error.code })
+      })
+    },
+
     async chats(slug) {
       const record = await recordOf(slug)
       if (!record.ok) return record
@@ -614,6 +736,8 @@ export const noProjects: Projects = (() => {
     repositories: fault,
     ci: fault,
     runDrift: fault,
+    repositoryDrift: fault,
+    runRepositoryDrift: fault,
     chats: fault,
     watch,
   }

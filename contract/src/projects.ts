@@ -374,22 +374,28 @@ const hasControl = (p: string) => {
 }
 
 /**
- * A path in a repository, from its root: "." for the root folder, else no leading "/" and no "." or ".." part; no
- * control character and no backslash, as a file name may hold an escape character.
+ * A path in a repository, from its root: no leading "/", no empty, "." or ".." part, no control character and no
+ * backslash, as a file name may hold an escape character. The one schema for such a path: a field that may name the
+ * root folder takes `RepositoryPathOrRoot`.
  */
-const RepositoryPath = z
+export const RepositoryPath = z
   .string()
   .min(1)
   .max(500)
   .refine((p) => !p.includes('\\') && !hasControl(p), { message: 'no control character or backslash' })
-  .refine((p) => p === '.' || p.split('/').every((part) => part !== '' && part !== '.' && part !== '..'), {
+  .refine((p) => p.split('/').every((part) => part !== '' && part !== '.' && part !== '..'), {
     message: 'a path from the repository root',
   })
+export type RepositoryPath = z.infer<typeof RepositoryPath>
+
+/** A `RepositoryPath`, or "." for the repository's root folder. */
+export const RepositoryPathOrRoot = z.union([z.literal('.'), RepositoryPath])
+export type RepositoryPathOrRoot = z.infer<typeof RepositoryPathOrRoot>
 
 /** One problem of the `agents-md` check on a repository's snapshot: its kind, its path and the rest of its line. */
 export const RepositoryDriftFinding = z.strictObject({
   kind: AgentsMdKind,
-  path: RepositoryPath,
+  path: RepositoryPathOrRoot,
   /** The text after the path, such as "(165 > 60 lines)", with any local path masked; null when the line has none. */
   detail: z.string().min(1).max(500).nullable(),
 })
