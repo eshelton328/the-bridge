@@ -32,6 +32,15 @@ T10b, M10 for the home, D01, T01, T01b, M01 for a project's page), read with
 - Quick chat (R8) is `liveQuickChat.ts`, whose header has its rules, and
   works on the live project only. `app/ProjectQuickChat.test.tsx` checks
   it at 1440, 1024 and 390 px with the fakes: never a real chat.
+- "Chat about this idea" (NCC-132 AC2) runs the same start and send on a
+  live idea's page, with the prompt of `ideaChat.ts`: it names the
+  record's `file` from the chat's start folder
+  (`../../engine/projects/<slug>/<file>`, as the server's project shim
+  does). Its busy state and its line are `ui.ideaChat`, on the idea's
+  page, never the Quick chat dialog; pressed again after a miss it
+  retries with the same IDs. The file goes only into the prompt, never
+  into a URL, a log or an error. `app/ProjectIdeaChat.test.tsx` checks it
+  at 1440, 1024 and 390 px with the fakes.
 - In development the home reads the live projects (`liveProjects.ts`), as
   the Artifacts home does (d-117): with no `?state=` and no `?source=`, and
   with `?source=live`; `?source=fixtures` shows the sample data, and a

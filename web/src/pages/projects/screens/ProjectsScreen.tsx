@@ -47,6 +47,8 @@ export type ProjectsScreenProps = {
   /** An idea row was picked (R11), and Back to Ideas on its page. */
   onIdeaOpen?: ((id: string) => void) | undefined
   onIdeaBack?: (() => void) | undefined
+  /** Starts a chat about the open idea (NCC-132 AC2); with none the idea's page shows no button. */
+  onIdeaChat?: (() => void) | undefined
 }
 
 export function ProjectsScreen({
@@ -66,6 +68,7 @@ export function ProjectsScreen({
   onChatOpen,
   onIdeaOpen,
   onIdeaBack,
+  onIdeaChat,
 }: ProjectsScreenProps) {
   // The project page of `ui.open` (R4); the home when it names no card.
   const open = data.projects.find((p) => p.slug === ui.open)
@@ -141,6 +144,7 @@ export function ProjectsScreen({
                     onChatOpen={onChatOpen}
                     onIdeaOpen={onIdeaOpen}
                     onIdeaBack={onIdeaBack}
+                    onIdeaChat={onIdeaChat}
                     onQuickChat={() => {
                       onUiChange?.({ quickChat: {} })
                     }}

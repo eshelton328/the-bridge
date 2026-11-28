@@ -34,7 +34,9 @@ moves to `web/src/blocks/`.
   page, says when no idea matches, so a screen reader hears it. A row opens its idea.
   `IdeaView` is an idea's page: `BackRow` (Back to Ideas), the title as an
   `h2`, and the record's text with `MarkdownText`, less its first `# `
-  heading. Each takes only the words it draws. The frames' table and page
+  heading; with `onChat` it shows Chat about this idea (secondary, off
+  while `chat.busy`) over a `role="status"` line for a miss. Each takes
+  only the words it draws. The frames' table and page
   (D08, T08, T08b, M08, D09 and their tablet and phone frames) are a later
   issue's.
 - `RepositoriesList` is the Repositories tab: compact `ListRow` rows (role,

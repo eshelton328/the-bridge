@@ -60,6 +60,8 @@ export const ProjectPageWords = z.object({
   /** The Ideas tab and an idea's page (R10, R11): the back row to the list, the empty list, each kind and state. */
   ideaBack: z.string(),
   ideaBackLabel: z.string(),
+  /** The idea page's button that starts a chat about the idea (NCC-132 AC2). */
+  ideaChat: z.string(),
   noIdeas: z.string(),
   ideaKinds: z.record(z.enum(['idea', 'proposal', 'audit']), z.string()),
   ideaStates: z.record(z.enum(['open', 'in-design', 'needs-you', 'decided', 'parked']), z.string()),
@@ -187,7 +189,12 @@ export const ProjectRepositories = z.object({ rows: z.array(RepositoryRow), notR
 export type ProjectRepositories = z.infer<typeof ProjectRepositories>
 
 /** An idea's page (R11): its row and its record's text as Markdown. */
-export const IdeaPage = z.object({ row: IdeaRow, body: z.string() })
+export const IdeaPage = z.object({
+  row: IdeaRow,
+  body: z.string(),
+  /** The record's file in the project's brain folder (`ideas/<name>.md`), or null when the server gives none. */
+  file: z.string().nullable(),
+})
 export type IdeaPage = z.infer<typeof IdeaPage>
 
 export const ProjectsData = z.object({
@@ -236,6 +243,8 @@ export const ProjectsUi = z.object({
   /** The project page's selected tab; Overview when not set. */
   tab: ProjectTab.optional(),
   quickChat: QuickChatStatus.optional(),
+  /** "Chat about this idea" on an idea's page (NCC-132 AC2): busy, or the line of a start or send that missed. */
+  ideaChat: QuickChatStatus.optional(),
   /** The ID of the idea whose page shows (`?idea=`, R11). */
   idea: z.string().optional(),
   /** The Ideas tab's search, sort and page; the defaults when not set. */

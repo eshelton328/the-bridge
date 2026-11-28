@@ -38,6 +38,7 @@ export const menuOpen = {
       kinds: { approval: 'Approval', question: 'Question', review: 'Review', action: 'Action' },
       ideaBack: 'Ideas',
       ideaBackLabel: 'Back to Ideas',
+      ideaChat: 'Chat about this idea',
       noIdeas: 'No ideas yet',
       ideaKinds: { idea: 'Idea', proposal: 'Proposal', audit: 'Audit' },
       ideaStates: {

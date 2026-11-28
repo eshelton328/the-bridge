@@ -37,11 +37,24 @@ export type ProjectDetailProps = {
   /** Opens an idea's page (R11), and goes back from it to the Ideas tab. */
   onIdeaOpen?: ((id: string) => void) | undefined
   onIdeaBack?: (() => void) | undefined
+  onIdeaChat?: (() => void) | undefined
 }
 
 export function ProjectDetail(props: ProjectDetailProps) {
-  const { project, data, ui, layout, onUiChange, onBack, onQuickChat, onRunDrift, onChatOpen, onIdeaOpen, onIdeaBack } =
-    props
+  const {
+    project,
+    data,
+    ui,
+    layout,
+    onUiChange,
+    onBack,
+    onQuickChat,
+    onRunDrift,
+    onChatOpen,
+    onIdeaOpen,
+    onIdeaBack,
+    onIdeaChat,
+  } = props
   const words = data.page
   // The panels are the Overview tab's content, so its tab controls them; the tabs' 12 gap and the panels' own
   // top (12, or 6 on a phone) keep them 24 (18) under the tabs.
@@ -75,7 +88,7 @@ export function ProjectDetail(props: ProjectDetailProps) {
   if (ui.idea !== undefined && data.idea !== undefined)
     return (
       <div className={page[layout]}>
-        <IdeaView idea={data.idea} words={words} onBack={onIdeaBack} />
+        <IdeaView idea={data.idea} words={words} chat={ui.ideaChat} onBack={onIdeaBack} onChat={onIdeaChat} />
       </div>
     )
   return (
