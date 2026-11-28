@@ -92,8 +92,20 @@ const layout = JSON.stringify({
 const phone = [390, 844] as const
 const desktop = [1512, 982] as const
 
-/** The stubbed server: the workspaces, their layout, the event stream, and the fake's chat and upload routes. */
-function fakeServer(fake: FakeTranscriptServer) {
+/** The held layout reads that answered (`holdLayoutReads`). */
+let heldAnswers = 0
+
+/**
+ * The stubbed server: the workspaces, their layout, the event stream, and the fake's chat and upload routes. With
+ * `holdLayoutReads`, each layout read after the first answers only once the first upload chunk has gone up, so the
+ * re-read that the event stream's open starts lands while the test counts (NCC-27).
+ */
+function fakeServer(fake: FakeTranscriptServer, holdLayoutReads = false) {
+  let layoutReads = 0
+  heldAnswers = 0
+  const afterFirstChunk = async () => {
+    while (fake.uploads.chunks.length === 0) await new Promise((resolve) => setTimeout(resolve, 5))
+  }
   vi.stubGlobal('XMLHttpRequest', fake.uploads.XMLHttpRequest)
   vi.stubGlobal(
     'fetch',
@@ -109,8 +121,12 @@ function fakeServer(fake: FakeTranscriptServer) {
             { status: 200 },
           ),
         )
-      if (path === `/api/workspaces/${encodeURIComponent(workspace)}/layout`)
+      if (path === `/api/workspaces/${encodeURIComponent(workspace)}/layout`) {
+        layoutReads += 1
+        if (holdLayoutReads && layoutReads > 1)
+          return afterFirstChunk().then(() => ((heldAnswers += 1), new Response(layout, { status: 200 })))
         return Promise.resolve(new Response(layout, { status: 200 }))
+      }
       if (path === '/api/events') {
         const body = new ReadableStream<Uint8Array>({
           start: (control) => {
@@ -125,14 +141,14 @@ function fakeServer(fake: FakeTranscriptServer) {
 }
 
 /** The fake with 4-byte chunks, so a 10-byte file goes up in three chunks, and a transcript in each Claude chat. */
-function withChats() {
+function withChats(holdLayoutReads = false) {
   const fake = fakeTranscriptServer({ uploads: { chunkSize: 4 } })
   fake.set(plan, [
     { type: 'user', id: 'u1', text: 'Fix the **build**', cut: false },
     { type: 'user', id: 'u3', text: 'Then run the *tests*', cut: false },
   ])
   fake.set(review, [{ type: 'user', id: 'u2', text: 'Review the notes', cut: false }])
-  fakeServer(fake)
+  fakeServer(fake, holdLayoutReads)
   return fake
 }
 
@@ -187,10 +203,14 @@ async function openChat(size: readonly [number, number], title: string) {
   await expect.poll(reads).toBeGreaterThanOrEqual(2)
   await expect.poll(() => router.state.status).toBe('idle')
   await afterRendering()
+  return router
 }
 
-/** The renders of the screen, the chat header and react-markdown from a pick of two files to the end of their uploads. */
-async function rendersWhileUploading(title: string, fake: FakeTranscriptServer) {
+/**
+ * The renders of the screen, the chat header and react-markdown from a pick of two files to the end of their uploads,
+ * and then to the end of `settle` when a case gives one.
+ */
+async function rendersWhileUploading(title: string, fake: FakeTranscriptServer, settle?: () => Promise<void>) {
   const input = chatOf(title).element().querySelector('input[type="file"]')
   if (!(input instanceof HTMLInputElement)) throw new Error('no file input')
   vi.mocked(Markdown).mockClear()
@@ -204,6 +224,7 @@ async function rendersWhileUploading(title: string, fake: FakeTranscriptServer) 
   // Every chunk sent its progress, and the composer drew both chips ready.
   expect(fake.uploads.chunks).toHaveLength(6)
   await expect.element(chatOf(title).getByRole('button', { name: 'Send', exact: true })).toBeEnabled()
+  await settle?.()
   return { screen: renders.screen, header: renders.header, markdown: vi.mocked(Markdown).mock.calls.length }
 }
 
@@ -221,6 +242,21 @@ describe("an upload renders only its chat's composer (the #329 flake)", () => {
     const fake = withChats()
     await openChat(desktop, 'plan the slice')
     expect(await rendersWhileUploading('plan the slice', fake)).toEqual(none)
+    expect(getReports()).toEqual([])
+  })
+})
+
+describe('an unchanged layout answer renders nothing (NCC-27)', () => {
+  it("renders no page while the upload goes up and the re-read layout answers the same, in the desktop's pane", async () => {
+    const fake = withChats(true)
+    const router = await openChat(desktop, 'plan the slice')
+    // The count goes on until the held layout read has answered and the page has loaded it.
+    const loaded = async () => {
+      await expect.poll(() => heldAnswers).toBeGreaterThanOrEqual(1)
+      await expect.poll(() => router.state.status).toBe('idle')
+      await afterRendering()
+    }
+    expect(await rendersWhileUploading('plan the slice', fake, loaded)).toEqual(none)
     expect(getReports()).toEqual([])
   })
 })

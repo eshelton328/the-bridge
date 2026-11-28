@@ -19,7 +19,7 @@
 import type { StartChatResponse } from '@bridge/contract'
 import { useCallback, useEffect, useLayoutEffect, useRef } from 'react'
 import { showNotice } from './livePending.ts'
-import { listReads } from './listReads.ts'
+import { listReads, onSameState } from './listReads.ts'
 import { listedChats, openListedChat } from './openListedChat.ts'
 import type { WorkspacesData, WorkspacesUi } from './types.ts'
 import { needsYouLine } from './useNewChat.ts'
@@ -100,10 +100,12 @@ export function useForkedChat(deps: ForkedChatDeps): (started: StartChatResponse
     if (open.needsYou) showNotice(open.liveChat, { line: needsYouLine, retry: false })
   }, [end])
 
-  // Each list and layout read may bring the forked chat.
+  // Each list and layout read may bring the forked chat. A server read that gives the same state renders nothing, so
+  // a second read that still lists the shell comes through `onSameState` (NCC-27).
   useEffect(() => {
     resolve()
   }, [deps.data, resolve])
+  useEffect(() => onSameState(resolve), [resolve])
 
   useEffect(
     () => () => {
