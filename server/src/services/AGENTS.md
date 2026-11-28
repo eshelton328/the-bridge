@@ -174,6 +174,14 @@ from the outside world.
   repository scope's snapshot and reads it with a `SnapshotReader`, both
   under that snapshot's lock; `@system` fails `not-built` until A2, and a
   repository off GitHub `no-github` (`architectureRunner.test.ts`).
+  `architectureRules.ts` makes a repository's first diagram from its
+  `package.json` files as data: a part for each package (its folder as
+  the type line, "." for the root), a "depends on" arrow for each
+  `workspace:` dependency, and the Stack's Runtime and Build badges.
+  Keys are read with `Object.hasOwn` and `Object.entries` only, with no
+  `__proto__`; parts and arrows are sorted by path and cut at the
+  contract's caps, so one commit gives one model
+  (`architectureRules.test.ts`).
 - The QA tab (f-008 increment three): `qaAsk.ts` reads the newest Linear
   comment whose first line is `QA check` as data. Its `Repository:` counts
   only when `project.yaml` lists it, and its `PR:` only as a positive
