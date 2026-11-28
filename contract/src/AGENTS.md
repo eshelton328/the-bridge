@@ -155,7 +155,11 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
 - The file links (`files.ts`): a `FileRoot` (the brain or a chat ID) index of git's tracked files as `RootFilePath`s, each named by its `FileId`; file text only in `FileTextResponse`; `FileRawQuery` takes a root and path or an `AbsoluteFilePath` (`files.test.ts`).
 - The Projects app (f-008, `projects.ts`): a project is named by its
   `ProjectSlug` (its brain folder name) and an idea by its record's UUID
-  (`IdeaId`), never by a path. A repository gives its GitHub owner and
+  (`IdeaId`), never by a path. The one exception is `IdeaDetailResponse.file`
+  (`IdeaFile`, `ideas/<name>.md` with one plain name, or null): the server
+  makes it from the folder entry's name, never from the record's text, and
+  it never goes in a URL, a log or an error body (backend-coord,
+  2026-11-28; "Chat about this idea" names it). A repository gives its GitHub owner and
   name, or null for one off GitHub; a PR link is an https github.com link
   only. An idea with no `tags`, `kind` or `state` key has no tags, the
   kind `idea` and the state `open`. A `DriftRun` lists findings only when

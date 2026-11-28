@@ -6,7 +6,15 @@
 // idea and the state open.
 import { lstat, readdir, readFile, realpath } from 'node:fs/promises'
 import { join, sep } from 'node:path'
-import { IdeaId, IdeaKind, IdeaState, maxIdeaBody, maxProjectSummary, maxProjectTitle } from '@bridge/contract'
+import {
+  IdeaFile,
+  IdeaId,
+  IdeaKind,
+  IdeaState,
+  maxIdeaBody,
+  maxProjectSummary,
+  maxProjectTitle,
+} from '@bridge/contract'
 import type { IdeaRecord } from '../services/projects.ts'
 import { splitRecord } from './diskInbox.ts'
 
@@ -55,7 +63,7 @@ export function summaryOf(body: string): string {
   return joined.length > maxProjectSummary ? `${joined.slice(0, maxProjectSummary - 1)}…` : joined
 }
 
-function ideaOf(textOfFile: string): IdeaRecord | null {
+function ideaOf(textOfFile: string, name: string): IdeaRecord | null {
   let record: ReturnType<typeof splitRecord>
   try {
     record = splitRecord(textOfFile)
@@ -82,6 +90,8 @@ function ideaOf(textOfFile: string): IdeaRecord | null {
       updated,
     },
     body: body.trim().slice(0, maxIdeaBody),
+    // The folder entry's name, never the record's text; a name `IdeaFile` refuses gives none.
+    file: IdeaFile.safeParse(`ideas/${name}`).data ?? null,
   }
 }
 
@@ -97,7 +107,7 @@ export async function readIdeas(projectFolder: string): Promise<IdeaRecord[]> {
   for (const entry of entries) {
     if (!entry.isFile() || !entry.name.endsWith('.md')) continue
     const fileText = await readInside(folder, join(folder, entry.name), maxIdeaBytes)
-    const idea = fileText === null ? null : ideaOf(fileText)
+    const idea = fileText === null ? null : ideaOf(fileText, entry.name)
     // Two records with one ID: the first by file name wins, so the detail and the row agree.
     if (idea !== null && !found.some((f) => f.idea.id === idea.idea.id)) found.push(idea)
   }

@@ -65,7 +65,15 @@ const tagsBody = '# Sample proposal about tags\n\n![A tag chart](https://example
 function withServer() {
   const projects = fakeProjectsServer(
     [{ slug: 'alpha', name: 'Alpha', purpose: 'Made up.', icon: null, pinned: false }],
-    { ideas: { alpha: ideas.map((idea) => ({ idea, body: idea.id === speech ? body : tagsBody })) } },
+    {
+      ideas: {
+        alpha: ideas.map((idea) => ({
+          idea,
+          body: idea.id === speech ? body : tagsBody,
+          file: `ideas/${idea.id}.md`,
+        })),
+      },
+    },
   )
   const inbox = fakeInboxServer({ items: [] })
   vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit) => {

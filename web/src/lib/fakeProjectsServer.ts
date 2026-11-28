@@ -66,7 +66,7 @@ type FakeProjectsOptions = {
   readonly chats?: Readonly<Record<string, readonly unknown[]>>
   /** Each project's Queue (open PRs and unread repositories) by its slug; none by default. */
   readonly queues?: Readonly<Record<string, unknown>>
-  /** Each project's ideas (`{ idea, body }`) by its slug, in the list's order; each is checked against the contract. */
+  /** Each project's ideas (`{ idea, body, file }`, as the detail route gives them) by its slug, in the list's order; each is checked against the contract. */
   readonly ideas?: Readonly<Record<string, readonly unknown[]>>
   /** Each project's repository sections (`RepositorySection`) by its slug; none by default. */
   readonly repositories?: Readonly<Record<string, readonly unknown[]>>
