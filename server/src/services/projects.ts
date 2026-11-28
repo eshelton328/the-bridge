@@ -330,6 +330,16 @@ export function createProjects({
     }
     return ok(ciOf(windowOf(since, runs.value), ciRuns, merged.value, jobs))
   }
+  /** Removes the kept answers of the repositories no project names; only after a list read that succeeded. */
+  const pruneCi = async () => {
+    if (ciStore === undefined) return
+    const listed = await brain.list()
+    if (!listed.ok) return
+    const pruned = await ciStore.prune(
+      listed.value.flatMap((p) => p.repositories.flatMap((r) => (r.github === null ? [] : [r.github]))),
+    )
+    if (!pruned.ok) ciLog({ kind: 'failed', code: pruned.error.code })
+  }
   /**
    * One read of a repository in the background, as `keptPulls` runs one: a read that throws is the fault `threw`, so
    * no rejection is left unhandled, and a failed read keeps the old answer. The watchers hear of each read that ends,
@@ -350,6 +360,7 @@ export function createProjects({
         entry.kept = { ci: read.value, readAt }
         const saved = await ciStore?.save(github, entry.kept)
         if (saved !== undefined && !saved.ok) ciLog({ kind: 'failed', code: saved.error.code })
+        await pruneCi()
       })
       .catch(() => undefined)
       .then(() => {
