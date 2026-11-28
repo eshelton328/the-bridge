@@ -52,6 +52,8 @@ export type ProjectRecord = {
   readonly purpose: string
   readonly icon: string | null
   readonly repositories: readonly ProjectRepository[]
+  /** The key of the first team of its `linear:` list (the QA tab's issues), such as "NCC"; none when it names none. */
+  readonly linearTeam?: string
 }
 
 /** An idea record: its row and its Markdown after the front matter. */

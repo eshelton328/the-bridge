@@ -57,6 +57,10 @@ describe('readProjectYaml', () => {
     ])
   })
 
+  it('reads the linear list, whose first team key is the team of the project', () => {
+    expect(readProjectYaml(yaml).linear).toEqual([{ team: 'EX', id: 'x' }])
+  })
+
   it('reads an empty repositories list', () => {
     expect(readProjectYaml('name: X\nrepositories: []\n').repositories).toEqual([])
   })
@@ -105,6 +109,7 @@ describe('createBrainProjects', () => {
           },
           { id: 'local-repo', role: 'local only', github: null },
         ],
+        linearTeam: 'EX',
       },
       { slug: 'no-name', name: 'no-name', purpose: '', icon: null, repositories: [] },
     ])

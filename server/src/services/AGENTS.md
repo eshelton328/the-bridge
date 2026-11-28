@@ -156,3 +156,10 @@ from the outside world.
   save, the store is pruned to the repositories of a project list read
   that succeeded, never after a failed one. Each part's time goes to
   `ciLog`, with no owner or name (`../routes/projects.test.ts`).
+- The QA tab (f-008 increment three): `qaAsk.ts` reads the newest Linear
+  comment whose first line is `QA check` as data. Its `Repository:` counts
+  only when `project.yaml` lists it, and its `PR:` only as a positive
+  integer of that repository; its numbered lines are the steps, cut to the
+  contract's limits. `QA answer: <Approved|Changes requested|Denied>` is an
+  answer, and any other word none (`qaAsk.test.ts`). No comment text goes
+  into a log.

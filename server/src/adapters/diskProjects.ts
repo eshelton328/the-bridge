@@ -41,35 +41,37 @@ const codeOf = (thrown: unknown) =>
 type Scalars = Record<string, string | null>
 
 /**
- * The top-level scalar keys of a `project.yaml` and the maps of its `repositories` list ("- key: value" and the
- * indented keys under it), as the project template writes them. Any other block is skipped.
+ * The top-level scalar keys of a `project.yaml` and the maps of its `repositories` and `linear` lists ("- key:
+ * value" and the indented keys under it), as the project template writes them. Any other block is skipped.
  */
-export function readProjectYaml(text: string): { scalars: Scalars; repositories: Scalars[] } {
+export function readProjectYaml(text: string): { scalars: Scalars; repositories: Scalars[]; linear: Scalars[] } {
   const scalars: Scalars = {}
   const repositories: Scalars[] = []
-  let inList = false
+  const linear: Scalars[] = []
+  let list: Scalars[] | undefined
   let item: Scalars | undefined
   for (const line of text.replaceAll('\r\n', '\n').split('\n')) {
     if (line.trim() === '' || line.trimStart().startsWith('#')) continue
     const top = /^([a-z_]+):(?: (.*))?$/.exec(line)
     if (top?.[1] !== undefined) {
       const value = (top[2] ?? '').trim()
-      inList = top[1] === 'repositories' && value === ''
+      list =
+        value !== '' ? undefined : top[1] === 'repositories' ? repositories : top[1] === 'linear' ? linear : undefined
       item = undefined
       if (value !== '') scalars[top[1]] = unquote(value)
       continue
     }
-    if (!inList) continue
+    if (list === undefined) continue
     const start = /^\s*- ([a-z_]+):(?: (.*))?$/.exec(line)
     if (start?.[1] !== undefined) {
       item = { [start[1]]: unquote((start[2] ?? '').trim()) }
-      repositories.push(item)
+      list.push(item)
       continue
     }
     const key = /^\s+([a-z_]+):(?: (.*))?$/.exec(line)
     if (key?.[1] !== undefined && item !== undefined) item[key[1]] = unquote((key[2] ?? '').trim())
   }
-  return { scalars, repositories }
+  return { scalars, repositories, linear }
 }
 
 const githubUrl =
@@ -83,7 +85,8 @@ export function githubOf(url: string | null | undefined): ProjectRepository['git
 }
 
 function recordOf(slug: ProjectSlug, text: string): ProjectRecord {
-  const { scalars, repositories } = readProjectYaml(text)
+  const { scalars, repositories, linear } = readProjectYaml(text)
+  const team = linear.map((t) => t.team).find((t) => typeof t === 'string' && /^[A-Z]+$/.test(t))
   const name = scalars.name?.trim()
   const icon = ProjectIcon.safeParse(scalars.icon)
   const repos: ProjectRepository[] = []
@@ -98,6 +101,7 @@ function recordOf(slug: ProjectSlug, text: string): ProjectRecord {
     purpose: (scalars.purpose ?? '').trim().slice(0, maxProjectSummary),
     icon: icon.success ? icon.data : null,
     repositories: repos,
+    ...(typeof team === 'string' ? { linearTeam: team } : {}),
   }
 }
 
