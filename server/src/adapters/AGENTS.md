@@ -468,6 +468,20 @@ client of a socket or a file sits beside them.
   `total_count` names, at most 10, the later pages at once; a search page
   that GitHub marks `incomplete_results` is the fault `incomplete`
   (`ghCi.test.ts`).
+  `gitSnapshots.ts` (increment two) keeps the server's own shallow clone
+  of each GitHub repository in `snapshots/<owner>/<name>` (lower case)
+  beside the database
+  (0700): a first sync clones the default branch at depth 1 into a new
+  folder that takes the snapshot's name only once it has a commit, a later
+  one fetches the URL's `HEAD` and resets to it, and a snapshot that does
+  not sync is removed, so the next sync clones again. A symlink or a file
+  in place of a snapshot folder is removed, never followed. One sync of an ID
+  runs at a time; a second one gets its answer. git runs with an argument list, a 120 s
+  limit, no hooks, no submodules, no symlinks (`core.symlinks=false`), no
+  file or ext protocol, no global or system config, gh as the only
+  credential helper and only PATH, HOME, LANG and GIT_TERMINAL_PROMPT=0;
+  an ID or a GitHub name that could leave the folder is refused with no
+  call (`gitSnapshots.test.ts`, a stub git).
   `diskWorktrees.ts` counts the folders with a `.git` entry under
   `<chat root>/projects/<slug>/<repo>-worktrees`, 8 levels down at most
   (a folder still unread past that is the fault `too-deep`),
