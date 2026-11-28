@@ -493,3 +493,11 @@ client of a socket or a file sits beside them.
   (a folder still unread past that is the fault `too-deep`),
   follows no symlink and refuses a folder whose real path leaves the chat
   root (`diskWorktrees.test.ts`).
+  `diskBrainWrites.ts` (increment four) runs the project-setup helper's
+  `init` as `python -I` with an argument list (`--key=value`), a 30 s
+  limit and only PATH, HOME, LANG and TMPDIR, makes
+  `<chat root>/projects/<slug>/CLAUDE.md` with `project_shim`'s text, and
+  commits only its paths with `git add --` and `git commit --` and a fixed
+  message. Each `projects` folder must be a real folder in its root; an
+  `index.lock` or a merge, rebase or pick in progress is `busy` before any
+  write (`diskBrainWrites.test.ts`, a stub Python on a scratch brain).
