@@ -107,7 +107,7 @@ describe("A project's QA tab (increment three)", () => {
         .getByRole('tab')
         .elements()
         .map((t) => t.textContent)
-      expect(tabs).toEqual(['Overview', 'Repositories', 'QA', 'Ideas'])
+      expect(tabs).toEqual(['Overview', 'Repositories', 'Architecture', 'QA', 'Ideas'])
       await userEvent.click(page.getByRole('tab', { name: 'QA' }))
       await expect.element(group('Before merge').getByText('Add the QA tab')).toBeVisible()
       await expect.element(group('After merge').getByText('Fix the composer glide')).toBeVisible()

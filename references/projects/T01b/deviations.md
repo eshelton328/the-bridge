@@ -43,11 +43,15 @@ What differs from the frame after round 1 of the fidelity loop
   and a 13 px count: no text style is 18 px (`LIBRARY_GAPS.md`).
 - **Panel gap.** One panel over the other, they are 24 apart where the
   frame has 28, which no spacing token has (`LIBRARY_GAPS.md`).
-- **Tabs.** The tab row shows Overview, Repositories, QA and Ideas, where the
-  frame shows Overview, Repositories, Architecture and QA: only the tabs of
-  shipped increments show (d-133). Repositories is increment two's live
-  slice, QA increment three's and Ideas increment one's. So QA sits where
-  the frame draws Architecture, and Ideas where it draws QA.
+- **Tabs.** The tab row shows Overview, Repositories, Architecture, QA and
+  Ideas, where the frame shows Overview, Repositories, Architecture and QA:
+  only the tabs of shipped increments show (d-133). Repositories and
+  Architecture are increment two's live slices, QA increment three's and
+  Ideas increment one's, so Ideas comes after QA.
+- **Row height.** The Inbox rows are 56 px apart where the frame's are
+  58, so the Inbox panel is 6 px shorter and the closed "To review" row
+  ends higher: the library's compact `ListRow` with a kind tile is 56 high
+  (`LIBRARY_GAPS.md`, Compact list row 58).
 - **Quick chat** shows as the frame draws it; no frame draws its
   composer, so it is the library Dialog on every size, and in a state
   it opens nothing.

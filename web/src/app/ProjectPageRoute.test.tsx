@@ -83,7 +83,7 @@ describe('a project page (R4)', () => {
           .getByRole('tab')
           .elements()
           .map((t) => t.textContent),
-      ).toEqual(['Overview', 'Repositories', 'QA', 'Ideas'])
+      ).toEqual(['Overview', 'Repositories', 'Architecture', 'QA', 'Ideas'])
       expect(server.calls('detail').map((c) => c.path)).toEqual(['/api/projects/alpha'])
       await userEvent.click(page.getByRole('button', { name: 'Back to Projects' }))
       await expect.poll(() => router.state.location.pathname).toBe('/projects')
