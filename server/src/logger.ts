@@ -41,6 +41,7 @@ const logMessages = [
   'projects read failed',
   'drift check failed',
   'ci read failed',
+  'ci read timed',
   'files read failed',
 ] as const
 export type LogMessage = (typeof logMessages)[number]
