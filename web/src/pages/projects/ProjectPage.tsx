@@ -6,7 +6,8 @@
 // The Inbox panel loads again on each `inbox.changed` burst (no timer, NCC-138),
 // and the Chats panel too while the Overview tab is open (NCC-130).
 // The tab and the open idea are in the address (`?tab=ideas`, `?idea=`), so a
-// reload and the browser's Back keep them (R10, R11).
+// reload and the browser's Back keep them (R10, R11). A repository card's
+// Architecture opens `?tab=architecture&scope=<repository>` (d-135).
 // Run check (R9) keeps its busy state here, as the server has none.
 import type { ChatStatus } from '@bridge/contract'
 import { getRouteApi, useRouter } from '@tanstack/react-router'
@@ -223,6 +224,7 @@ export function ProjectPage() {
               chatAboutIdea(slug, openIdea)
             }
       }
+      onArchitecture={(repo) => void navigate({ search: view('architecture', undefined, repo) })}
       onQuickChatRetry={() => {
         if (attemptRef.current !== undefined) void run(attemptRef.current)
       }}

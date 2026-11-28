@@ -44,6 +44,8 @@ export type ProjectDetailProps = {
   onIdeaOpen?: ((id: string) => void) | undefined
   onIdeaBack?: (() => void) | undefined
   onIdeaChat?: (() => void) | undefined
+  /** Opens the Architecture tab on a repository (a repository card's Architecture). */
+  onArchitecture?: ((repo: string) => void) | undefined
 }
 
 export function ProjectDetail(props: ProjectDetailProps) {
@@ -60,6 +62,7 @@ export function ProjectDetail(props: ProjectDetailProps) {
     onIdeaOpen,
     onIdeaBack,
     onIdeaChat,
+    onArchitecture,
   } = props
   const words = data.page
   // The panels are the Overview tab's content, so its tab controls them; the tabs' 12 gap and the panels' own
@@ -78,7 +81,12 @@ export function ProjectDetail(props: ProjectDetailProps) {
     ) : null
   const repositories =
     data.repositories === undefined ? null : (
-      <RepositoriesList repositories={data.repositories} words={words} layout={layout} />
+      <RepositoriesList
+        repositories={data.repositories}
+        words={words}
+        layout={layout}
+        onArchitecture={onArchitecture}
+      />
     )
   const architecture =
     data.architecture === undefined ? null : (

@@ -13,7 +13,8 @@
 // Its Ideas tab reads `GET /api/projects/:slug/ideas` only while it shows,
 // and an idea's page `GET /api/projects/:slug/ideas/:id` (R10, R11); an
 // idea the server does not know is not found. Its Repositories tab reads
-// `GET /api/projects/:slug/repositories` (increment two), its Architecture tab
+// `GET /api/projects/:slug/repositories` (increment two) with each GitHub
+// repository's CI numbers and last drift check, its Architecture tab
 // `GET /api/projects/:slug/architecture` and the shown scope's
 // `.../architecture/:scope` (increment two, R9, R10), and its QA tab
 // `GET /api/projects/:slug/qa` (increment three), each only while it shows.
@@ -43,6 +44,7 @@ import {
   QaListResponse,
   RepositoriesResponse,
   RepositoryCiResponse,
+  RepositoryDriftResponse,
 } from '@bridge/contract'
 import { err, ok, type Result } from '@bridge/shared'
 import { report } from '../../errors/reporter.ts'
@@ -78,6 +80,7 @@ type ProjectsStep =
   | 'idea'
   | 'repositories'
   | 'ci'
+  | 'repositoryDrift'
   | 'qa'
   | 'drift'
   | 'runDrift'
@@ -388,12 +391,12 @@ export async function withLiveRepositories(
     repositories.map(async (r) => ({
       id: r.id,
       role: r.role,
+      github: r.github,
       visibility: r.visibility,
-      release: r.release?.tag ?? null,
       openPulls: r.openPulls,
       worktrees: r.worktrees,
       unread: r.unread,
-      ...(r.github === null ? {} : { ci: await readRepositoryCi(slug, r.id, now, signal) }),
+      ...(r.github === null ? {} : await readRepositoryNumbers(slug, r.id, now, signal)),
     })),
   )
   return { ...state, data: { ...state.data, repositories: { rows } } }
@@ -476,9 +479,38 @@ async function readRepositoryCi(slug: string, repo: string, now: Date, signal: A
     return null
   }
   const { ci, readAt, reading } = RepositoryCiResponse.parse(readJson(answer.value))
-  if (ci === null) return reading ? { runs: null, runMinutes: null, asOf: null } : null
+  if (ci === null) return reading ? { runs: null, runMinutes: null, merge: null, asOf: null } : null
   const old = readAt !== null && now.getTime() - Date.parse(readAt) > ciFreshMs
-  return { runs: ci.runs, runMinutes: ci.runMinutes, asOf: old ? ageOf(readAt, now) : null }
+  const merge = { medianHours: ci.merge.medianHours, p90Hours: ci.merge.p90Hours }
+  return { runs: ci.runs, runMinutes: ci.runMinutes, merge, asOf: old ? ageOf(readAt, now) : null }
+}
+
+/**
+ * Repository `repo`'s last drift check (`GET /api/projects/:slug/repositories/:repo/drift`, R7): its findings,
+ * `unchecked` before the first, `failed` when it did not run, or null when the read misses.
+ */
+async function readRepositoryDrift(slug: string, repo: string, signal: AbortSignal | undefined) {
+  const answer = await send(
+    (init) =>
+      api.api.projects[':slug'].repositories[':repo'].drift.$get({ param: { slug, repo } }, { init: { signal: init } }),
+    signal,
+  )
+  if (!answer.ok) {
+    reportMiss('repositoryDrift', answer.error)
+    return null
+  }
+  const { last } = RepositoryDriftResponse.parse(readJson(answer.value))
+  if (last === null) return 'unchecked'
+  return last.result === 'failed' ? 'failed' : last.total
+}
+
+/** A GitHub repository's card numbers: its CI numbers and its last drift check, read side by side. */
+async function readRepositoryNumbers(slug: string, repo: string, now: Date, signal: AbortSignal | undefined) {
+  const [ci, drift] = await Promise.all([
+    readRepositoryCi(slug, repo, now, signal),
+    readRepositoryDrift(slug, repo, signal),
+  ])
+  return { ci, drift }
 }
 
 /** The project's QA tab (increment three, R2 to R4) from `GET /api/projects/:slug/qa`; a miss gives its line. */

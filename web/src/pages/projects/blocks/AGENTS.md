@@ -39,11 +39,17 @@ moves to `web/src/blocks/`.
   only the words it draws. The frames' table and page
   (D08, T08, T08b, M08, D09 and their tablet and phone frames) are a later
   issue's.
-- `RepositoriesList` is the Repositories tab: compact `ListRow` rows (role,
-  visibility and release in the meta, the counts at the end, or after the
-  meta on the phone, each part not read named), then the CI numbers or
-  their line. The frames' sections and
-  tiles are later PRs'.
+- `RepositoriesList` is the Repositories tab: a `RepositoryCard` per
+  repository (d-135). `RepositoryHead` draws the name (`title`, an h2),
+  the visibility as `Badge variant="pill" tone="idle"`, the role
+  (`small`, muted) and Architecture and View on GitHub ("GitHub" on the
+  phone), secondary, md on the desktop and lg elsewhere; View on GitHub is
+  the `button` recipe on an `<a>` that opens a new tab, and is left out off
+  GitHub. Under it the library `KpiTile`s of `repositoryStats.ts` sit in a
+  `Grid` 12 apart: five on the desktop, four on a tablet, two by two on
+  the phone (no CI run time off the desktop). A repository off GitHub has
+  no tiles, only its worktree count. The Open PRs list, the CI job bars
+  and the drift groups are a later PR's.
 - `QaList` is the QA tab: an h3 and a list for each group with items
   (Before merge, then After merge) of compact `ListRow` rows (issue ID and
   `<repository>#<pr>` in the meta, the status and worktree at the end, or

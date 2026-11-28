@@ -90,18 +90,21 @@ T10b, M10 for the home, D01, T01, T01b, M01 for a project's page), read with
     change shows after a page open until NCC-139.
     The search, the area chips and the 10-row pager work on the rows read
     (`app/ProjectChatsTable.test.tsx`); a read that missed shows no count.
-  - The Repositories tab (increment two; the live slice, plain on every
-    size) is `?tab=repositories`. Only then does the loader read
-    `GET /api/projects/:slug/repositories`: one row per repository, its
-    role, visibility and newest release, its open PR and worktree counts,
-    and the line of each part not read. A miss shows one line
-    ("Repositories not read — the server answered 500"). The same read
-    gives each GitHub repository's kept CI numbers
-    (`GET .../repositories/:repo/ci`, R4): green of finished runs, a green
-    run's median minutes and "as of" the read's age when it is older than
-    10 minutes; "Reading CI" while the first read runs, "CI not read" for
-    a miss or no numbers. On `projects.changed`, and when the feed's
-    stream opens again, the loader reads them again.
+  - The Repositories tab (increment two) is `?tab=repositories`. Only
+    then does the loader read `GET /api/projects/:slug/repositories`: one
+    card per repository (d-135), its head (name, visibility, role,
+    Architecture and View on GitHub) and its stat tiles, and the line of
+    each part not read. A miss shows one line ("Repositories not read —
+    the server answered 500"). For each GitHub repository the same read
+    gives its kept CI numbers (`GET .../repositories/:repo/ci`, R4) and its
+    last drift check (`GET .../repositories/:repo/drift`, R7): CI pass
+    rate (green of finished runs, with "as of" the read's age when it is
+    older than 10 minutes), PR merge time (median and p90 hours), CI run
+    time (desktop only), Open PRs and Drift findings; "Reading CI" while
+    the first read runs, "CI not read" for a miss or no numbers, "Not
+    read" for a drift or PR count not read. Architecture opens
+    `?tab=architecture&scope=<repository>`. On `projects.changed`, and
+    when the feed's stream opens again, the loader reads them again.
     `app/ProjectRepositoriesLive.test.tsx` checks it at 1440, 1024 and
     390 px with the fake.
   - The QA tab (increment three; the live slice, plain on every size,
