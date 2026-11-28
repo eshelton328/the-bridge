@@ -264,19 +264,26 @@ describe('the Workspaces list read back from the background', () => {
       // them as they come, not from a read count taken after the click (the-bridge #496 verify, 11375 ms).
       let missed = 0
       let firstMiss: number | undefined
+      // From the first 502 the page's clock stands still (lib/holdTimers.ts), so the 10 s grace cannot pass on the
+      // real clock while a busy Mac runs the steps below: its notice came at the check below once (NCC-37). The tries
+      // and the quiet time move the held clock themselves.
+      let held: (() => void) | undefined
       server.answer(() => {
         if (!drawn()) return answerWith(list)()
         missed += 1
         firstMiss ??= performance.now()
+        held ??= holdTimers()
         return new Response('Bad Gateway', { status: 502 })
       })
       await tapWorkspaces(device.size)
       // The watch's read and the app client's two more tries of the 5xx, before the grace's own reload: the wait ends
       // at the grace, so a page that reads the list only on that reload fails here.
+      await renderedUntil(() => held !== undefined)
+      for (let at = 0; at < 10 && missed < 3; at += 1) await vi.advanceTimersByTimeAsync(100)
       await renderedUntil(() => missed >= 3 || (firstMiss !== undefined && performance.now() - firstMiss >= graceMs))
       expect(missed).toBeGreaterThanOrEqual(3)
       expect(performance.now() - (firstMiss ?? 0)).toBeLessThan(graceMs)
-      await quiet()
+      await vi.advanceTimersByTimeAsync(300)
       expect(notice().query()).toBeNull()
       await expect.element(page.getByText('live work').first()).toBeVisible()
       expect(getReports()).toEqual([])
