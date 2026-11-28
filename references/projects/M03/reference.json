@@ -1,0 +1,17 @@
+{
+  "frameId": "M03",
+  "code": "M03",
+  "name": "Project Architecture \u00b7 phone \u00b7 Dark",
+  "device": "phone",
+  "w": 390,
+  "h": 1820,
+  "mode": "dark",
+  "tolerance": 4,
+  "source": "Figma yJaVpShE9RVoQwUeUBnMQ4 node 227:2 (d-135)",
+  "original": {
+    "file": "figma-73/227-2.png",
+    "w": 390,
+    "h": 1820,
+    "sha256": "7579655ece4c09cf4e9c7d71a12bfd385621937a8527e3d539e9b420dc316aec"
+  }
+}

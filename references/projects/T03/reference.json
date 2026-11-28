@@ -1,0 +1,17 @@
+{
+  "frameId": "T03",
+  "code": "T03",
+  "name": "Project Architecture \u00b7 iPad mini portrait \u00b7 Dark",
+  "device": "tablet",
+  "w": 744,
+  "h": 1680,
+  "mode": "dark",
+  "tolerance": 4,
+  "source": "Figma yJaVpShE9RVoQwUeUBnMQ4 node 226:2 (d-135)",
+  "original": {
+    "file": "figma-73/226-2.png",
+    "w": 744,
+    "h": 1680,
+    "sha256": "7368abf0cb8921f38da0633b281f22e8c76b7541857bce0d5aec65d9c5f52771"
+  }
+}

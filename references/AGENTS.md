@@ -46,10 +46,12 @@ when it is missing, stale or edited
   its source, `lab a52ab2d4 + d-119`. Never replace one to make a check
   pass; a new design reference (a Claude Design artboard) replaces them
   with a new source.
-- `projects/` holds the Projects app's frames (f-008, increment one,
-  d-133): 01 Overview, 08 Ideas, 09 the idea page and 10 the Projects
-  home, on D, T (iPad portrait) and M, with `b` for iPad landscape
-  (`T01b`). Frames 01, 08 and 09 are 1:1 Playwright renders of the saved
-  design HTML; frame 10 is Figma `get_screenshot` of the read-only file
-  `yJaVpShE9RVoQwUeUBnMQ4`. Each note names its source and the tabs and
-  buttons of later increments that the build leaves out.
+- `projects/` holds the Projects app's frames (f-008, d-133, d-135), on
+  D, T (iPad portrait) and M, with `b` for iPad landscape (`T01b`):
+  01 Overview, 02 Repositories, 03 Architecture (System), 04 Architecture
+  of component-library-1701 (D, M), 05 Architecture of the-bridge (D
+  only), 06 QA, 07 the QA item page, 08 Ideas, 09 the idea page and
+  10 the Projects home. Each is Figma `get_screenshot` at 1:1 of the
+  read-only file `yJaVpShE9RVoQwUeUBnMQ4`: frames 01 to 09 from page
+  "Project overview" (73:2), the only source for the project page
+  (d-135), and frame 10 from the home frames. Each note names its node.

@@ -1,18 +1,18 @@
 {
   "frameId": "M01",
-  "inputs": "84285a745b12812ffc4b7c57e5b33e5b3c5cb994c806911b80312eeecbeca764",
+  "inputs": "c30cced53d4e625c636a6cc220655fd44beaefc79b9c56812ccb0dfefb8f4c47",
   "library": "1.0.0-beta.139",
-  "recordSha256": "c22408660e73e33f9839abdc375816eea4e20a2ad27307657471b2d19d0ca0f5",
+  "recordSha256": "40621f675a55600306b828812ed643bff6284ec27bd567def3bcea996ea45764",
   "record": {
     "verdict": "match",
-    "viewport": "390 px wide phone, dark mode",
+    "viewport": "390 CSS px wide phone, dark mode",
     "inputs": {
       "layout": "separate",
       "reference": "references/projects/M01/frame.png",
       "render": "reports/fidelity/projects/M01.render.png",
       "reference_side": null
     },
-    "summary": "The render matches the reference. Every difference I can see is on the accepted deviations list or follows from one of them.",
+    "summary": "Apart from the accepted deviations, the render matches the reference.",
     "findings": [],
     "accepted_deviations": [
       {
@@ -20,21 +20,21 @@
         "as_given": "Panels. The Overview tab shows the Inbox, Queue and Context drift panels (R5, R6, R9) and no Chats panel: that is NCC-130's next PR (Chats, with its pager; LIBRARY_GAPS.md).",
         "status": "as-described",
         "finding": null,
-        "note": "The render has no Chats panel. The space below Context drift is empty down to the tab bar."
+        "note": "The render has no Chats panel, search, filter chips or pager. The page below Context drift is empty down to the tab bar."
       },
       {
         "id": "A2",
         "as_given": "Context drift. ncc check gives one line of text for each finding, with no repository and no kind, so the panel has a row for each finding (3 here) where the frame groups 22 findings by repository with a count and a chevron. The line over the rows says when the check ran and what it reads (\"Checked 12m ago. Folder layout and hooks.\"), where the frame has a clock time and other checks (\"AGENTS.md length, links and folder layout\"), which wait for a later check. The heading is PageHeader at its pane size, as Inbox and Queue are.",
         "status": "as-described",
         "finding": null,
-        "note": "Three plain text rows with no counts or chevrons. The count is 3, the note reads \"Checked 12m ago. Folder layout and hooks.\" and the heading is the smaller pane size."
+        "note": "The panel has three plain finding rows with no counts or chevrons. The count is 3, and the line at the top reads \"Checked 12m ago. Folder layout and hooks.\""
       },
       {
         "id": "A3",
         "as_given": "Queue. \"In progress\" lists the open PRs with their pills, and no priority mark or owner chat on a row (\"the-bridge#535\" without \"· bridge-workbench\"): both come from Linear, which is out of scope. There is no \"Up next\" group, so the Queue counts its open PRs: 3 where the frame says 8, and \"In progress\" 3 where the frame says 4 over three rows.",
         "status": "as-described",
         "finding": null,
-        "note": "Without the priority mark, the row text starts about 26 px further left, at x 38 rather than 64. The wider text column breaks titles at other words (\"Keep a pinned body on track when its / footer grows\"). Both follow from this deviation."
+        "note": "With no priority mark, the row text starts further left (about x 38 instead of 64). Because the text column is wider, two titles wrap at other words. Both follow from this deviation."
       },
       {
         "id": "A4",
@@ -74,9 +74,9 @@
       {
         "id": "A9",
         "as_given": "Tabs. The tab row shows Overview, Repositories, Architecture, QA and Ideas, where the frame shows Overview, Repositories, Architecture and QA: only the tabs of shipped increments show (d-133). Repositories and Architecture are increment two's live slices, QA increment three's and Ideas increment one's, so Ideas comes after QA.",
-        "status": "not-seen",
+        "status": "as-described",
         "finding": null,
-        "note": "The tab row scrolls (A15), so only Overview, Repositories and Architecture show in the render. QA and Ideas are not visible, as in the reference."
+        "note": "QA and Ideas are past the right edge of the scrolling row in the render, so they cannot be seen. QA is also past the edge in the reference. The three tabs that show match."
       },
       {
         "id": "A10",
@@ -90,35 +90,35 @@
         "as_given": "Owner's name. NCC-1701's purpose starts \"The owner's personal workspace\", where the frame has the owner's name: the secret scan's personal-term rule keeps the name out of web/, so the purpose breaks its lines at other words. The live page shows the brain's own words.",
         "status": "as-described",
         "finding": null,
-        "note": "The purpose still takes four lines."
+        "note": ""
       },
       {
         "id": "A12",
         "as_given": "Name size. The name is the 28 px heading, where the frame draws 24, which no text style has (LIBRARY_GAPS.md, Phone page title 24), so it is wider and its line ends 4 px lower.",
         "status": "as-described",
         "finding": null,
-        "note": "The purpose sits a few pixels lower as a result. The tabs stay at the same y (about 212)."
+        "note": ""
       },
       {
         "id": "A13",
         "as_given": "Picture. The picture is 64 px square, as on T01b and D01, where this frame draws 56, which no size token has (LIBRARY_GAPS.md, Project picture 56). The name and the purpose keep the frame's 16 px gap, so they start 8 px right of the frame's.",
         "status": "as-described",
         "finding": null,
-        "note": "The name and purpose start at x 96 rather than 88."
+        "note": ""
       },
       {
         "id": "A14",
         "as_given": "Tab padding. The selected tab is the library's large item tab, 4 px wider than the frame's and 2 px further in from the page's edge, and each later tab starts a little further right, Architecture about 12 px (LIBRARY_GAPS.md, Phone item tabs).",
         "status": "as-described",
         "finding": null,
-        "note": "Architecture's icon starts at about x 276 rather than 264."
+        "note": ""
       },
       {
         "id": "A15",
         "as_given": "Tab row. The five tabs run past the right edge, as the frame's row of five does, and the row scrolls. As in the frame, the row runs to the screen's right edge, past the page's 16 px side, so Architecture shows whole.",
         "status": "as-described",
         "finding": null,
-        "note": "Architecture shows whole and ends at about x 378."
+        "note": ""
       },
       {
         "id": "A16",
@@ -129,7 +129,9 @@
       }
     ],
     "limits": [
-      "The full-page images are 390 px wide and very tall, so I saw them scaled down. Below the 420 px head crops, I could not check differences under about 3 px in spacing, size or tone."
+      "Both images were shown to me at about 390 px wide, so I could not check differences under about 2 px reliably.",
+      "I did not read the optional pixel diff image.",
+      "QA and Ideas in the tab row are past the right edge of the render, so I could not check them."
     ]
   }
 }

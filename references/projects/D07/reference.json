@@ -1,0 +1,17 @@
+{
+  "frameId": "D07",
+  "code": "D07",
+  "name": "QA item \u00b7 desktop \u00b7 Dark",
+  "device": "desktop",
+  "w": 1512,
+  "h": 1100,
+  "mode": "dark",
+  "tolerance": 4,
+  "source": "Figma yJaVpShE9RVoQwUeUBnMQ4 node 251:2 (d-135)",
+  "original": {
+    "file": "figma-73/251-2.png",
+    "w": 1512,
+    "h": 1100,
+    "sha256": "8b9c9ebd3aaa491019dc35f73bc79774db432448fc77bd0b46fcfc5eb35cda2e"
+  }
+}

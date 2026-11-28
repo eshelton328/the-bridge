@@ -1,0 +1,17 @@
+{
+  "frameId": "M06",
+  "code": "M06",
+  "name": "Project QA \u00b7 phone \u00b7 Dark",
+  "device": "phone",
+  "w": 390,
+  "h": 1500,
+  "mode": "dark",
+  "tolerance": 4,
+  "source": "Figma yJaVpShE9RVoQwUeUBnMQ4 node 259:2 (d-135)",
+  "original": {
+    "file": "figma-73/259-2.png",
+    "w": 390,
+    "h": 1500,
+    "sha256": "f0547a469877ad5d8225f1965cf1fae29405ef0238523772c1d10dc8a45c32fd"
+  }
+}

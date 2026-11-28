@@ -5,6 +5,8 @@ What differs from the frame after round 1 of the fidelity loop
 1.0.0-beta.135), each with its reason. The library gaps are in
 `web/src/pages/projects/LIBRARY_GAPS.md`.
 
+Since d-135 the reference is Figma node 178:2 of page "Project overview" (73:2), in place of the canvas render; a new blind review took the record with this list.
+
 ## Checks
 
 - PNG reference: text, position and icons are not run.
@@ -23,8 +25,10 @@ What differs from the frame after round 1 of the fidelity loop
   a chevron. The line over the rows says when the check ran and what it
   reads ("Checked 12m ago. Folder layout and hooks."), where the frame has a
   clock time and other checks ("AGENTS.md length, links and folder
-  layout"), which wait for a later check. The heading is `PageHeader` at
-  its pane size, as Inbox and Queue are.
+  layout"), which wait for a later check. Each row shows its line as
+  `ncc check` prints it, with the backticks around a command ("run
+  \`ncc check --fix\`"): the panel shows plain text, as on `main`. The
+  heading is `PageHeader` at its pane size, as Inbox and Queue are.
 - **Queue.** "In progress" lists the open PRs with their pills, and no
   priority mark or owner chat on a row ("the-bridge#535" without
   "· bridge-workbench"): both come from Linear, which is out of scope.

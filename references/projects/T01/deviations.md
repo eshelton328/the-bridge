@@ -5,6 +5,8 @@ What differs from the frame after round 2 of the fidelity loop
 1.0.0-beta.135), each with its reason. The library gaps are in
 `web/src/pages/projects/LIBRARY_GAPS.md`.
 
+Since d-135 the reference is Figma node 179:2 of page "Project overview" (73:2), in place of the canvas render; a new blind review took the record with this list.
+
 ## Checks
 
 - PNG reference: text, position and icons are not run.

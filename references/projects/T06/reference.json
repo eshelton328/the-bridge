@@ -1,0 +1,17 @@
+{
+  "frameId": "T06",
+  "code": "T06",
+  "name": "Project QA \u00b7 iPad mini portrait \u00b7 Dark",
+  "device": "tablet",
+  "w": 744,
+  "h": 1200,
+  "mode": "dark",
+  "tolerance": 4,
+  "source": "Figma yJaVpShE9RVoQwUeUBnMQ4 node 258:2 (d-135)",
+  "original": {
+    "file": "figma-73/258-2.png",
+    "w": 744,
+    "h": 1200,
+    "sha256": "cb2b3e77010efbb9be81c9c823657db5e07a18a812f347a24aa2fb24d538a888"
+  }
+}
