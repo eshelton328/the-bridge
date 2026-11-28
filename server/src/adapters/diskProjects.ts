@@ -1,10 +1,10 @@
 // The Projects app's adapters on disk (f-008). The brain's projects come
 // from `<brain>/projects/<slug>/project.yaml`: only a plain file whose real
 // path stays in its project folder, never a symlink, and only the keys the
-// cards need. The pins and the last drift runs are JSON files in a 0700
-// folder beside the database, 0600 and replaced in one rename. A fault gives
+// cards need. The pins, the last drift runs and the last CI answers are JSON
+// files in a 0700 folder beside the database, 0600 and replaced in one rename. A fault gives
 // its errno code only; no path or record text goes into an error.
-import { randomUUID } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
 import { chmod, lstat, mkdir, readdir, readFile, realpath, rename, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import {
@@ -14,6 +14,7 @@ import {
   ProjectIcon,
   type ProjectRepository,
   ProjectSlug,
+  RepositoryCi,
   RepositoryId,
 } from '@bridge/contract'
 import { err, ok, type Result } from '@bridge/shared'
@@ -27,6 +28,7 @@ import type {
   ProjectFault,
   ProjectRecord,
 } from '../services/projects.ts'
+import type { CiStore, KeptCi } from '../services/repositoryCi.ts'
 import { unquote } from './diskInbox.ts'
 import { readIdeas, readInside } from './projectIdeas.ts'
 
@@ -200,4 +202,43 @@ const StoredRuns = z.record(ProjectSlug, DriftRun)
 export function createDiskDriftStore(root: string): DriftStore {
   const file = jsonFile<DriftRuns>(root, 'drift.json', StoredRuns, {})
   return { load: () => file.load(), save: (runs) => file.save(runs) }
+}
+
+const StoredCi = z.strictObject({ ci: RepositoryCi, readAt: z.iso.datetime({ offset: true }) })
+
+/** A repository's file name: the sha256 hex of `owner/name` in lower case, so no path comes from GitHub's text. */
+const ciFileOf = (repository: { readonly owner: string; readonly name: string }) =>
+  `${createHash('sha256').update(`${repository.owner}/${repository.name}`.toLowerCase()).digest('hex')}.json`
+
+/** The last CI answer of each GitHub repository, one file each in `ci/`. */
+export function createDiskCiStore(root: string): CiStore {
+  const folder = join(root, 'ci')
+  return {
+    async load(repository) {
+      try {
+        const parsed = StoredCi.safeParse(JSON.parse(await readFile(join(folder, ciFileOf(repository)), 'utf8')))
+        return parsed.success ? parsed.data : null
+      } catch {
+        // A missing file or one that JSON cannot read is no answer: the next read writes it again.
+        return null
+      }
+    },
+    save: (repository, kept: KeptCi) => jsonFile(folder, ciFileOf(repository), StoredCi, kept).save(kept),
+    async prune(keep) {
+      const kept = new Set(keep.map(ciFileOf))
+      let names: string[]
+      try {
+        names = await readdir(folder)
+      } catch (thrown) {
+        return codeOf(thrown) === 'ENOENT' ? ok(undefined) : err({ reason: 'failed', code: codeOf(thrown) })
+      }
+      try {
+        for (const name of names)
+          if (/^[0-9a-f]{64}\.json$/.test(name) && !kept.has(name)) await rm(join(folder, name), { force: true })
+        return ok(undefined)
+      } catch (thrown) {
+        return err({ reason: 'failed', code: codeOf(thrown) })
+      }
+    },
+  }
 }

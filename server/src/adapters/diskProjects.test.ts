@@ -1,9 +1,9 @@
-import { mkdir, mkdtemp, rm, stat, symlink, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, readdir, rm, stat, symlink, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { ok } from '@bridge/shared'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createBrainProjects, createDiskPins, githubOf, readProjectYaml } from './diskProjects.ts'
+import { createBrainProjects, createDiskCiStore, createDiskPins, githubOf, readProjectYaml } from './diskProjects.ts'
 
 let dir: string
 beforeEach(async () => {
@@ -126,5 +126,56 @@ describe('createDiskPins', () => {
     expect((await stat(root)).mode & 0o777).toBe(0o700)
     await writeFile(join(root, 'pins.json'), '{"pins": ["/home/dev"]}')
     expect(await pins.load()).toEqual({ ok: false, error: { reason: 'failed', code: 'EBADDATA' } })
+  })
+})
+
+describe('createDiskCiStore', () => {
+  const repo = { owner: 'Example-Owner', name: 'example-repo' }
+  const kept = {
+    ci: {
+      since: '2026-10-28T00:00:00.000Z',
+      runs: { green: 3, finished: 4 },
+      runMinutes: 8,
+      merge: { count: 2, medianHours: 1.5, p90Hours: 3 },
+      jobs: [{ name: 'lint', medianMinutes: 2 }],
+      jobRuns: 3,
+    },
+    readAt: '2026-11-27T10:00:00.000Z',
+  }
+
+  it('keeps an answer for each repository, by a sha256 file name that holds no name, 0600 in a 0700 folder', async () => {
+    const store = createDiskCiStore(dir)
+    expect(await store.load(repo)).toBeNull()
+    expect(await store.save(repo, kept)).toEqual(ok(undefined))
+    expect(await store.load({ owner: 'example-owner', name: 'Example-Repo' })).toEqual(kept)
+    expect(await createDiskCiStore(dir).load(repo)).toEqual(kept)
+    const names = await readdir(join(dir, 'ci'))
+    expect(names).toHaveLength(1)
+    expect(names[0]).toMatch(/^[0-9a-f]{64}\.json$/)
+    expect((await stat(join(dir, 'ci'))).mode & 0o777).toBe(0o700)
+    expect((await stat(join(dir, 'ci', names[0] ?? ''))).mode & 0o777).toBe(0o600)
+  })
+
+  it('reads a file that is not JSON or not an answer as no answer, never a fault', async () => {
+    const store = createDiskCiStore(dir)
+    await store.save(repo, kept)
+    const [name] = await readdir(join(dir, 'ci'))
+    await writeFile(join(dir, 'ci', name ?? ''), '{not json')
+    expect(await store.load(repo)).toBeNull()
+    await writeFile(join(dir, 'ci', name ?? ''), JSON.stringify({ ci: null, readAt: 'yesterday' }))
+    expect(await store.load(repo)).toBeNull()
+  })
+
+  it('prunes the answers of the repositories it is not told to keep, and only its own files', async () => {
+    const store = createDiskCiStore(dir)
+    const other = { owner: 'example-owner', name: 'other-repo' }
+    expect(await store.prune([repo])).toEqual(ok(undefined))
+    await store.save(repo, kept)
+    await store.save(other, kept)
+    await writeFile(join(dir, 'ci', 'notes.txt'), 'kept')
+    expect(await store.prune([repo])).toEqual(ok(undefined))
+    expect(await store.load(repo)).toEqual(kept)
+    expect(await store.load(other)).toBeNull()
+    expect(await readdir(join(dir, 'ci'))).toHaveLength(2)
   })
 })

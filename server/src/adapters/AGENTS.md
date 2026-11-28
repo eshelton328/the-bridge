@@ -448,6 +448,11 @@ client of a socket or a file sits beside them.
   template writes them. It keeps the pins (`pins.json`) and the last
   drift runs (`drift.json`) in a 0700 folder beside the database, 0600
   and replaced in one rename; a bad file is `EBADDATA`
+  (`diskProjects.test.ts`). The last CI answer of each GitHub repository
+  is one file in `ci/` there, named by the sha256 hex of `owner/name` in
+  lower case, so no path comes from GitHub's text; a missing file or one
+  that the schema does not take is no answer, never a fault, and `prune`
+  removes the files of the repositories it is not told to keep
   (`diskProjects.test.ts`). `projectIdeas.ts` reads `<project>/ideas/*.md`
   records of `type: idea` with the inbox's front-matter reader, plain
   files in the real folder only; the summary is the first paragraph
