@@ -149,15 +149,19 @@ describe("A project's Repositories tab (increment two)", () => {
       const lines =
         width === 390
           ? [
-              'The app · Public · v1.0.0-beta.2 · 2 open PRs · 1 worktree · CI 18/20 green · 6.5 min a run · as of 3h ago',
-              'The library · GitHub facts not read · Open PRs not read · 3 worktrees · Reading CI',
+              'The app · Public · v1.0.0-beta.2 · 2 open PRs · 1 worktree',
+              'CI 18/20 green · 6.5 min a run · as of 3h ago',
+              'The library · GitHub facts not read · Open PRs not read · 3 worktrees',
+              'Reading CI',
               'A local folder · 0 worktrees',
             ]
           : [
               'The app · Public · v1.0.0-beta.2',
-              '2 open PRs · 1 worktree · CI 18/20 green · 6.5 min a run · as of 3h ago',
+              '2 open PRs · 1 worktree',
+              'CI 18/20 green · 6.5 min a run · as of 3h ago',
               'The library · GitHub facts not read',
-              'Open PRs not read · 3 worktrees · Reading CI',
+              'Open PRs not read · 3 worktrees',
+              'Reading CI',
               '0 worktrees',
             ]
       for (const text of lines) await expect.element(repoList().getByText(text, { exact: true })).toBeVisible()
@@ -189,21 +193,17 @@ describe("A project's Repositories tab (increment two)", () => {
     const projects = withServer()
     await open('/projects/alpha?tab=repositories')
     await expect
-      .element(repoList().getByText('2 open PRs · 1 worktree · CI 18/20 green · 6.5 min a run · as of 3h ago'))
+      .element(repoList().getByText('CI 18/20 green · 6.5 min a run · as of 3h ago', { exact: true }))
       .toBeVisible()
     await expect.poll(() => inbox.streams()).toBe(1)
     projects.setCi('alpha', 'example-app', appCi(0, 19))
     projects.setCi('alpha', 'example-lib', {
-      ...appCi(0, 7),
-      ci: { ...appCi(0).ci, runs: { green: 7, finished: 0 }, runMinutes: null },
+      ...appCi(0),
+      ci: { ...appCi(0).ci, runs: { green: 0, finished: 0 }, runMinutes: null },
     })
     inbox.emit('projects.changed')
-    await expect
-      .element(repoList().getByText('2 open PRs · 1 worktree · CI 19/20 green · 6.5 min a run', { exact: true }))
-      .toBeVisible()
-    await expect
-      .element(repoList().getByText('Open PRs not read · 3 worktrees · No CI runs in 30 days', { exact: true }))
-      .toBeVisible()
+    await expect.element(repoList().getByText('CI 19/20 green · 6.5 min a run', { exact: true })).toBeVisible()
+    await expect.element(repoList().getByText('No CI runs in 30 days', { exact: true })).toBeVisible()
     expect(projects.calls('ci')).toHaveLength(4)
   })
 
@@ -214,11 +214,33 @@ describe("A project's Repositories tab (increment two)", () => {
     )
     projects.setCi('alpha', 'example-lib', { ci: null, readAt: null, reading: false })
     await open('/projects/alpha?tab=repositories')
-    await expect.element(repoList().getByText('2 open PRs · 1 worktree · CI not read', { exact: true })).toBeVisible()
-    await expect
-      .element(repoList().getByText('Open PRs not read · 3 worktrees · CI not read', { exact: true }))
-      .toBeVisible()
+    await expect.element(repoList().getByText('2 open PRs · 1 worktree', { exact: true })).toBeVisible()
+    await expect.poll(() => repoList().getByText('CI not read', { exact: true }).elements().length).toBe(2)
     expect(getReports().map((r) => r.error.message)).toEqual(['A projects request missed: ci internal 500'])
+  })
+
+  it('keeps the CI numbers clear of the row text on the narrowest tablet layout (430 px)', async () => {
+    withServer()
+    await open('/projects/alpha?tab=repositories', 430, 932)
+    await expect
+      .element(repoList().getByText('CI 18/20 green · 6.5 min a run · as of 3h ago', { exact: true }))
+      .toBeVisible()
+    const box = (text: string) => repoList().getByText(text, { exact: true }).element().getBoundingClientRect()
+    const list = repoList().element().getBoundingClientRect()
+    const parts = [
+      'example-app',
+      'The app · Public · v1.0.0-beta.2',
+      '2 open PRs · 1 worktree',
+      'CI 18/20 green · 6.5 min a run · as of 3h ago',
+    ].map(box)
+    for (const [i, a] of parts.entries()) {
+      expect([i, a.left >= list.left - 0.5 && a.right <= list.right + 0.5]).toEqual([i, true])
+      for (const [k, b] of parts.entries()) {
+        if (k <= i) continue
+        const apart = a.right <= b.left || b.right <= a.left || a.bottom <= b.top || b.bottom <= a.top
+        expect([i, k, apart]).toEqual([i, k, true])
+      }
+    }
   })
 
   it('says the repositories were not read when the read misses', async () => {

@@ -11,6 +11,8 @@ import type { ProjectPageWords, ProjectRepositories, RepositoryRow } from '../ty
 
 const list = css({ display: 'flex', flexDirection: 'column', pt: '12' })
 const line = css({ textStyle: 'small', color: 'fg.muted', px: '10', pt: '12' })
+// The CI numbers' own line under the meta, which wraps, so a narrow row never pushes them over its text.
+const ciLine = css({ display: 'block', textStyle: 'small', color: 'fg.muted', overflowWrap: 'anywhere' })
 
 /** The words the list draws. */
 type RepositoryWords = Pick<
@@ -37,7 +39,7 @@ function metaOf(row: RepositoryRow, words: RepositoryWords): string {
 /** A green run's median minutes, to one decimal under 10. */
 const minutesOf = (n: number) => (n < 10 ? String(Math.round(n * 10) / 10) : String(Math.round(n)))
 
-/** The row's CI numbers (R4): green of finished, the minutes and the read's age; or its line; none off GitHub. */
+/** The row's CI line (R4): green of finished, the minutes and the read's age; or its line; none off GitHub. */
 function ciOf(row: RepositoryRow, words: RepositoryWords): string | null {
   const { ci } = words
   if (row.ci === undefined) return null
@@ -67,7 +69,7 @@ function countsOf(row: RepositoryRow, words: RepositoryWords): string {
     : row.worktrees === null
       ? null
       : count(row.worktrees, counts.worktree, counts.worktrees)
-  return [pulls, worktrees, ciOf(row, words)].filter((part) => part !== null).join(' · ')
+  return [pulls, worktrees].filter((part) => part !== null).join(' · ')
 }
 
 export function RepositoriesList({ repositories, words, layout }: RepositoriesListProps) {
@@ -83,6 +85,7 @@ export function RepositoriesList({ repositories, words, layout }: RepositoriesLi
       {repositories.rows.map((row) => {
         const meta = metaOf(row, words)
         const counts = countsOf(row, words)
+        const ci = ciOf(row, words)
         const phone = layout === 'phone'
         return (
           <li key={row.id}>
@@ -92,7 +95,9 @@ export function RepositoriesList({ repositories, words, layout }: RepositoriesLi
               title={row.id}
               meta={phone ? [meta, counts].filter((part) => part !== '').join(' · ') : meta}
               trailing={phone ? undefined : counts}
-            />
+            >
+              {ci === null ? null : <span className={ciLine}>{ci}</span>}
+            </ListRow>
           </li>
         )
       })}
