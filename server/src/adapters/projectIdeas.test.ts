@@ -40,8 +40,16 @@ describe('the idea records', () => {
           updated: '2026-11-13T15:13:28.000Z',
         },
         body: '# A title\n\nThe summary, marker-5150.\n\n## Open questions\n\n- One?',
+        file: 'ideas/plain.md',
       },
     ])
+  })
+
+  it('gives no file for a record whose file name IdeaFile refuses, and still gives the record', async () => {
+    const project = await projectWith({
+      'ideas/an idea.md': record([`id: ${id(9)}`, 'title: A spaced idea', "created: '2026-11-13T15:13:28Z'"]),
+    })
+    expect((await readIdeas(project)).map((i) => [i.idea.title, i.file])).toEqual([['A spaced idea', null]])
   })
 
   it('reads tags, kind, state and updated, and drops an unknown kind or state to the default', async () => {

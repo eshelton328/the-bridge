@@ -240,6 +240,7 @@ describe('/api/projects', () => {
       await (await read(app, `/api/projects/example-project/ideas/${ideaId}`)).json(),
     )
     expect(one.body).toContain('## Open questions')
+    expect(one.file).toBe('ideas/an-idea.md')
     expect((await read(app, '/api/projects/another-project/ideas')).status).toBe(200)
   })
 

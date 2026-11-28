@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   DriftRun,
   Idea,
+  IdeaFile,
   IdeaStateRequest,
   MakeFeatureRequest,
   MakeFeatureResponse,
@@ -123,6 +124,22 @@ describe('the increment four contract', () => {
   it('takes strict empty bodies only', () => {
     expect(MakeFeatureRequest.safeParse({}).success).toBe(true)
     expect(MakeFeatureRequest.safeParse({ path: 'x' }).success).toBe(false)
+  })
+})
+
+describe('IdeaFile', () => {
+  it('takes one plain .md name in ideas/ and refuses any other path', () => {
+    expect(IdeaFile.safeParse('ideas/speech-to-text.md').success).toBe(true)
+    for (const bad of [
+      'ideas/../secret.md',
+      '../ideas/a.md',
+      '/ideas/a.md',
+      'ideas/sub/a.md',
+      'ideas/a.txt',
+      'ideas/a',
+      'a.md',
+    ])
+      expect(IdeaFile.safeParse(bad).success, bad).toBe(false)
   })
 })
 

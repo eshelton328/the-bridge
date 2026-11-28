@@ -236,8 +236,23 @@ export type Idea = z.infer<typeof Idea>
 export const IdeasResponse = z.strictObject({ ideas: z.array(Idea) })
 export type IdeasResponse = z.infer<typeof IdeasResponse>
 
-/** The response of `GET /api/projects/:slug/ideas/:id`: the row and the record's Markdown after its front matter (R11). */
-export const IdeaDetailResponse = z.strictObject({ idea: Idea, body: z.string().max(maxIdeaBody) })
+/**
+ * An idea record's file, relative to its project's brain folder: `ideas/<name>.md`, one plain name, so never `..`,
+ * a leading `/` or a folder. "Chat about this idea" names it in the chat's first message (NCC-132 AC2). The one
+ * path in a Projects response: never in a URL, a log or an error body.
+ */
+export const IdeaFile = z.string().regex(/^ideas\/[A-Za-z0-9._-]+\.md$/)
+export type IdeaFile = z.infer<typeof IdeaFile>
+
+/**
+ * The response of `GET /api/projects/:slug/ideas/:id`: the row, the record's Markdown after its front matter (R11)
+ * and its file, null when the file's name does not fit `IdeaFile`.
+ */
+export const IdeaDetailResponse = z.strictObject({
+  idea: Idea,
+  body: z.string().max(maxIdeaBody),
+  file: IdeaFile.nullable(),
+})
 export type IdeaDetailResponse = z.infer<typeof IdeaDetailResponse>
 
 /** One problem that `ncc check` found in the project's part of the layout. */

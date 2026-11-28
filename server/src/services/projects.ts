@@ -10,6 +10,7 @@ import type {
   DriftResponse,
   DriftRun,
   Idea,
+  IdeaFile,
   IdeaDetailResponse,
   IdeaId,
   IdeasResponse,
@@ -56,8 +57,8 @@ export type ProjectRecord = {
   readonly linearTeam?: string
 }
 
-/** An idea record: its row and its Markdown after the front matter. */
-export type IdeaRecord = { readonly idea: Idea; readonly body: string }
+/** An idea record: its row, its Markdown after the front matter and its file (`ideas/<name>.md`, from the folder entry's name, never its text). */
+export type IdeaRecord = { readonly idea: Idea; readonly body: string; readonly file: IdeaFile | null }
 
 /** The brain's projects and their idea records. It only reads, and only when called. */
 export type BrainProjects = {
@@ -494,7 +495,7 @@ export function createProjects({
       const ideas = await brain.ideas(slug)
       if (!ideas.ok) return ideas
       const found = ideas.value.find((i) => i.idea.id === id)
-      return ok(found === undefined ? 'notFound' : { idea: found.idea, body: found.body })
+      return ok(found === undefined ? 'notFound' : { idea: found.idea, body: found.body, file: found.file })
     },
 
     async drift(slug) {

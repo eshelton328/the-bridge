@@ -79,6 +79,7 @@ export {
   DriftRun,
   Idea,
   IdeaDetailResponse,
+  IdeaFile,
   IdeaId,
   IdeaKind,
   IdeasResponse,
