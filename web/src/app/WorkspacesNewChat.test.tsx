@@ -2,7 +2,7 @@ import '@fontsource-variable/geist'
 import '@fontsource-variable/geist-mono'
 import '../index.css'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
-import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest'
+import { afterEach, describe, expect, it, onTestFailed, onTestFinished, vi } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
 import { ErrorTray } from '../errors/ErrorTray.tsx'
 import { clearReports, getReports } from '../errors/reporter.ts'
@@ -55,6 +55,45 @@ const list = {
 
 type Fakes = { list: FakeWorkspacesServer; chats: FakeTranscriptServer }
 
+/** Each request the fakes get, with its time; the NCC-175 probe reads it. */
+const requests: { at: number; what: string }[] = []
+
+/**
+ * NCC-175 probe, out when its cause is proved: each swap or move of the workspace sidebar button, seen each frame,
+ * and each request since the call, with its ms from the call. A test's fail message gets them, beside its trace.
+ */
+function watchSidebarButton(): () => { marks: string[]; requests: string[] } {
+  const start = performance.now()
+  const at = (time: number) => Math.round(time - start)
+  const button = () => document.querySelector('button[aria-label$="the workspace sidebar"]')
+  const place = (node: Element | null) => {
+    const box = node?.getBoundingClientRect()
+    return box === undefined ? 'none' : `${String(Math.round(box.x))},${String(Math.round(box.y))}`
+  }
+  const marks: string[] = []
+  let node = button()
+  let seen = place(node)
+  let watching = true
+  const look = () => {
+    if (!watching) return
+    const next = button()
+    const where = place(next)
+    if (next !== node || where !== seen)
+      marks.push(
+        `${String(at(performance.now()))} ${next === node ? 'moved' : 'new'} ${next?.getAttribute('aria-label') ?? 'none'} ${where}`,
+      )
+    node = next
+    seen = where
+    requestAnimationFrame(look)
+  }
+  requestAnimationFrame(look)
+  onTestFinished(() => {
+    watching = false
+  })
+  requests.length = 0
+  return () => ({ marks, requests: requests.map((r) => `${String(at(r.at))} ${r.what}`) })
+}
+
 /**
  * The fakes; with `hold`, each start's answer waits for it, with `noLayout` each layout read answers 502, and with
  * `tabs` the workspace's herdr tabs (one tab of both chats when not set); `workspaceList` is the server's list.
@@ -73,6 +112,7 @@ function withChats(
     vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
       const path = new URL(url, window.location.origin).pathname
+      requests.push({ at: performance.now(), what: `${init?.method ?? 'GET'} ${path}` })
       if (noLayout && path.endsWith('/layout')) return Promise.resolve(new Response('Bad Gateway', { status: 502 }))
       if (hold !== undefined && path === '/api/chats')
         return hold.then(() => workspaces.handle(path, init) ?? Promise.reject(new TypeError('no start answer')))
@@ -187,6 +227,10 @@ describe('a row after a new chat (R74)', () => {
 
   it('shows the tapped row’s own tab, focused, on the desktop after a new chat', async () => {
     const fakes = withChats(undefined, false, twoTabs)
+    const probe = watchSidebarButton()
+    onTestFailed(({ task }) => {
+      for (const error of task.result?.errors ?? []) error.message += `\nnew-chat probe ${JSON.stringify(probe())}`
+    })
     await tapWorkspaces(desktop)
     await userEvent.click(page.getByRole('button', { name: 'Hide the workspace sidebar' }))
     await userEvent.click(page.getByRole('button', { name: 'New chat in live work' }))
