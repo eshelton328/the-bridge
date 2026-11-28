@@ -50,6 +50,7 @@ import { api } from '../../lib/api.ts'
 import { InboxMissError, readInboxList } from '../../lib/inboxClient.ts'
 import type { ScreenState } from '../../lib/screenState.ts'
 import type {
+  IdeaPage,
   IdeaRow,
   ProjectArchitecture,
   ProjectCard,
@@ -58,6 +59,7 @@ import type {
   ProjectsData,
   ProjectsUi,
 } from './types.ts'
+import { splitIdeaBody } from './ideaBody.ts'
 
 /** How long a read or a pin waits for the server, in ms, as the Artifacts reads do. */
 const projectsTimeoutMs = 8000
@@ -323,6 +325,12 @@ const ideaRow = (i: Idea, now: Date): IdeaRow => ({
   age: ageOf(i.updated, now),
 })
 
+/** An idea's page from its detail (R11): its row, its text less its Open questions list, that list's items and its file. */
+const ideaPage = (read: IdeaDetailResponse, now: Date): IdeaPage => {
+  const body = splitIdeaBody(read.body)
+  return { row: ideaRow(read.idea, now), body: body.text, questions: body.questions, file: read.file }
+}
+
 /**
  * `state` with project `slug`'s Ideas tab (R10), or with the idea `idea`'s page (R11) when it is set. A list that
  * misses shows no rows and its line; an idea the server does not know keeps `ui.idea` with no page, so the loader
@@ -345,7 +353,7 @@ export async function withLiveIdeas(
       return {
         ...state,
         ui: { ...state.ui, idea },
-        data: { ...state.data, idea: { row: ideaRow(read.idea, now), body: read.body, file: read.file } },
+        data: { ...state.data, idea: ideaPage(read, now) },
       }
     }
     if (answer.error.kind === 'not-found') return { ...state, ui: { ...state.ui, idea } }

@@ -8,6 +8,7 @@ const words = {
   ideaBack: 'Ideas',
   ideaBackLabel: 'Back to Ideas',
   ideaChat: 'Chat about this idea',
+  ideaPage: { makeFeature: 'Make a feature', park: 'Park', questions: 'Open questions' },
   ideaKinds: { idea: 'Idea', proposal: 'Proposal', audit: 'Audit' },
   ideaStates: {
     open: 'Open',
@@ -92,8 +93,26 @@ export const ChatBusy: Story = {
   },
 }
 
-export const NoChat: Story = {
+// The frames (d-135, D09) draw the action card on every idea, so on fixture data, with no `onChat`, the button
+// shows as drawn and a press does nothing, as Make a feature and Park do.
+export const ChatOnFixtures: Story = {
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.click(canvas.getByRole('button', { name: 'Chat about this idea' }))
+    await expect(canvas.getByRole('status')).toHaveTextContent('')
+  },
+}
+
+export const Questions: Story = {
+  args: {
+    idea: {
+      ...meta.args.idea,
+      body: '# Sample idea about speech\n\nTalk to a chat from the phone.\n',
+      questions: ['Which engine?'],
+    },
+  },
   play: async ({ canvas }) => {
-    await expect(canvas.queryByRole('button', { name: 'Chat about this idea' })).toBeNull()
+    await expect(canvas.getByRole('region', { name: 'Open questions' })).toHaveTextContent('Which engine?')
+    // The panel's title is the one heading of that name: the text's own heading went with its list.
+    await expect(canvas.getAllByRole('heading', { name: 'Open questions' })).toHaveLength(1)
   },
 }

@@ -63,6 +63,11 @@ export const ProjectPageWords = z.object({
   ideaBackLabel: z.string(),
   /** The idea page's button that starts a chat about the idea (NCC-132 AC2). */
   ideaChat: z.string(),
+  /**
+   * An idea's page (d-135, D09): Make a feature and Park (increment four, which do nothing yet) and the Open
+   * questions panel's title.
+   */
+  ideaPage: z.object({ makeFeature: z.string(), park: z.string(), questions: z.string() }),
   noIdeas: z.string(),
   ideaKinds: z.record(z.enum(['idea', 'proposal', 'audit']), z.string()),
   ideaStates: z.record(z.enum(['open', 'in-design', 'needs-you', 'decided', 'parked']), z.string()),
@@ -271,6 +276,8 @@ export const IdeaPage = z.object({
   body: z.string(),
   /** The record's file in the project's brain folder (`ideas/<name>.md`), or null when the server gives none. */
   file: z.string().nullable(),
+  /** The items of the record's "## Open questions" list, which `body` then leaves out (ideaBody.ts); none when it has none. */
+  questions: z.array(z.string()).optional(),
 })
 export type IdeaPage = z.infer<typeof IdeaPage>
 

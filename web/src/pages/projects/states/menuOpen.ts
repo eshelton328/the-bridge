@@ -41,6 +41,7 @@ export const menuOpen = {
       ideaBack: 'Ideas',
       ideaBackLabel: 'Back to Ideas',
       ideaChat: 'Chat about this idea',
+      ideaPage: { makeFeature: 'Make a feature', park: 'Park', questions: 'Open questions' },
       noIdeas: 'No ideas yet',
       ideaKinds: { idea: 'Idea', proposal: 'Proposal', audit: 'Audit' },
       ideaStates: {
