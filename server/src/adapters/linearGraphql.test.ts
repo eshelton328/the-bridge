@@ -43,7 +43,7 @@ function linearStub(sent: Sent[] = []): typeof fetch {
           id: c.id,
           body: c.body,
           createdAt: c.createdAt,
-          parent: c.parentId === undefined || c.parentId === null ? null : { id: c.parentId },
+          parentId: c.parentId ?? null,
         })),
         pageInfo: { hasNextPage: false },
       },
@@ -64,6 +64,18 @@ describe('createLinearIssues', () => {
     await createLinearIssues({ keyFile, fetch: linearStub(sent) }).qaIssues('NCC', ['Branch'])
     expect(sent.map((s) => [s.url, s.authorization])).toEqual([['https://api.linear.app/graphql', key]])
     expect(JSON.stringify(sent.map((s) => s.variables))).not.toContain(key)
+  })
+  it('asks for the parent of each reply as the scalar parentId, as a parent object costs past the complexity limit of Linear (Codex review of #643)', async () => {
+    const queries: string[] = []
+    const keep: typeof fetch = (input, init) => {
+      queries.push(
+        typeof init?.body === 'string' ? z.object({ query: z.string() }).parse(JSON.parse(init.body)).query : '',
+      )
+      return linearStub()(input, init)
+    }
+    await createLinearIssues({ keyFile, fetch: keep }).qaIssues('NCC', ['Branch'])
+    expect(queries[0]).toMatch(/comments\(first: 100\) \{ nodes \{ id body createdAt parentId \}/)
+    expect(queries[0]).not.toContain('parent {')
   })
   /** A fetch that answers one page of one issue with `comments`. */
   const oneIssue =
@@ -88,7 +100,7 @@ describe('createLinearIssues', () => {
           },
         }),
       )
-  const comment = { id: 'c', body: 'b'.repeat(20_000), createdAt: '2026-11-27T10:00:00.000Z', parent: null }
+  const comment = { id: 'c', body: 'b'.repeat(20_000), createdAt: '2026-11-27T10:00:00.000Z', parentId: null }
   it('cuts a long title and comment text to the contract limits', async () => {
     const long = oneIssue('t'.repeat(500), { nodes: [comment], pageInfo: { hasNextPage: false } })
     const read = await createLinearIssues({ keyFile, fetch: long }).qaIssues('NCC', ['Branch'])
