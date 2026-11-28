@@ -59,6 +59,7 @@
 // scroll so the first of those entries still there starts where it did. A
 // reader at the end keeps the pin, as before.
 import { useCallback, useLayoutEffect, useRef, useState } from 'react'
+import { afterRemountGrace } from '../../../lib/remountGrace.ts'
 
 /** How near the end, in px, still counts as the end: a scroll position can be a fraction short of it. */
 const endSlack = 2
@@ -108,6 +109,54 @@ const ours = (node: EventTarget | Node | null) =>
   node instanceof Element && node.closest(`[${newestSlot}], [${earlierSlot}]`) !== null
 const reducedMotion = () =>
   typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+/**
+ * The place of a transcript the reader had left the end of, by its `key`, while its pane unmounts: the first entry in
+ * view, by its index counted from the last child, and how far below the view's top it started. A pane of the same chat
+ * that mounts in the remount grace (lib/remountGrace.ts), as on the desktop's sidebar Hide or Show, opens there
+ * (NCC-175). The index counts from the end, as a layout can put a child before the entries that the other layout does
+ * not: a side chat's note scrolls with its transcript in a pane (D5) but not beside the chat (D2).
+ */
+const leftPlaces = new Map<string, { readonly fromLast: number; readonly offset: number }>()
+
+const entriesOf = (scroller: HTMLElement) => [...scroller.children].filter((child) => !ours(child))
+
+/**
+ * Notes `scroller`'s place under `key` for the remount grace, when the reader had left the end: `noted`, the first
+ * entry in view at the last scroll or layout change. It is not measured now: in the commit that unmounts the pane, the
+ * layout around it (the sidebar that leaves) has already changed, and its entries have wrapped again.
+ */
+function leavePlace(
+  scroller: HTMLElement,
+  key: string,
+  pinned: boolean,
+  noted: { readonly entry: Element; readonly top: number } | undefined,
+) {
+  if (pinned || noted === undefined) return
+  const entries = entriesOf(scroller)
+  const index = entries.indexOf(noted.entry)
+  if (index < 0) return
+  const place = { fromLast: entries.length - 1 - index, offset: noted.top }
+  leftPlaces.set(key, place)
+  afterRemountGrace(() => {
+    if (leftPlaces.get(key) === place) leftPlaces.delete(key)
+  })
+}
+
+/**
+ * Scrolls `scroller` to the place left under `key` in the remount grace. True when the reader stays away from the end
+ * there; false with no place, or when the new pane is high enough that the place is at the end, which then keeps the pin.
+ */
+function takePlace(scroller: HTMLElement, key: string): boolean {
+  const place = leftPlaces.get(key)
+  if (place === undefined) return false
+  leftPlaces.delete(key)
+  const entries = entriesOf(scroller)
+  const entry = entries[entries.length - 1 - place.fromLast]
+  if (entry !== undefined)
+    scroller.scrollTop += entry.getBoundingClientRect().top - scroller.getBoundingClientRect().top - place.offset
+  return !atEnd(scroller)
+}
 
 /** What the button to the newest message shows now. */
 export type NewestView = {
@@ -431,6 +480,11 @@ export function usePinnedEnd(
       }
       show()
     })
+    // A pane of this chat that unmounted in this commit, away from the end, hands its place over; at the end, the pin.
+    if (takePlace(scroller, key)) {
+      pinnedRef.current = false
+      notePlace()
+    }
     follow()
     observeAll()
     show()
@@ -453,6 +507,7 @@ export function usePinnedEnd(
     view.addEventListener('resize', layoutMoved, passive)
     view.visualViewport?.addEventListener('resize', layoutMoved, passive)
     return () => {
+      leavePlace(scroller, key, pinnedRef.current, place[0])
       if (stepFrame !== undefined) view.cancelAnimationFrame(stepFrame)
       if (readerFrame !== undefined) view.cancelAnimationFrame(readerFrame)
       stopSeeking()
