@@ -8,7 +8,7 @@ import { clearReports, getReports } from '../../errors/reporter.ts'
 import { setViewport } from '../../lib/rendering.ts'
 import { testRender } from '../../lib/testRender.ts'
 import { resetAllStores } from '../../state/resetStores.ts'
-import { loadWorkspacesState } from './loadWorkspacesState.ts'
+import { loadWorkspacesRoute } from './loadWorkspacesState.ts'
 import { workspacesSearch } from './search.ts'
 import { WorkspacesPage } from './WorkspacesPage.tsx'
 import { queryClient } from '../../lib/queryClient.ts'
@@ -31,7 +31,7 @@ function renderAt(path = '/workspaces?source=fixtures') {
     path: 'workspaces',
     validateSearch: workspacesSearch,
     loaderDeps: ({ search }) => ({ state: search.state, source: search.source }),
-    loader: ({ deps }) => loadWorkspacesState(deps.state, deps.source),
+    loader: ({ deps }) => loadWorkspacesRoute(deps.state, deps.source),
     component: WorkspacesPage,
   })
   const router = createRouter({

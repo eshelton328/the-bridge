@@ -45,6 +45,8 @@ import { copyText } from '../../lib/copyText.ts'
 import { readsLive, readsLiveServer } from '../../lib/dataSource.ts'
 import { useInboxBadge, useInboxStreamHost } from '../../lib/inboxFeed.ts'
 import { workspacesSources } from './loadWorkspacesState.ts'
+import { useSettledState } from './useSettledState.ts'
+import { workspacesHome } from './home.ts'
 import { MarkdownChatsContext } from '../../blocks/markdownChats.ts'
 import { MarkdownFeaturesContext } from '../../blocks/markdownFeatures.ts'
 import { createDraftBook } from './blocks/draftBook.ts'
@@ -55,7 +57,8 @@ import { dropRestored, dropSend, keepSend, loadDrafts, markRestored, newSendId, 
 import { chatPanesOf, paneMoves, withMovedChats } from './paneFollow.ts'
 import { WorkspacesScreen } from './screens/WorkspacesScreen.tsx'
 import type { ComposerAnswer } from './blocks/useComposerActions.ts'
-import type { WorkspacesUi } from './types.ts'
+import type { WorkspacesData, WorkspacesUi } from './types.ts'
+import type { ScreenState } from '../../lib/screenState.ts'
 import { ModelRestartFailed } from './blocks/ModelRestartFailed.tsx'
 import { useLiveEffort } from './useLiveEffort.ts'
 import { keptOnPane, useLiveModel, withRestarting } from './useLiveModel.ts'
@@ -84,6 +87,12 @@ const titleEntries = z.array(z.tuple([z.string(), z.string()]))
 
 const route = getRouteApi('/workspaces')
 
+/** What the page draws while its first live read runs: the home with no workspaces, as the loading layout (R58). */
+const workspacesLoading: ScreenState<WorkspacesData, WorkspacesUi> = {
+  ...workspacesHome,
+  data: { ...workspacesHome.data, workspaces: [], panes: [] },
+}
+
 /**
  * A draft book for `state`, from the drafts saved before the last reload. Each change is saved in sessionStorage first,
  * so a keystroke that crashes the page is kept for Reload app.
@@ -111,7 +120,10 @@ const copyReply = (text: string) =>
   })
 
 export function WorkspacesPage() {
-  const state = route.useLoaderData()
+  // A slow live read comes as its promise (loadWorkspacesRoute): until it settles the page draws its loading layout,
+  // in this same tree, from the home with no workspaces (NCC-181).
+  const settled = useSettledState(route.useLoaderData().state)
+  const state = settled ?? workspacesLoading
   const navPages = useVisibleNavPages()
   const chatWidth = useSettingsChatWidth()
   // The rich text features of Settings (Rich text): each message draws only the ones that are on, and draws again
@@ -399,6 +411,7 @@ export function WorkspacesPage() {
         <WorkspacesScreen
           // The app always shows the Settings gear and the drawer's Settings row (d-119); a Figma state's story does not.
           settingsEntry
+          loading={settled === undefined}
           navPages={navPages}
           data={screenData}
           ui={shownUi}
