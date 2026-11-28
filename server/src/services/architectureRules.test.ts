@@ -70,6 +70,14 @@ describe('modelOf', () => {
     expect(model?.arrows).toEqual([{ from: 'p2', to: 'p0', label: 'depends on' }])
   })
 
+  it('follows a pnpm workspace alias to the package it names', () => {
+    const model = modelOf([
+      pkg('a/package.json', { name: '@x/a' }),
+      pkg('b/package.json', { name: 'b', dependencies: { alias: 'workspace:@x/a@*' } }),
+    ])
+    expect(model?.arrows).toEqual([{ from: 'p1', to: 'p0', label: 'depends on' }])
+  })
+
   it('gives null with no package.json', () => {
     expect(modelOf([{ path: 'README.md', text: '# x' }])).toBeNull()
   })

@@ -6,7 +6,8 @@
 // control characters and checks the model. Parts and arrows are sorted by
 // path and cut at the caps in that order, so one commit gives one model.
 // Two packages can have one name: an arrow to that name goes to the first
-// part of it in path order.
+// part of it in path order. A pnpm alias ("x": "workspace:foo@*") points at
+// foo.
 // No import but types: the worker of the reader runs it.
 import type { ArchitectureArrow, ArchitectureModel, ArchitecturePart, StackGroup } from '@bridge/contract'
 
@@ -74,12 +75,18 @@ export function modelOf(files: readonly RuleFile[]): ArchitectureModel | null {
     return { id, name: m.name, shape: 'package', ours: true, typeLine: m.folder.slice(0, caps.text) }
   })
   const inside = (spec: string) => spec.startsWith('workspace:')
+  /** The package a workspace dependency names: its key, or the target of an alias such as "workspace:foo@*". */
+  const targetOf = (name: string, spec: string) => {
+    const rest = spec.slice('workspace:'.length)
+    const at = rest.lastIndexOf('@')
+    return at > 0 ? rest.slice(0, at) : name
+  }
   const arrows: ArchitectureArrow[] = []
   const seen = new Set<string>()
   manifests.forEach((m, i) => {
     const deps = [...m.dependencies, ...m.devDependencies].filter(([, spec]) => inside(spec))
-    for (const [name] of [...deps].sort((a, b) => byPath(a[0], b[0]))) {
-      const to = ids.get(name)
+    for (const [name, spec] of [...deps].sort((a, b) => byPath(a[0], b[0]))) {
+      const to = ids.get(targetOf(name, spec))
       const from = `p${String(i)}`
       if (to === undefined || to === from || seen.has(`${from} ${to}`)) continue
       seen.add(`${from} ${to}`)
