@@ -34,6 +34,7 @@ import { checkRules } from './checkRules.ts'
 import { checkText } from './checkText.ts'
 import { normaliseFrameId } from './figmaMetadata.ts'
 import { collectPageScript, type PageMeasure } from './inPage.ts'
+import { renderArgs } from './renderArgs.ts'
 import { waitForAnimations, waitForLayout } from './settle.ts'
 import {
   checksForPng,
@@ -121,10 +122,8 @@ const outDir = join(reportsDir, page)
 mkdirSync(outDir, { recursive: true })
 
 const server = await serveStatic(storybookDir)
-// Chromium on Linux hints glyphs with FreeType, which makes text a few px
-// wider than on macOS, where the Figma frames were checked; with hinting
-// off, text widths in CI match a Mac's more closely.
-const browser = await chromium.launch({ args: ['--font-render-hinting=none'] })
+// The flags and why: renderArgs.ts.
+const browser = await chromium.launch({ args: [...renderArgs] })
 const summary: {
   frameId: string
   ok: boolean
