@@ -8,15 +8,11 @@
 // Two packages can have one name: an arrow to that name goes to the first
 // part of it in path order. A pnpm alias ("x": "workspace:foo@*") points at
 // foo.
-// A workspace (a root package.json and others) is a component view (B2a, frame
-// 230:2): the root is the repository's boundary, not a part, and each other
-// package is a part named by its folder ("web/"), with a type line of its kind
-// and frameworks, read from its runtime dependencies. A dependency on another
-// repository of the project is a package part outside the boundary, and one of
-// `services` is an outer system. A package with a `src/adapters` folder is a
-// part for each of its layer folders, and each adapter file whose name starts
-// with a word of `systems` adds that outer system. The worker gets the tracked
-// paths for these folder rules. The Stack has a group for each package.
+// A workspace (a root package.json and others) is a component view (frame
+// 230:2): the root is the repository's boundary, each other package a part
+// named by its folder, its layer folders under `src/adapters` parts too, and
+// outside it the other repositories and the systems its adapters and runtime
+// dependencies name.
 // No import but types: the worker of the reader runs it.
 import type { ArchitectureArrow, ArchitectureModel, ArchitecturePart, StackGroup } from '@bridge/contract'
 
@@ -219,13 +215,11 @@ function workspaceModel(root: Manifest, packages: readonly Manifest[], context: 
       .map((dep) => dep.slice(0, caps.badge)),
   })
   const title = (folder: string) => folder.charAt(0).toUpperCase() + folder.slice(1)
+  const devDependencies = [root, ...packages].flatMap((m) => m.devDependencies)
   const stack: StackGroup[] = [
     group('Runtime', root.dependencies),
     ...packages.map((m) => group(title(m.folder), m.dependencies)),
-    group(
-      'Build',
-      [root, ...packages].flatMap((m) => m.devDependencies),
-    ),
+    group('Build', devDependencies),
   ]
     .filter((g) => g.badges.length > 0)
     .slice(0, caps.groups)
