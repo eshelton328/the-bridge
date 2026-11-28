@@ -450,7 +450,8 @@ client of a socket or a file sits beside them.
   Linear port: the issues of each team with one of the labels, and a count
   of reads. `linearGraphql.ts` is the real one: a POST to Linear's GraphQL
   API, in pages of 50 issues (at most 5, else `too-many`) with 100
-  comments each. The key comes from the 0600 file that
+  comments each; an issue with more is `badReply` `comments`, as its newest
+  ask could be past them. The key comes from the 0600 file that
   `BRIDGE_LINEAR_KEY_FILE` names, read at each request (another mode is
   `EMODE`), and goes only in the Authorization header. Titles and comment
   text are cut to the contract limits before the schema reads them, and a

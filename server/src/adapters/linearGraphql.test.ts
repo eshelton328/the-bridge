@@ -38,7 +38,10 @@ function linearStub(sent: Sent[] = []): typeof fetch {
       url: i.url,
       state: { name: i.state },
       labels: { nodes: i.labels.map((name) => ({ name })) },
-      comments: { nodes: i.comments.map((c) => ({ id: c.id, body: c.body, createdAt: c.createdAt })) },
+      comments: {
+        nodes: i.comments.map((c) => ({ id: c.id, body: c.body, createdAt: c.createdAt })),
+        pageInfo: { hasNextPage: false },
+      },
     })
     const page = {
       nodes: all.slice(at, at + 1).map(node),
@@ -57,8 +60,10 @@ describe('createLinearIssues', () => {
     expect(sent.map((s) => [s.url, s.authorization])).toEqual([['https://api.linear.app/graphql', key]])
     expect(JSON.stringify(sent.map((s) => s.variables))).not.toContain(key)
   })
-  it('cuts a long title and comment text to the contract limits', async () => {
-    const long: typeof fetch = () =>
+  /** A fetch that answers one page of one issue with `comments`. */
+  const oneIssue =
+    (title: string, comments: { nodes: object[]; pageInfo: { hasNextPage: boolean } }): typeof fetch =>
+    () =>
       Promise.resolve(
         Response.json({
           data: {
@@ -66,11 +71,11 @@ describe('createLinearIssues', () => {
               nodes: [
                 {
                   identifier: 'NCC-1',
-                  title: 't'.repeat(500),
+                  title,
                   url: 'https://linear.app/x',
                   state: { name: 'QA' },
                   labels: { nodes: [] },
-                  comments: { nodes: [{ id: 'c', body: 'b'.repeat(20_000), createdAt: '2026-11-27T10:00:00.000Z' }] },
+                  comments,
                 },
               ],
               pageInfo: { hasNextPage: false, endCursor: null },
@@ -78,11 +83,21 @@ describe('createLinearIssues', () => {
           },
         }),
       )
+  const comment = { id: 'c', body: 'b'.repeat(20_000), createdAt: '2026-11-27T10:00:00.000Z' }
+  it('cuts a long title and comment text to the contract limits', async () => {
+    const long = oneIssue('t'.repeat(500), { nodes: [comment], pageInfo: { hasNextPage: false } })
     const read = await createLinearIssues({ keyFile, fetch: long }).qaIssues('NCC', ['Branch'])
     expect(read.ok && [read.value[0]?.title.length, read.value[0]?.comments[0]?.body.length]).toEqual([
       maxProjectTitle,
       maxQaText,
     ])
+  })
+  it('refuses an issue with more than one page of comments, as its newest ask could be past it (Codex review of #607)', async () => {
+    const more = oneIssue('t', { nodes: [comment], pageInfo: { hasNextPage: true } })
+    expect(await createLinearIssues({ keyFile, fetch: more }).qaIssues('NCC', ['Branch'])).toEqual({
+      ok: false,
+      error: { reason: 'badReply', code: 'comments' },
+    })
   })
   it('gives each fault a reason and a code, never the key', async () => {
     const answer =

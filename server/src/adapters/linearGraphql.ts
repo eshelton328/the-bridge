@@ -16,7 +16,7 @@ const maxPages = 5
 
 const query = `query($team: String!, $labels: [String!]!, $after: String) {
   issues(first: 50, after: $after, filter: { team: { key: { eq: $team } }, labels: { some: { name: { in: $labels } } } }) {
-    nodes { identifier title url state { name } labels(first: 50) { nodes { name } } comments(first: 100) { nodes { id body createdAt } } }
+    nodes { identifier title url state { name } labels(first: 50) { nodes { name } } comments(first: 100) { nodes { id body createdAt } pageInfo { hasNextPage } } }
     pageInfo { hasNextPage endCursor }
   }
 }`
@@ -34,6 +34,7 @@ const Page = z.object({
           labels: z.object({ nodes: z.array(z.object({ name: z.string() })) }),
           comments: z.object({
             nodes: z.array(z.object({ id: z.string(), body: cut(maxQaText), createdAt: z.iso.datetime() })),
+            pageInfo: z.object({ hasNextPage: z.boolean() }),
           }),
         }),
       ),
@@ -105,6 +106,9 @@ export function createLinearIssues({
       for (let n = 0; n < maxPages; n++) {
         const page = await pageOf(send, key.value, { team, labels: [...labels], after }, timeoutMs)
         if (!page.ok) return page
+        // An issue's newest ask can be past its first 100 comments, so a longer thread is no answer to guess from.
+        if (page.value.nodes.some((i) => i.comments.pageInfo.hasNextPage))
+          return err({ reason: 'badReply', code: 'comments' })
         for (const i of page.value.nodes)
           issues.push({
             key: i.identifier,
