@@ -11,8 +11,8 @@
 // answer, not read by default; `setCi` changes it; a repository the
 // project does not list is 404), `GET /api/projects/:slug/qa` (the test's QA
 // items of the project, none by default), `GET /api/projects/:slug/architecture` and
-// `.../architecture/:scope` (the test's scopes and kept diagrams, none by
-// default; an unknown scope is 404), `GET /api/projects/:slug/drift` (the test's last
+// `.../architecture/:scope` (the test's scopes and kept diagrams; by default
+// System alone with no diagram, as the server answers; an unknown scope is 404), `GET /api/projects/:slug/drift` (the test's last
 // drift run, none by default) and `POST /api/projects/:slug/drift` (a clean run
 // now, kept as the last). Every project, body and answer is checked against the
 // contract, so a test cannot send or get what the server would not: a body the
@@ -57,6 +57,13 @@ export type ProjectsCall =
   | 'architecture'
   | 'diagram'
 
+/** A project's Architecture list with no fixture: System alone, with no diagram yet, as the server answers. */
+const noArchitecture = ArchitectureResponse.parse({
+  scopes: [
+    { scope: '@system', title: 'How the system works', commit: null, generatedAt: null, stale: false, running: false },
+  ],
+})
+
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } })
 
@@ -92,7 +99,7 @@ type FakeProjectsOptions = {
   readonly drift?: Readonly<Record<string, unknown>>
   /**
    * Each project's Architecture tab by its slug: its scopes (`ArchitectureScopeState`, in the list's order) and each
-   * scope's kept model or null; none by default.
+   * scope's kept model or null; by default System alone with no diagram.
    */
   readonly architecture?: Readonly<
     Record<string, { readonly scopes: readonly unknown[]; readonly models?: Readonly<Record<string, unknown>> }>
@@ -275,9 +282,9 @@ export function fakeProjectsServer(
         if (!stored.has(slug))
           return errorAnswer({ kind: 'not-found', path, message: 'no project has this slug', requestId: 'r-404' }, 404)
         const arch = archOf.get(slug)
-        if (call === 'architecture') return json(arch?.list ?? { scopes: [] })
+        if (call === 'architecture') return json(arch?.list ?? noArchitecture)
         const scope = decodeURIComponent(diagramPath?.[2] ?? '')
-        const state = arch?.list.scopes.find((s) => s.scope === scope)
+        const state = (arch?.list ?? noArchitecture).scopes.find((s) => s.scope === scope)
         if (state === undefined)
           return errorAnswer({ kind: 'not-found', path, message: 'no such scope', requestId: 'r-404' }, 404)
         return json(ArchitectureScopeResponse.parse({ state, model: arch?.models.get(scope) ?? null }))

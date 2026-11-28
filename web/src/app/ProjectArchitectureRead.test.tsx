@@ -51,6 +51,13 @@ describe("A live project's Architecture reads (increment two, part one)", () => 
     await expect.poll(() => diagrams(other)).toEqual(['/api/projects/alpha/architecture/@system'])
   })
 
+  it('reads System with no diagram for a project the server has no scopes for', async () => {
+    const projects = withServer({ scopes: false })
+    await open('/projects/alpha?tab=architecture')
+    await expect.poll(() => diagrams(projects)).toEqual(['/api/projects/alpha/architecture/@system'])
+    expect(getReports()).toEqual([])
+  })
+
   it('reads no scope or diagram on the Overview', async () => {
     const projects = withServer()
     await open('/projects/alpha')
