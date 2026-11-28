@@ -1,5 +1,4 @@
-// A scratch brain for the tests of the brain's writes: a git repository and a stub of the helper's Python, never the
-// real brain or the real helper.
+// Test support of the brain's writes: a scratch git brain and a stub of the helper's Python, never the real ones.
 import { execFileSync } from 'node:child_process'
 import { chmod, mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'

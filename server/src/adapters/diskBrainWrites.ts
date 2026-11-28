@@ -2,9 +2,8 @@
 // `python -I` with an argument list, never a shell, a time limit and only PATH, HOME, LANG and TMPDIR (the helper's
 // lock file is in TMPDIR). Then it makes `<chat root>/projects/<slug>/` with its `CLAUDE.md` and commits the brain's
 // paths with `git add --` and `git commit --`, a fixed message and the brain's hooks. Each folder is checked by real
-// path, so a symlink cannot move a write out of it. A write that fails after `init` made the home removes both new
-// folders and puts back the two index files, so a retry can make the project. A fault is its code only; the
-// helper's output is never logged.
+// path, so a symlink cannot move a write out of it. A failed write after `init` removes both new folders and puts
+// back the two index files, so a retry can make the project. A fault is a code only, and no helper output is logged.
 import { execFile } from 'node:child_process'
 import { lstat, mkdir, readFile, realpath, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
