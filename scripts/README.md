@@ -55,10 +55,9 @@ stops with exit 2 and a message that names both. The URL must be a
 `pnpm dev` in a worktree, with its own `BRIDGE_SERVER_URL`: the served
 app is a build, which ignores `?state=` (d-134), so the check stops with
 exit 2 when the URL does not answer `/@vite/client`. It also stops with
-exit 2 when a tap on a blank page with the same profile does not land
-at its point (`inputProbe.ts`): on the owner's Mac, Playwright 1.65.1's
-WebKit puts every tap at the wrong point (NCC-179), so the check cannot
-take the composer's focus there. Flags: `--url`, `--keyboard <px>`, `--only workspaces|inbox|discuss|discussThread`, `--out <dir>` and
+exit 2 when a tap on a blank page with the same profile and the app's
+viewport meta does not land at its point (`inputProbe.ts`), as then its
+tap on the composer would miss (NCC-179). Flags: `--url`, `--keyboard <px>`, `--only workspaces|inbox|discuss|discussThread`, `--out <dir>` and
 `--no-focus-scroll`. It needs WebKit (`pnpm exec playwright install
 webkit`) and `ffmpeg` on the PATH. Desktop WebKit is not iOS: the fake
 keyboard stands in for iOS's, and desktop WebKit scrolls the window

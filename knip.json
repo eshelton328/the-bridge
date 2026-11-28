@@ -1,6 +1,6 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
-  "ignoreBinaries": ["ffmpeg", "herdr", "mkfifo", "sips"],
+  "ignoreBinaries": ["ffmpeg", "herdr", "mkfifo", "openssl", "sips"],
   "workspaces": {
     ".": {
       "entry": [

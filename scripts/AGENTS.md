@@ -30,9 +30,10 @@ camelCase (the lint's file-name rule).
   dev server.
 - A script that clicks or taps in Playwright calls `probeInput()`
   (`inputProbe.ts`) first and stops when its event does not land at its
-  point: Playwright 1.65.1's WebKit misplaces every click and tap on the
-  owner's Mac (NCC-179). Click and tap in Chromium with device emulation;
-  WebKit is for loads, renders and text only.
+  point: on the owner's Mac, Playwright 1.65.1's WebKit puts every mouse
+  click at the wrong point (NCC-179). Click in Chromium; a WebKit tap
+  lands only on a page with the app's viewport meta, which the probe's
+  page has.
 
 Read [README.md](README.md) when you run `pnpm new`, `pnpm
 keyboard:served` or change the keyboard trace endpoint.

@@ -1,8 +1,24 @@
 // The input guard of a script that clicks or taps in Playwright (NCC-179). On the owner's Mac, Playwright 1.65.1's
-// WebKit 27.2 puts a mouse click at 10/9 of its point plus the window's place, and scales a tap, so the event lands
-// on <html> or on another control; Chromium puts both at the point. `probeInput` sends one click or tap to a blank
-// page and reads where the page got it, so a script stops before it reports a result from input that missed.
+// WebKit 27.2 puts a mouse click at 10/9 of its point plus the window's place, so the event lands on <html> or on
+// another control; a tap lands at its point on a page with the app's viewport meta. Chromium puts both at the point.
+// `probeInput` sends one click or tap to a blank page with that meta and reads where the page got it, so a script
+// stops before it reports a result from input that missed.
+import { readFileSync } from 'node:fs'
 import type { Browser, BrowserContextOptions } from 'playwright'
+
+/**
+ * The app's viewport meta, from web/index.html. Without it a mobile profile lays the page out 980 px wide and scales
+ * each tap by the width's ratio (2.5 on an iPhone), which the app never does.
+ */
+export const appViewportMeta: string = (() => {
+  const html = readFileSync(new URL('../web/index.html', import.meta.url), 'utf8')
+  const meta = /<meta name="viewport"[^>]*>/.exec(html)
+  if (meta === null) throw new Error('web/index.html has no viewport meta')
+  return meta[0]
+})()
+
+/** The probe's page: the app's viewport meta and a 200 × 120 body that keeps the last pointerdown's point. */
+export const probePage = `<html><head>${appViewportMeta}</head><body style="margin:0;width:200px;height:120px"><script>document.addEventListener("pointerdown", (e) => { document.body.dataset.got = e.clientX + " " + e.clientY })</script></body></html>`
 
 export type Point = { readonly x: number; readonly y: number }
 
@@ -30,9 +46,7 @@ export async function probeInput(browser: Browser, options: BrowserContextOption
   const context = await browser.newContext({ ...options, viewport: { width: 200, height: 120 } })
   try {
     const page = await context.newPage()
-    await page.setContent(
-      '<body style="margin:0;width:200px;height:120px"><script>document.addEventListener("pointerdown", (e) => { document.body.dataset.got = e.clientX + " " + e.clientY })</script></body>',
-    )
+    await page.setContent(probePage)
     if (tap) await page.touchscreen.tap(probePoint.x, probePoint.y)
     else await page.mouse.click(probePoint.x, probePoint.y)
     const text = await page.evaluate(() => document.body.dataset.got)
