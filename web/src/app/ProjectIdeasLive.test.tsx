@@ -8,7 +8,7 @@ import { NotFound } from '../errors/NotFound.tsx'
 import { clearReports, getReports } from '../errors/reporter.ts'
 import { RouteError } from '../errors/RouteError.tsx'
 import { fakeInboxServer } from '../lib/fakeInboxServer.ts'
-import { fakeProjectsServer } from '../lib/fakeProjectsServer.ts'
+import { fakeIdeaDetail, fakeProjectsServer } from '../lib/fakeProjectsServer.ts'
 import { errorAnswer } from '../lib/fakeTranscriptServer.ts'
 import { answerLateServerReads } from '../lib/lateServerReads.ts'
 import { queryClient } from '../lib/queryClient.ts'
@@ -67,14 +67,7 @@ function withServer(list = ideas) {
     [{ slug: 'alpha', name: 'Alpha', purpose: 'Made up.', icon: null, pinned: false }],
     {
       ideas: {
-        alpha: list.map((idea) => ({
-          idea,
-          body: idea.id === speech ? body : tagsBody,
-          file: `ideas/${idea.id}.md`,
-          created: null,
-          source: null,
-          links: [],
-        })),
+        alpha: list.map((idea) => fakeIdeaDetail(idea, idea.id === speech ? body : tagsBody, `ideas/${idea.id}.md`)),
       },
     },
   )

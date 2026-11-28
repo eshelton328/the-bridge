@@ -5,7 +5,7 @@ import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/rea
 import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
 import { clearReports, getReports } from '../errors/reporter.ts'
-import { fakeProjectsServer } from '../lib/fakeProjectsServer.ts'
+import { fakeIdeaDetail, fakeProjectsServer } from '../lib/fakeProjectsServer.ts'
 import { errorAnswer, fakeTranscriptServer } from '../lib/fakeTranscriptServer.ts'
 import { fakeWorkspacesServer } from '../lib/fakeWorkspacesServer.ts'
 import { answerLateServerReads } from '../lib/lateServerReads.ts'
@@ -46,8 +46,8 @@ function withServer() {
     {
       ideas: {
         alpha: [
-          {
-            idea: {
+          fakeIdeaDetail(
+            {
               id,
               title: 'Sample idea about speech',
               summary: '',
@@ -56,12 +56,9 @@ function withServer() {
               state: 'open',
               updated: '2026-11-20T10:00:00.000Z',
             },
-            body: '# Sample idea about speech\n\nTalk to a chat from the phone.\n',
-            file: 'ideas/speech.md',
-            created: null,
-            source: null,
-            links: [],
-          },
+            '# Sample idea about speech\n\nTalk to a chat from the phone.\n',
+            'ideas/speech.md',
+          ),
         ],
       },
     },

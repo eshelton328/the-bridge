@@ -114,6 +114,14 @@ type FakeProjectsOptions = {
   >
 }
 
+/**
+ * An idea's detail as the server gives it for a record with no `created`, `source` or links, for a fixture: one
+ * place to add a key that `IdeaDetailResponse` gains.
+ */
+export function fakeIdeaDetail(idea: unknown, body: string, file: string | null) {
+  return IdeaDetailResponse.parse({ idea, body, file, created: null, source: null, links: [] })
+}
+
 export function fakeProjectsServer(
   projects: readonly unknown[] = [],
   {
