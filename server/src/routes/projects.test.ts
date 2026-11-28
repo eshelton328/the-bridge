@@ -565,24 +565,19 @@ describe('/api/projects/:slug/repositories/:repo/ci', () => {
     expect(second.calls).toHaveLength(2)
   })
 
-  it('sends projects.changed only when a refresh gives other numbers', async () => {
+  it('sends one projects.changed at the end of each refresh, also when its numbers are equal', async () => {
     const same = memoryStore({ ci: numbers, readAt: '2026-11-22T08:40:00.000Z' })
     const { app, projects } = server(fakeCi().source, same.store)
     let changes = 0
     projects.watch(() => {
       changes++
     })
-    await answer(app)
+    expect((await answer(app)).reading).toBe(true)
     await vi.waitFor(() => {
-      expect(same.kept()?.readAt).toBe('2026-11-22T09:00:00.000Z')
+      expect(changes).toBe(1)
     })
-    expect(changes).toBe(0)
-    const other = memoryStore({ ci: { ...numbers, jobRuns: 9 }, readAt: '2026-11-22T08:40:00.000Z' })
-    const second = server(fakeCi().source, other.store)
-    const changed = nextChange(second.projects)
-    await answer(second.app)
-    await changed
-    expect((await answer(second.app)).ci).toEqual(numbers)
+    expect(await answer(app)).toEqual({ ci: numbers, readAt: '2026-11-22T09:00:00.000Z', reading: false })
+    expect(changes).toBe(1)
   })
 
   it('keeps the old answer when a refresh fails or throws, with the code in the log', async () => {

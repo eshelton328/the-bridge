@@ -151,7 +151,7 @@ from the outside world.
   in the background for that repository. A read that throws is `threw`,
   and a failed read keeps the old answer; no read of the repository starts
   for 10 minutes after a failed one, so a GitHub fault and its event never
-  loop. The watchers hear of a read
-  only when its numbers differ from the kept ones, or when a first read
-  ends. Each part's time goes to `ciLog`, with no owner or name
+  loop. The watchers hear of each read that ends, good or failed, so a
+  page that showed `reading` reads the end and the new `readAt`. Each
+  part's time goes to `ciLog`, with no owner or name
   (`../routes/projects.test.ts`).

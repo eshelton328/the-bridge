@@ -172,8 +172,8 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
   `ci` with `reading` true means a refresh runs. `readAt`, the time of the
   GitHub read, is null exactly when `ci` is null.
   `projects.changed` on `/api/events` says that a
-  project's open PRs or a repository's CI answer changed: read the
-  project and its CI numbers again (NCC-156); its data is `{}`. Increment four: a create or edit body holds a
+  project's open PRs changed or a CI read of one of its repositories
+  ended, good or failed: read the project and its CI numbers again (NCC-156); its data is `{}`. Increment four: a create or edit body holds a
   one-line name and purpose (no control character, the contract's
   limits) and an icon or null, never a slug or a path. The Queue
   (`queue.ts`): an item is named by a `QueueItemId` (16 hex characters of

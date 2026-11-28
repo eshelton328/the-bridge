@@ -332,8 +332,8 @@ export function createProjects({
   }
   /**
    * One read of a repository in the background, as `keptPulls` runs one: a read that throws is the fault `threw`, so
-   * no rejection is left unhandled, and a failed read keeps the old answer. The watchers hear of it when the numbers
-   * differ from the kept ones, or when a first read ends, so the page stops showing that it reads.
+   * no rejection is left unhandled, and a failed read keeps the old answer. The watchers hear of each read that ends,
+   * good or failed, so a page that showed `reading` reads the end and the new `readAt`.
    */
   const refreshCi = (source: CiSource, entry: CiEntry, github: GithubName) => {
     entry.running = true
@@ -341,22 +341,20 @@ export function createProjects({
     void readCi(source, github)
       .catch((): Result<RepositoryCi, ProjectFault> => err({ reason: 'failed', code: 'threw' }))
       .then(async (read) => {
-        const before = entry.kept
         if (!read.ok) {
           ciLog({ kind: 'failed', code: read.error.code })
           entry.failedAt = now().getTime()
-          return before === null
+          return
         }
         entry.failedAt = null
         entry.kept = { ci: read.value, readAt }
         const saved = await ciStore?.save(github, entry.kept)
         if (saved !== undefined && !saved.ok) ciLog({ kind: 'failed', code: saved.error.code })
-        return before === null || JSON.stringify(before.ci) !== JSON.stringify(read.value)
       })
-      .catch(() => false)
-      .then((news) => {
+      .catch(() => undefined)
+      .then(() => {
         entry.running = false
-        if (news) changed()
+        changed()
       })
   }
 
