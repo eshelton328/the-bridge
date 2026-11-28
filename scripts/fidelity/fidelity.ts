@@ -60,6 +60,7 @@ import {
   reviewInputs,
   reviewRunProblem,
   sealedReviewGate,
+  sealedReviewText,
   sealReview,
 } from './reviewSeal.ts'
 import { composeSideBySide } from './sideBySide.ts'
@@ -275,7 +276,7 @@ async function runPngFrame(b: Browser, origin: string, frameId: string) {
   if (sealed !== undefined) {
     const inputs = reviewInputs(repoRoot, page, frameId)
     const seal = sealReview(frameId, inputsDigest(inputs.files, inputs.library), inputs.library, reviewData)
-    writeFileSync(sealed, `${JSON.stringify(seal, null, 2)}\n`)
+    writeFileSync(sealed, sealedReviewText(repoRoot, seal))
   }
   const report = {
     frameId,
