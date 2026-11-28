@@ -35,7 +35,7 @@ describe('modelOf', () => {
       { path: 'bad/package.json', text: '{' },
       { path: 'list/package.json', text: '[]' },
       { path: 'ok/package.json', text: '{"name":"ok","dependencies":{"__proto__":"1","left":"1"}}' },
-      { path: 'x/package.json', text: JSON.stringify(Object.create({ name: 'inherited' })) },
+      { path: 'x/package.json', text: '{"__proto__":{"name":"inherited"}}' },
     ])
     expect(model?.parts.map((p) => p.name)).toEqual(['ok', 'x'])
     expect(model?.stack).toEqual([{ name: 'Runtime', badges: ['left'] }])
