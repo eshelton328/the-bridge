@@ -388,16 +388,36 @@ describe("a live chat's transcript (slice 3b)", () => {
       // open of a portrait keyboard docks twice, to the expected keyboard and then to the measured one; on the iPad mini
       // both give the group the same end place, so the group can end its travel while the composer still moves.
       const docks: number[] = []
-      const onDock = () => docks.push(performance.now())
+      // A read at each dock too, so that no step spans two glides: a slow machine can draw no frame for 200 ms, and a
+      // step from one glide into the next mixed their ratios (NCC-53). Inside the dock event AppShell has ended the old
+      // glide and not yet started the new one, so the read waits for a microtask, where the new glide starts at the place
+      // the group is drawn. Only the frame reads count as the run's samples.
+      // A dock that gives the moving dock a new target keeps its clock, and the group moves on from where it is drawn:
+      // the step that ends at the read belongs to the glide it ends. A dock that starts a new clock writes a new end time
+      // on the root (`keyboardEnd`) and starts that clock 50 ms back, where iOS's keyboard already is when Safari reports
+      // it (the library's `keyboardReportLag`), so its first place is part of the way along: the step that ends at the
+      // read is that glide's first step (NCC-176).
+      const dockReads: ReturnType<typeof read>[] = []
+      let clockEnd = shell.dataset.keyboardEnd
+      const onDock = () => {
+        const time = performance.now()
+        docks.push(time)
+        const newClock = shell.dataset.keyboardEnd !== clockEnd
+        clockEnd = shell.dataset.keyboardEnd
+        if (sampling)
+          queueMicrotask(() => {
+            dockReads.push({ ...read(), t: newClock ? time + 0.001 : time - 0.001 })
+          })
+      }
       shell.addEventListener(appShellDockEvent, onDock)
       onTestFinished(() => {
         shell.removeEventListener(appShellDockEvent, onDock)
       })
       const at = read()
-      const steps: ReturnType<typeof read>[] = []
+      const frames: ReturnType<typeof read>[] = []
       let sampling = true
       const sample = () => {
-        steps.push(read())
+        frames.push(read())
         if (sampling) requestAnimationFrame(sample)
       }
       requestAnimationFrame(sample)
@@ -417,6 +437,7 @@ describe("a live chat's transcript (slice 3b)", () => {
       await settled()
       sampling = false
       const down = read()
+      const steps = [...frames, ...dockReads].sort((a, b) => a.t - b.t)
       // The keyboard closed again with the box still focused: the composer stays grown, and the group sits half that
       // growth higher than before the tap.
       expect(Math.abs(down.top - at.top + (down.footer - at.footer) / 2)).toBeLessThanOrEqual(1)
@@ -446,7 +467,7 @@ describe("a live chat's transcript (slice 3b)", () => {
       }
       const jumps = moves.map((move) => Math.abs(move.group) - Math.abs(move.composer) * ratioOf(move.glide))
       const worst = jumps.indexOf(Math.max(...jumps))
-      expect(steps.length).toBeGreaterThan(10)
+      expect(frames.length).toBeGreaterThan(10)
       expect(
         Math.max(...jumps),
         `step ${String(worst + 1)} of ${JSON.stringify(steps.map((s) => [Math.round(s.t), s.composerTop, s.top, s.footer]))}, docks ${JSON.stringify(docks.map(Math.round))}`,
