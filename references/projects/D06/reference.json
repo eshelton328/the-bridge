@@ -1,0 +1,17 @@
+{
+  "frameId": "D06",
+  "code": "D06",
+  "name": "Project QA \u00b7 desktop \u00b7 Dark",
+  "device": "desktop",
+  "w": 1512,
+  "h": 1060,
+  "mode": "dark",
+  "tolerance": 4,
+  "source": "Figma yJaVpShE9RVoQwUeUBnMQ4 node 256:2 (d-135)",
+  "original": {
+    "file": "figma-73/256-2.png",
+    "w": 1512,
+    "h": 1060,
+    "sha256": "17040666a005a70b159f0bffacd770415154cbfd63fb77e096123aaf9baff6ab"
+  }
+}

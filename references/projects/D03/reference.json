@@ -1,0 +1,17 @@
+{
+  "frameId": "D03",
+  "code": "D03",
+  "name": "Project Architecture \u00b7 desktop \u00b7 Dark",
+  "device": "desktop",
+  "w": 1512,
+  "h": 1080,
+  "mode": "dark",
+  "tolerance": 4,
+  "source": "Figma yJaVpShE9RVoQwUeUBnMQ4 node 224:2 (d-135)",
+  "original": {
+    "file": "figma-73/224-2.png",
+    "w": 1512,
+    "h": 1080,
+    "sha256": "5cc6ad834ee269032c249dcae4e012efe5747e4806373a3bee4303a97ee5c27a"
+  }
+}

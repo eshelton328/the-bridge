@@ -1,0 +1,17 @@
+{
+  "frameId": "T07b",
+  "code": "T07b",
+  "name": "QA item \u00b7 iPad mini landscape \u00b7 Dark",
+  "device": "tablet",
+  "w": 1133,
+  "h": 1100,
+  "mode": "dark",
+  "tolerance": 4,
+  "source": "Figma yJaVpShE9RVoQwUeUBnMQ4 node 252:2 (d-135)",
+  "original": {
+    "file": "figma-73/252-2.png",
+    "w": 1133,
+    "h": 1100,
+    "sha256": "846094e0ff907c82791bd5b1bd919fe5e472725617cce8a20acdd446e0530fc2"
+  }
+}

@@ -4,6 +4,8 @@ What differs from the frame (`pnpm fidelity projects`, 2026-11-27,
 against the installed library 1.0.0-beta.137), each with its reason. The library gaps are in
 `web/src/pages/projects/LIBRARY_GAPS.md`.
 
+Since d-135 the reference is Figma node 180:2 of page "Project overview" (73:2), in place of the canvas render; a new blind review took the record with this list.
+
 ## Checks
 
 - PNG reference: text, position and icons are not run.

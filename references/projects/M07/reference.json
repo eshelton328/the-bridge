@@ -1,0 +1,17 @@
+{
+  "frameId": "M07",
+  "code": "M07",
+  "name": "QA item \u00b7 phone \u00b7 Dark",
+  "device": "phone",
+  "w": 390,
+  "h": 1720,
+  "mode": "dark",
+  "tolerance": 4,
+  "source": "Figma yJaVpShE9RVoQwUeUBnMQ4 node 254:2 (d-135)",
+  "original": {
+    "file": "figma-73/254-2.png",
+    "w": 390,
+    "h": 1720,
+    "sha256": "f0cca09616602f78d7874c4ca6a3c7d8cae785f6158b733fa28e741560d3aeac"
+  }
+}
