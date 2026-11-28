@@ -154,9 +154,15 @@ export function ProjectPage() {
   const run = async (next: QuickChatAttempt, status: 'quickChat' | 'ideaChat' = 'quickChat'): Promise<boolean> => {
     attemptRef.current = next
     const ran = (runRef.current += 1)
+    // The address at the start: after a move (browser Back or Forward too) the answer opens no chat.
+    const from = router.latestLocation.href
     changeUi({ [status]: { busy: true } })
     const result = await import('./liveQuickChat.ts').then((live) => live.quickChat(next))
     if (ran !== runRef.current) return false
+    if (router.latestLocation.href !== from) {
+      changeUi({ [status]: undefined })
+      return false
+    }
     if ('chat' in result) void navigate({ to: '/workspaces', search: { chat: result.chat } })
     else changeUi({ [status]: { line: result.line, retry: result.retry } })
     return 'chat' in result

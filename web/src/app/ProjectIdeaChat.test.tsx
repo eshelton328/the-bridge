@@ -36,8 +36,11 @@ const prompt =
   'Let\'s talk about the idea "Sample idea about speech". Its record is ' +
   '../../engine/projects/alpha/ideas/speech.md. Read it first, then ask me what I want to do with it.'
 
+let startHeld: Promise<undefined> | undefined // A test's hold on POST /api/chats.
+
 /** The fakes as the page's fetch: Alpha with one idea in `ideas/speech.md`, and its workspace. */
 function withServer() {
+  startHeld = undefined
   const projects = fakeProjectsServer(
     [{ slug: 'alpha', name: 'Alpha', purpose: 'Made up.', icon: null, pinned: false }],
     {
@@ -70,6 +73,7 @@ function withServer() {
     vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
       const path = new URL(url, window.location.origin).pathname
+      if (path === '/api/chats' && init?.method === 'POST') await startHeld
       const answer = projects.handle(path, init) ?? chats.handle(path, init) ?? workspaces.handle(path, init)
       if (answer === undefined) throw new TypeError(`no stub for ${url}`)
       return answer
@@ -81,9 +85,13 @@ function withServer() {
 /** Opens the idea's page at the size and presses Chat about this idea. */
 async function chatAboutIdea(width: number, height: number) {
   await setViewport(width, height)
+  // The list, then the idea, so the browser's Back has a page to go to.
   const router = createRouter({
     routeTree,
-    history: createMemoryHistory({ initialEntries: [`/projects/alpha?tab=ideas&idea=${id}`] }),
+    history: createMemoryHistory({
+      initialEntries: ['/projects/alpha?tab=ideas', `/projects/alpha?tab=ideas&idea=${id}`],
+      initialIndex: 1,
+    }),
   })
   const went: string[] = []
   onTestFinished(router.history.subscribe(({ location }) => went.push(location.href)))
@@ -120,6 +128,27 @@ describe('Chat about this idea (NCC-132 AC2)', () => {
     await expect.element(page.getByRole('status')).toHaveTextContent('This chat needs you on the Mac')
     expect(chats.prompts).toEqual([])
     expect(router.state.location.search).toEqual({ tab: 'ideas', idea: id })
+  })
+
+  it("opens no chat when the browser's Back leaves the idea during the start", async () => {
+    const { chats } = withServer()
+    const hold: { resolve: (value: undefined) => void } = { resolve: () => undefined }
+    startHeld = new Promise<undefined>((resolve) => {
+      hold.resolve = (value) => {
+        resolve(value)
+      }
+    })
+    const { router } = await chatAboutIdea(1440, 900)
+    await expect.element(page.getByRole('button', { name: 'Chat about this idea' })).toBeDisabled()
+    router.history.back()
+    await expect.poll(() => router.state.location.search).toEqual({ tab: 'ideas' })
+    hold.resolve(undefined)
+    await expect.element(page.getByRole('list', { name: 'Ideas' })).toBeVisible()
+    // The start's answer comes after the Back: the chat gets its prompt, and the page stays on the list.
+    await expect.poll(() => chats.prompts).toEqual([{ chat: 'test-box/new1', text: prompt }])
+    await new Promise((done) => setTimeout(done, 300))
+    expect(router.state.location.pathname).toBe('/projects/alpha')
+    expect(router.state.location.search).toEqual({ tab: 'ideas' })
   })
 
   it('retries a start that missed with the same create ID when pressed again', async () => {
