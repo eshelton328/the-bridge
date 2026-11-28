@@ -58,6 +58,11 @@ export default defineConfig({
       {
         extends: './web/vite.config.ts',
         plugins: [storybookTest({ configDir: './web/.storybook' })],
+        // The code fence loads its highlighter with a lazy import. Vite
+        // transforms that file on its first request and only then sees its
+        // grammar imports, so on a busy machine the colours came after the
+        // story's 10 s wait (NCC-55). Warmup transforms it at server start.
+        server: { warmup: { clientFiles: ['./src/blocks/highlightCode.ts'] } },
         test: { name: 'storybook', root: './web', browser: browser('storybook') },
       },
     ],
