@@ -1,8 +1,9 @@
-// /api/projects/:slug/qa (f-008 increment three): the QA list.
-// A slug that the contract does not take, or that names no project, is 404. A Linear
+// /api/projects/:slug/qa (f-008 increment three): the QA list and one item's page.
+// A slug or an issue key that the contract does not take, or that names no project or
+// no listed issue, is 404. A Linear
 // fault is 503 or 502 and a key file fault 500; its code goes to the log
 // only, never a key, a title or comment text.
-import { ProjectSlug, QaListResponse } from '@bridge/contract'
+import { ProjectSlug, QaIssueId, QaItemDetailResponse, QaListResponse } from '@bridge/contract'
 import { type Context, Hono } from 'hono'
 import { type AppEnv, errorJson, internalMessage } from '../errors.ts'
 import type { Logger } from '../logger.ts'
@@ -25,12 +26,22 @@ export function qaRoutes(qa: Qa, log: Logger) {
   }
   const notFound = (c: Context<AppEnv>, message: string) => errorJson(c, 'not-found', { path: c.req.path, message })
 
-  return new Hono<AppEnv>().get('/:slug/qa', async (c) => {
-    const slug = ProjectSlug.safeParse(c.req.param('slug'))
-    if (!slug.success) return notFound(c, 'no project has this name')
-    const listed = await qa.list(slug.data)
-    if (!listed.ok) return failed(c, listed.error)
-    if (listed.value === 'notFound') return notFound(c, 'no project has this name')
-    return c.json(QaListResponse.parse(listed.value), 200)
-  })
+  return new Hono<AppEnv>()
+    .get('/:slug/qa', async (c) => {
+      const slug = ProjectSlug.safeParse(c.req.param('slug'))
+      if (!slug.success) return notFound(c, 'no project has this name')
+      const listed = await qa.list(slug.data)
+      if (!listed.ok) return failed(c, listed.error)
+      if (listed.value === 'notFound') return notFound(c, 'no project has this name')
+      return c.json(QaListResponse.parse(listed.value), 200)
+    })
+    .get('/:slug/qa/:issue', async (c) => {
+      const slug = ProjectSlug.safeParse(c.req.param('slug'))
+      const issue = QaIssueId.safeParse(c.req.param('issue'))
+      if (!slug.success || !issue.success) return notFound(c, 'no QA item has this name')
+      const read = await qa.item(slug.data, issue.data)
+      if (!read.ok) return failed(c, read.error)
+      if (read.value === 'notFound') return notFound(c, 'no QA item has this name')
+      return c.json(QaItemDetailResponse.parse(read.value), 200)
+    })
 }

@@ -198,7 +198,7 @@ from the outside world.
   integer of that repository; its numbered lines are the steps, cut to the
   contract's limits. `QA answer: <Approved|Changes requested|Denied>` is an
   answer, and any other word none, and only when its comment ID is one the
-  server recorded when it posted it: the key is the owner's, as is each
+  server recorded when it posted it (`recordedPosts`): the key is the owner's, as is each
   agent chat's Linear access, so the author cannot tell them apart. Submit
   (build plan PR 11) records them; until then the record is empty, so no
   issue has an answer: each row waits, and "After merge" lists each `Main`
@@ -211,4 +211,10 @@ from the outside world.
   `QaItem` refuses makes the list `badReply` (502), never a dropped row:
   the adapter checks the reply first, so such a row is its fault, and a
   dropped row would hide an issue that waits for the owner
-  (`../routes/qa.test.ts`, a fake Linear).
+  (`../routes/qa.test.ts`, a fake Linear). An item's page has the row,
+  the newest ask's steps and the threads (`threadsOf`): the comments that
+  are not an ask or an answer, each reply under its parent's first comment,
+  in time order; a reply to an ask, an answer or a comment not read starts
+  its own thread. The author is "You" only for a comment the server
+  posted (none until Submit), else "Agent", never Linear's name, as the
+  key is the owner's. No file, draft, anchor, method or owner chat yet.
