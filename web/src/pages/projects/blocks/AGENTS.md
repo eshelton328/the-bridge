@@ -28,8 +28,9 @@ moves to `web/src/blocks/`.
   state words) and a `SelectField` sort (Updated, the server's order, or
   Idea, Kind or State) over compact `ListRow` rows (kind, state and tags in
   the meta, the age at the end), with the library `Pager` (10, 25 or 50
-  rows). It keeps the search, sort and page in `useState`; a search or a
-  sort goes back to page 1. A row opens its idea.
+  rows). The page keeps the search, sort and page as `ui.ideasView`
+  (`view`, `onViewChange`), so Back to Ideas returns to them; a search or
+  a sort goes back to page 1. A row opens its idea.
   `IdeaView` is an idea's page: `BackRow` (Back to Ideas), the title as an
   `h2`, and the record's text with `MarkdownText`, less its first `# `
   heading. Each takes only the words it draws. The frames' table and page

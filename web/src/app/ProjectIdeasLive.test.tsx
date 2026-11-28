@@ -182,6 +182,20 @@ describe("A project's Ideas tab (R10)", () => {
     await expect.element(page.getByText('1–8 of 8')).toBeVisible()
   })
 
+  it('keeps the search, sort and page when Back to Ideas returns from an idea', async () => {
+    withServer()
+    await open('/projects/alpha?tab=ideas')
+    const search = page.getByRole('searchbox', { name: 'Search ideas' })
+    await userEvent.fill(search, 'tags')
+    await expect.element(page.getByText('1–1 of 1')).toBeVisible()
+    await userEvent.click(ideaList().getByText('Sample proposal about tags'))
+    await expect.element(page.getByRole('heading', { name: 'Sample proposal about tags', level: 2 })).toBeVisible()
+    await userEvent.click(page.getByRole('button', { name: 'Back to Ideas' }))
+    await expect.element(page.getByText('1–1 of 1')).toBeVisible()
+    await expect.element(search).toHaveValue('tags')
+    expect(ideaList().getByText('Sample idea about speech').elements()).toHaveLength(0)
+  })
+
   it('says an idea the server does not know is not found', async () => {
     withServer()
     await open('/projects/alpha?tab=ideas&idea=3f0c6a52-6a1e-4d55-9a4e-2f1b8f1d0a09')

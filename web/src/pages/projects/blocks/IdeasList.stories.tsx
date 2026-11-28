@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { useState } from 'react'
 import { expect, fn, screen } from 'storybook/test'
-import type { IdeaRow } from '../types.ts'
-import { IdeasList } from './IdeasList.tsx'
+import type { IdeaRow, IdeasView } from '../types.ts'
+import { IdeasList, type IdeasListProps } from './IdeasList.tsx'
 
 const words = {
   ideas: 'Ideas',
@@ -30,10 +31,26 @@ const row: IdeaRow = {
   age: '2d',
 }
 
+/** The list with its view kept here, as the page keeps it. */
+function KeptIdeasList(args: IdeasListProps) {
+  const [view, setView] = useState<IdeasView | undefined>(args.view)
+  return (
+    <IdeasList
+      {...args}
+      view={view}
+      onViewChange={(next) => {
+        setView(next)
+        args.onViewChange?.(next)
+      }}
+    />
+  )
+}
+
 const meta = {
   title: 'Pages/Projects/Blocks/IdeasList',
   component: IdeasList,
-  args: { words, layout: 'desktop', onOpen: fn(), ideas: { rows: [row] } },
+  render: (args) => <KeptIdeasList {...args} />,
+  args: { words, layout: 'desktop', onOpen: fn(), onViewChange: fn(), ideas: { rows: [row] } },
 } satisfies Meta<typeof IdeasList>
 
 export default meta
