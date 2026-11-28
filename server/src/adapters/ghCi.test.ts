@@ -14,7 +14,7 @@ afterEach(() => rm(dir, { recursive: true, force: true }))
 
 const repo = { owner: 'example-owner', name: 'example-repo' }
 const runItem =
-  '{"id":7,"head_sha":"abc","event":"push","head_branch":"main","conclusion":"success","run_started_at":"2026-11-21T10:00:00Z","updated_at":"2026-11-21T10:05:00Z"}'
+  '{"id":7,"workflow_id":3,"head_sha":"abc","event":"push","head_branch":"main","conclusion":"success","run_started_at":"2026-11-21T10:00:00Z","updated_at":"2026-11-21T10:05:00Z"}'
 
 /** A gh that logs each call's arguments, gives `total` as the count and answers `full` pages of 100 runs, then a page of one. */
 async function stub(full: number, total = full * 100 + 1) {
@@ -45,6 +45,7 @@ describe('createGhCi', () => {
     expect(runs.ok && runs.value.length).toBe(201)
     expect(runs.ok && runs.value[0]).toEqual({
       id: 7,
+      workflow: 3,
       sha: 'abc',
       event: 'push',
       branch: 'main',

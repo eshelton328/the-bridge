@@ -140,4 +140,9 @@ from the outside world.
   (increment two) joins each repository of `project.yaml` with its GitHub
   facts (kept 5 minutes, `keptFacts`), its open PR count and its worktree
   count; a part that does not read is named in `unread`, never a fault
-  (`projectsPulls.test.ts`, `../routes/projects.test.ts`).
+  (`projectsPulls.test.ts`, `../routes/projects.test.ts`). A repository's
+  CI numbers (`repositoryCi.ts`) count a CI run as the push or
+  pull_request workflow runs of one commit, the newest run of each
+  workflow only (a PR title edit runs the title check again), timed by
+  its longest workflow run, and take the job medians from the newest 10
+  green ones (`repositoryCi.test.ts`).

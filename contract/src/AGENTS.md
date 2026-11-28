@@ -164,7 +164,11 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
   (`projects.test.ts`). A `RepositorySection` (increment two) gives a
   repository's visibility, newest release (an https github.com link),
   open PR and worktree counts, each null when not read or off GitHub, and
-  `unread` names the parts not read. `projects.changed` on `/api/events` says that a
+  `unread` names the parts not read. `RepositoryCi` gives a repository's
+  CI numbers since `since` (30 days, or the oldest run one read gives),
+  each time null (never 0) with no data; the response's `ci` null means
+  not read, as `unread` does.
+  `projects.changed` on `/api/events` says that a
   project's open PRs changed: read the project again (NCC-156). Increment four: a create or edit body holds a
   one-line name and purpose (no control character, the contract's
   limits) and an icon or null, never a slug or a path. The Queue
