@@ -471,7 +471,12 @@ client of a socket or a file sits beside them.
   a bad file is no diagram (`diskProjects.test.ts`). `projectIdeas.ts` reads `<project>/ideas/*.md`
   records of `type: idea` with the inbox's front-matter reader, plain
   files in the real folder only; the summary is the first paragraph
-  after the heading (`projectIdeas.test.ts`). `ghPulls.ts` runs `gh pr
+  after the heading. `source` gives its kind only (`sourceOf`). Only
+  the idea a detail asks for reads its links: each relative `.md` link
+  of its body, once, in body order, to `ideas/`, `decisions/d-NNN-…` or
+  `product/features/f-NNN…` of the same project folder, read as a record
+  of that `type` with a title, real path inside the folder; any other
+  link or file is left out (`projectIdeas.test.ts`). `ghPulls.ts` runs `gh pr
   list` and `projectDrift.ts` runs `ncc check` (NCC_ROOT is the chat
   root), each with an argument list, a time limit and only the variables
   it needs; a failed run is its code only, and each path of a check line

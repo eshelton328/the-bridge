@@ -245,13 +245,50 @@ export const IdeaFile = z.string().regex(/^ideas\/[A-Za-z0-9._-]+\.md$/)
 export type IdeaFile = z.infer<typeof IdeaFile>
 
 /**
- * The response of `GET /api/projects/:slug/ideas/:id`: the row, the record's Markdown after its front matter (R11)
- * and its file, null when the file's name does not fit `IdeaFile`.
+ * Where an idea came from, by its `source` key: a chat with the owner ("<owner>'s discussion" or a request), a capture
+ * record, the vault inbox, or another source. Only the kind: the source text can hold the owner's name.
+ */
+export const IdeaSource = z.enum(['chat', 'capture', 'inbox', 'other'])
+export type IdeaSource = z.infer<typeof IdeaSource>
+
+/** The most links an idea's detail gives. */
+export const maxIdeaLinks = 50
+
+/**
+ * A brain record that an idea's body links to: another idea (with its ID, so the page can open it), a decision or a
+ * feature (with its `d-NNN` or `f-NNN`), and the record's title. No path: links to other files are left out.
+ */
+export const IdeaLink = z
+  .strictObject({
+    kind: z.enum(['idea', 'decision', 'feature']),
+    ref: z
+      .string()
+      .regex(/^[df]-\d{3}$/)
+      .nullable(),
+    title: z.string().min(1).max(maxProjectTitle),
+    idea: IdeaId.nullable(),
+  })
+  .refine((l) => (l.kind === 'idea') === (l.idea !== null) && (l.kind === 'idea') === (l.ref === null), {
+    message: 'an idea link has an idea ID and no ref; a decision or feature link has a ref and no idea ID',
+  })
+  .refine((l) => l.ref === null || l.ref.startsWith(l.kind === 'decision' ? 'd-' : 'f-'), {
+    message: 'a decision ref is d-NNN and a feature ref f-NNN',
+    path: ['ref'],
+  })
+export type IdeaLink = z.infer<typeof IdeaLink>
+
+/**
+ * The response of `GET /api/projects/:slug/ideas/:id`: the row, the record's Markdown after its front matter (R11),
+ * its file (null when the file's name does not fit `IdeaFile`), its `created` time and source kind (each null when
+ * the record has none) and the records its body links to, in body order.
  */
 export const IdeaDetailResponse = z.strictObject({
   idea: Idea,
   body: z.string().max(maxIdeaBody),
   file: IdeaFile.nullable(),
+  created: z.iso.datetime().nullable(),
+  source: IdeaSource.nullable(),
+  links: z.array(IdeaLink).max(maxIdeaLinks),
 })
 export type IdeaDetailResponse = z.infer<typeof IdeaDetailResponse>
 

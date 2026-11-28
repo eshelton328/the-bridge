@@ -2,7 +2,7 @@ import { mkdir, mkdtemp, rm, symlink, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { readIdeas, summaryOf } from './projectIdeas.ts'
+import { linkedPaths, readIdeas, readLinks, sourceOf, summaryOf } from './projectIdeas.ts'
 
 const id = (n: number) => `0b7f2c1e-4d3a-4f6b-9a8c-1e2d3c4b5a6${String(n)}`
 const record = (front: string[], body = '# A title\n\nThe summary, marker-5150.\n\n## Open questions\n\n- One?') =>
@@ -41,6 +41,8 @@ describe('the idea records', () => {
         },
         body: '# A title\n\nThe summary, marker-5150.\n\n## Open questions\n\n- One?',
         file: 'ideas/plain.md',
+        created: '2026-11-13T15:13:28.000Z',
+        source: null,
       },
     ])
   })
@@ -118,5 +120,75 @@ describe('summaryOf', () => {
 
   it('cuts a long paragraph to the most characters', () => {
     expect(summaryOf(`# T\n\n${'a'.repeat(2_000)}`)).toHaveLength(1_000)
+  })
+})
+
+describe("an idea's source kind and links", () => {
+  it('gives the kind of each source the brain writes, never its text', () => {
+    expect(sourceOf("marker-owner's discussion, 2026-11-23")).toBe('chat')
+    expect(sourceOf("marker-owner's request through bridge-coord, 2026-11-19")).toBe('chat')
+    expect(sourceOf('../captures/inbox-intake.md')).toBe('capture')
+    expect(sourceOf('captures/factory.md')).toBe('capture')
+    expect(sourceOf('inbox/note.md in the vault inbox; moved on 2026-11-13')).toBe('inbox')
+    expect(sourceOf('a talk at a meetup')).toBe('other')
+    expect(sourceOf(null)).toBe(null)
+    expect(sourceOf('  ')).toBe(null)
+  })
+
+  it('takes each relative Markdown link once, in body order, and no URL, absolute path or folder above', () => {
+    const body = [
+      '[a](a.md) [d](../decisions/d-001-x.md#why) [a again](./a.md)',
+      '[web](https://example.com/x.md) [abs](/etc/x.md) [up](../../../x.md) [png](pic.png)',
+      '[f](../product/features/f-008-projects-app/README.md)',
+      '[titled](b.md "The B record") [single](c.md \'C\') [angle](<d.md>)',
+    ].join('\n')
+    expect(linkedPaths(body)).toEqual([
+      'ideas/a.md',
+      'decisions/d-001-x.md',
+      'product/features/f-008-projects-app/README.md',
+      'ideas/b.md',
+      'ideas/c.md',
+      'ideas/d.md',
+    ])
+  })
+
+  it('reads each linked idea, decision and feature record for its title, and leaves out any other file', async () => {
+    const other = id(7)
+    const project = await projectWith({
+      'ideas/b.md': record([`id: ${other}`, 'title: Idea B', "created: '2026-11-13T15:13:28Z'"]),
+      'ideas/no-title.md': record([`id: ${id(8)}`, "created: '2026-11-13T15:13:28Z'"]),
+      'decisions/d-112-push.md': ['---', 'type: decision', 'title: Push and machine load', '---', '# d'].join('\n'),
+      'decisions/d-113-wrong-type.md': ['---', 'type: idea', 'title: Not a decision', '---'].join('\n'),
+      'product/features/f-008-projects-app/README.md': [
+        '---',
+        'id: f-008',
+        'type: feature',
+        'title: Projects app',
+        '---',
+      ].join('\n'),
+      'product/features/f-003-inbox.md': ['---', 'type: feature', 'title: Attention inbox', '---'].join('\n'),
+      'notes/plain.md': ['---', 'type: note', 'title: A note', '---'].join('\n'),
+    })
+    const body = [
+      '[B](b.md) [none](no-title.md) [gone](missing.md) [d](../decisions/d-112-push.md)',
+      '[bad](../decisions/d-113-wrong-type.md) [f](../product/features/f-008-projects-app/README.md)',
+      '[f3](../product/features/f-003-inbox.md) [note](../notes/plain.md)',
+    ].join('\n')
+    expect(await readLinks(project, body)).toEqual([
+      { kind: 'idea', ref: null, title: 'Idea B', idea: other },
+      { kind: 'decision', ref: 'd-112', title: 'Push and machine load', idea: null },
+      { kind: 'feature', ref: 'f-008', title: 'Projects app', idea: null },
+      { kind: 'feature', ref: 'f-003', title: 'Attention inbox', idea: null },
+    ])
+  })
+
+  it('follows no link whose real path leaves the project folder', async () => {
+    const outside = await projectWith({
+      'ideas/x.md': record([`id: ${id(5)}`, 'title: X', "created: '2026-11-13T15:13:28Z'"]),
+    })
+    const project = join(dir, 'linked-project')
+    await mkdir(join(project, 'ideas'), { recursive: true })
+    await symlink(join(outside, 'ideas', 'x.md'), join(project, 'ideas', 'y.md'))
+    expect(await readLinks(project, '[y](y.md)')).toEqual([])
   })
 })

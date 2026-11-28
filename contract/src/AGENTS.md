@@ -159,7 +159,13 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
   (`IdeaFile`, `ideas/<name>.md` with one plain name, or null): the server
   makes it from the folder entry's name, never from the record's text, and
   it never goes in a URL, a log or an error body (backend-coord,
-  2026-11-28; "Chat about this idea" names it). A repository gives its GitHub owner and
+  2026-11-28; "Chat about this idea" names it). A detail also gives the
+  record's `created` time and the kind of its `source` (`IdeaSource`:
+  `chat`, `capture`, `inbox` or `other`, never its text, which can hold
+  the owner's name), each null when the record has none, and `links`: the
+  idea, decision and feature records its body links to (`IdeaLink`: a
+  kind, a title, and an idea's ID or a `d-NNN` or `f-NNN` ref, no path),
+  at most `maxIdeaLinks`. A repository gives its GitHub owner and
   name, or null for one off GitHub; a PR link is an https github.com link
   only. An idea with no `tags`, `kind` or `state` key has no tags, the
   kind `idea` and the state `open`. A `DriftRun` lists findings only when

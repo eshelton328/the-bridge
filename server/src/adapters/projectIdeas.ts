@@ -3,15 +3,21 @@
 // in the ideas folder, never a symlink, of at most 256 KiB; a record it
 // cannot decode, or one with no ID or title, is skipped. `tags`, `kind` and
 // `state` are optional keys: a record without them has no tags, the kind
-// idea and the state open.
+// idea and the state open. A detail also gives `created`, the kind of its
+// `source` (never the text, which can hold the owner's name) and the brain
+// records its body links to: an idea, a decision or a feature of the same
+// project folder, read as a record for its title, never a path.
 import { lstat, readdir, readFile, realpath } from 'node:fs/promises'
-import { join, sep } from 'node:path'
+import { join, posix, sep } from 'node:path'
 import {
   IdeaFile,
   IdeaId,
+  type IdeaLink,
   IdeaKind,
+  type IdeaSource,
   IdeaState,
   maxIdeaBody,
+  maxIdeaLinks,
   maxProjectSummary,
   maxProjectTitle,
 } from '@bridge/contract'
@@ -63,6 +69,70 @@ export function summaryOf(body: string): string {
   return joined.length > maxProjectSummary ? `${joined.slice(0, maxProjectSummary - 1)}…` : joined
 }
 
+/** The kind of a record's `source`: a chat with the owner, a capture, the vault inbox or another; null with none. */
+export function sourceOf(source: string | null): IdeaSource | null {
+  const t = source?.trim() ?? ''
+  if (t === '') return null
+  if (/^(\.\.\/)?captures\//.test(t)) return 'capture'
+  if (t.startsWith('inbox/') || /\bvault inbox\b/.test(t)) return 'inbox'
+  if (/\b(discussion|request|chat)\b/i.test(t)) return 'chat'
+  return 'other'
+}
+
+/** The project-relative paths of the Markdown files a body links to, from `ideas/`, in body order, each once. */
+export function linkedPaths(body: string): string[] {
+  const found: string[] = []
+  // An inline link, its destination bare or in <>, with or without a title in quotes.
+  for (const match of body.matchAll(/\[[^\]\n]*\]\(\s*<?([^)\s<>]+)>?(?:\s+(?:"[^"\n]*"|'[^'\n]*'))?\s*\)/g)) {
+    const target = (match[1] ?? '').split('#')[0] ?? ''
+    // A URL or an absolute path is no brain record of this folder.
+    if (target === '' || target.includes(':') || target.startsWith('/') || !target.endsWith('.md')) continue
+    const path = posix.normalize(posix.join('ideas', target))
+    if (path.startsWith('../') || found.includes(path)) continue
+    found.push(path)
+    if (found.length >= maxIdeaLinks) break
+  }
+  return found
+}
+
+/** A linked path's kind and `d-NNN` or `f-NNN` ref by its folder and name; null for any other file. */
+const linkKindOf = (path: string): { kind: IdeaLink['kind']; ref: string | null } | null => {
+  if (/^ideas\/[A-Za-z0-9._-]+\.md$/.test(path)) return { kind: 'idea', ref: null }
+  const decision = /^decisions\/(d-\d{3})-[A-Za-z0-9._-]+\.md$/.exec(path)
+  if (decision?.[1] !== undefined) return { kind: 'decision', ref: decision[1] }
+  const feature = /^product\/features\/(f-\d{3})(?:-[A-Za-z0-9._-]+\.md|-[A-Za-z0-9._-]+\/README\.md)$/.exec(path)
+  if (feature?.[1] !== undefined) return { kind: 'feature', ref: feature[1] }
+  return null
+}
+
+/**
+ * The records a body links to, in body order: each an idea, decision or feature file of the project folder whose
+ * real path stays in it, read as a record of that type with a title. Any other link, and a file that does not read,
+ * is left out. It throws on a read fault, as `readIdeas` does.
+ */
+export async function readLinks(projectFolder: string, body: string): Promise<IdeaLink[]> {
+  const folder = await realpath(projectFolder)
+  const links: IdeaLink[] = []
+  for (const path of linkedPaths(body)) {
+    const known = linkKindOf(path)
+    if (known === null) continue
+    const fileText = await readInside(folder, join(folder, ...path.split('/')), maxIdeaBytes)
+    let record: ReturnType<typeof splitRecord>
+    try {
+      record = fileText === null ? null : splitRecord(fileText)
+    } catch {
+      continue
+    }
+    if (record === null || text(record.front.type) !== known.kind) continue
+    const title = text(record.front.title)?.trim()
+    if (title === undefined || title === '') continue
+    const idea = known.kind === 'idea' ? IdeaId.safeParse(text(record.front.id)) : null
+    if (idea !== null && !idea.success) continue
+    links.push({ kind: known.kind, ref: known.ref, title: title.slice(0, maxProjectTitle), idea: idea?.data ?? null })
+  }
+  return links
+}
+
 function ideaOf(textOfFile: string, name: string): IdeaRecord | null {
   let record: ReturnType<typeof splitRecord>
   try {
@@ -80,6 +150,8 @@ function ideaOf(textOfFile: string, name: string): IdeaRecord | null {
   const state = IdeaState.safeParse(text(front.state))
   const tags = Array.isArray(front.tags) ? front.tags.filter((t) => t.length > 0 && t.length <= 100).slice(0, 20) : []
   return {
+    created: time(front.created),
+    source: sourceOf(text(front.source)),
     idea: {
       id: id.data,
       title: title.slice(0, maxProjectTitle),
