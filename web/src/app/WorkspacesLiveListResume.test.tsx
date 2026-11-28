@@ -2,7 +2,7 @@ import '@fontsource-variable/geist'
 import '@fontsource-variable/geist-mono'
 import '../index.css'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
-import { afterAll, afterEach, beforeAll, describe, expect, it, onTestFinished, vi } from 'vitest'
+import { afterAll, afterEach, beforeAll, describe, expect, it, onTestFailed, onTestFinished, vi } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
 import { ErrorTray } from '../errors/ErrorTray.tsx'
 import { clearReports, getReports } from '../errors/reporter.ts'
@@ -268,24 +268,44 @@ describe('the Workspaces list read back from the background', () => {
       // real clock while a busy Mac runs the steps below: its notice came at the check below once (NCC-37). The tries
       // and the quiet time move the held clock themselves.
       let held: (() => void) | undefined
+      // NCC-37 probe (bridge-flake): where the time goes when this case fails. It only records; it comes out once
+      // the cause of the 15 s timeout on #635 (run 46173719819) is proved.
+      const mark = recordMarks()
+      onTestFailed(({ task }) => {
+        for (const error of task.result?.errors ?? [])
+          error.message += `\nlive-list probe ${JSON.stringify({ marks: mark.list(), missed, held: held !== undefined })}`
+      })
       server.answer(() => {
-        if (!drawn()) return answerWith(list)()
+        if (!drawn()) {
+          mark('read', { drawn: false })
+          return answerWith(list)()
+        }
         missed += 1
         firstMiss ??= performance.now()
         held ??= holdTimers()
+        mark('read', { drawn: true, missed })
         return new Response('Bad Gateway', { status: 502 })
       })
       await tapWorkspaces(device.size)
+      mark('tapped')
       // The watch's read and the app client's two more tries of the 5xx, before the grace's own reload: the wait ends
       // at the grace, so a page that reads the list only on that reload fails here.
       await renderedUntil(() => held !== undefined)
-      for (let at = 0; at < 10 && missed < 3; at += 1) await vi.advanceTimersByTimeAsync(100)
+      mark('held')
+      for (let at = 0; at < 10 && missed < 3; at += 1) {
+        await vi.advanceTimersByTimeAsync(100)
+        mark('step', { at, missed })
+      }
+      mark('loopEnd', { missed })
       await renderedUntil(() => missed >= 3 || (firstMiss !== undefined && performance.now() - firstMiss >= graceMs))
+      mark('graceWaitEnd', { missed })
       expect(missed).toBeGreaterThanOrEqual(3)
       expect(performance.now() - (firstMiss ?? 0)).toBeLessThan(graceMs)
       await vi.advanceTimersByTimeAsync(300)
+      mark('quietEnd')
       expect(notice().query()).toBeNull()
       await expect.element(page.getByText('live work').first()).toBeVisible()
+      mark('listShown')
       expect(getReports()).toEqual([])
     })
 
@@ -322,3 +342,17 @@ describe('the Workspaces list read back from the background', () => {
       expect(server.reads()).toBe(reads + 7)
     })
 })
+
+type Mark = { t: number; ev: string; fake: boolean; timers: number } & Record<string, unknown>
+
+/** The NCC-37 probe's record: at most 40 marks, each with the ms since the case start and the page's timer state. */
+function recordMarks() {
+  const start = performance.now()
+  const list: Mark[] = []
+  const mark = (ev: string, data: Record<string, unknown> = {}) => {
+    if (list.length >= 40) return
+    const fake = vi.isFakeTimers()
+    list.push({ t: Math.round(performance.now() - start), ev, fake, timers: fake ? vi.getTimerCount() : -1, ...data })
+  }
+  return Object.assign(mark, { list: () => list })
+}
