@@ -1,16 +1,10 @@
-// The layout of an Architecture diagram (f-008 increment two, R14): the box
-// of each part, each boundary's outline and each arrow's points, for the
-// library's ArchitectureDiagram, which does no layout. Each arrow points from
-// the part that starts the call, so a caller sits a row above the part it
-// calls: a part's row is its longest path from a part that nothing calls,
-// with an arrow that closes a loop left out of the count. A boundary's parts
-// sit side by side in each of its rows, and a part outside it that would sit
-// in one of those rows moves under the boundary (or above, when it only
-// calls into it), so the outline holds only its own parts. In a row, parts
-// follow the mean place of their callers, then the model's order. Each row
-// is centred. One model gives one layout. Sizes are px, measured on frame
-// 230:2 (a part 228 × 62); the drawing's text does not grow with the text
-// size (d-131), so the layout is fixed.
+// The layout of an Architecture diagram (f-008 increment two, R14) for the
+// library's ArchitectureDiagram, which does no layout. A caller sits a row
+// above the part it calls (its longest path; an arrow that closes a loop does
+// not count). A part outside a boundary moves out of the boundary's rows, so
+// the outline holds only its own parts. An arrow that skips a row runs in a
+// lane of its own right of every part. One model gives one layout, in px of
+// frame 230:2; the drawing's text does not grow with the text size (d-131).
 import type { ArchitectureModel, ArchitecturePart } from '@bridge/contract'
 
 type LaidPart = ArchitecturePart & { x: number; y: number; width: number; height: number }
@@ -40,6 +34,8 @@ export const layoutSizes = {
   inset: 24,
   label: 28,
   edge: 24,
+  /** The room of each side lane, for an arrow that skips a row, with its label. */
+  lane: 96,
 } as const
 
 /** Each part's row: its longest path from a part that nothing calls, with no arrow that closes a loop. */
@@ -100,7 +96,7 @@ function clearBoundaries(model: ArchitectureModel, row: Map<string, number>) {
 
 /** The model laid out: a part's box, each boundary round its parts and each arrow from its caller's foot to the part's top. */
 export function layoutOf(model: ArchitectureModel): DiagramLayout {
-  const { part, gap, row: rowGap, inset, label, edge } = layoutSizes
+  const { part, gap, row: rowGap, inset, label, edge, lane } = layoutSizes
   const row = rowsOf(model)
   clearBoundaries(model, row)
   const count = Math.max(...row.values()) + 1
@@ -125,11 +121,14 @@ export function layoutOf(model: ArchitectureModel): DiagramLayout {
   const hasBoundary = model.boundaries.length > 0
   const pad = hasBoundary ? inset : 0
   const widest = Math.max(...rows.map((parts) => parts.length * part.width + (parts.length - 1) * gap))
-  const width = widest + 2 * (edge + pad)
+  // An arrow that skips a row runs in a lane of its own right of every part, so it crosses no part between.
+  const skips = model.arrows.filter((a) => Math.abs((row.get(a.from) ?? 0) - (row.get(a.to) ?? 0)) > 1)
+  const content = widest + 2 * (edge + pad)
+  const width = content + skips.length * lane
   const yOf = (r: number) => edge + (hasBoundary ? label + inset : 0) + r * (part.height + rowGap)
   const laid: LaidPart[] = rows.flatMap((parts, r) => {
     const span = parts.length * part.width + (parts.length - 1) * gap
-    const start = (width - span) / 2
+    const start = (content - span) / 2
     return parts.map((p, i) => ({ ...p, x: start + i * (part.width + gap), y: yOf(r), ...part }))
   })
   const box = new Map(laid.map((p) => [p.id, p]))
@@ -148,31 +147,39 @@ export function layoutOf(model: ArchitectureModel): DiagramLayout {
     if (from === undefined || to === undefined || a.from === a.to) return []
     const fromX = from.x + from.width / 2
     const toX = to.x + to.width / 2
-    let points: LaidPoint[]
-    if (to.y > from.y) {
-      const start = { x: fromX, y: from.y + from.height }
-      const end = { x: toX, y: to.y }
-      const mid = start.y + rowGap / 2
-      points = [start, { x: fromX, y: mid }, { x: toX, y: mid }, end]
-    } else if (to.y < from.y) {
-      const start = { x: fromX, y: from.y }
-      const end = { x: toX, y: to.y + to.height }
-      const mid = start.y - rowGap / 2
-      points = [start, { x: fromX, y: mid }, { x: toX, y: mid }, end]
-    } else {
+    const skip = skips.indexOf(a)
+    if (to.y === from.y) {
       const right = to.x > from.x
       const y = from.y + from.height / 2
-      points = [
+      const points = [
         { x: right ? from.x + from.width : from.x, y },
         { x: right ? to.x : to.x + to.width, y },
       ]
+      return [
+        {
+          id: `${a.from} ${a.to}`,
+          from: a.from,
+          to: a.to,
+          label: a.label,
+          points,
+          labelAt: { x: (fromX + toX) / 2, y },
+        },
+      ]
     }
-    const first = points[0] ?? { x: fromX, y: from.y }
-    const last = points[points.length - 1] ?? first
-    const labelAt =
-      points.length === 4
-        ? { x: (first.x + last.x) / 2, y: points[1]?.y ?? first.y }
-        : { x: (first.x + last.x) / 2, y: first.y }
+    // Out of the caller's foot (or top, up) into the row gap; a skip runs down its lane to the gap by the part.
+    const down = to.y > from.y
+    const out = down ? from.y + from.height + rowGap / 2 : from.y - rowGap / 2
+    const into = down ? to.y - rowGap / 2 : to.y + to.height + rowGap / 2
+    const x = content - edge + (skip + 0.5) * lane
+    const lanes = skip < 0 ? [] : [out, into]
+    const points = [
+      { x: fromX, y: down ? from.y + from.height : from.y },
+      { x: fromX, y: out },
+      ...lanes.map((y) => ({ x, y })),
+      { x: toX, y: into },
+      { x: toX, y: down ? to.y : to.y + to.height },
+    ]
+    const labelAt = skip < 0 ? { x: (fromX + toX) / 2, y: out } : { x, y: (out + into) / 2 }
     return [{ id: `${a.from} ${a.to}`, from: a.from, to: a.to, label: a.label, points, labelAt }]
   })
   const height = Math.max(...laid.map((p) => p.y + p.height)) + pad + edge

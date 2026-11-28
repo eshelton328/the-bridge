@@ -31,17 +31,26 @@ describe('layoutOf', () => {
   it('puts each caller a row above the part it calls, on its longest path', () => {
     const layout = layoutOf(model([part('a'), part('b'), part('c')], 'a>b b>c a>c'))
     expect(['a', 'b', 'c'].map((id) => rowOf(layout, id))).toEqual([0, 1, 2])
-    expect(layout.parts.every((p) => p.width === layoutSizes.part.width && p.height === layoutSizes.part.height)).toBe(
-      true,
-    )
+    expect(new Set(layout.parts.map((p) => `${String(p.width)}×${String(p.height)}`))).toEqual(new Set(['228×62']))
+  })
+
+  it('runs an arrow that skips a row in its own lane right of every part, through no box', () => {
+    const layout = layoutOf(model([part('a'), part('b'), part('c'), part('d')], 'a>b b>c c>d a>c a>d'))
+    const right = Math.max(...layout.parts.map((p) => p.x + p.width))
+    const skips = layout.arrows.filter((a) => a.id === 'a c' || a.id === 'a d')
+    const lanes = skips.map((a) => a.labelAt.x)
+    expect(lanes.every((x) => x > right && x < layout.width) && new Set(lanes).size === 2).toBe(true)
+    const inBox = (x: number, y: number) =>
+      layout.parts.some((p) => x > p.x && x < p.x + p.width && y > p.y && y < p.y + p.height)
+    for (const a of skips)
+      for (const [s, e] of a.points.slice(1).map((e, i) => [a.points[i] ?? e, e] as const))
+        for (let t = 0; t <= 1; t += 1 / Math.max(1, Math.abs(e.x - s.x) + Math.abs(e.y - s.y)))
+          expect(inBox(s.x + (e.x - s.x) * t, s.y + (e.y - s.y) * t)).toBe(false)
   })
 
   it('ends on a loop of arrows and keeps every part', () => {
     const layout = layoutOf(model([part('a'), part('b')], 'a>b b>a'))
-    expect(layout.parts.map((p) => [p.id, rowOf(layout, p.id)])).toEqual([
-      ['a', 0],
-      ['b', 1],
-    ])
+    expect(['a', 'b'].map((id) => rowOf(layout, id))).toEqual([0, 1])
     expect(layout.arrows).toHaveLength(2)
   })
 
@@ -54,8 +63,7 @@ describe('layoutOf', () => {
     const within = (p: (typeof layout.parts)[number]) =>
       p.x >= b.x && p.y >= b.y && p.x + p.width <= b.x + b.width && p.y + p.height <= b.y + b.height
     expect(layout.parts.filter(within).map((p) => p.id)).toEqual(['web', 'api'])
-    expect(rowOf(layout, 'lib')).toBe(2)
-    expect(rowOf(layout, 'push')).toBe(2)
+    expect(['lib', 'push'].map((id) => rowOf(layout, id))).toEqual([2, 2])
     expect(b.y).toBeGreaterThanOrEqual(0)
   })
 
