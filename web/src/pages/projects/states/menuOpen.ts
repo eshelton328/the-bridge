@@ -71,6 +71,14 @@ export const menuOpen = {
         worktrees: '{n} worktrees',
       },
       unread: { about: 'GitHub facts not read', pulls: 'Open PRs not read', worktrees: 'Worktrees not read' },
+      ci: {
+        runs: 'CI {green}/{finished} green',
+        minutes: '{n} min a run',
+        asOf: 'as of {age} ago',
+        none: 'No CI runs in 30 days',
+        reading: 'Reading CI',
+        notRead: 'CI not read',
+      },
     },
     projects: [
       {

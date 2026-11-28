@@ -95,7 +95,13 @@ T10b, M10 for the home, D01, T01, T01b, M01 for a project's page), read with
     `GET /api/projects/:slug/repositories`: one row per repository, its
     role, visibility and newest release, its open PR and worktree counts,
     and the line of each part not read. A miss shows one line
-    ("Repositories not read — the server answered 500").
+    ("Repositories not read — the server answered 500"). The same read
+    gives each GitHub repository's kept CI numbers
+    (`GET .../repositories/:repo/ci`, R4): green of finished runs, a green
+    run's median minutes and "as of" the read's age when it is older than
+    10 minutes; "Reading CI" while the first read runs, "CI not read" for
+    a miss or no numbers. On `projects.changed` the loader reads them
+    again.
     `app/ProjectRepositoriesLive.test.tsx` checks it at 1440, 1024 and
     390 px with the fake.
   - report() gets only a miss the server answered, as `ProjectsMissError`
