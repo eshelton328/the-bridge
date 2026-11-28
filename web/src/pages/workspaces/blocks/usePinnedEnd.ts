@@ -112,10 +112,12 @@ const reducedMotion = () =>
 
 /**
  * The place of a transcript the reader had left the end of, by its `key`, while its pane unmounts: the first entry in
- * view, by its index among the entries, and how far below the view's top it started. A pane of the same chat that
- * mounts in the remount grace (lib/remountGrace.ts), as on the desktop's sidebar Hide or Show, opens there (NCC-175).
+ * view, by its index counted from the last child, and how far below the view's top it started. A pane of the same chat
+ * that mounts in the remount grace (lib/remountGrace.ts), as on the desktop's sidebar Hide or Show, opens there
+ * (NCC-175). The index counts from the end, as a layout can put a child before the entries that the other layout does
+ * not: a side chat's note scrolls with its transcript in a pane (D5) but not beside the chat (D2).
  */
-const leftPlaces = new Map<string, { readonly index: number; readonly offset: number }>()
+const leftPlaces = new Map<string, { readonly fromLast: number; readonly offset: number }>()
 
 const entriesOf = (scroller: HTMLElement) => [...scroller.children].filter((child) => !ours(child))
 
@@ -131,24 +133,29 @@ function leavePlace(
   noted: { readonly entry: Element; readonly top: number } | undefined,
 ) {
   if (pinned || noted === undefined) return
-  const index = entriesOf(scroller).indexOf(noted.entry)
+  const entries = entriesOf(scroller)
+  const index = entries.indexOf(noted.entry)
   if (index < 0) return
-  const place = { index, offset: noted.top }
+  const place = { fromLast: entries.length - 1 - index, offset: noted.top }
   leftPlaces.set(key, place)
   afterRemountGrace(() => {
     if (leftPlaces.get(key) === place) leftPlaces.delete(key)
   })
 }
 
-/** Scrolls `scroller` to the place left under `key` in the remount grace; true when there was one. */
+/**
+ * Scrolls `scroller` to the place left under `key` in the remount grace. True when the reader stays away from the end
+ * there; false with no place, or when the new pane is high enough that the place is at the end, which then keeps the pin.
+ */
 function takePlace(scroller: HTMLElement, key: string): boolean {
   const place = leftPlaces.get(key)
   if (place === undefined) return false
   leftPlaces.delete(key)
-  const entry = entriesOf(scroller)[place.index]
+  const entries = entriesOf(scroller)
+  const entry = entries[entries.length - 1 - place.fromLast]
   if (entry !== undefined)
     scroller.scrollTop += entry.getBoundingClientRect().top - scroller.getBoundingClientRect().top - place.offset
-  return true
+  return !atEnd(scroller)
 }
 
 /** What the button to the newest message shows now. */
@@ -473,7 +480,7 @@ export function usePinnedEnd(
       }
       show()
     })
-    // A pane of this chat that unmounted in this commit, away from the end, hands its place over.
+    // A pane of this chat that unmounted in this commit, away from the end, hands its place over; at the end, the pin.
     if (takePlace(scroller, key)) {
       pinnedRef.current = false
       notePlace()
