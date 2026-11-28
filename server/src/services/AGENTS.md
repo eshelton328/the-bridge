@@ -163,3 +163,9 @@ from the outside world.
   contract's limits. `QA answer: <Approved|Changes requested|Denied>` is an
   answer, and any other word none (`qaAsk.test.ts`). No comment text goes
   into a log.
+- `brainWrites.ts` is the port of the brain's writes (increment four) and
+  `slugOf`, the slug of a project name. A create makes no GitHub
+  repository and no Linear team or project, and tells the projects
+  watchers, so `/api/events` sends `projects.changed`. The server only
+  commits in the brain; `brain-sync push` in `autocommit.sh` pushes main
+  later.

@@ -1,13 +1,13 @@
 // The brain's writes of the Projects app (f-008, increment four). Each write goes only into the files that the spec
 // names, follows no symlink, and is committed by path with only those paths; one write runs at a time. A name or a
 // purpose goes only to the project-setup helper, never into a commit message, a log or an ErrorBody.
-import type { ProjectIcon, ProjectSlug } from '@bridge/contract'
+import { type ProjectIcon, ProjectSlug } from '@bridge/contract'
 import type { Result } from '@bridge/shared'
 
 /** `busy`: another git command runs in the brain, or its index is locked; the caller tries again. */
 export type BrainWriteFault = { readonly reason: 'busy' } | { readonly reason: 'failed'; readonly code: string }
 
-type NewProject = {
+export type NewProject = {
   readonly slug: ProjectSlug
   readonly name: string
   /** The description; empty when the owner gave none. */
@@ -27,3 +27,16 @@ export type BrainWrites = {
 
 /** The text of `project_shim` in the brain's `toolkit/layout/ncc`, which `ncc check` asks for in each project folder. */
 export const projectShim = (slug: ProjectSlug) => `@../../engine/projects/${slug}/AGENTS.md\n`
+
+/**
+ * The folder name for a project name (R3): lower case, each run of other characters than a to z and 0 to 9 made one
+ * hyphen, and no hyphen at the start or the end; null when that is not a `ProjectSlug`.
+ */
+export function slugOf(name: string): ProjectSlug | null {
+  const slug = name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+  const parsed = ProjectSlug.safeParse(slug)
+  return parsed.success ? parsed.data : null
+}

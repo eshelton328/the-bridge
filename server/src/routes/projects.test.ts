@@ -1,6 +1,6 @@
 // API tests of /api/projects (f-008), in process with the disk adapters on a
 // fixture brain, a stub `gh` and a stub `ncc` (no real GitHub or layout).
-import { chmod, mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { chmod, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
@@ -16,12 +16,18 @@ import {
   ProjectsResponse,
   RepositoriesResponse,
   RepositoryCiResponse,
+  ProjectDetailsResponse,
+  SlugResponse,
 } from '@bridge/contract'
 import { err, ok } from '@bridge/shared'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createBrainProjects, createDiskDriftStore, createDiskPins } from '../adapters/diskProjects.ts'
 import { createFakeAgents } from '../adapters/fakeAgents.ts'
 import { createDiskWorktrees } from '../adapters/diskWorktrees.ts'
+import { createDiskBrainWrites } from '../adapters/diskBrainWrites.ts'
+import { createFakeBrainWrites } from '../adapters/fakeBrainWrites.ts'
+import { stubBrain } from '../adapters/stubBrainWrites.ts'
+import type { BrainWrites } from '../services/brainWrites.ts'
 import { createGhPulls } from '../adapters/ghPulls.ts'
 import { createGhRepositoryFacts } from '../adapters/ghRepos.ts'
 import { createNccCheck } from '../adapters/projectDrift.ts'
@@ -125,7 +131,7 @@ beforeEach(async () => {
   await mkdir(bin, { recursive: true })
   await writeFile(
     join(bin, 'gh'),
-    `#!/bin/sh\nif [ "$1" = api ]; then\ncat <<'EOF'\n${aboutReply}\nEOF\nelse\ncat <<'EOF'\n${ghReply}\nEOF\nfi\n`,
+    `#!/bin/sh\necho called >> "$0.calls"\nif [ "$1" = api ]; then\ncat <<'EOF'\n${aboutReply}\nEOF\nelse\ncat <<'EOF'\n${ghReply}\nEOF\nfi\n`,
   )
   await writeFile(
     join(bin, 'ncc'),
@@ -137,7 +143,7 @@ beforeEach(async () => {
 afterEach(() => rm(dir, { recursive: true, force: true }))
 
 /** An app on the fixture brain; a second call is a new server process on the same data folder. */
-function server(ci?: CiSource, ciStore?: CiStore, brainSource = createBrainProjects(brain)) {
+function server(ci?: CiSource, ciStore?: CiStore, brainSource = createBrainProjects(brain), writes?: BrainWrites) {
   const logger = memoryLogger()
   const agents = createFakeAgents(MachineId.parse('test-mac'))
   const projects = createProjects({
@@ -151,6 +157,7 @@ function server(ci?: CiSource, ciStore?: CiStore, brainSource = createBrainProje
     worktrees: createDiskWorktrees(join(dir, 'root')),
     ...(ci === undefined ? {} : { ci }),
     ...(ciStore === undefined ? {} : { ciStore }),
+    ...(writes === undefined ? {} : { writes }),
     ciLog: (event) => {
       if (event.kind === 'failed') logger.log.warn('ci read failed', { code: event.code })
       else logger.log.debug('ci read timed', { part: event.part, ms: event.ms })
@@ -662,5 +669,79 @@ describe('/api/projects/:slug/repositories/:repo/ci', () => {
     const res = await read(app, '/api/projects/example-project/repositories/no-repo/ci')
     expect(ErrorBody.parse(await res.json()).error.kind).toBe('not-found')
     expect((await read(app, '/api/projects/no-such-project/repositories/example-repo/ci')).status).toBe(404)
+  })
+})
+
+describe('New project (increment four)', () => {
+  const python = () => join(dir, 'python')
+  const withWrites = async () => {
+    await stubBrain(brain, join(dir, 'root'), python())
+    const writes = createDiskBrainWrites({
+      brainDir: brain,
+      chatRoot: join(dir, 'root'),
+      python: python(),
+      helper: '/helper.py',
+      env: process.env,
+    })
+    return server(undefined, undefined, undefined, writes)
+  }
+  const post = (app: ReturnType<typeof server>['app'], body: unknown) =>
+    app.request('/api/projects', { method: 'POST', headers: json, body: JSON.stringify(body) })
+  const details = { name: 'My New App', purpose: 'A new app, marker-5150.', icon: null }
+
+  it('gives the slug of a name and whether it is free', async () => {
+    const { app } = await withWrites()
+    const slug = async (name: string) =>
+      SlugResponse.parse(await (await read(app, `/api/projects/-/slug?name=${encodeURIComponent(name)}`)).json())
+    expect(await slug('My New App!')).toEqual({ slug: 'my-new-app', free: true })
+    expect(await slug('Example Project')).toEqual({ slug: 'example-project', free: false })
+    expect(await slug('!!!')).toEqual({ slug: null, free: false })
+    expect((await read(app, '/api/projects/-/slug')).status).toBe(400)
+  })
+
+  it('still reads a project with the slug "slug"', async () => {
+    await mkdir(join(brain, 'projects', 'slug'))
+    await writeFile(join(brain, 'projects', 'slug', 'project.yaml'), projectYaml('slug', 'Slug'))
+    const { app } = server()
+    expect((await read(app, '/api/projects/slug')).status).toBe(200)
+  })
+
+  it('creates the brain home and the chat-root folder, 201 with the card, and calls no gh', async () => {
+    const { app, projects } = await withWrites()
+    const changed = vi.fn()
+    projects.watch(changed)
+    const made = await post(app, details)
+    expect(made.status).toBe(201)
+    const card = {
+      slug: 'my-new-app',
+      name: 'My New App',
+      purpose: 'A new app, marker-5150.',
+      icon: null,
+      pinned: false,
+    }
+    expect(ProjectDetailsResponse.parse(await made.json()).project).toEqual(card)
+    expect(changed).toHaveBeenCalledTimes(1)
+    expect(ProjectsResponse.parse(await (await read(app, '/api/projects')).json()).projects).toContainEqual(card)
+    await expect(readFile(join(bin, 'gh.calls'), 'utf8')).rejects.toThrow()
+    const again = await post(app, details)
+    expect(again.status).toBe(409)
+    expect(ErrorBody.parse(await again.json()).error).toMatchObject({ kind: 'project-not-ready', state: 'slugTaken' })
+  })
+
+  it('refuses a name of two lines, and one with no folder name, with nothing written', async () => {
+    const { app } = await withWrites()
+    expect((await post(app, { ...details, name: 'Two\nlines' })).status).toBe(400)
+    expect((await post(app, { ...details, name: '???' })).status).toBe(400)
+    expect((await post(app, { ...details, extra: true })).status).toBe(400)
+    await expect(readFile(`${python()}.args`, 'utf8')).rejects.toThrow()
+  })
+
+  it('answers 503 brain-busy while the brain is busy', async () => {
+    const writes = createFakeBrainWrites()
+    writes.busy = true
+    const { app } = server(undefined, undefined, undefined, writes)
+    const made = await post(app, details)
+    expect(made.status).toBe(503)
+    expect(ErrorBody.parse(await made.json()).error.kind).toBe('brain-busy')
   })
 })

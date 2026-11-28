@@ -40,6 +40,7 @@ const logMessages = [
   'inbox read failed',
   'projects read failed',
   'drift check failed',
+  'project write failed',
   'ci read failed',
   'ci read timed',
   'files read failed',

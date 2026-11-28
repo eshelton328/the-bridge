@@ -1,4 +1,4 @@
-// /api/projects (f-008, increments one and two): the Projects home, a project's page,
+// /api/projects (f-008, increments one, two and four): the Projects home, a new project, a project's page,
 // its pin, its idea records, its context drift, its tagged chats, its repositories and their CI numbers. A URL names a project by
 // its slug and an idea by its record ID; a param the contract does not take
 // is 404, as no project or idea has it. A fault logs its errno code only,
@@ -12,18 +12,26 @@ import {
   PinProjectResponse,
   ProjectChatsResponse,
   ProjectDetailResponse,
+  ProjectDetailsRequest,
+  ProjectDetailsResponse,
   ProjectSlug,
   ProjectsResponse,
   RepositoriesResponse,
   RepositoryCiResponse,
   RepositoryId,
   RunDriftRequest,
+  SlugQuery,
+  SlugResponse,
 } from '@bridge/contract'
 import { type Context, Hono } from 'hono'
 import { type AppEnv, agentErrorJson, errorJson, internalMessage } from '../errors.ts'
 import type { Logger } from '../logger.ts'
+import type { BrainWriteFault } from '../services/brainWrites.ts'
 import type { ProjectFault, Projects } from '../services/projects.ts'
-import { jsonBody, jsonOnly, smallJson } from './jsonBody.ts'
+import { jsonBody, jsonLimit, jsonOnly, queryOf, smallJson } from './jsonBody.ts'
+
+/** A name and a purpose of the most characters the contract takes, at 6 bytes each in JSON, and the icon. */
+const maxDetailsBytes = 8192
 
 export function projectsRoutes(projects: Projects, log: Logger) {
   const failed = (c: Context<AppEnv>, error: ProjectFault) => {
@@ -37,12 +45,32 @@ export function projectsRoutes(projects: Projects, log: Logger) {
   const noRepository = (c: Context<AppEnv>) =>
     errorJson(c, 'not-found', { path: c.req.path, message: 'no project has a repository with this name' })
   const slugOf = (c: Context<AppEnv>) => ProjectSlug.safeParse(c.req.param('slug'))
+  const writeFailed = (c: Context<AppEnv>, error: ProjectFault | BrainWriteFault) => {
+    if (error.reason === 'busy') return errorJson(c, 'brain-busy', { message: 'another git command runs in the brain' })
+    log.error('project write failed', { requestId: c.get('requestId'), code: error.code })
+    return errorJson(c, 'internal', { message: internalMessage })
+  }
 
   return new Hono<AppEnv>()
     .get('/', async (c) => {
       const listed = await projects.list()
       if (!listed.ok) return failed(c, listed.error)
       return c.json(ProjectsResponse.parse(listed.value), 200)
+    })
+    .get('/-/slug', queryOf(SlugQuery), async (c) => {
+      // "-" is not a ProjectSlug, so this path never names a project.
+      const slug = await projects.slug(c.req.valid('query').name)
+      if (!slug.ok) return writeFailed(c, slug.error)
+      return c.json(SlugResponse.parse(slug.value), 200)
+    })
+    .post('/', jsonLimit(maxDetailsBytes), jsonOnly, jsonBody(ProjectDetailsRequest), async (c) => {
+      const made = await projects.create(c.req.valid('json'))
+      if (!made.ok) return writeFailed(c, made.error)
+      if (made.value === 'noSlug')
+        return errorJson(c, 'invalid-input', { message: 'the name gives no folder name', issues: ['name: no_slug'] })
+      if (made.value === 'taken')
+        return errorJson(c, 'project-not-ready', { state: 'slugTaken', message: 'a project folder has this name' })
+      return c.json(ProjectDetailsResponse.parse({ project: made.value }), 201)
     })
     .get('/:slug', async (c) => {
       const slug = slugOf(c)

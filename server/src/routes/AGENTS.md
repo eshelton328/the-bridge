@@ -223,3 +223,9 @@ Thin Hono sub-apps, one file for each area, named after the area
   a store fault is 500 with its code in the log only; herdr's fault on
   `GET /:slug/chats` is 503 or 502 through `agentErrorJson`, as on the
   workspaces routes (`projects.test.ts`).
+  Increment four: `GET /-/slug?name=` gives the slug of a name and whether
+  it is free (`-` is not a slug, so no project has the path), and `POST /`
+  (name, purpose, icon) makes a project: 201 with its card, 400 for a name
+  that gives no slug, 409 `project-not-ready` `slugTaken` for a folder that
+  is there, 503 `brain-busy` while git runs in the brain. The name and
+  purpose never go into a log line or an `ErrorBody` (`projects.test.ts`).

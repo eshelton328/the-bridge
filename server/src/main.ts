@@ -22,6 +22,7 @@ import { createGhCi } from './adapters/ghCi.ts'
 import { createGhPulls } from './adapters/ghPulls.ts'
 import { createGhRepositoryFacts } from './adapters/ghRepos.ts'
 import { createNccCheck } from './adapters/projectDrift.ts'
+import { createDiskBrainWrites } from './adapters/diskBrainWrites.ts'
 import { createDiskUploads } from './adapters/diskUploads.ts'
 import { createWebPushSender } from './adapters/webPushSender.ts'
 import { createHerdrAgents } from './adapters/herdrAgents.ts'
@@ -118,6 +119,14 @@ const projects = createProjects({
   },
   worktrees: createDiskWorktrees(config.value.chatRoot),
   agents,
+  // New project runs the brain's project-setup helper from its venv (increment four).
+  writes: createDiskBrainWrites({
+    brainDir: config.value.brainDir,
+    chatRoot: config.value.chatRoot,
+    python: join(config.value.brainDir, '_local', 'venvs', 'project-setup', 'bin', 'python'),
+    helper: join(config.value.brainDir, 'toolkit', 'skills', 'project-setup', 'scripts', 'project_setup.py'),
+    env: process.env,
+  }),
 })
 const server = serve(
   {
