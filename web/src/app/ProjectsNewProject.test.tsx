@@ -122,6 +122,50 @@ describe('New project', () => {
     })
   }
 
+  it('drops the answer of a create from a form that closed', async () => {
+    const server = withServer()
+    const router = await openForm(1440, 900)
+    await userEvent.fill(name(), 'Gamma')
+    await expect.element(page.getByText('Folder: gamma')).toBeVisible()
+    let late: (() => void) | undefined
+    server.answerNext(
+      'create',
+      () =>
+        new Promise<Response>((resolve) => {
+          late = () => {
+            resolve(
+              new Response(JSON.stringify({ project: { ...alpha, slug: 'gamma', name: 'Gamma' } }), { status: 201 }),
+            )
+          }
+        }),
+    )
+    await userEvent.click(create())
+    await userEvent.click(page.getByRole('button', { name: 'Cancel' }))
+    await userEvent.click(page.getByRole('button', { name: 'New project' }))
+    await userEvent.fill(name(), 'Delta')
+    await expect.element(page.getByText('Folder: delta')).toBeVisible()
+    late?.()
+    await expect.element(page.getByText('Folder: delta')).toBeVisible()
+    await expect.element(name()).toHaveValue('Delta')
+    expect(router.state.location.pathname).toBe('/projects')
+  })
+
+  it('reads the folder again when a create gets no answer', async () => {
+    const server = withServer()
+    await openForm(1440, 900)
+    await userEvent.fill(name(), 'Gamma')
+    await expect.element(page.getByText('Folder: gamma')).toBeVisible()
+    server.answerNext('create', () => Promise.reject(new TypeError('the connection dropped')))
+    await userEvent.click(create())
+    await expect
+      .element(
+        page.getByRole('status').filter({ hasText: 'Not known if created — the folder line under Name is read again' }),
+      )
+      .toBeVisible()
+    await expect.poll(() => server.calls('slug').length).toBe(2)
+    await expect.element(name()).toHaveValue('Gamma')
+  })
+
   it('counts only the newest folder answer when answers cross', async () => {
     const server = withServer()
     await openForm(1440, 900)
