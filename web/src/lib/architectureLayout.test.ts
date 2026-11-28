@@ -10,12 +10,16 @@ const part = (id: string, boundary?: string) => ({
   typeLine: 'Service',
   ...(boundary === undefined ? {} : { boundary }),
 })
-const model = (parts: ReturnType<typeof part>[], arrows: [string, string][], boundaries: string[] = []) =>
+/** The model of `parts` with an arrow for each "from>to" in `arrows`. */
+const model = (parts: ReturnType<typeof part>[], arrows: string, boundaries: string[] = []) =>
   ArchitectureModel.parse({
     view: 'component',
     parts,
     boundaries: boundaries.map((id) => ({ id, label: `${id} repository`, kind: 'repository' })),
-    arrows: arrows.map(([from, to]) => ({ from, to, label: 'calls' })),
+    arrows: arrows.split(' ').map((a) => {
+      const [from = '', to = ''] = a.split('>')
+      return { from, to, label: 'calls' }
+    }),
     stack: [],
   })
 const rowOf = (layout: ReturnType<typeof layoutOf>, id: string) => {
@@ -25,16 +29,7 @@ const rowOf = (layout: ReturnType<typeof layoutOf>, id: string) => {
 
 describe('layoutOf', () => {
   it('puts each caller a row above the part it calls, on its longest path', () => {
-    const layout = layoutOf(
-      model(
-        [part('a'), part('b'), part('c')],
-        [
-          ['a', 'b'],
-          ['b', 'c'],
-          ['a', 'c'],
-        ],
-      ),
-    )
+    const layout = layoutOf(model([part('a'), part('b'), part('c')], 'a>b b>c a>c'))
     expect(['a', 'b', 'c'].map((id) => rowOf(layout, id))).toEqual([0, 1, 2])
     expect(layout.parts.every((p) => p.width === layoutSizes.part.width && p.height === layoutSizes.part.height)).toBe(
       true,
@@ -42,15 +37,7 @@ describe('layoutOf', () => {
   })
 
   it('ends on a loop of arrows and keeps every part', () => {
-    const layout = layoutOf(
-      model(
-        [part('a'), part('b')],
-        [
-          ['a', 'b'],
-          ['b', 'a'],
-        ],
-      ),
-    )
+    const layout = layoutOf(model([part('a'), part('b')], 'a>b b>a'))
     expect(layout.parts.map((p) => [p.id, rowOf(layout, p.id)])).toEqual([
       ['a', 0],
       ['b', 1],
@@ -60,15 +47,7 @@ describe('layoutOf', () => {
 
   it("draws a boundary round its parts only, and moves an outside part out of the boundary's rows", () => {
     const layout = layoutOf(
-      model(
-        [part('web', 'b0'), part('api', 'b0'), part('lib'), part('push')],
-        [
-          ['web', 'api'],
-          ['web', 'lib'],
-          ['api', 'push'],
-        ],
-        ['b0'],
-      ),
+      model([part('web', 'b0'), part('api', 'b0'), part('lib'), part('push')], 'web>api web>lib api>push', ['b0']),
     )
     const [b] = layout.boundaries
     if (b === undefined) throw new Error('no boundary')
@@ -82,21 +61,14 @@ describe('layoutOf', () => {
 
   it('sets a part that only calls into a boundary above it', () => {
     const layout = layoutOf(
-      model(
-        [part('phone'), part('proxy', 'b0'), part('web', 'b0')],
-        [
-          ['phone', 'web'],
-          ['proxy', 'web'],
-        ],
-        ['b0'],
-      ),
+      model([part('phone'), part('proxy', 'b0'), part('web', 'b0')], 'phone>web proxy>web', ['b0']),
     )
     expect(rowOf(layout, 'phone')).toBe(0)
     expect(layout.boundaries[0]?.y).toBeGreaterThan(layout.parts.find((p) => p.id === 'phone')?.y ?? 0)
   })
 
   it("runs each arrow from its caller's foot to the top of the part it calls, with its label between the rows", () => {
-    const layout = layoutOf(model([part('a'), part('b')], [['a', 'b']]))
+    const layout = layoutOf(model([part('a'), part('b')], 'a>b'))
     const [a, b] = layout.parts
     const [arrow] = layout.arrows
     if (a === undefined || b === undefined || arrow === undefined) throw new Error('missing')
@@ -106,15 +78,7 @@ describe('layoutOf', () => {
   })
 
   it('centres each row and fits the drawing round the widest one', () => {
-    const layout = layoutOf(
-      model(
-        [part('a'), part('b'), part('c')],
-        [
-          ['a', 'b'],
-          ['a', 'c'],
-        ],
-      ),
-    )
+    const layout = layoutOf(model([part('a'), part('b'), part('c')], 'a>b a>c'))
     const { part: size, gap, edge } = layoutSizes
     expect(layout.width).toBe(2 * size.width + gap + 2 * edge)
     expect(layout.parts.find((p) => p.id === 'a')?.x).toBe((layout.width - size.width) / 2)
@@ -122,14 +86,7 @@ describe('layoutOf', () => {
   })
 
   it('gives the same layout for the same model', () => {
-    const m = model(
-      [part('a'), part('b', 'b0'), part('c', 'b0')],
-      [
-        ['a', 'b'],
-        ['b', 'c'],
-      ],
-      ['b0'],
-    )
+    const m = model([part('a'), part('b', 'b0'), part('c', 'b0')], 'a>b b>c', ['b0'])
     expect(layoutOf(m)).toEqual(layoutOf(structuredClone(m)))
   })
 })
