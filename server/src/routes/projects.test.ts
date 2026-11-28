@@ -182,7 +182,7 @@ const commit = 'c'.repeat(40)
  * after `gate` when one is given.
  */
 function fakeDrift(answer: Awaited<ReturnType<RepositoryCheck['run']>>, gate?: Promise<void>) {
-  const seen = { syncs: 0, checks: 0, active: 0, most: 0 }
+  const seen = { syncs: 0, checks: 0, active: 0, most: 0, steps: [] as string[] }
   const enter = () => {
     seen.active += 1
     seen.most = Math.max(seen.most, seen.active)
@@ -191,7 +191,9 @@ function fakeDrift(answer: Awaited<ReturnType<RepositoryCheck['run']>>, gate?: P
     async sync() {
       enter()
       seen.syncs += 1
+      seen.steps.push('sync')
       await Promise.resolve()
+      seen.steps.push('synced')
       seen.active -= 1
       return { ok: true, value: { dir: '/snapshots/example-repo', commit } }
     },
@@ -200,7 +202,9 @@ function fakeDrift(answer: Awaited<ReturnType<RepositoryCheck['run']>>, gate?: P
     async run() {
       enter()
       seen.checks += 1
+      seen.steps.push('check')
       await gate
+      seen.steps.push('checked')
       seen.active -= 1
       return answer
     },
@@ -757,6 +761,22 @@ describe('/api/projects/:slug/repositories/:repo/drift', () => {
     const bodies = await Promise.all(runs.map(async (r) => RepositoryDriftResponse.parse(await (await r).json())))
     expect(bodies.map((b) => b.last?.result)).toEqual(['clean', 'clean', 'clean'])
     expect(fake.seen).toMatchObject({ syncs: 1, checks: 1, most: 1 })
+  })
+
+  it('checks the snapshot in the same turn as its sync, so the next sync waits for the check to end', async () => {
+    let open: () => void = () => undefined
+    const gate = new Promise<void>((resolve) => {
+      open = resolve
+    })
+    const fake = fakeDrift({ ok: true, value: { findings: [], total: 0 } }, gate)
+    const { app } = driftServer(fake.source)
+    const first = post(app)
+    await new Promise((resolve) => setTimeout(resolve, 20))
+    expect(fake.seen.steps).toEqual(['sync', 'synced', 'check'])
+    open()
+    await first
+    await post(app)
+    expect(fake.seen.steps).toEqual(['sync', 'synced', 'check', 'checked', 'sync', 'synced', 'check', 'checked'])
   })
 
   it('is a failed run with the code in the warn log for a sync fault, a new kind and a repository off GitHub', async () => {
