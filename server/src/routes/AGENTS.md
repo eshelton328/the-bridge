@@ -231,3 +231,9 @@ Thin Hono sub-apps, one file for each area, named after the area
   project, 503 `linear-unavailable` (also with no key), 502
   `linear-bad-reply`, 500 for a key file fault. The log line holds the
   reason and code only, never a key, title or text (`qa.test.ts`).
+- `/api/projects/:slug/architecture` (`architecture.ts`, increment two):
+  `GET` lists the scopes, `GET /:scope` gives one scope's state and kept
+  diagram, and `POST /:scope/regenerate` (`{}`) starts a run: 202 with
+  `running`, or 409 `architecture-busy` while another scope runs. A scope
+  that is not `@system` or a repository of that `project.yaml` is 404
+  (`architecture.test.ts`).

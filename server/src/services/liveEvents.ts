@@ -7,8 +7,9 @@
 // each chat status, each owner mark and each write in the brain's inbox
 // folders, which it watches only while a client is open (R20). It sends
 // projects.changed when a background gh run finds other open PRs (NCC-156),
-// through a watch it also holds only while a client is open.
-import { type ChatId, EventSource, type LiveEvent } from '@bridge/contract'
+// through a watch it also holds only while a client is open, and
+// architecture.changed at the end of each diagram run the same way.
+import { type ArchitectureScope, type ChatId, EventSource, type LiveEvent, type ProjectSlug } from '@bridge/contract'
 import type { AgentEvent, AgentPort, AgentPortError, AgentSubscription } from './agentPort.ts'
 
 type LiveClient = {
@@ -21,6 +22,11 @@ type LiveClient = {
 /** Watches the brain's inbox folders: `onChange` after each change, until the result is called. */
 export type InboxWatch = (onChange: () => void) => () => void
 
+/** Watches the diagram runs: `onChange` at the end of each, until the result is called. */
+export type ArchitectureWatch = (
+  onChange: (key: { readonly slug: ProjectSlug; readonly scope: ArchitectureScope }) => void,
+) => () => void
+
 export type LiveEvents = {
   /** Adds a client; the result removes it. */
   connect(client: LiveClient): () => void
@@ -30,13 +36,19 @@ export type LiveEvents = {
   readonly inboxChanged: () => void
 }
 
-export function createLiveEvents(agents: AgentPort, watchInbox?: InboxWatch, watchProjects?: InboxWatch): LiveEvents {
+export function createLiveEvents(
+  agents: AgentPort,
+  watchInbox?: InboxWatch,
+  watchProjects?: InboxWatch,
+  watchArchitecture?: ArchitectureWatch,
+): LiveEvents {
   const source = EventSource.parse(`${agents.machine}/agents`)
   const clients = new Set<LiveClient>()
   let seq = 0
   let subscription: AgentSubscription | undefined
   let unwatch: (() => void) | undefined
   let unwatchProjects: (() => void) | undefined
+  let unwatchArchitecture: (() => void) | undefined
 
   const envelope = (event: AgentEvent): LiveEvent => {
     const base = { source, seq: seq++ }
@@ -64,7 +76,8 @@ export function createLiveEvents(agents: AgentPort, watchInbox?: InboxWatch, wat
   const stopWatch = () => {
     unwatch?.()
     unwatchProjects?.()
-    unwatch = unwatchProjects = undefined
+    unwatchArchitecture?.()
+    unwatch = unwatchProjects = unwatchArchitecture = undefined
   }
 
   const ended = (error: AgentPortError) => {
@@ -82,6 +95,9 @@ export function createLiveEvents(agents: AgentPort, watchInbox?: InboxWatch, wat
       unwatch ??= watchInbox?.(inboxChanged)
       unwatchProjects ??= watchProjects?.(() => {
         send({ source, seq: seq++, type: 'projects.changed', data: {} })
+      })
+      unwatchArchitecture ??= watchArchitecture?.(({ slug, scope }) => {
+        send({ source, seq: seq++, type: 'architecture.changed', data: { slug, scope } })
       })
       return () => {
         if (!clients.delete(client) || clients.size > 0) return

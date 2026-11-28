@@ -212,3 +212,9 @@ export function createArchitecture({
     },
   }
 }
+
+/** The service of an app with none: each read fails, so each route answers 500. */
+export const noArchitecture: Architecture = (() => {
+  const fault = () => Promise.resolve(err({ reason: 'failed' as const, code: 'no-store' }))
+  return { scopes: fault, scope: fault, regenerate: fault, watch: () => () => undefined, idle: () => Promise.resolve() }
+})()

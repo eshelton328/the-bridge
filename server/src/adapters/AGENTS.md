@@ -466,7 +466,9 @@ client of a socket or a file sits beside them.
   lower case, so no path comes from GitHub's text; a missing file or one
   that the schema does not take is no answer, never a fault, and `prune`
   removes the files of the repositories it is not told to keep
-  (`diskProjects.test.ts`). `projectIdeas.ts` reads `<project>/ideas/*.md`
+  (`diskProjects.test.ts`). Each scope's kept diagram is one file in
+  `architecture/` there, named by the sha256 hex of its slug and scope;
+  a bad file is no diagram (`diskProjects.test.ts`). `projectIdeas.ts` reads `<project>/ideas/*.md`
   records of `type: idea` with the inbox's front-matter reader, plain
   files in the real folder only; the summary is the first paragraph
   after the heading (`projectIdeas.test.ts`). `ghPulls.ts` runs `gh pr

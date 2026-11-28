@@ -113,7 +113,8 @@ from the outside world.
   subscription stored) no herdr stream is open. It sends `inbox.changed`
   after each `chat.status` and `workspaces.changed`, after each owner's mark (`inboxChanged`) and
   on each change that the Inbox watch tells, and `projects.changed` on each
-  change of the projects' watch; it opens both watches with the first
+  change of the projects' watch, and `architecture.changed` at each
+  diagram run's end; it opens the watches with the first
   client and closes them with the last (`liveEvents.test.ts`).
 - `fileStore.ts` is the port of git's tracked files in a root; `files.ts` gives each an ID and reads text only from the index (`files.test.ts`).
 - `projects.ts` is the Projects app (f-008) and its ports: the brain's
