@@ -25,6 +25,19 @@ export const ProjectMenuWords = z.object({
 })
 export type ProjectMenuWords = z.infer<typeof ProjectMenuWords>
 
+/** The Ideas tab's sorts (NCC-132 AC1): Updated is the server's order. */
+export const IdeaSort = z.enum(['updated', 'title', 'kind', 'state'])
+export type IdeaSort = z.infer<typeof IdeaSort>
+
+/** The Ideas tab's search, sort and page, kept while an idea's page shows so Back to Ideas returns to them. */
+export const IdeasView = z.object({
+  query: z.string(),
+  sort: IdeaSort,
+  page: z.number().int().positive(),
+  pageSize: z.number().int().positive(),
+})
+export type IdeasView = z.infer<typeof IdeasView>
+
 /** The words of a project's page (R4): its back row, Quick chat and the tabs of increment one (d-133). */
 export const ProjectPageWords = z.object({
   back: z.string(),
@@ -50,6 +63,13 @@ export const ProjectPageWords = z.object({
   noIdeas: z.string(),
   ideaKinds: z.record(z.enum(['idea', 'proposal', 'audit']), z.string()),
   ideaStates: z.record(z.enum(['open', 'in-design', 'needs-you', 'decided', 'parked']), z.string()),
+  /** The Ideas tab's search and sort (NCC-132 AC1): their labels, each sort's name and the line when no idea matches. */
+  ideaTools: z.object({
+    search: z.string(),
+    sort: z.string(),
+    sorts: z.record(IdeaSort, z.string()),
+    noMatch: z.string(),
+  }),
   /**
    * The Chats panel (R7): its heading, the line with no chat and each status's pill word, as Workspaces words it;
    * the search's name, the chip row's name and the line when no chat matches.
@@ -218,6 +238,8 @@ export const ProjectsUi = z.object({
   quickChat: QuickChatStatus.optional(),
   /** The ID of the idea whose page shows (`?idea=`, R11). */
   idea: z.string().optional(),
+  /** The Ideas tab's search, sort and page; the defaults when not set. */
+  ideasView: IdeasView.optional(),
   /** The Overview's groups the owner opened or closed; "Needs you" and "In progress" start open. */
   groupsOpen: z.partialRecord(z.enum(['needsYou', 'toReview', 'inProgress']), z.boolean()).optional(),
 })

@@ -8,7 +8,7 @@ import { BackRow, MarkdownView } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import { MarkdownText } from '../../../blocks/MarkdownText.tsx'
 import type { IdeaPage, ProjectPageWords } from '../types.ts'
-import { type IdeaWords, ideaMeta } from './IdeasList.tsx'
+import { ideaMeta } from './IdeasList.tsx'
 
 const head = css({ display: 'flex', flexDirection: 'column', gap: '4', pt: '16', pb: '16' })
 const title = css({ textStyle: 'heading', color: 'fg.default' })
@@ -19,7 +19,7 @@ const bodyOf = (text: string) => text.replace(/^\s*#(?:[ \t][^\n]*)?(?:\n+|$)/, 
 
 export type IdeaViewProps = {
   idea: IdeaPage
-  words: IdeaWords & Pick<ProjectPageWords, 'ideaBack' | 'ideaBackLabel'>
+  words: Pick<ProjectPageWords, 'ideaKinds' | 'ideaStates' | 'ideaBack' | 'ideaBackLabel'>
   onBack?: (() => void) | undefined
 }
 

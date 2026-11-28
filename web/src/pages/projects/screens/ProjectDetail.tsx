@@ -62,7 +62,16 @@ export function ProjectDetail(props: ProjectDetailProps) {
       <RepositoriesList repositories={data.repositories} words={words} layout={layout} />
     )
   const ideas =
-    data.ideas === undefined ? null : <IdeasList ideas={data.ideas} words={words} layout={layout} onOpen={onIdeaOpen} />
+    data.ideas === undefined ? null : (
+      <IdeasList
+        ideas={data.ideas}
+        words={words}
+        layout={layout}
+        view={ui.ideasView}
+        onViewChange={(ideasView) => onUiChange?.({ ideasView })}
+        onOpen={onIdeaOpen}
+      />
+    )
   if (ui.idea !== undefined && data.idea !== undefined)
     return (
       <div className={page[layout]}>
