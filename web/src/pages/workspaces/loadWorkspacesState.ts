@@ -4,17 +4,25 @@
 // development the home reads the live source unless `?source=fixtures` names
 // the sample data (d-117); a `?state=` reads its fixture state. The
 // router's `signal` ends a live read when the owner leaves the page.
+import { replaceEqualDeep } from '@tanstack/react-query'
 import { notFound } from '@tanstack/react-router'
 import { pendingTiming } from '../../lib/pendingTiming.ts'
 import { parseState } from '../../errors/parseState.ts'
 import { type DataSourceOptions, readsLiveServer, readState } from '../../lib/dataSource.ts'
 import type { ScreenState } from '../../lib/screenState.ts'
+import { sameStateLoaded } from './listReads.ts'
 import { workspacesHome } from './home.ts'
 import { workspacesStates } from './states/index.ts'
 import { WorkspacesState, type WorkspacesData, type WorkspacesUi } from './types.ts'
 
 /** The page built live, and its home reads live in development (d-117). */
 export const workspacesSources = { built: ['live'], default: 'live' } as const satisfies DataSourceOptions
+
+/**
+ * The last live state of each state name. A reload whose answer is equal to it gives it again, and a changed answer
+ * keeps each equal part of it, so an unchanged layout read after the event stream opens renders no page (NCC-27).
+ */
+const lastLive = new Map<string, ScreenState<WorkspacesData, WorkspacesUi>>()
 
 function loadWorkspacesState(
   requested: string | undefined,
@@ -34,6 +42,13 @@ function loadWorkspacesState(
     return import('./liveWorkspaces.ts')
       .then((live) => live.withLiveWorkspaces(read.value.state, { signal }))
       .then((merged) => parseState(WorkspacesState, merged, `${name} (live)`))
+      .then((parsed) => {
+        const last = lastLive.get(name)
+        const shared = replaceEqualDeep(last, parsed)
+        lastLive.set(name, shared)
+        if (shared === last) sameStateLoaded()
+        return shared
+      })
   return parseState(WorkspacesState, read.value.state, name)
 }
 
