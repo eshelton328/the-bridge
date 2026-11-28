@@ -121,6 +121,8 @@ export const ErrorKind = z.discriminatedUnion('kind', [
     state: z.enum(['launchLimit', 'launching', 'noMethod', 'noAsk']),
     ...common,
   }),
+  /** A diagram run of another scope goes (409): the server runs one at a time over all projects; try again after it. */
+  z.object({ kind: z.literal('architecture-busy'), ...common }),
   /** Linear answered with something the server does not read (502). */
   z.object({ kind: z.literal('linear-bad-reply'), ...common }),
   /** Linear does not answer (503). */
@@ -152,6 +154,7 @@ export const errorStatus = {
   'brain-busy': 503,
   'inbox-read-only': 409,
   'qa-not-ready': 409,
+  'architecture-busy': 409,
   'linear-bad-reply': 502,
   'linear-unavailable': 503,
   'too-many-requests': 429,

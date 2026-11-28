@@ -1,5 +1,28 @@
 // The package entry. Name each export; no `export *`.
 export {
+  ArchitectureArrow,
+  ArchitectureBoundary,
+  ArchitectureModel,
+  ArchitecturePart,
+  ArchitectureResponse,
+  ArchitectureScope,
+  ArchitectureScopeResponse,
+  ArchitectureScopeState,
+  maxArchitectureArrows,
+  maxArchitectureBoundaries,
+  maxArchitectureParts,
+  maxArchitectureScopes,
+  maxArchitectureText,
+  maxStackBadge,
+  maxStackBadges,
+  maxStackGroups,
+  PartShape,
+  RegenerateRequest,
+  RegenerateResponse,
+  StackGroup,
+  systemScope,
+} from './architecture.ts'
+export {
   ArtifactId,
   FileId,
   InboxId,
@@ -262,6 +285,7 @@ export {
 } from './sideAnswers.ts'
 export { ChatSkill, ChatSkillsResponse, maxSkillDescription, maxSkills, SkillSource } from './skills.ts'
 export {
+  ArchitectureChangedEvent,
   ChatStatusEvent,
   InboxChangedEvent,
   LayoutChangedEvent,

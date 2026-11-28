@@ -5,6 +5,7 @@
 import { z } from 'zod'
 import { eventOf } from './events.ts'
 import { ChatId, WorkspaceId } from './ids.ts'
+import { ArchitectureScope } from './architecture.ts'
 import { ProjectSlug } from './projects.ts'
 import { ChatStatus } from './workspaces.ts'
 
@@ -46,8 +47,16 @@ export type QaChangedEvent = z.infer<typeof QaChangedEvent>
 export const QueueChangedEvent = eventOf('queue.changed', z.strictObject({ slug: ProjectSlug }))
 export type QueueChangedEvent = z.infer<typeof QueueChangedEvent>
 
+/** A diagram run of a project's scope ended, good or failed: read `GET /api/projects/:slug/architecture` again. */
+export const ArchitectureChangedEvent = eventOf(
+  'architecture.changed',
+  z.strictObject({ slug: ProjectSlug, scope: ArchitectureScope }),
+)
+export type ArchitectureChangedEvent = z.infer<typeof ArchitectureChangedEvent>
+
 /** One event of the stream. Its `type` is also the SSE event name, and its `seq` the SSE id. */
 export const LiveEvent = z.discriminatedUnion('type', [
+  ArchitectureChangedEvent,
   ChatStatusEvent,
   InboxChangedEvent,
   LayoutChangedEvent,

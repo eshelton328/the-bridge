@@ -192,6 +192,7 @@ async function missOf(
     case 'storage-full':
     case 'inbox-read-only':
     case 'qa-not-ready':
+    case 'architecture-busy':
     case 'linear-bad-reply':
     case 'linear-unavailable':
     case 'project-not-ready':
