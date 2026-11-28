@@ -13,6 +13,7 @@ import { createBrainRequests, createDiskInboxMarks, watchBrainInbox } from './ad
 import { createDiskPushStore } from './adapters/diskPush.ts'
 import { createBrainProjects, createDiskDriftStore, createDiskPins } from './adapters/diskProjects.ts'
 import { createDiskWorktrees } from './adapters/diskWorktrees.ts'
+import { createGhCi } from './adapters/ghCi.ts'
 import { createGhPulls } from './adapters/ghPulls.ts'
 import { createGhRepositoryFacts } from './adapters/ghRepos.ts'
 import { createNccCheck } from './adapters/projectDrift.ts'
@@ -103,6 +104,7 @@ const projects = createProjects({
   check: createNccCheck({ command: 'ncc', root: config.value.chatRoot, env: process.env }),
   drift: createDiskDriftStore(projectsRoot),
   facts: createGhRepositoryFacts({ command: 'gh', env: process.env }),
+  ci: createGhCi({ command: 'gh', env: process.env }),
   worktrees: createDiskWorktrees(config.value.chatRoot),
   agents,
 })

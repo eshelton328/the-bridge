@@ -21,15 +21,17 @@ import type {
   ProjectsResponse,
   ProjectSummary,
   RepositoriesResponse,
+  RepositoryCiResponse,
   RepositoryId,
   RepositoryPart,
   RepositoryRelease,
   RepositorySection,
   RepositoryVisibility,
 } from '@bridge/contract'
-import { maxDriftFindings } from '@bridge/contract'
+import { ciWindowDays, maxDriftFindings } from '@bridge/contract'
 import { err, ok, type Result } from '@bridge/shared'
 import type { AgentPort, AgentPortError } from './agentPort.ts'
+import { type CiSource, ciOf, ciRunsOf, type JobRun, jobRunsOf, windowOf } from './repositoryCi.ts'
 
 export type ProjectFault = { readonly reason: 'failed'; readonly code: string }
 
@@ -104,12 +106,17 @@ type Deps = {
   /** GitHub's facts and the worktree counts; with none, that part is not read. */
   readonly facts?: RepositoryFacts
   readonly worktrees?: WorktreeCount
+  /** GitHub's CI runs, merged PRs and jobs; with none, each CI read is null. */
+  readonly ci?: CiSource
   /** The chats and their tags; none (each chats read fails) where an app has no agents to give. */
   readonly agents?: Pick<AgentPort, 'listWorkspaces' | 'chatTags'>
   readonly now?: () => Date
 }
 
 type NotFound = 'notFound'
+
+/** A CI read's answer, and the fault code of a GitHub read that failed (for the log), else null. */
+type CiOutcome = { readonly response: RepositoryCiResponse; readonly code: string | null }
 
 /** A drift run's answer, and the fault code of a check that failed (for the log), else null. */
 type DriftRunOutcome = { readonly drift: DriftResponse; readonly code: string | null }
@@ -123,6 +130,8 @@ export type Projects = {
   drift(slug: ProjectSlug): Promise<Result<DriftResponse | NotFound, ProjectFault>>
   /** The Repositories tab (R2, R5, R8): a part that does not read is named in `unread`, never a fault. */
   repositories(slug: ProjectSlug): Promise<Result<RepositoriesResponse | NotFound, ProjectFault>>
+  /** A repository's CI numbers (R4, R6), kept `ciKeptMs`; null when GitHub did not answer. */
+  ci(slug: ProjectSlug, repository: RepositoryId): Promise<Result<CiOutcome | NotFound, ProjectFault>>
   runDrift(slug: ProjectSlug): Promise<Result<DriftRunOutcome | NotFound, ProjectFault>>
   /** A fault of the agents is the port's own, so the route answers it as the workspaces routes do. */
   chats(slug: ProjectSlug): Promise<Result<ProjectChatsResponse | NotFound, ProjectFault | AgentPortError>>
@@ -193,6 +202,31 @@ export function keptPulls(source: PullSource, now: () => Date, changed: () => vo
   }
 }
 
+/** How long a repository's CI numbers are kept before gh runs again for it. */
+const ciKeptMs = 600_000
+
+/**
+ * One answer for each key, kept `keptMs` and shared by the requests that ask while it runs; an answer `keep` refuses
+ * is not kept, so the next request reads again. A read that throws is not kept either.
+ */
+function keptAnswers<T>(keptMs: number, now: () => Date, keep: (answer: T) => boolean) {
+  const kept = new Map<string, { readonly at: number; readonly answer: Promise<T> }>()
+  return (key: string, read: () => Promise<T>): Promise<T> => {
+    const at = now().getTime()
+    const last = kept.get(key)
+    if (last !== undefined && at - last.at < keptMs) return last.answer
+    const entry = { at, answer: read() }
+    kept.set(key, entry)
+    const drop = () => {
+      if (kept.get(key) === entry) kept.delete(key)
+    }
+    void entry.answer.then((answer) => {
+      if (!keep(answer)) drop()
+    }, drop)
+    return entry.answer
+  }
+}
+
 /** How long a repository's visibility and release are kept before gh runs again for it. */
 export const aboutKeptMs = 300_000
 
@@ -250,14 +284,40 @@ export function createProjects({
   agents,
   facts: factsSource,
   worktrees,
+  ci,
   now = () => new Date(),
 }: Deps): Projects {
+  const keptCi = keptAnswers<CiOutcome>(ciKeptMs, now, (answer) => answer.code === null)
   const watchers = new Set<() => void>()
   const pulls = keptPulls(source, now, () => {
     for (const watcher of [...watchers]) watcher()
   })
   const facts = factsSource === undefined ? undefined : keptFacts(factsSource, now)
   const notRead = Promise.resolve(err({ reason: 'failed' as const, code: 'no-source' }))
+
+  const readCi = async (github: { readonly owner: string; readonly name: string }): Promise<CiOutcome> => {
+    const none = (code: string) => ({ response: { ci: null }, code })
+    const source = ci
+    if (source === undefined) return none('no-source')
+    const since = new Date(now().getTime() - ciWindowDays * 86_400_000).toISOString()
+    const [runs, merged] = await Promise.all([source.runs(github, since), source.merged(github, since)])
+    if (!runs.ok) return none(runs.error.code)
+    if (!merged.ok) return none(merged.error.code)
+    const ciRuns = ciRunsOf(runs.value)
+    const reads = await Promise.all(
+      jobRunsOf(ciRuns).map((run) => Promise.all(run.runs.map((r) => source.jobs(github, r.id)))),
+    )
+    const jobs: JobRun[][] = []
+    for (const read of reads) {
+      const got: JobRun[] = []
+      for (const r of read) {
+        if (!r.ok) return none(r.error.code)
+        got.push(...r.value)
+      }
+      jobs.push(got)
+    }
+    return { response: { ci: ciOf(windowOf(since, runs.value), ciRuns, merged.value, jobs) }, code: null }
+  }
 
   const sectionOf = async (slug: ProjectSlug, repository: ProjectRepository): Promise<RepositorySection> => {
     const github = repository.github
@@ -401,6 +461,19 @@ export function createProjects({
       return ok({ repositories: await Promise.all(record.value.repositories.map((r) => sectionOf(slug, r))) })
     },
 
+    async ci(slug, id) {
+      const record = await recordOf(slug)
+      if (!record.ok) return record
+      if (record.value === 'notFound') return ok('notFound')
+      const repository = record.value.repositories.find((r) => r.id === id)
+      if (repository === undefined) return ok('notFound')
+      const github = repository.github
+      if (github === null) return ok({ response: { ci: null }, code: null })
+      // A read that throws is the fault `threw`, so no rejection is left unhandled; its message is not kept.
+      const read = () => readCi(github).catch((): CiOutcome => ({ response: { ci: null }, code: 'threw' }))
+      return ok(await keptCi(`${github.owner}/${github.name}`, read))
+    },
+
     async runDrift(slug) {
       const record = await recordOf(slug)
       if (!record.ok) return record
@@ -471,6 +544,7 @@ export const noProjects: Projects = (() => {
     idea: fault,
     drift: fault,
     repositories: fault,
+    ci: fault,
     runDrift: fault,
     chats: fault,
     watch,
