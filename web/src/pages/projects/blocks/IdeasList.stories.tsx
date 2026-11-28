@@ -108,10 +108,12 @@ export const Sorted: Story = {
 export const Searched: Story = {
   args: { ideas: { rows: three } },
   play: async ({ canvas, userEvent }) => {
+    // The status line is in the page before any search, so a screen reader hears it when it fills.
+    await expect(canvas.getByRole('status')).toHaveTextContent('')
     await userEvent.type(canvas.getByRole('searchbox', { name: 'Search ideas' }), 'parked')
     await expect(canvas.getAllByRole('listitem')).toHaveLength(1)
     await expect(canvas.getByText('Bridge audit of the library')).toBeVisible()
     await userEvent.type(canvas.getByRole('searchbox', { name: 'Search ideas' }), ' nothing')
-    await expect(canvas.getByText('No idea matches')).toBeVisible()
+    await expect(canvas.getByRole('status')).toHaveTextContent('No idea matches')
   },
 }

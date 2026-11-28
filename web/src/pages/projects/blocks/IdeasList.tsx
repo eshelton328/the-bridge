@@ -3,7 +3,7 @@
 // page (R11). The search (title, tags, kind and state words) and the sort
 // pick the rows, and the pager shows 10 of them at a time (NCC-132 AC1); a
 // search or a sort goes back to page 1. The page keeps them (`view`), so
-// Back to Ideas returns to them.
+// Back to Ideas returns to them; a status line says when no idea matches.
 // Plain on every size for now; the frames' table (D08, T08, M08) is a later
 // issue's. Props only.
 import { ListRow, Pager, SearchField, SearchIcon, SelectField } from '@eshelton328/component-library-1701'
@@ -81,7 +81,10 @@ export function IdeasList({ ideas, words, layout, view = firstView, onViewChange
           }}
         />
       </div>
-      {shown.length === 0 ? <p className={line}>{words.ideaTools.noMatch}</p> : null}
+      {/* Always in the page, so a screen reader hears the line when a search empties the list. */}
+      <p role="status" className={shown.length === 0 ? line : undefined}>
+        {shown.length === 0 ? words.ideaTools.noMatch : ''}
+      </p>
       <ul className={list} aria-label={words.ideas}>
         {shown.slice((at - 1) * pageSize, at * pageSize).map((idea) => (
           <li key={idea.id}>
