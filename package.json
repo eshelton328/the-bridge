@@ -32,6 +32,7 @@
     "test:scripts": "node --test scripts/*.test.ts scripts/fidelity/*.test.ts",
     "test": "vitest run",
     "test:unit": "vitest run --project shared --project contract --project server --project web ${VITEST_SHARD:+--shard=$VITEST_SHARD}",
+    "test:motion": "vitest run --project web-motion --maxWorkers=1",
     "test:e2e": "vitest run --config e2e/vitest.config.ts",
     "test:stories": "vitest run --project storybook",
     "build": "pnpm --filter @bridge/web build",
@@ -43,7 +44,7 @@
     "keyboard:served": "node scripts/keyboardCheck.ts",
     "keyboard:slide": "node scripts/keyboardSlide.ts",
     "build-storybook": "pnpm --filter @bridge/web build-storybook",
-    "verify": "pnpm codegen && pnpm check:css && pnpm check:routes && pnpm check:registry && pnpm typecheck && pnpm lint && pnpm format:check && pnpm knip && pnpm check:agents-md && pnpm check:cycles && pnpm check:structure && pnpm check:states && pnpm check:reviews && pnpm check:ci && pnpm test:scripts && pnpm test:unit && pnpm test:stories && pnpm build && pnpm build:canvas && pnpm build-storybook"
+    "verify": "pnpm codegen && pnpm check:css && pnpm check:routes && pnpm check:registry && pnpm typecheck && pnpm lint && pnpm format:check && pnpm knip && pnpm check:agents-md && pnpm check:cycles && pnpm check:structure && pnpm check:states && pnpm check:reviews && pnpm check:ci && pnpm test:scripts && pnpm test:unit && pnpm test:motion && pnpm test:stories && pnpm build && pnpm build:canvas && pnpm build-storybook"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",

@@ -1,8 +1,11 @@
 import { fileURLToPath } from 'node:url'
 import { storybookTest } from '@storybook/addon-vitest/vitest-plugin'
 import { playwright } from '@vitest/browser-playwright'
-import { defineConfig } from 'vitest/config'
+import { configDefaults, defineConfig } from 'vitest/config'
 import { TimedSequencer } from './scripts/testSequencer.ts'
+
+// The web tests that run in the `web-motion` project, not in `web`.
+const motionTests = 'src/**/*.motion.test.{ts,tsx}'
 
 // Each project names its Chromium instance, so the names stay unique.
 const browser = (name: string) => ({
@@ -35,8 +38,21 @@ export default defineConfig({
           name: 'web',
           root: './web',
           include: ['src/**/*.test.{ts,tsx}'],
+          exclude: [...configDefaults.exclude, motionTests],
           setupFiles: [fileURLToPath(new URL('./web/src/lib/testSetup.ts', import.meta.url))],
           browser: browser('web'),
+        },
+      },
+      // The motion cases, which read one sample per rendering step, run alone with one worker (`pnpm test:motion`):
+      // beside other test files a CI runner draws too few frames for them to judge a glide (NCC-174).
+      {
+        extends: './web/vite.config.ts',
+        test: {
+          name: 'web-motion',
+          root: './web',
+          include: [motionTests],
+          setupFiles: [fileURLToPath(new URL('./web/src/lib/testSetup.ts', import.meta.url))],
+          browser: browser('web-motion'),
         },
       },
       {
