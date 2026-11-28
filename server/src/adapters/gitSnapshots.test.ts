@@ -38,10 +38,10 @@ const calls = async () => (await readFile(join(dir, 'calls'), 'utf8')).trim().sp
 describe('createGitSnapshots', () => {
   it('clones at depth 1 first, then fetches and resets, each call with the safety config and no token', async () => {
     const snapshots = await stub()
-    const first = await snapshots.sync('example-repo', github)
+    const first = await snapshots.sync(github)
     expect(first.ok && first.value.commit).toBe(hash)
-    expect(first.ok && first.value.dir.endsWith('/snapshots/example-repo')).toBe(true)
-    await snapshots.sync('example-repo', github)
+    expect(first.ok && first.value.dir.endsWith('/snapshots/example-owner/example-repo')).toBe(true)
+    await snapshots.sync(github)
     const made = await calls()
     expect(made.map((c) => c.replace(/^.*?(clone|fetch|reset|rev-parse).*$/, '$1'))).toEqual([
       'clone',
@@ -64,32 +64,31 @@ describe('createGitSnapshots', () => {
     )
   })
 
-  it('refuses an ID or a GitHub name that could leave the folder, with no git call', async () => {
+  it('refuses a GitHub name that could leave the folder, with no git call', async () => {
     const snapshots = await stub()
-    expect(await snapshots.sync('../x', github)).toEqual({ ok: false, error: { reason: 'failed', code: 'bad-id' } })
-    expect(await snapshots.sync('example-repo', { owner: 'a/b', name: 'x' })).toMatchObject({
-      error: { code: 'bad-name' },
+    expect(await snapshots.sync({ owner: 'a/b', name: 'x' })).toEqual({
+      ok: false,
+      error: { reason: 'failed', code: 'bad-name' },
     })
-    expect(await snapshots.sync('example-repo', { owner: 'a', name: '..' })).toMatchObject({
-      error: { code: 'bad-name' },
-    })
+    expect(await snapshots.sync({ owner: 'a', name: '..' })).toMatchObject({ error: { code: 'bad-name' } })
+    expect(await snapshots.sync({ owner: '..', name: 'x' })).toMatchObject({ error: { code: 'bad-name' } })
     await expect(readFile(join(dir, 'calls'), 'utf8')).rejects.toThrow()
   })
 
   it("is git's exit code when a call fails, and EBADDATA for a hash that is not one", async () => {
-    expect(await (await stub(hash, 'clone')).sync('example-repo', github)).toEqual({
+    expect(await (await stub(hash, 'clone')).sync(github)).toEqual({
       ok: false,
       error: { reason: 'failed', code: 'exit-128' },
     })
     await rm(join(dir, 'snapshots'), { recursive: true, force: true })
-    expect(await (await stub('not-a-hash')).sync('example-repo', github)).toMatchObject({ error: { code: 'EBADDATA' } })
+    expect(await (await stub('not-a-hash')).sync(github)).toMatchObject({ error: { code: 'EBADDATA' } })
   })
 
   it('leaves no snapshot after a first clone with no commit, so the next sync clones again', async () => {
-    expect(await (await stub(hash, 'rev-parse')).sync('example-repo', github)).toMatchObject({
+    expect(await (await stub(hash, 'rev-parse')).sync(github)).toMatchObject({
       error: { code: 'exit-128' },
     })
-    const good = await (await stub()).sync('example-repo', github)
+    const good = await (await stub()).sync(github)
     expect(good.ok && good.value.commit).toBe(hash)
     expect((await calls()).map((c) => c.replace(/^.*?(clone|fetch|reset|rev-parse).*$/, '$1'))).toEqual([
       'clone',
@@ -100,11 +99,11 @@ describe('createGitSnapshots', () => {
   })
 
   it('removes a snapshot whose fetch fails, so the next sync clones again', async () => {
-    await (await stub()).sync('example-repo', github)
-    expect(await (await stub(hash, 'fetch')).sync('example-repo', github)).toMatchObject({
+    await (await stub()).sync(github)
+    expect(await (await stub(hash, 'fetch')).sync(github)).toMatchObject({
       error: { code: 'exit-128' },
     })
-    await (await stub()).sync('example-repo', github)
+    await (await stub()).sync(github)
     expect((await calls()).map((c) => c.replace(/^.*?(clone|fetch|reset|rev-parse).*$/, '$1'))).toEqual([
       'clone',
       'rev-parse',
@@ -114,15 +113,27 @@ describe('createGitSnapshots', () => {
     ])
   })
 
-  it('shares a running sync of one ID, so two syncs at once give one clone', async () => {
+  it('keeps one snapshot for each GitHub repository, so two repositories at once never share one', async () => {
     const snapshots = await stub()
-    const [a, b] = await Promise.all([snapshots.sync('example-repo', github), snapshots.sync('example-repo', github)])
+    const other = { owner: 'example-owner', name: 'other-repo' }
+    const [a, b] = await Promise.all([snapshots.sync(github), snapshots.sync(other)])
+    expect(a.ok && a.value.dir.endsWith('/snapshots/example-owner/example-repo')).toBe(true)
+    expect(b.ok && b.value.dir.endsWith('/snapshots/example-owner/other-repo')).toBe(true)
+    expect((await calls()).filter((c) => c.includes(' clone '))).toHaveLength(2)
+  })
+
+  it('shares a running sync of one repository, so two syncs at once give one clone', async () => {
+    const snapshots = await stub()
+    const [a, b] = await Promise.all([
+      snapshots.sync(github),
+      snapshots.sync({ owner: 'Example-Owner', name: 'Example-Repo' }),
+    ])
     expect(a).toEqual(b)
     expect((await calls()).filter((c) => c.includes(' clone '))).toHaveLength(1)
   })
 
   it('makes the snapshots folder private', async () => {
-    await (await stub()).sync('example-repo', github)
+    await (await stub()).sync(github)
     const { mode } = await stat(join(dir, 'snapshots'))
     expect(mode & 0o777).toBe(0o700)
   })

@@ -469,7 +469,8 @@ client of a socket or a file sits beside them.
   that GitHub marks `incomplete_results` is the fault `incomplete`
   (`ghCi.test.ts`).
   `gitSnapshots.ts` (increment two) keeps the server's own shallow clone
-  of each repository in `snapshots/<repository ID>` beside the database
+  of each GitHub repository in `snapshots/<owner>/<name>` (lower case)
+  beside the database
   (0700): a first sync clones the default branch at depth 1 into a new
   folder that takes the snapshot's name only once it has a commit, a later
   one fetches the URL's `HEAD` and resets to it, and a snapshot that does

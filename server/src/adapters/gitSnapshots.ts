@@ -1,5 +1,5 @@
 // The server's own shallow clones of the repositories (f-008 increment two):
-// `<root>/<repository ID>`, where root is `snapshots/` beside BRIDGE_DB_FILE,
+// `<root>/<owner>/<name>` (lower case, as GitHub's names are), where root is `snapshots/` beside BRIDGE_DB_FILE,
 // never under the chat root or in a main clone. A sync clones the default
 // branch at depth 1, or fetches it again and resets to it, and gives the
 // folder and its commit. git runs with an argument list, a time limit, no
@@ -11,7 +11,6 @@
 import { execFile } from 'node:child_process'
 import { mkdir, mkdtemp, realpath, rename, rm, stat } from 'node:fs/promises'
 import { join, relative, isAbsolute } from 'node:path'
-import { RepositoryId } from '@bridge/contract'
 import { err, ok, type Result } from '@bridge/shared'
 import type { ProjectFault } from '../services/projects.ts'
 
@@ -32,7 +31,7 @@ const safety = [
 export type GitSnapshotsOptions = {
   /** The `git` program: a name on PATH or an absolute path. */
   readonly command: string
-  /** The folder that holds one snapshot for each repository ID. */
+  /** The folder that holds one snapshot for each GitHub repository. */
   readonly root: string
   /** The server's environment; git gets only PATH, HOME and LANG of it. */
   readonly env: Readonly<Record<string, string | undefined>>
@@ -40,11 +39,13 @@ export type GitSnapshotsOptions = {
   readonly base?: string
 }
 
+type GithubName = { readonly owner: string; readonly name: string }
+
 /** One synced snapshot: its folder (for the adapters only) and the commit it holds. */
 type Snapshot = { readonly dir: string; readonly commit: string }
 
 export type GitSnapshots = {
-  sync(id: string, github: { readonly owner: string; readonly name: string }): Promise<Result<Snapshot, ProjectFault>>
+  sync(github: GithubName): Promise<Result<Snapshot, ProjectFault>>
 }
 
 /** Removes a folder of the server's own; false when it could not. */
@@ -93,12 +94,8 @@ export function createGitSnapshots({
         resolve(err({ reason: 'failed', code: 'spawn' }))
       }
     })
-  const syncOnce = async (
-    id: string,
-    github: { readonly owner: string; readonly name: string },
-  ): Promise<Result<Snapshot, ProjectFault>> => {
-    if (!RepositoryId.safeParse(id).success) return err({ reason: 'failed', code: 'bad-id' })
-    if (!githubPart.test(github.owner) || !githubPart.test(github.name) || github.name.startsWith('.'))
+  const syncOnce = async (github: GithubName, owner: string, name: string): Promise<Result<Snapshot, ProjectFault>> => {
+    if (!githubPart.test(owner) || !githubPart.test(name) || owner.startsWith('.') || name.startsWith('.'))
       return err({ reason: 'failed', code: 'bad-name' })
     try {
       await mkdir(root, { recursive: true, mode: 0o700 })
@@ -111,7 +108,14 @@ export function createGitSnapshots({
     } catch {
       return err({ reason: 'failed', code: 'no-root' })
     }
-    const dir = join(top, id)
+    try {
+      await mkdir(join(top, owner), { mode: 0o700 }).catch((e: unknown) => {
+        if (!(e instanceof Error && 'code' in e && e.code === 'EEXIST')) throw e
+      })
+    } catch {
+      return err({ reason: 'failed', code: 'no-root' })
+    }
+    const dir = join(top, owner, name)
     const rel = relative(top, dir)
     if (rel === '' || rel.startsWith('..') || isAbsolute(rel)) return err({ reason: 'failed', code: 'outside-root' })
     const cloned = await stat(join(dir, '.git')).then(
@@ -168,15 +172,18 @@ export function createGitSnapshots({
     }
     return ok({ dir, commit: commit.value })
   }
-  // One sync of a snapshot at a time: a second sync of the ID while one runs gets its answer, so two clones never
-  // write one folder.
+  // One sync of a snapshot at a time: a second sync of the repository while one runs gets its answer, so two clones
+  // never write one folder. Two projects that name one repository share its snapshot; two repositories never do.
   const running = new Map<string, Promise<Result<Snapshot, ProjectFault>>>()
   return {
-    sync(id, github) {
-      const run = running.get(id)
+    sync(github) {
+      const owner = github.owner.toLowerCase()
+      const name = github.name.toLowerCase()
+      const key = `${owner}/${name}`
+      const run = running.get(key)
       if (run !== undefined) return run
-      const next = syncOnce(id, github).finally(() => running.delete(id))
-      running.set(id, next)
+      const next = syncOnce(github, owner, name).finally(() => running.delete(key))
+      running.set(key, next)
       return next
     },
   }
