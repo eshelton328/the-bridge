@@ -754,9 +754,27 @@ describe('/api/projects/:slug/repositories/:repo/drift', () => {
       open = resolve
     })
     const fake = fakeDrift({ ok: true, value: { findings: [], total: 0 } }, gate)
-    const { app } = driftServer(fake.source)
+    // Each request reads the project list, then goes to the snapshot's join in microtasks only. So when all three
+    // reads have ended, one macrotask later each request waits at the join, however slow the machine is.
+    const disk = createBrainProjects(brain)
+    let arrived = 0
+    let allArrived: () => void = () => undefined
+    const arrivals = new Promise<void>((resolve) => {
+      allArrived = resolve
+    })
+    const counted: typeof disk = {
+      ...disk,
+      list: async () => {
+        const listed = await disk.list()
+        arrived += 1
+        if (arrived === 3) allArrived()
+        return listed
+      },
+    }
+    const { app } = server(undefined, undefined, counted, fake.source)
     const runs = [post(app), post(app), post(app)]
-    await new Promise((resolve) => setTimeout(resolve, 20))
+    await arrivals
+    await new Promise((resolve) => setImmediate(resolve))
     open()
     const bodies = await Promise.all(runs.map(async (r) => RepositoryDriftResponse.parse(await (await r).json())))
     expect(bodies.map((b) => b.last?.result)).toEqual(['clean', 'clean', 'clean'])
