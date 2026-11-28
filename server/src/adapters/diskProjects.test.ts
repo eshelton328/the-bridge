@@ -3,7 +3,14 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { ok } from '@bridge/shared'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createBrainProjects, createDiskCiStore, createDiskPins, githubOf, readProjectYaml } from './diskProjects.ts'
+import {
+  createBrainProjects,
+  createDiskArchitectureStore,
+  createDiskCiStore,
+  createDiskPins,
+  githubOf,
+  readProjectYaml,
+} from './diskProjects.ts'
 
 let dir: string
 beforeEach(async () => {
@@ -182,5 +189,49 @@ describe('createDiskCiStore', () => {
     expect(await store.load(repo)).toEqual(kept)
     expect(await store.load(other)).toBeNull()
     expect(await readdir(join(dir, 'ci'))).toHaveLength(2)
+  })
+})
+
+describe('createDiskArchitectureStore', () => {
+  const kept = {
+    model: {
+      view: 'component' as const,
+      parts: [{ id: 'server', name: 'server', shape: 'service' as const, ours: true, typeLine: 'Server · Hono' }],
+      boundaries: [],
+      arrows: [],
+      stack: [],
+    },
+    commit: 'a'.repeat(40),
+    generatedAt: '2026-11-28T08:00:00.000Z',
+  }
+  const system = { slug: 'example-project', scope: '@system' }
+  const repo = { slug: 'example-project', scope: 'system' }
+
+  it('keeps each scope in its own sha256-named file, so @system and a repository named system do not clash', async () => {
+    const store = createDiskArchitectureStore(dir)
+    expect(await store.load(system)).toBeNull()
+    expect(await store.save(system, kept)).toEqual(ok(undefined))
+    expect(await store.load(repo)).toBeNull()
+    expect(await createDiskArchitectureStore(dir).load(system)).toEqual(kept)
+    const names = await readdir(join(dir, 'architecture'))
+    expect(names).toEqual([expect.stringMatching(/^[0-9a-f]{64}\.json$/)])
+    expect((await stat(join(dir, 'architecture', names[0] ?? ''))).mode & 0o777).toBe(0o600)
+  })
+
+  it('loads a file that is not a diagram as no diagram, never a fault', async () => {
+    const store = createDiskArchitectureStore(dir)
+    await store.save(system, kept)
+    const [name] = await readdir(join(dir, 'architecture'))
+    await writeFile(join(dir, 'architecture', name ?? ''), '{"model": 1}')
+    expect(await store.load(system)).toBeNull()
+  })
+
+  it('prunes the scopes it is not told to keep', async () => {
+    const store = createDiskArchitectureStore(dir)
+    await store.save(system, kept)
+    await store.save(repo, kept)
+    expect(await store.prune([repo])).toEqual(ok(undefined))
+    expect(await store.load(repo)).toEqual(kept)
+    expect(await store.load(system)).toBeNull()
   })
 })

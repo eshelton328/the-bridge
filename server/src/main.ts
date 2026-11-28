@@ -13,6 +13,7 @@ import { createBrainRequests, createDiskInboxMarks, watchBrainInbox } from './ad
 import { createDiskPushStore } from './adapters/diskPush.ts'
 import {
   createBrainProjects,
+  createDiskArchitectureStore,
   createDiskCiStore,
   createDiskDriftStore,
   createDiskPins,
@@ -35,6 +36,7 @@ import { readConfig } from './config.ts'
 import { createLogger, dailyFiles, type LogSink, teeSinks } from './logger.ts'
 import { formatEntry, parseLine } from './logs.ts'
 import { handleProcessErrors } from './processErrors.ts'
+import { createArchitecture, unbuiltRunner } from './services/architecture.ts'
 import { createArtifacts } from './services/artifacts.ts'
 import { createFiles } from './services/files.ts'
 import { createInbox } from './services/inbox.ts'
@@ -129,6 +131,16 @@ const projects = createProjects({
   worktrees: createDiskWorktrees(config.value.chatRoot),
   agents,
 })
+// The Architecture tab keeps each scope's diagram beside the database; until the snapshot runner (A1b) each run
+// fails with `not-built`, and its code goes to the log.
+const architecture = createArchitecture({
+  brain: brainProjects,
+  store: createDiskArchitectureStore(projectsRoot),
+  runner: unbuiltRunner,
+  log: (fault) => {
+    log.warn('architecture run failed', { code: fault.code })
+  },
+})
 const server = serve(
   {
     fetch: createApp({
@@ -151,6 +163,7 @@ const server = serve(
         linear:
           config.value.linearKeyFile === null ? null : createLinearIssues({ keyFile: config.value.linearKeyFile }),
       }),
+      architecture,
     }).fetch,
     port,
     hostname: '127.0.0.1',

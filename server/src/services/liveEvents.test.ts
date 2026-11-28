@@ -134,4 +134,29 @@ describe('the projects events', () => {
     agents.endAll({ reason: 'unreachable', message: 'down' })
     expect(state.open).toBe(0)
   })
+
+  it('watches the diagram runs only while a client is open, and sends architecture.changed with the slug and scope', () => {
+    const state: { open: number; tell: ((key: { slug: string; scope: string }) => void) | undefined } = {
+      open: 0,
+      tell: undefined,
+    }
+    const watch = (onChange: (key: { slug: string; scope: string }) => void) => {
+      state.open += 1
+      state.tell = onChange
+      return () => {
+        state.open -= 1
+      }
+    }
+    const live = createLiveEvents(createFakeAgents(machine), undefined, undefined, watch)
+    expect(state.open).toBe(0)
+    const a = client()
+    const leave = live.connect(a)
+    expect(state.open).toBe(1)
+    state.tell?.({ slug: 'example-project', scope: '@system' })
+    expect(a.events.map((e) => [e.type, e.data])).toEqual([
+      ['architecture.changed', { slug: 'example-project', scope: '@system' }],
+    ])
+    leave()
+    expect(state.open).toBe(0)
+  })
 })

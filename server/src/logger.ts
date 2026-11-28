@@ -41,6 +41,8 @@ const logMessages = [
   'projects read failed',
   'drift check failed',
   'ci read failed',
+  'architecture read failed',
+  'architecture run failed',
   'ci read timed',
   'files read failed',
   'qa read failed',

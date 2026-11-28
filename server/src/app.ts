@@ -10,6 +10,7 @@ import { createRateLimit } from './rateLimit.ts'
 import { artifactsRoutes } from './routes/artifacts.ts'
 import { filesRoutes } from './routes/files.ts'
 import { inboxRoutes } from './routes/inbox.ts'
+import { architectureRoutes } from './routes/architecture.ts'
 import { projectsRoutes } from './routes/projects.ts'
 import { qaRoutes } from './routes/qa.ts'
 import { chatsRoutes } from './routes/chats.ts'
@@ -24,6 +25,7 @@ import type { AgentPort } from './services/agentPort.ts'
 import { type Artifacts, createArtifacts } from './services/artifacts.ts'
 import { createFiles, type Files } from './services/files.ts'
 import { createInbox, type Inbox } from './services/inbox.ts'
+import { type Architecture, noArchitecture } from './services/architecture.ts'
 import { noProjects, type Projects } from './services/projects.ts'
 import { noQa, type Qa } from './services/qa.ts'
 import { createLiveEvents, type InboxWatch } from './services/liveEvents.ts'
@@ -58,6 +60,8 @@ export type AppDeps = {
   readonly projects?: Projects
   /** The QA tab (f-008 increment three); with none, each QA route answers 503. */
   readonly qa?: Qa
+  /** The Architecture tab (f-008 increment two); with none, each architecture route answers 500. */
+  readonly architecture?: Architecture
 }
 
 /** The store of an app with none: each call fails, so an upload answers 500 and is logged. */
@@ -125,8 +129,9 @@ export function createApp({
   files = noFiles,
   projects = noProjects,
   qa = noQa,
+  architecture = noArchitecture,
 }: AppDeps) {
-  const live = createLiveEvents(agents, watchInbox, watchProjects)
+  const live = createLiveEvents(agents, watchInbox, watchProjects, (onChange) => architecture.watch(onChange))
   return (
     new Hono<AppEnv>()
       // Each response carries an X-Request-Id, and the request's log line has the same ID (d-115).
@@ -165,6 +170,7 @@ export function createApp({
       .route('/api/files', filesRoutes(files, log))
       .route('/api/projects', qaRoutes(qa, log))
       .route('/api/projects', projectsRoutes(projects, log))
+      .route('/api/projects', architectureRoutes(architecture, log))
       .route('/api/client-errors', clientErrorsRoutes(log, createRateLimit(60, 60_000)))
       .notFound((c) => errorJson(c, 'not-found', { path: c.req.path, message: 'no route has this path' }))
       // A throw that no route caught: the log gets the error and its causes, the client the request ID.
