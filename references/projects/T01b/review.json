@@ -1,18 +1,18 @@
 {
   "frameId": "T01b",
-  "inputs": "67b330635ef18e79d1be1d9202aa71be043b021ba6b4e3c82c5dd6c13e6936b9",
+  "inputs": "43b9b071c6198327ae59066d2ee5d524866cc57e1ef077fe0ffbbd194dd83ee3",
   "library": "1.0.0-beta.139",
-  "recordSha256": "68ebb861d120dabcc0428db9c114d1c76ef4e44b5578d50b5ec0641320502da0",
+  "recordSha256": "d95b548a8f17421b5c4390a06d90bdf5b37e1247988e95c5eaddd54c7b26073e",
   "record": {
     "verdict": "match",
-    "viewport": "1133x1620 iPad mini landscape, dark mode",
+    "viewport": "1133 CSS px wide iPad mini landscape, dark mode",
     "inputs": {
       "layout": "separate",
       "reference": "references/projects/T01b/frame.png",
       "render": "reports/fidelity/projects/T01b.render.png",
       "reference_side": null
     },
-    "summary": "Every difference between the render and the reference is covered by an accepted deviation, so the two match.",
+    "summary": "Apart from the accepted deviations, the render matches the reference; no other difference shows.",
     "findings": [],
     "accepted_deviations": [
       {
@@ -20,35 +20,35 @@
         "as_given": "Panels. The Overview tab shows the Inbox, Queue and Context drift panels (R5, R6, R9) and no Chats panel: that is NCC-130's next PR (Chats, with its pager; LIBRARY_GAPS.md).",
         "status": "as-described",
         "finding": null,
-        "note": "The Chats heading, search, tag chips, table and pager are absent. The space below Context drift is empty down to the tab bar."
+        "note": "The Chats heading, search, filter chips, table and pager are absent, and the space below Context drift is empty down to the tab bar."
       },
       {
         "id": "A2",
-        "as_given": "Context drift. ncc check gives one line of text for each finding, with no repository and no kind, so the panel has a row for each finding (3 here) where the frame groups 22 findings by repository with a count and a chevron. The line over the rows says when the check ran and what it reads (\"Checked 12m ago. Folder layout and hooks.\"), where the frame has a clock time and other checks (\"AGENTS.md length, links and folder layout\"), which wait for a later check. Each row shows its line as ncc check prints it, with the backticks around a command (\"run `ncc check --fix`\"): the panel shows plain text, as on main. The heading is PageHeader at its pane size, as Inbox and Queue are.",
+        "as_given": "Context drift. ncc check gives one line of text for each finding, with no repository and no kind, so the panel has a row for each finding (3 here) where the frame groups 22 findings by repository with a count and a chevron. The line over the rows says when the check ran and what it reads (\"Checked 12m ago. Folder layout and hooks.\"), where the frame has a clock time and other checks (\"AGENTS.md length, links and folder layout\"), which wait for a later check. The heading is PageHeader at its pane size, as Inbox and Queue are.",
         "status": "as-described",
         "finding": null,
-        "note": "There are three plain-text rows with backticks and no counts or chevrons. The heading count reads 3 and the line above the rows reads \"Checked 12m ago. Folder layout and hooks.\" No row text is clipped."
+        "note": "There are three one-line rows with no counts or chevrons, the heading reads \"Context drift 3\", and the line above the rows reads \"Checked 12m ago. Folder layout and hooks.\". Run check is present."
       },
       {
         "id": "A3",
         "as_given": "Queue. \"In progress\" lists the open PRs with their pills, and no priority mark or owner chat on a row (\"the-bridge#535\" without \"· bridge-workbench\"): both come from Linear, which is out of scope. There is no \"Up next\" group, so the Queue counts its open PRs: 3 where the frame says 8, and \"In progress\" 3 where the frame says 4 over three rows.",
         "status": "as-described",
         "finding": null,
-        "note": "There is no priority mark and no owner chat, and no Up next group. The counts read 3. Because the mark is gone, the row titles start at the panel's left padding."
+        "note": "The rows have no priority bars, so the titles start where the bars sit in the frame. There are no owner chats and no Up next group, and the counts read Queue 3 and IN PROGRESS 3."
       },
       {
         "id": "A4",
         "as_given": "To review. The group shows as the frame draws it, closed with 17. On the live page it is empty until backend-coord decides how a chat's Inbox item names its project.",
         "status": "as-described",
         "finding": null,
-        "note": "The group is closed and reads \"TO REVIEW 17\"."
+        "note": "\"TO REVIEW 17\" is closed, as in the frame."
       },
       {
         "id": "A5",
         "as_given": "Columns. The Inbox panel is over the Queue panel, where the frame draws them side by side: at 1133 px the page has the tablet layout (ViewportFrame), which has one column, as T10b's card grid follows the tablet layout too. No token gives a panel's least width.",
         "status": "as-described",
         "finding": null,
-        "note": "The Inbox and Queue panels are each full width, one over the other."
+        "note": "Inbox and Queue are stacked, and each fills the content width."
       },
       {
         "id": "A6",
@@ -62,7 +62,7 @@
         "as_given": "Panel gap. One panel over the other, they are 24 apart where the frame has 28, which no spacing token has (LIBRARY_GAPS.md).",
         "status": "as-described",
         "finding": null,
-        "note": ""
+        "note": "Each gap from a panel's bottom to the next heading is about 4 px smaller than the frame's."
       },
       {
         "id": "A8",
@@ -76,28 +76,28 @@
         "as_given": "Row height. The Inbox rows are 56 px apart where the frame's are 58, so the Inbox panel is 6 px shorter and the closed \"To review\" row ends higher: the library's compact ListRow with a kind tile is 56 high (LIBRARY_GAPS.md, Compact list row 58).",
         "status": "as-described",
         "finding": null,
-        "note": "The rows start at y 367, 423 and 479 in the render and at y 370, 428 and 486 in the reference."
+        "note": "The rows are at about y 367/423/479 in the render and 370/428/486 in the reference."
       },
       {
         "id": "A10",
         "as_given": "Quick chat shows as the frame draws it; no frame draws its composer, so it is the library Dialog on every size, and in a state it opens nothing.",
         "status": "as-described",
         "finding": null,
-        "note": ""
+        "note": "The button matches the frame and nothing is open."
       },
       {
         "id": "A11",
         "as_given": "Owner's name. NCC-1701's purpose starts \"The owner's personal workspace\", where the frame has the owner's name: the secret scan's personal-term rule keeps the name out of web/, so the purpose breaks its lines at other words. The live page shows the brain's own words.",
         "status": "as-described",
         "finding": null,
-        "note": "The purpose stays on one line."
+        "note": "The purpose fits on one line in both pictures."
       },
       {
         "id": "A12",
         "as_given": "Top. The back row with Quick chat, the picture, the name and the purpose sit 4 px higher than the frame's: the page starts 24 down, where the frame has 28, which no spacing token has. The tabs are where the frame draws them.",
         "status": "as-described",
         "finding": null,
-        "note": ""
+        "note": "The tabs sit at y about 192 in both pictures."
       },
       {
         "id": "A13",
@@ -108,8 +108,8 @@
       }
     ],
     "limits": [
-      "I did not use the optional pixel diff image. I compared only the reference and the render.",
-      "I could not check differences under about 2 px reliably by eye."
+      "No region crops were given. I compared the images at their full 1133 px width, but I could not confirm differences under about 2 px.",
+      "I did not use the optional pixel diff image."
     ]
   }
 }

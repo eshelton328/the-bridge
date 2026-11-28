@@ -19,6 +19,14 @@ const head = {
 const line = css({ textStyle: 'small', color: 'fg.muted', px: '10' })
 const phoneLine = css({ textStyle: 'small', color: 'fg.muted', px: '4' })
 
+/**
+ * A finding as the frames draw it: `ncc check` puts backticks around a command ("run `ncc check --fix`"), and
+ * the row shows the command's text with no backticks (NCC-189). `ListRow`'s title is plain text.
+ */
+function plainFinding(text: string): string {
+  return text.replace(/`([^`]*)`/g, '$1')
+}
+
 export type ContextDriftProps = {
   drift: ProjectDrift
   layout: Viewport
@@ -55,7 +63,7 @@ export function ContextDrift({ drift, layout, onRun }: ContextDriftProps) {
                   key={text}
                   density="compact"
                   padding={layout === 'phone' ? 'phoneSides' : undefined}
-                  title={text}
+                  title={plainFinding(text)}
                 />
               ))}
             </Stack>
