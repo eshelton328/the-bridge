@@ -19,7 +19,6 @@ export {
   PartShape,
   RegenerateRequest,
   RegenerateResponse,
-  RepositoryPath,
   StackGroup,
   systemScope,
 } from './architecture.ts'

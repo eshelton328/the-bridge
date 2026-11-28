@@ -6,12 +6,11 @@ import {
   ArchitectureScopeState,
   RegenerateRequest,
   maxArchitectureScopes,
-  RepositoryPath,
   systemScope,
 } from './architecture.ts'
 import { errorStatus } from './errors.ts'
 import { LiveEvent } from './liveEvents.ts'
-import { RepositoryId } from './projects.ts'
+import { RepositoryId, RepositoryPath } from './projects.ts'
 
 const part = (id: string, extra: object = {}) => ({
   id,

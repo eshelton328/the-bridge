@@ -195,8 +195,7 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
   diagram is a strict model of parts (a shape, `ours`, a type line and an
   optional boundary), boundaries and labelled arrows; a refine checks that
   each arrow and boundary it names is in it. A folder or file part's name
-  is its path relative to its repository's root (POSIX, no `..`, no
-  leading `/`, no control character): the one place besides a drift
+  is a `RepositoryPath` from `projects.ts`: the one place besides a drift
   finding where the contract carries a repository path. Each text and list
   has a maximum. A scope's state gives its commit (40 hex) and time or
   null, and `stale` and `running` (in memory: false after a restart). A

@@ -4,7 +4,7 @@
 // shape, boundaries and labelled arrows, and the Stack. No local path goes in a
 // response: a folder or file part names its path relative to its repository's root.
 import { z } from 'zod'
-import { RepositoryId } from './projects.ts'
+import { RepositoryId, RepositoryPath } from './projects.ts'
 
 /** The most characters of a part's name, type line, a boundary's label, an arrow's label and a title. */
 export const maxArchitectureText = 200
@@ -41,23 +41,6 @@ export type PartShape = z.infer<typeof PartShape>
 
 const Text = z.string().min(1).max(maxArchitectureText)
 const PartId = z.string().regex(/^[A-Za-z0-9][A-Za-z0-9._:/@-]{0,199}$/)
-
-/** True when `p` has a control character. */
-const hasControl = (p: string) => {
-  for (let i = 0; i < p.length; i += 1) {
-    const code = p.charCodeAt(i)
-    if (code < 32 || code === 127) return true
-  }
-  return false
-}
-
-/** A path relative to a repository's root: POSIX, with no "..", no leading "/" and no control character. */
-export const RepositoryPath = z
-  .string()
-  .min(1)
-  .max(maxArchitectureText)
-  .refine((p) => !p.startsWith('/') && !p.includes('\\') && !hasControl(p), 'not a relative POSIX path')
-  .refine((p) => p.split('/').every((part) => part !== '..' && part !== ''), 'a part of the path is empty or ".."')
 
 /** One part of a diagram. A folder or file part's name is its path in its repository. */
 export const ArchitecturePart = z
