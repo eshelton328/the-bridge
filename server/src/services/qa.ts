@@ -1,7 +1,17 @@
 // The QA tab (f-008 increment three, d-126): the Linear issues of a project's
 // team that wait for the owner's check, read through a port only when a
 // request asks (d-112).
-import { maxProjectTitle, type ProjectSlug, QaItem, type QaListResponse } from '@bridge/contract'
+import {
+  maxProjectTitle,
+  maxQaText,
+  type ProjectSlug,
+  type QaComment,
+  type QaIssueId,
+  QaItem,
+  QaItemDetailResponse,
+  type QaListResponse,
+  type QaThread,
+} from '@bridge/contract'
 import { err, ok, type Result } from '@bridge/shared'
 import { z } from 'zod'
 import type { BrainProjects, ProjectRecord } from './projects.ts'
@@ -33,11 +43,14 @@ const linearKeptMs = 30_000
 type NotFound = 'notFound'
 export type Qa = {
   list(slug: ProjectSlug): Promise<Result<QaListResponse | NotFound, LinearFault>>
+  /** One item's page (R11 to R13): its row, steps and threads; `notFound` for an issue not in the list. */
+  item(slug: ProjectSlug, issue: QaIssueId): Promise<Result<QaItemDetailResponse | NotFound, LinearFault>>
 }
 
 /** The service of an app with none: each read is `unavailable`, so each QA route answers 503. */
 export const noQa: Qa = {
   list: () => Promise.resolve(err({ reason: 'unavailable', code: 'no-qa' })),
+  item: () => Promise.resolve(err({ reason: 'unavailable', code: 'no-qa' })),
 }
 
 /** Each team's answer kept `linearKeptMs` from its end; one in flight is shared, a failed one not kept, a throw `threw`. */
@@ -65,14 +78,16 @@ function kept(linear: LinearIssues, now: () => Date): LinearIssues {
 
 const isoTime = z.iso.datetime()
 
-/** The comment IDs of the answers the server posted. Submit (PR 11) records them; until then none, so each row waits. */
-const recordedAnswers: ReadonlySet<string> = new Set()
+/**
+ * The IDs of the comments the server posted (answers and drafts). Submit (PR 11) records them; until then none, so
+ * each row waits and each comment's author is `agent`.
+ */
+const recordedPosts: ReadonlySet<string> = new Set()
 
 /** The row of an issue, null when it is not in either table, or 'bad' when the contract does not take it. */
 function builtOf(project: ProjectRecord, issue: LinearIssue): QaItem | null | 'bad' {
-  // A comment with a time that is not ISO never reaches a sort as NaN.
-  const comments = issue.comments.filter((c) => isoTime.safeParse(c.createdAt).success)
-  const answer = answerOf(comments, recordedAnswers)
+  const comments = timed(issue.comments)
+  const answer = answerOf(comments, recordedPosts)
   const phase =
     issue.labels.includes(qaLabels.beforeMerge) && issue.state === 'QA'
       ? 'beforeMerge'
@@ -106,6 +121,47 @@ function builtOf(project: ProjectRecord, issue: LinearIssue): QaItem | null | 'b
   return item.success ? item.data : 'bad'
 }
 
+/** The comments whose time is ISO, so none reaches a sort as NaN. */
+const timed = (comments: readonly QaCommentText[]) => comments.filter((c) => isoTime.safeParse(c.createdAt).success)
+
+const byTime = (a: { at: string }, b: { at: string }) => Date.parse(a.at) - Date.parse(b.at)
+
+/**
+ * The review threads (R12): the comments that are not an ask or an answer, each reply under the first comment of
+ * its parent's thread, in time order. A reply whose parent is an ask, an answer or not in the read starts its own
+ * thread. The author is a fixed name, as the key is the owner's and Linear's name would be the owner's on each one.
+ */
+export function threadsOf(comments: readonly QaCommentText[]): QaThread[] {
+  const shown = comments.filter((c) => !isQaComment(c))
+  const parentOf = new Map(shown.map((c) => [c.id, c.parentId ?? null]))
+  const rootOf = (id: string): string => {
+    const seen = new Set([id])
+    let at = id
+    for (;;) {
+      const parent = parentOf.get(at)
+      if (parent === undefined || parent === null || !parentOf.has(parent) || seen.has(parent)) return at
+      seen.add(parent)
+      at = parent
+    }
+  }
+  const threads = new Map<string, QaComment[]>()
+  for (const c of shown) {
+    const comment: QaComment = {
+      id: c.id,
+      author: recordedPosts.has(c.id) ? { kind: 'owner', name: 'You' } : { kind: 'agent', name: 'Agent' },
+      at: c.createdAt,
+      text: c.body.slice(0, maxQaText),
+      attachments: [],
+    }
+    const root = rootOf(c.id)
+    threads.set(root, [...(threads.get(root) ?? []), comment])
+  }
+  return [...threads.values()]
+    .map((list) => list.sort(byTime))
+    .sort((a, b) => Date.parse(a[0]?.at ?? '') - Date.parse(b[0]?.at ?? ''))
+    .map((list) => ({ anchor: null, comments: list }))
+}
+
 const newestAsk = (a: QaItem, b: QaItem) =>
   (b.askedAt === null ? 0 : Date.parse(b.askedAt)) - (a.askedAt === null ? 0 : Date.parse(a.askedAt))
 
@@ -120,22 +176,51 @@ export function createQa({
   readonly now?: () => Date
 }): Qa {
   const source = linear === null ? null : kept(linear, now)
-  const list = async (slug: ProjectSlug): Promise<Result<QaListResponse | NotFound, LinearFault>> => {
+  /** The project's QA rows with each issue's comments that have an ISO time, or the fault. */
+  const rowsOf = async (
+    slug: ProjectSlug,
+  ): Promise<Result<readonly { item: QaItem; comments: readonly QaCommentText[] }[] | NotFound, LinearFault>> => {
     const projects = await brain.list()
     if (!projects.ok) return err({ reason: 'failed', code: projects.error.code })
     const project = projects.value.find((p) => p.slug === slug)
     if (project === undefined) return ok('notFound')
-    if (project.linearTeam === undefined) return ok({ items: [] })
+    if (project.linearTeam === undefined) return ok([])
     if (source === null) return err({ reason: 'unavailable', code: 'no-key' })
     const issues = await source.qaIssues(project.linearTeam, Object.values(qaLabels))
     if (!issues.ok) return issues
-    const built: QaItem[] = []
+    const rows: { item: QaItem; comments: readonly QaCommentText[] }[] = []
     for (const issue of issues.value) {
       const one = builtOf(project, issue)
       if (one === 'bad') return err({ reason: 'badReply', code: 'item' })
-      if (one !== null) built.push(one)
+      if (one !== null) rows.push({ item: one, comments: timed(issue.comments) })
     }
-    return ok({ items: built.sort(newestAsk) })
+    return ok(rows)
   }
-  return { list }
+  const list = async (slug: ProjectSlug): Promise<Result<QaListResponse | NotFound, LinearFault>> => {
+    const rows = await rowsOf(slug)
+    if (!rows.ok) return rows
+    if (rows.value === 'notFound') return ok('notFound')
+    return ok({ items: rows.value.map((r) => r.item).sort(newestAsk) })
+  }
+  const item = async (
+    slug: ProjectSlug,
+    issue: QaIssueId,
+  ): Promise<Result<QaItemDetailResponse | NotFound, LinearFault>> => {
+    const rows = await rowsOf(slug)
+    if (!rows.ok) return rows
+    if (rows.value === 'notFound') return ok('notFound')
+    const row = rows.value.find((r) => r.item.issue === issue)
+    if (row === undefined) return ok('notFound')
+    const detail = QaItemDetailResponse.safeParse({
+      item: row.item,
+      steps: askOf(row.comments, [])?.steps ?? [],
+      // The launch methods come with the facts' `qa` part (build plan PR 4); the owner chat with the Workspaces join.
+      method: null,
+      owner: null,
+      threads: threadsOf(row.comments),
+      drafts: [],
+    })
+    return detail.success ? ok(detail.data) : err({ reason: 'badReply', code: 'detail' })
+  }
+  return { list, item }
 }

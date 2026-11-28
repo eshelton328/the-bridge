@@ -39,7 +39,12 @@ function linearStub(sent: Sent[] = []): typeof fetch {
       state: { name: i.state },
       labels: { nodes: i.labels.map((name) => ({ name })) },
       comments: {
-        nodes: i.comments.map((c) => ({ id: c.id, body: c.body, createdAt: c.createdAt })),
+        nodes: i.comments.map((c) => ({
+          id: c.id,
+          body: c.body,
+          createdAt: c.createdAt,
+          parent: c.parentId === undefined || c.parentId === null ? null : { id: c.parentId },
+        })),
         pageInfo: { hasNextPage: false },
       },
     })
@@ -83,7 +88,7 @@ describe('createLinearIssues', () => {
           },
         }),
       )
-  const comment = { id: 'c', body: 'b'.repeat(20_000), createdAt: '2026-11-27T10:00:00.000Z' }
+  const comment = { id: 'c', body: 'b'.repeat(20_000), createdAt: '2026-11-27T10:00:00.000Z', parent: null }
   it('cuts a long title and comment text to the contract limits', async () => {
     const long = oneIssue('t'.repeat(500), { nodes: [comment], pageInfo: { hasNextPage: false } })
     const read = await createLinearIssues({ keyFile, fetch: long }).qaIssues('NCC', ['Branch'])

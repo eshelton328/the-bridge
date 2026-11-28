@@ -3,24 +3,33 @@
 import { describe, expect, it } from 'vitest'
 import type { LinearIssue, LinearIssues } from '../services/qa.ts'
 
-const issue = (key: string, labels: string[], state = 'QA'): LinearIssue => ({
+const issue = (key: string, labels: string[], state = 'QA', replies: LinearIssue['comments'] = []): LinearIssue => ({
   key,
   title: `Work of ${key}`,
   url: `https://linear.app/example/issue/${key.toLowerCase()}`,
   state,
   labels,
-  comments: [{ id: `${key}-c`, body: 'QA check\nPR: 1', createdAt: '2026-11-27T10:00:00.000Z' }],
+  comments: [
+    { id: `${key}-c`, body: 'QA check\nPR: 1', createdAt: '2026-11-27T10:00:00.000Z', parentId: null },
+    ...replies,
+  ],
 })
 
 /** The teams the suite gives `make`: a port must answer as if Linear held these. */
 export const contractTeams: Readonly<Record<string, readonly LinearIssue[]>> = {
-  NCC: [issue('NCC-1', ['Branch']), issue('NCC-2', ['Main', 'change'], 'Done'), issue('NCC-3', ['flake'])],
+  NCC: [
+    issue('NCC-1', ['Branch']),
+    issue('NCC-2', ['Main', 'change'], 'Done', [
+      { id: 'NCC-2-r', body: 'A reply', createdAt: '2026-11-27T11:00:00.000Z', parentId: 'NCC-2-c' },
+    ]),
+    issue('NCC-3', ['flake']),
+  ],
   OTH: [issue('OTH-1', ['Branch'])],
 }
 
 export function linearPortContract(make: () => LinearIssues) {
   describe('the Linear port contract', () => {
-    it('gives the issues of the team with one of the labels, with their comments, in any state', async () => {
+    it('gives the issues of the team with one of the labels, with their comments and the parent of each reply, in any state', async () => {
       const read = await make().qaIssues('NCC', ['Branch', 'Main'])
       expect(read.ok && read.value.map((i) => i.key).sort()).toEqual(['NCC-1', 'NCC-2'])
       expect(read.ok && read.value.find((i) => i.key === 'NCC-2')).toEqual(contractTeams.NCC?.[1])

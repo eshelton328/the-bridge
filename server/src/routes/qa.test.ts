@@ -1,6 +1,14 @@
 // API tests of /api/projects/:slug/qa (f-008 increment three, NCC-154), in
 // process with a fake Linear and a fake brain (no real Linear call).
-import { ErrorBody, MachineId, ProjectSlug, QaListResponse, RepositoryId } from '@bridge/contract'
+import {
+  ErrorBody,
+  MachineId,
+  maxQaText,
+  ProjectSlug,
+  QaItemDetailResponse,
+  QaListResponse,
+  RepositoryId,
+} from '@bridge/contract'
 import { err, ok } from '@bridge/shared'
 import { describe, expect, it, vi } from 'vitest'
 import { createFakeAgents } from '../adapters/fakeAgents.ts'
@@ -135,5 +143,58 @@ describe('GET /api/projects/:slug/qa', () => {
   })
   it('answers 404 for a project that the brain does not have', async () => {
     expect((await setup().get('no-project/qa')).status).toBe(404)
+  })
+})
+
+describe('GET /api/projects/:slug/qa/:issue', () => {
+  const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`
+  const item = issue('NCC-7', 'Branch', 'QA', [
+    { id: id(1), body: `${askText}\n2. Tap a row.`, createdAt: at(8), parentId: null },
+    { id: id(2), body: 'QA answer: Approved', createdAt: at(9), parentId: null },
+    { id: id(3), body: 'secret-5150 first thread', createdAt: at(10), parentId: null },
+    { id: id(4), body: 'x'.repeat(maxQaText + 5), createdAt: at(9), parentId: null },
+    { id: id(5), body: 'A reply to the first thread', createdAt: at(11), parentId: id(3) },
+    { id: id(6), body: 'A reply to the ask', createdAt: at(7), parentId: id(1) },
+    { id: id(7), body: 'A reply to a comment not read', createdAt: at(6), parentId: id(99) },
+  ])
+  const app = () => setup(createFakeLinear({ NCC: [...issues, item] }))
+
+  it('gives the row, the steps and the threads in time order, a reply to an ask or a missing comment in its own thread', async () => {
+    const { get, text } = app()
+    const res = await get('example-project/qa/NCC-7')
+    expect(res.status).toBe(200)
+    const detail = QaItemDetailResponse.parse(await res.json())
+    expect(detail.item).toMatchObject({ issue: 'NCC-7', pr: 12, status: 'waiting' })
+    expect(detail.steps).toEqual(['Open the QA tab.', 'Tap a row.'])
+    expect([detail.method, detail.owner, detail.drafts]).toEqual([null, null, []])
+    expect(detail.threads.map((th) => [th.anchor, th.comments.map((c) => c.id)])).toEqual([
+      [null, [id(7)]],
+      [null, [id(6)]],
+      [null, [id(4)]],
+      [null, [id(3), id(5)]],
+    ])
+    const comments = detail.threads.flatMap((th) => th.comments)
+    // No server post is recorded yet, so each author is an agent, with a fixed name and never Linear's.
+    expect(new Set(comments.map((c) => JSON.stringify(c.author)))).toEqual(new Set(['{"kind":"agent","name":"Agent"}']))
+    expect(comments.find((c) => c.id === id(4))?.text.length).toBe(maxQaText)
+    expect(text()).not.toContain('secret-5150')
+    expect(text()).not.toContain('Tap a row')
+  })
+  it('answers 404 for an issue key the contract does not take, an issue not listed and a project the brain lacks', async () => {
+    const { get } = app()
+    for (const path of [
+      'example-project/qa/stop',
+      'example-project/qa/NCC-2',
+      'example-project/qa/NCC-99',
+      'no-project/qa/NCC-7',
+    ])
+      expect([path, (await get(path)).status]).toEqual([path, 404])
+  })
+  it('answers a Linear fault as the list does, with the code in the log only', async () => {
+    const { get, text } = setup({ qaIssues: () => Promise.resolve(err({ reason: 'badReply', code: 'schema' })) })
+    const res = await get('example-project/qa/NCC-7')
+    expect(res.status).toBe(502)
+    expect(JSON.stringify(await res.json())).not.toContain('schema')
+    expect(text()).toContain('schema')
   })
 })

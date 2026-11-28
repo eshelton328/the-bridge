@@ -16,7 +16,7 @@ const maxPages = 5
 
 const query = `query($team: String!, $labels: [String!]!, $after: String) {
   issues(first: 50, after: $after, filter: { team: { key: { eq: $team } }, labels: { some: { name: { in: $labels } } } }) {
-    nodes { identifier title url state { name } labels(first: 50) { nodes { name } } comments(first: 100) { nodes { id body createdAt } pageInfo { hasNextPage } } }
+    nodes { identifier title url state { name } labels(first: 50) { nodes { name } } comments(first: 100) { nodes { id body createdAt parent { id } } pageInfo { hasNextPage } } }
     pageInfo { hasNextPage endCursor }
   }
 }`
@@ -33,7 +33,14 @@ const Page = z.object({
           state: z.object({ name: z.string() }),
           labels: z.object({ nodes: z.array(z.object({ name: z.string() })) }),
           comments: z.object({
-            nodes: z.array(z.object({ id: z.string(), body: cut(maxQaText), createdAt: z.iso.datetime() })),
+            nodes: z.array(
+              z.object({
+                id: z.string(),
+                body: cut(maxQaText),
+                createdAt: z.iso.datetime(),
+                parent: z.object({ id: z.string() }).nullable(),
+              }),
+            ),
             pageInfo: z.object({ hasNextPage: z.boolean() }),
           }),
         }),
@@ -116,7 +123,12 @@ export function createLinearIssues({
             url: i.url,
             state: i.state.name,
             labels: i.labels.nodes.map((l) => l.name),
-            comments: i.comments.nodes,
+            comments: i.comments.nodes.map((c) => ({
+              id: c.id,
+              body: c.body,
+              createdAt: c.createdAt,
+              parentId: c.parent?.id ?? null,
+            })),
           })
         if (!page.value.pageInfo.hasNextPage) return ok(issues)
         after = page.value.pageInfo.endCursor

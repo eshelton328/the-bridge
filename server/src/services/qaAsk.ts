@@ -5,7 +5,13 @@
 import { maxQaStep, maxQaSteps, type QaAnswer, type RepositoryId } from '@bridge/contract'
 
 /** A Linear comment as the Linear port gives it, its text already cut to `maxQaText`. */
-export type QaCommentText = { readonly id: string; readonly body: string; readonly createdAt: string }
+export type QaCommentText = {
+  readonly id: string
+  readonly body: string
+  readonly createdAt: string
+  /** The ID of the comment it replies to; none or null for a comment that starts a thread. */
+  readonly parentId?: string | null
+}
 
 /** The newest ask: its repository and PR when they hold, its numbered steps and its time. */
 export type QaAsk = {
