@@ -9,7 +9,7 @@
 // token, so no token is stored or passed. A fault is its code only; git's stderr
 // never goes into an error or a log.
 import { execFile } from 'node:child_process'
-import { mkdir, mkdtemp, realpath, rename, rm, stat } from 'node:fs/promises'
+import { lstat, mkdir, mkdtemp, realpath, rename, rm } from 'node:fs/promises'
 import { join, relative, isAbsolute } from 'node:path'
 import { err, ok, type Result } from '@bridge/shared'
 import type { ProjectFault } from '../services/projects.ts'
@@ -51,6 +51,20 @@ export type GitSnapshots = {
 /** Removes a folder of the server's own; false when it could not. */
 const removed = (folder: string) =>
   rm(folder, { recursive: true, force: true }).then(
+    () => true,
+    () => false,
+  )
+
+/** True for a real folder; false for a symlink (not followed), a file or nothing. */
+const isFolder = (path: string) =>
+  lstat(path).then(
+    (s) => s.isDirectory(),
+    () => false,
+  )
+
+/** True when anything is at the path, a symlink included. */
+const exists = (path: string) =>
+  lstat(path).then(
     () => true,
     () => false,
   )
@@ -108,20 +122,19 @@ export function createGitSnapshots({
     } catch {
       return err({ reason: 'failed', code: 'no-root' })
     }
-    try {
-      await mkdir(join(top, owner), { mode: 0o700 }).catch((e: unknown) => {
-        if (!(e instanceof Error && 'code' in e && e.code === 'EEXIST')) throw e
-      })
-    } catch {
-      return err({ reason: 'failed', code: 'no-root' })
+    // A folder of the snapshots is a real folder, never a symlink: a link could send a reset into another checkout.
+    // Anything else in its place is removed (a link, not its target).
+    const ownerDir = join(top, owner)
+    if (!(await isFolder(ownerDir))) {
+      if (await exists(ownerDir)) await removed(ownerDir)
+      // Another repository of the owner can make the folder at the same time, so one that exists is kept.
+      await mkdir(ownerDir, { mode: 0o700 }).catch(() => undefined)
+      if (!(await isFolder(ownerDir))) return err({ reason: 'failed', code: 'no-root' })
     }
-    const dir = join(top, owner, name)
+    const dir = join(ownerDir, name)
     const rel = relative(top, dir)
     if (rel === '' || rel.startsWith('..') || isAbsolute(rel)) return err({ reason: 'failed', code: 'outside-root' })
-    const cloned = await stat(join(dir, '.git')).then(
-      () => true,
-      () => false,
-    )
+    const cloned = (await isFolder(dir)) && (await isFolder(join(dir, '.git')))
     // The URL of each call, never the clone's own origin, so a renamed repository in project.yaml is the one read.
     const url = `${base}/${github.owner}/${github.name}.git`
     const commitOf = async (folder: string): Promise<Result<string, ProjectFault>> => {

@@ -474,7 +474,8 @@ client of a socket or a file sits beside them.
   (0700): a first sync clones the default branch at depth 1 into a new
   folder that takes the snapshot's name only once it has a commit, a later
   one fetches the URL's `HEAD` and resets to it, and a snapshot that does
-  not sync is removed, so the next sync clones again. One sync of an ID
+  not sync is removed, so the next sync clones again. A symlink or a file
+  in place of a snapshot folder is removed, never followed. One sync of an ID
   runs at a time; a second one gets its answer. git runs with an argument list, a 120 s
   limit, no hooks, no submodules, no symlinks (`core.symlinks=false`), no
   file or ext protocol, no global or system config, gh as the only

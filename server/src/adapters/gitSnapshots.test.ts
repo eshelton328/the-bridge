@@ -1,7 +1,7 @@
 // gitSnapshots.ts with a stub git that logs its arguments and environment:
 // a first sync clones at depth 1, a later one fetches and resets, every call
 // has the safety config, and a bad name, a git fault or a bad hash is a code.
-import { chmod, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises'
+import { chmod, mkdir, mkdtemp, readdir, readFile, rm, stat, symlink, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
@@ -130,6 +130,22 @@ describe('createGitSnapshots', () => {
     ])
     expect(a).toEqual(b)
     expect((await calls()).filter((c) => c.includes(' clone '))).toHaveLength(1)
+  })
+
+  it('never syncs through a symlink in place of a snapshot, and leaves its target alone', async () => {
+    const other = join(dir, 'other-checkout')
+    await mkdir(join(other, '.git'), { recursive: true })
+    await writeFile(join(other, 'work.txt'), 'unsaved')
+    await mkdir(join(dir, 'snapshots', 'example-owner'), { recursive: true })
+    await symlink(other, join(dir, 'snapshots', 'example-owner', 'example-repo'))
+    const synced = await (await stub()).sync(github)
+    expect(synced.ok).toBe(true)
+    expect((await calls()).map((c) => c.replace(/^.*?(clone|fetch|reset|rev-parse).*$/, '$1'))).toEqual([
+      'clone',
+      'rev-parse',
+    ])
+    expect((await readdir(other)).sort()).toEqual(['.git', 'work.txt'])
+    expect((await stat(join(dir, 'snapshots', 'example-owner', 'example-repo', '.git'))).isDirectory()).toBe(true)
   })
 
   it('makes the snapshots folder private', async () => {
