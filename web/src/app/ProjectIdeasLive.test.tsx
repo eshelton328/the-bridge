@@ -126,6 +126,15 @@ describe("A project's Ideas tab (R10)", () => {
     expect(projects.calls('chats')).toEqual([])
   })
 
+  it("opens an idea's page on the Ideas tab when the address names another tab", async () => {
+    const projects = withServer()
+    await open(`/projects/alpha?tab=repositories&idea=${speech}`)
+    await expect.element(page.getByRole('heading', { name: 'Sample idea about speech', level: 2 })).toBeVisible()
+    expect(projects.calls('idea').map((r) => r.path)).toEqual([`/api/projects/alpha/ideas/${speech}`])
+    expect(projects.calls('repositories')).toEqual([])
+    expect(projects.calls('chats')).toEqual([])
+  })
+
   it("draws an idea's image as a link when Settings turns images off", async () => {
     settingsStore.getState().actions.setRichText('images', false)
     withServer()
