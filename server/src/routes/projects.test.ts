@@ -593,7 +593,10 @@ describe('/api/projects/:slug/repositories/:repo/ci', () => {
     await vi.waitFor(() => {
       expect(one.logger.lines()).toContainEqual(expect.objectContaining({ msg: 'ci read failed', code: 'exit-1' }))
     })
-    expect(await answer(one.app)).toEqual({ ...before, reading: true })
+    // The failed refresh ended, and it holds the next read off, so the old answer comes with no read.
+    await vi.waitFor(async () => {
+      expect(await answer(one.app)).toEqual({ ...before, reading: false })
+    })
     expect(failing.kept()).toEqual(before)
     const throwing: CiSource = { ...fakeCi().source, runs: () => Promise.reject(new Error('gh went away')) }
     const two = server(throwing, memoryStore(before).store)
@@ -603,7 +606,7 @@ describe('/api/projects/:slug/repositories/:repo/ci', () => {
     })
   })
 
-  it('ends a first read that fails as not read, with an event, and reads again on the next request', async () => {
+  it('ends a first read that fails as not read, with an event, and reads no more for 10 minutes', async () => {
     let reads = 0
     const { source } = fakeCi('exit-1')
     const counted: CiSource = {
@@ -617,8 +620,9 @@ describe('/api/projects/:slug/repositories/:repo/ci', () => {
     const changed = nextChange(projects)
     expect((await answer(app)).reading).toBe(true)
     await changed
-    expect(await answer(app)).toEqual({ ci: null, readAt: null, reading: true })
-    expect(reads).toBe(2)
+    expect(await answer(app)).toEqual({ ci: null, readAt: null, reading: false })
+    expect(await answer(app)).toEqual({ ci: null, readAt: null, reading: false })
+    expect(reads).toBe(1)
   })
 
   it('logs the time of each part at debug, with no owner or name', async () => {

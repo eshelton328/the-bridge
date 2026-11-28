@@ -297,7 +297,8 @@ export function createProjects({
   const notRead = Promise.resolve(err({ reason: 'failed' as const, code: 'no-source' }))
 
   type GithubName = { readonly owner: string; readonly name: string }
-  type CiEntry = { kept: KeptCi | null; loaded: Promise<void> | null; running: boolean }
+  /** `failedAt`: the time (ms) of the last read that failed, else null; no read starts within `ciKeptMs` of it. */
+  type CiEntry = { kept: KeptCi | null; loaded: Promise<void> | null; running: boolean; failedAt: number | null }
   const ciEntries = new Map<string, CiEntry>()
   const timed = async <T>(part: 'runs' | 'merged' | 'jobs', read: Promise<T>): Promise<T> => {
     const start = performance.now()
@@ -343,8 +344,10 @@ export function createProjects({
         const before = entry.kept
         if (!read.ok) {
           ciLog({ kind: 'failed', code: read.error.code })
+          entry.failedAt = now().getTime()
           return before === null
         }
+        entry.failedAt = null
         entry.kept = { ci: read.value, readAt }
         const saved = await ciStore?.save(github, entry.kept)
         if (saved !== undefined && !saved.ok) ciLog({ kind: 'failed', code: saved.error.code })
@@ -508,7 +511,7 @@ export function createProjects({
       const github = repository.github
       if (github === null) return ok({ ci: null, readAt: null, reading: false })
       const key = `${github.owner}/${github.name}`.toLowerCase()
-      const entry = ciEntries.get(key) ?? { kept: null, loaded: null, running: false }
+      const entry = ciEntries.get(key) ?? { kept: null, loaded: null, running: false, failedAt: null }
       ciEntries.set(key, entry)
       // The store is read once for each repository; a server that restarts answers from it at once.
       entry.loaded ??= (ciStore?.load(github) ?? Promise.resolve(null)).then(
@@ -519,8 +522,11 @@ export function createProjects({
       )
       await entry.loaded
       const kept = entry.kept
-      const old = kept === null || now().getTime() - Date.parse(kept.readAt) >= ciKeptMs
-      if (ci !== undefined && !entry.running && old) refreshCi(ci, entry, github)
+      const at = now().getTime()
+      const old = kept === null || at - Date.parse(kept.readAt) >= ciKeptMs
+      // A read that failed holds the next one off for ciKeptMs, so a GitHub fault and its event never loop.
+      const failedNow = entry.failedAt !== null && at - entry.failedAt < ciKeptMs
+      if (ci !== undefined && !entry.running && old && !failedNow) refreshCi(ci, entry, github)
       return ok({ ci: kept?.ci ?? null, readAt: kept?.readAt ?? null, reading: entry.running })
     },
 

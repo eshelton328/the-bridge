@@ -149,7 +149,9 @@ from the outside world.
   once, from memory or the `CiStore` (so a restart does not make the
   read cold); with none, or one 10 minutes old, it also starts one read
   in the background for that repository. A read that throws is `threw`,
-  and a failed read keeps the old answer. The watchers hear of a read
+  and a failed read keeps the old answer; no read of the repository starts
+  for 10 minutes after a failed one, so a GitHub fault and its event never
+  loop. The watchers hear of a read
   only when its numbers differ from the kept ones, or when a first read
   ends. Each part's time goes to `ciLog`, with no owner or name
   (`../routes/projects.test.ts`).
