@@ -108,6 +108,8 @@ type Deps = {
   readonly worktrees?: WorktreeCount
   /** GitHub's CI runs, merged PRs and jobs; with none, each CI read is null. */
   readonly ci?: CiSource
+  /** Where a CI read tells a fault code or a part's duration; never a repository's owner or name. */
+  readonly ciLog?: CiLog
   /** The chats and their tags; none (each chats read fails) where an app has no agents to give. */
   readonly agents?: Pick<AgentPort, 'listWorkspaces' | 'chatTags'>
   readonly now?: () => Date
@@ -115,8 +117,15 @@ type Deps = {
 
 type NotFound = 'notFound'
 
-/** A CI read's answer, and the fault code of a GitHub read that failed (for the log), else null. */
+/** A CI read's answer, and the fault code of a GitHub read that failed, else null. */
 type CiOutcome = { readonly response: RepositoryCiResponse; readonly code: string | null }
+
+/** What a CI read tells the log: a fault code, or the milliseconds of one part. */
+type CiLog = (
+  event:
+    | { readonly kind: 'failed'; readonly code: string }
+    | { readonly kind: 'timed'; readonly part: 'runs' | 'merged' | 'jobs'; readonly ms: number },
+) => void
 
 /** A drift run's answer, and the fault code of a check that failed (for the log), else null. */
 type DriftRunOutcome = { readonly drift: DriftResponse; readonly code: string | null }
@@ -285,6 +294,7 @@ export function createProjects({
   facts: factsSource,
   worktrees,
   ci,
+  ciLog = () => undefined,
   now = () => new Date(),
 }: Deps): Projects {
   const keptCi = keptAnswers<CiOutcome>(ciKeptMs, now, (answer) => answer.code === null)
@@ -295,17 +305,27 @@ export function createProjects({
   const facts = factsSource === undefined ? undefined : keptFacts(factsSource, now)
   const notRead = Promise.resolve(err({ reason: 'failed' as const, code: 'no-source' }))
 
+  const timed = async <T>(part: 'runs' | 'merged' | 'jobs', read: Promise<T>): Promise<T> => {
+    const start = performance.now()
+    const value = await read
+    ciLog({ kind: 'timed', part, ms: Math.round(performance.now() - start) })
+    return value
+  }
   const readCi = async (github: { readonly owner: string; readonly name: string }): Promise<CiOutcome> => {
     const none = (code: string) => ({ response: { ci: null }, code })
     const source = ci
     if (source === undefined) return none('no-source')
     const since = new Date(now().getTime() - ciWindowDays * 86_400_000).toISOString()
-    const [runs, merged] = await Promise.all([source.runs(github, since), source.merged(github, since)])
+    const [runs, merged] = await Promise.all([
+      timed('runs', source.runs(github, since)),
+      timed('merged', source.merged(github, since)),
+    ])
     if (!runs.ok) return none(runs.error.code)
     if (!merged.ok) return none(merged.error.code)
     const ciRuns = ciRunsOf(runs.value)
-    const reads = await Promise.all(
-      jobRunsOf(ciRuns).map((run) => Promise.all(run.runs.map((r) => source.jobs(github, r.id)))),
+    const reads = await timed(
+      'jobs',
+      Promise.all(jobRunsOf(ciRuns).map((run) => Promise.all(run.runs.map((r) => source.jobs(github, r.id))))),
     )
     const jobs: JobRun[][] = []
     for (const read of reads) {
@@ -471,7 +491,10 @@ export function createProjects({
       if (github === null) return ok({ response: { ci: null }, code: null })
       // A read that throws is the fault `threw`, so no rejection is left unhandled; its message is not kept.
       const read = () => readCi(github).catch((): CiOutcome => ({ response: { ci: null }, code: 'threw' }))
-      return ok(await keptCi(`${github.owner}/${github.name}`, read))
+      const outcome = await keptCi(`${github.owner}/${github.name}`, read)
+      // GitHub's fault is a null the page shows; its code goes to the log only.
+      if (outcome.code !== null && outcome.code !== 'no-source') ciLog({ kind: 'failed', code: outcome.code })
+      return ok(outcome)
     },
 
     async runDrift(slug) {

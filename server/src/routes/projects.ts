@@ -102,8 +102,6 @@ export function projectsRoutes(projects: Projects, log: Logger) {
       const read = await projects.ci(slug.data, repo.data)
       if (!read.ok) return failed(c, read.error)
       if (read.value === 'notFound') return noRepository(c)
-      // GitHub's fault is a null the page shows; its code goes to the log only.
-      if (read.value.code !== null) log.warn('ci read failed', { requestId: c.get('requestId'), code: read.value.code })
       return c.json(RepositoryCiResponse.parse(read.value.response), 200)
     })
     .get('/:slug/drift', async (c) => {

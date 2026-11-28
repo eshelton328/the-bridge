@@ -213,7 +213,8 @@ Thin Hono sub-apps, one file for each area, named after the area
   each repository (increment two: visibility, newest release, open PR and
   worktree counts, `unread` for a part not read, still 200),
   `GET /:slug/repositories/:repo/ci` its CI numbers (null when GitHub
-  fails, with the code at warn; 404 for a repository the project lacks),
+  fails, with the code at warn and each part's time at debug, through
+  the service's `ciLog`; 404 for a repository the project lacks),
   `GET /:slug/chats` the chats whose pane is
   tagged `project=<slug>` (R7, d-120), and `POST /:slug/drift` (`{}`) runs it
   again: 200 with the run, `failed` when the check did not run (its code

@@ -105,6 +105,11 @@ const projects = createProjects({
   drift: createDiskDriftStore(projectsRoot),
   facts: createGhRepositoryFacts({ command: 'gh', env: process.env }),
   ci: createGhCi({ command: 'gh', env: process.env }),
+  // A GitHub fault is a null the page shows: its code goes to the log, and each part's time at debug.
+  ciLog: (event) => {
+    if (event.kind === 'failed') log.warn('ci read failed', { code: event.code })
+    else log.debug('ci read timed', { part: event.part, ms: event.ms })
+  },
   worktrees: createDiskWorktrees(config.value.chatRoot),
   agents,
 })

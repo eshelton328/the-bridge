@@ -150,6 +150,10 @@ function server(ci?: CiSource) {
     facts: createGhRepositoryFacts({ command: join(bin, 'gh'), env: process.env }),
     worktrees: createDiskWorktrees(join(dir, 'root')),
     ...(ci === undefined ? {} : { ci }),
+    ciLog: (event) => {
+      if (event.kind === 'failed') logger.log.warn('ci read failed', { code: event.code })
+      else logger.log.debug('ci read timed', { part: event.part, ms: event.ms })
+    },
     now: () => new Date('2026-11-22T09:00:00.000Z'),
   })
   const app = createApp({ agents, owner: 'owner@example.com', log: logger.log, projects })
@@ -534,6 +538,14 @@ describe('/api/projects/:slug/repositories/:repo/ci', () => {
     expect(logger.lines()).toContainEqual(expect.objectContaining({ msg: 'ci read failed', code: 'threw' }))
     await read(app, '/api/projects/example-project/repositories/example-repo/ci')
     expect(reads).toBe(2)
+  })
+
+  it('logs the time of each part at debug, with no owner or name', async () => {
+    const { app, logger } = server(fakeCi().source)
+    await read(app, '/api/projects/example-project/repositories/example-repo/ci')
+    const timed = logger.lines().filter((l) => l.msg === 'ci read timed')
+    expect(timed.map((l) => l.part).sort()).toEqual(['jobs', 'merged', 'runs'])
+    expect(JSON.stringify(timed)).not.toContain('example')
   })
 
   it('is 404 for a repository the project does not have', async () => {
