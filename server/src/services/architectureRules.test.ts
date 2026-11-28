@@ -78,6 +78,16 @@ describe('modelOf', () => {
     expect(model?.arrows).toEqual([{ from: 'p1', to: 'p0', label: 'depends on' }])
   })
 
+  it('keeps the arrow to a package whose name is over the text cap', () => {
+    const long = 'l'.repeat(250)
+    const model = modelOf([
+      pkg('a/package.json', { name: long }),
+      pkg('b/package.json', { name: 'b', dependencies: { [long]: 'workspace:*' } }),
+      pkg('c/package.json', { name: 'l'.repeat(200) }),
+    ])
+    expect(model?.arrows).toEqual([{ from: 'p1', to: 'p0', label: 'depends on' }])
+  })
+
   it('gives null with no package.json', () => {
     expect(modelOf([{ path: 'README.md', text: '# x' }])).toBeNull()
   })

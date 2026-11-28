@@ -19,6 +19,7 @@ const caps = { text: 200, badge: 100, parts: 200, arrows: 400, badges: 50 }
 
 type Manifest = {
   readonly folder: string
+  /** The full name, for the arrows; a part shows it cut at the text cap. */
   readonly name: string
   readonly dependencies: readonly (readonly [string, string])[]
   readonly devDependencies: readonly (readonly [string, string])[]
@@ -52,7 +53,7 @@ function manifestOf(file: RuleFile): Manifest | null {
   const named = Object.hasOwn(pkg, 'name') && typeof pkg.name === 'string' && pkg.name !== '' ? pkg.name : folder
   return {
     folder,
-    name: named.slice(0, caps.text),
+    name: named,
     dependencies: depsOf(pkg, 'dependencies'),
     devDependencies: depsOf(pkg, 'devDependencies'),
   }
@@ -72,7 +73,13 @@ export function modelOf(files: readonly RuleFile[]): ArchitectureModel | null {
   const parts: ArchitecturePart[] = manifests.map((m, i) => {
     const id = `p${String(i)}`
     if (!ids.has(m.name)) ids.set(m.name, id)
-    return { id, name: m.name, shape: 'package', ours: true, typeLine: m.folder.slice(0, caps.text) }
+    return {
+      id,
+      name: m.name.slice(0, caps.text),
+      shape: 'package',
+      ours: true,
+      typeLine: m.folder.slice(0, caps.text),
+    }
   })
   const inside = (spec: string) => spec.startsWith('workspace:')
   /** The package a workspace dependency names: its key, or the target of an alias such as "workspace:foo@*". */
