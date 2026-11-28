@@ -60,7 +60,15 @@ export type ProjectsCall =
 /** A project's Architecture list with no fixture: System alone, with no diagram yet, as the server answers. */
 const noArchitecture = ArchitectureResponse.parse({
   scopes: [
-    { scope: '@system', title: 'How the system works', commit: null, generatedAt: null, stale: false, running: false },
+    {
+      scope: '@system',
+      title: 'How the system works',
+      commit: null,
+      generatedAt: null,
+      stale: false,
+      running: false,
+      failed: null,
+    },
   ],
 })
 

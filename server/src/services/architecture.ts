@@ -6,6 +6,7 @@
 // only. A log keeps a fault's code only, nothing of a model.
 import {
   ArchitectureModel,
+  ArchitectureFailure,
   type ArchitectureResponse,
   type ArchitectureScope,
   type ArchitectureScopeResponse,
@@ -57,12 +58,21 @@ export type Architecture = {
 
 const hexCommit = /^[0-9a-f]{40}$/
 
-/** `text` with each control character made a space: a runner reads names from the code. */
+/**
+ * `text` with each C0 and C1 control character and each bidi embedding, override and isolate (U+202A to U+202E,
+ * U+2066 to U+2069) made a space: a runner reads names from the code, and a bidi character can show a name in
+ * another order than its text.
+ */
 function cleanText(text: string): string {
   let out = ''
   for (const ch of text) {
-    const code = ch.charCodeAt(0)
-    out += code < 32 || code === 127 ? ' ' : ch
+    const code = ch.codePointAt(0) ?? 0
+    const hidden =
+      code < 32 ||
+      (code >= 0x7f && code <= 0x9f) ||
+      (code >= 0x202a && code <= 0x202e) ||
+      (code >= 0x2066 && code <= 0x2069)
+    out += hidden ? ' ' : ch
   }
   return out
 }
@@ -101,6 +111,13 @@ export function createArchitecture({
   readonly now?: () => Date
 }): Architecture {
   let current: { readonly key: string; readonly done: Promise<void> } | null = null
+  // The last failed run of each scope, in memory: a restart gives null, and only a good run clears it.
+  const failures = new Map<string, ArchitectureFailure>()
+  const failureOf = (code: string): ArchitectureFailure => {
+    const failure = { at: now().toISOString(), code }
+    // A code the contract does not take (a path, a space) becomes "unknown", so the state always parses.
+    return ArchitectureFailure.safeParse(failure).success ? failure : { ...failure, code: 'unknown' }
+  }
   const watchers = new Set<(key: ScopeKey) => void>()
 
   const project = async (slug: ProjectSlug): Promise<Result<ProjectRecord | NotFound, ProjectFault>> => {
@@ -122,43 +139,35 @@ export function createArchitecture({
         // A1b compares the commit with the snapshot of main; until then a diagram is never stale.
         stale: false,
         running: current?.key === keyOf(key),
+        failed: failures.get(keyOf(key)) ?? null,
       },
       model: kept?.model ?? null,
     }
   }
 
-  const runOnce = async (key: ScopeKey, repositories: readonly ProjectRepository[]) => {
+  /** One run: null when it kept a diagram, else the code of the fault that stopped it. */
+  const runOnce = async (key: ScopeKey, repositories: readonly ProjectRepository[]): Promise<string | null> => {
     const ran = await runner.run({ ...key, repositories })
-    if (!ran.ok) {
-      log({ code: ran.error.code })
-      return
-    }
+    if (!ran.ok) return ran.error.code
     const model = ArchitectureModel.safeParse(cleanModel(ran.value.model))
-    if (!model.success) {
-      log({ code: 'bad-model' })
-      return
-    }
-    if (!hexCommit.test(ran.value.commit)) {
-      log({ code: 'bad-commit' })
-      return
-    }
+    if (!model.success) return 'bad-model'
+    if (!hexCommit.test(ran.value.commit)) return 'bad-commit'
     const saved = await store.save(key, {
       model: model.data,
       commit: ran.value.commit,
       generatedAt: now().toISOString(),
     })
-    if (!saved.ok) {
-      log({ code: saved.error.code })
-      return
-    }
-    // Prune only after a list read that succeeded, so a brain fault never removes a diagram.
+    if (!saved.ok) return saved.error.code
+    // The diagram is kept, so the run is good. Prune only after a list read that succeeded, so a brain fault never
+    // removes a diagram; a fault here goes to the log only.
     const listed = await brain.list()
     if (!listed.ok) {
       log({ code: listed.error.code })
-      return
+      return null
     }
     const pruned = await store.prune(listed.value.flatMap((p) => scopesOf(p).map((scope) => ({ slug: p.slug, scope }))))
     if (!pruned.ok) log({ code: pruned.error.code })
+    return null
   }
 
   return {
@@ -189,8 +198,16 @@ export function createArchitecture({
       if (current === null) {
         const repositories = found.value.repositories
         const done = runOnce(key, repositories)
-          .catch(() => {
-            log({ code: 'threw' })
+          .catch(() => 'threw')
+          .then((code) => {
+            if (code === null) {
+              failures.delete(keyOf(key))
+              return
+            }
+            const failure = failureOf(code)
+            failures.set(keyOf(key), failure)
+            // The cleaned code only, so a path in a runner's code never goes to the log.
+            log({ code: failure.code })
           })
           .finally(() => {
             current = null

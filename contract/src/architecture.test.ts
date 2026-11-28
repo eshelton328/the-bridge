@@ -73,6 +73,7 @@ describe('the Architecture contract', () => {
       generatedAt: null,
       stale: false,
       running: false,
+      failed: null,
     }
     expect(ArchitectureScopeState.safeParse(state).success).toBe(true)
     const kept = { ...state, commit: 'a'.repeat(40), generatedAt: '2026-11-28T07:30:00.000Z' }
@@ -83,6 +84,40 @@ describe('the Architecture contract', () => {
     expect(ArchitectureScopeState.safeParse({ ...state, commit: 'a'.repeat(40) }).success).toBe(false)
   })
 
+  it('gives the last failed run as its time and a plain code, or null', () => {
+    const state = {
+      scope: systemScope,
+      title: 'How the system works',
+      commit: null,
+      generatedAt: null,
+      stale: false,
+      running: false,
+      failed: { at: '2026-11-28T08:00:00.000Z', code: 'no-github' },
+    }
+    expect(ArchitectureScopeState.safeParse(state).success).toBe(true)
+    expect(ArchitectureScopeState.safeParse({ ...state, failed: { ...state.failed, code: 'EBADDATA' } }).success).toBe(
+      true,
+    )
+    for (const failed of [
+      { at: 'yesterday', code: 'no-github' },
+      { at: state.failed.at, code: '' },
+      { at: state.failed.at, code: 'a'.repeat(41) },
+      { at: state.failed.at, code: 'no github' },
+      { at: state.failed.at, code: '/Users/x' },
+      { ...state.failed, detail: 'x' },
+    ])
+      expect(ArchitectureScopeState.safeParse({ ...state, failed }).success).toBe(false)
+    const missing = {
+      scope: state.scope,
+      title: state.title,
+      commit: null,
+      generatedAt: null,
+      stale: false,
+      running: false,
+    }
+    expect(ArchitectureScopeState.safeParse(missing).success).toBe(false)
+  })
+
   it('caps the scopes of a project', () => {
     const state = {
       scope: systemScope,
@@ -91,6 +126,7 @@ describe('the Architecture contract', () => {
       generatedAt: null,
       stale: false,
       running: false,
+      failed: null,
     }
     expect(
       ArchitectureResponse.safeParse({ scopes: Array.from({ length: maxArchitectureScopes }, () => state) }).success,

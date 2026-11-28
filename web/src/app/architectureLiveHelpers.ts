@@ -15,7 +15,15 @@ import { routeTree } from './routeTree.gen.ts'
 const commit = 'a'.repeat(40)
 /** System with no diagram yet, then a repository with one. */
 const scopes = [
-  { scope: '@system', title: 'How the system works', commit: null, generatedAt: null, stale: false, running: false },
+  {
+    scope: '@system',
+    title: 'How the system works',
+    commit: null,
+    generatedAt: null,
+    stale: false,
+    running: false,
+    failed: null,
+  },
   {
     scope: 'example-app',
     title: 'How example-app works',
@@ -23,6 +31,7 @@ const scopes = [
     generatedAt: '2026-11-28T10:00:00.000Z',
     stale: false,
     running: false,
+    failed: null,
   },
 ]
 /** example-app's diagram: two parts, one arrow and two Stack groups. */

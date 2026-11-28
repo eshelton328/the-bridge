@@ -3,6 +3,7 @@
 import {
   type ArchitectureModel,
   ArchitectureResponse,
+  ArchitectureScopeResponse,
   ErrorBody,
   MachineId,
   RegenerateResponse,
@@ -105,7 +106,10 @@ describe('/api/projects/:slug/architecture', () => {
     pending[0]?.(ok({ model, commit: 'c'.repeat(40) }))
     await architecture.idle()
     const read = await app.request('/api/projects/example-project/architecture/%40system', { headers: local })
-    expect(await read.json()).toMatchObject({ state: { commit: 'c'.repeat(40), running: false }, model })
+    expect(ArchitectureScopeResponse.parse(await read.json())).toMatchObject({
+      state: { commit: 'c'.repeat(40), running: false, failed: null },
+      model,
+    })
   })
 
   it('takes an empty JSON body only', async () => {
@@ -138,6 +142,9 @@ describe('/api/projects/:slug/architecture', () => {
     await architecture.idle()
     const read = await app.request('/api/projects/example-project/architecture/%40system', { headers: local })
     expect(read.status).toBe(200)
-    expect(await read.json()).toMatchObject({ state: { commit: null, generatedAt: null, running: false }, model: null })
+    expect(ArchitectureScopeResponse.parse(await read.json())).toMatchObject({
+      state: { commit: null, generatedAt: null, running: false, failed: { code: 'not-built' } },
+      model: null,
+    })
   })
 })
