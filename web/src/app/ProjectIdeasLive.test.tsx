@@ -136,6 +136,14 @@ describe("A project's Ideas tab (R10)", () => {
     expect(idea.getByRole('img').elements()).toEqual([])
   })
 
+  it('says an idea ID the contract refuses is not found, with no read', async () => {
+    const projects = withServer()
+    await open('/projects/alpha?tab=ideas&idea=..%2Fchats')
+    await expect.element(page.getByRole('heading', { name: 'Page not found' })).toBeVisible()
+    expect(projects.calls('idea')).toEqual([])
+    expect(projects.calls('chats')).toEqual([])
+  })
+
   it('says an idea the server does not know is not found', async () => {
     withServer()
     await open('/projects/alpha?tab=ideas&idea=3f0c6a52-6a1e-4d55-9a4e-2f1b8f1d0a09')

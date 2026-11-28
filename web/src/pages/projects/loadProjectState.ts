@@ -5,9 +5,10 @@
 // (`GET /api/projects/:slug`, liveProjects.ts) unless `?source=fixtures` names
 // the sample data. A slug with no project, or one ProjectSlug refuses (no read), is not found.
 // `?tab=ideas` reads the live Ideas tab and `?idea=` the live idea's page
-// (R10, R11; an idea the server does not know is not found),
-// `?tab=repositories` the live Repositories tab (increment two).
-import { ProjectSlug } from '@bridge/contract'
+// (R10, R11; an idea the server does not know, or an ID IdeaId refuses
+// (no read), is not found), `?tab=repositories` the live Repositories tab
+// (increment two).
+import { IdeaId, ProjectSlug } from '@bridge/contract'
 import { notFound } from '@tanstack/react-router'
 import { parseState } from '../../errors/parseState.ts'
 import { type DataSourceOptions, readsLiveServer, readState } from '../../lib/dataSource.ts'
@@ -38,6 +39,7 @@ export function loadProjectState(
   view: { readonly tab?: ProjectTab | undefined; readonly idea?: string | undefined } = {},
 ): State | Promise<State> {
   if (!ProjectSlug.safeParse(slug).success) throw notFound({ data: 'not a project slug' })
+  if (view.idea !== undefined && !IdeaId.safeParse(view.idea).success) throw notFound({ data: 'not an idea ID' })
   const read = readState<State>(
     projectsStates,
     { state: requested, source },
