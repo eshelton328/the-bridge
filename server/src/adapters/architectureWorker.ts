@@ -5,7 +5,11 @@
 import { parentPort, workerData } from 'node:worker_threads'
 import { modelOf } from '../services/architectureRules.ts'
 
-type Input = { readonly files: readonly { readonly path: string; readonly bytes: Uint8Array }[] }
+type Input = {
+  readonly files: readonly { readonly path: string; readonly bytes: Uint8Array }[]
+  readonly others?: unknown
+  readonly paths?: unknown
+}
 
 const isInput = (value: unknown): value is Input =>
   typeof value === 'object' &&
@@ -16,4 +20,7 @@ const isInput = (value: unknown): value is Input =>
 const decoder = new TextDecoder('utf-8')
 const input: unknown = workerData
 const files = isInput(input) ? input.files.map((f) => ({ path: f.path, text: decoder.decode(f.bytes) })) : []
-parentPort?.postMessage({ model: modelOf(files) })
+const strings = (value: unknown) => (Array.isArray(value) ? value.filter((v) => typeof v === 'string') : [])
+const others = isInput(input) ? strings(input.others) : []
+const paths = isInput(input) ? strings(input.paths) : []
+parentPort?.postMessage({ model: modelOf(files, { others, paths }) })

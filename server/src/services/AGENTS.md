@@ -178,13 +178,20 @@ from the outside world.
   under that snapshot's lock; `@system` fails `not-built` until A2, and a
   repository off GitHub `no-github` (`architectureRunner.test.ts`).
   `architectureRules.ts` makes a repository's first diagram from its
-  `package.json` files as data: a part for each package (its folder as
-  the type line, "." for the root), a "depends on" arrow for each
-  `workspace:` dependency, and the Stack's Runtime and Build badges.
-  Keys are read with `Object.hasOwn` and `Object.entries` only, with no
-  `__proto__`; parts and arrows are sorted by path and cut at the
-  contract's caps, so one commit gives one model
-  (`architectureRules.test.ts`).
+  `package.json` files and tracked paths as data. A workspace (a root
+  `package.json` and others) is the repository's boundary; each other
+  package is a part named by its folder ("web/"), its type line its kind
+  and frameworks from its runtime dependencies, and a package with a
+  `src/adapters` folder is a part for each layer folder (routes, services,
+  adapters), each calling the next. An adapter file whose name starts with
+  a word of `systems` (herdr, claude, disk, gh, linear; no test, fake, stub
+  or contract suite), and a runtime dependency of `services` (web-push),
+  add that outer system; a dependency on another repository of the project
+  adds a package part outside the boundary. Any other repository has a part
+  for each package, with its folder as the type line. Keys are read with
+  `Object.hasOwn` and `Object.entries` only, with no `__proto__`; parts
+  and arrows are sorted by path and cut at the contract's caps, so one
+  commit gives one model (`architectureRules.test.ts`).
 - The QA tab (f-008 increment three): `qaAsk.ts` reads the newest Linear
   comment whose first line is `QA check` as data. Its `Repository:` counts
   only when `project.yaml` lists it, and its `PR:` only as a positive

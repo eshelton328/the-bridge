@@ -72,10 +72,14 @@ export function createSnapshotReader({
       }
     })
 
-  const work = (files: readonly { path: string; bytes: Uint8Array }[]) =>
+  const work = (
+    files: readonly { path: string; bytes: Uint8Array }[],
+    others: readonly string[],
+    paths: readonly string[],
+  ) =>
     new Promise<Result<ArchitectureModel, ProjectFault>>((resolve) => {
       const worker = new Worker(workerFile, {
-        workerData: { files },
+        workerData: { files, others, paths },
         resourceLimits: { maxOldGenerationSizeMb: 256, maxYoungGenerationSizeMb: 32 },
       })
       let done = false
@@ -112,7 +116,7 @@ export function createSnapshotReader({
     })
 
   return {
-    async read(dir) {
+    async read(dir, others = []) {
       let top: string
       try {
         top = await realpath(dir)
@@ -124,11 +128,13 @@ export function createSnapshotReader({
       const entries = out.value.split('\0').filter((line) => line !== '')
       if (entries.length > maxFiles) return fault('too-many-files')
       const files: { path: string; bytes: Uint8Array }[] = []
+      const paths: string[] = []
       let total = 0
       for (const line of entries) {
         const parts = entry.exec(line)
         if (parts === null) return fault('EBADDATA')
         const [, mode = '', path = ''] = parts
+        paths.push(path)
         if ((mode !== '100644' && mode !== '100755') || !isManifest(path)) continue
         const full = join(top, path)
         try {
@@ -146,7 +152,7 @@ export function createSnapshotReader({
           continue
         }
       }
-      return work(files)
+      return work(files, others, paths)
     },
   }
 }

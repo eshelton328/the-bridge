@@ -5,23 +5,95 @@ import { modelOf } from './architectureRules.ts'
 const pkg = (path: string, body: object) => ({ path, text: JSON.stringify(body) })
 
 describe('modelOf', () => {
-  it('gives a part for each package, sorted by path, with "." for the root, arrows and the Stack', () => {
+  it('gives a part for each package of a workspace, named by its folder, in the root as the repository', () => {
     const model = modelOf([
-      pkg('web/package.json', { name: '@x/web', dependencies: { '@x/shared': 'workspace:*', react: '^19' } }),
+      pkg('web/package.json', { name: '@x/web', dependencies: { '@x/shared': 'workspace:*', 'react-dom': '^19' } }),
       pkg('package.json', { name: 'root', devDependencies: { typescript: '5' } }),
       pkg('shared/package.json', { name: '@x/shared', dependencies: { zod: '4' } }),
     ])
     expect(model).not.toBeNull()
     expect(ArchitectureModel.safeParse(model).success).toBe(true)
-    expect(model?.parts.map((p) => [p.id, p.name, p.typeLine])).toEqual([
-      ['p0', 'root', '.'],
-      ['p1', '@x/shared', 'shared'],
-      ['p2', '@x/web', 'web'],
+    expect(model?.boundaries).toEqual([{ id: 'b0', label: 'root repository', kind: 'repository' }])
+    expect(model?.parts.map((p) => [p.id, p.name, p.shape, p.typeLine, p.boundary])).toEqual([
+      ['p0', 'shared/', 'service', 'Library · Zod', 'b0'],
+      ['p1', 'web/', 'webApp', 'Web app', 'b0'],
     ])
-    expect(model?.arrows).toEqual([{ from: 'p2', to: 'p1', label: 'depends on' }])
+    expect(model?.arrows).toEqual([{ from: 'p1', to: 'p0', label: 'depends on' }])
     expect(model?.stack).toEqual([
-      { name: 'Runtime', badges: ['react', 'zod'] },
+      { name: 'Shared', badges: ['zod'] },
+      { name: 'Web', badges: ['react-dom'] },
       { name: 'Build', badges: ['typescript'] },
+    ])
+  })
+
+  it('gives a package with a src/adapters folder a part for each layer, and the outer systems its adapters name', () => {
+    const server = pkg('server/package.json', {
+      name: '@x/server',
+      dependencies: { hono: '4', 'web-push': '3', '@x/shared': 'workspace:*' },
+      devDependencies: { '@types/web-push': '3' },
+    })
+    const paths = [
+      'server/src/routes/app.ts',
+      'server/src/services/inbox.ts',
+      'server/src/adapters/herdrSocket.ts',
+      'server/src/adapters/diskInbox.ts',
+      'server/src/adapters/diskInbox.test.ts',
+      'server/src/adapters/fakeLinear.ts',
+      'server/src/adapters/linearPortContract.ts',
+      'server/src/adapters/stubGh.ts',
+      'server/src/adapters/claude/deep.ts',
+    ]
+    const model = modelOf(
+      [pkg('package.json', { name: 'root' }), pkg('shared/package.json', { name: '@x/shared' }), server],
+      {
+        others: [],
+        paths,
+      },
+    )
+    expect(ArchitectureModel.safeParse(model).success).toBe(true)
+    expect(model?.parts.map((p) => [p.id, p.name, p.typeLine, p.ours])).toEqual([
+      ['p0.routes', 'server/routes', 'Routes · Hono', true],
+      ['p0.services', 'server/services', 'Services', true],
+      ['p0.adapters', 'server/adapters', 'Adapters', true],
+      ['p1', 'shared/', 'Library', true],
+      ['x.web-push', 'Web Push service', 'External · web-push', false],
+      ['x.herdr', 'herdr', 'Terminal app', false],
+      ['x.disk', 'Disk stores', 'Data store', false],
+    ])
+    expect(model?.arrows).toEqual([
+      { from: 'p0.routes', to: 'p0.services', label: 'calls' },
+      { from: 'p0.services', to: 'p0.adapters', label: 'calls' },
+      { from: 'p0.routes', to: 'p1', label: 'depends on' },
+      { from: 'p0.adapters', to: 'x.web-push', label: 'calls' },
+      { from: 'p0.adapters', to: 'x.herdr', label: 'calls' },
+      { from: 'p0.adapters', to: 'x.disk', label: 'calls' },
+    ])
+  })
+
+  it('gives a dependency on another repository of the project one package part outside the boundary', () => {
+    const model = modelOf(
+      [
+        pkg('package.json', { name: 'root' }),
+        pkg('a/package.json', { name: '@x/a', dependencies: { '@owner/the-library': '1' } }),
+        pkg('b/package.json', { name: '@x/b', devDependencies: { 'the-library': '1' } }),
+      ],
+      { others: ['the-library'], paths: [] },
+    )
+    expect(model?.parts.filter((p) => p.boundary === undefined)).toEqual([
+      { id: 'x.the-library', name: 'the-library', shape: 'package', ours: true, typeLine: 'npm package' },
+    ])
+    expect(model?.arrows).toEqual([
+      { from: 'p0', to: 'x.the-library', label: 'depends on' },
+      { from: 'p1', to: 'x.the-library', label: 'depends on' },
+    ])
+  })
+
+  it('keeps one part for each package of a repository with no root package.json', () => {
+    const model = modelOf([pkg('b/package.json', { name: 'b' }), pkg('a/package.json', { name: 'a' })])
+    expect(model?.boundaries).toEqual([])
+    expect(model?.parts.map((p) => [p.name, p.typeLine])).toEqual([
+      ['a', 'a'],
+      ['b', 'b'],
     ])
   })
 

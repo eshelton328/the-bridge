@@ -509,7 +509,8 @@ client of a socket or a file sits beside them.
   100755), and only the `package.json` files outside `node_modules`, each
   after an lstat, a realpath check in the snapshot and a 1 MB cap, with
   64 MB for all (`too-large`). A worker_thread with memory limits and a
-  60 s limit (`timeout`) gets only the bytes and runs the rules
+  60 s limit (`timeout`) gets only the bytes, the tracked paths and the IDs
+  of the project's other repositories, and runs the rules
   (`architectureWorker.ts`, `../services/architectureRules.ts`); it runs
   no git, no child process and no fs (`snapshotReader.test.ts`, a real
   git repository in a temporary folder).

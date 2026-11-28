@@ -46,13 +46,14 @@ describe('createSnapshotReader', () => {
     await repo({
       'package.json': JSON.stringify({ name: 'root' }),
       'web/package.json': JSON.stringify({ name: 'web' }),
+      'web/src/adapters/herdrSocket.ts': '',
       'node_modules/dep/package.json': JSON.stringify({ name: 'dep' }),
     })
     await writeFile(join(dir, 'untracked.json'), '{}')
     await mkdir(join(dir, 'new'))
     await writeFile(join(dir, 'new/package.json'), JSON.stringify({ name: 'untracked' }))
     const read = await reader().read(dir)
-    expect(read.ok && read.value.parts.map((p) => p.name)).toEqual(['root', 'web'])
+    expect(read.ok && read.value.parts.map((p) => p.name)).toEqual(['web/adapters', 'herdr'])
   })
 
   it('never reads a tracked symlink, also one to a package.json outside the snapshot', async () => {

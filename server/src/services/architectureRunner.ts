@@ -10,9 +10,9 @@ import type { ArchitectureRunner } from './architecture.ts'
 import type { ProjectFault, SnapshotSource } from './projects.ts'
 import { type SnapshotLock, snapshotKey } from './snapshotLock.ts'
 
-/** Reads a diagram from a snapshot folder (for the adapters only). */
+/** Reads a diagram from a snapshot folder (for the adapters only), with the IDs of the project's other repositories. */
 export type SnapshotReader = {
-  read(dir: string): Promise<Result<ArchitectureModel, ProjectFault>>
+  read(dir: string, others?: readonly string[]): Promise<Result<ArchitectureModel, ProjectFault>>
 }
 
 export function createSnapshotRunner({
@@ -33,7 +33,8 @@ export function createSnapshotRunner({
       return lock.hold(snapshotKey(github), async () => {
         const snapshot = await snapshots.sync(github)
         if (!snapshot.ok) return snapshot
-        const model = await reader.read(snapshot.value.dir)
+        const others = repositories.flatMap((r) => (r.id === scope ? [] : [r.id]))
+        const model = await reader.read(snapshot.value.dir, others)
         if (!model.ok) return model
         return ok({ model: model.value, commit: snapshot.value.commit })
       })
