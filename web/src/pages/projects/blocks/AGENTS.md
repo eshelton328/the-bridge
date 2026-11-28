@@ -14,6 +14,10 @@ moves to `web/src/blocks/`.
   `picture` size is the 64 px square of a project's page. Its
   `projectIcons` map satisfies the contract's `ProjectIconName`, so the
   two lists cannot drift.
+- `NewProjectForm` is New project's form: the library `Dialog` on the
+  desktop, else `BackRow` (Projects, Create project) over the fields.
+  `NewProjectFields` holds Name with its folder line (an error when the
+  folder is not free) and Description.
 - `ProjectHeader` is a project page's head: `BackRow` with Quick chat at its
   end, then the picture beside the name and purpose.
 - `QuickChat` is Quick chat's composer: the library `Dialog` and `Composer`

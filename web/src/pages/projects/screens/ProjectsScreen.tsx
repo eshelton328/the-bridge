@@ -5,7 +5,8 @@
 // 1133 px) is narrower than the desktop layout and draws the tablet one. A
 // state's data and ui are its props; the callbacks are optional, so a story or
 // a canvas board needs none. On the live projects the entry passes `onPin`,
-// which sends a pin to the server.
+// which sends a pin to the server. New project's form (`newProject`) is a
+// dialog on the desktop and a full screen with no tab bar on a tablet or phone.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
 import { AppRail } from '../../../blocks/AppRail.tsx'
 import { AppTabBar } from '../../../blocks/AppTabBar.tsx'
@@ -14,6 +15,7 @@ import { ViewportFrame } from '../../../blocks/ViewportFrame.tsx'
 import { reportShellDiagnostic } from '../../../errors/shellDiagnostic.ts'
 import { type BarPage, defaultVisiblePages, navLayout } from '../../../lib/deviceSettings.ts'
 import type { Viewport } from '../../../lib/screenState.ts'
+import { NewProjectForm, type NewProjectView } from '../blocks/NewProjectForm.tsx'
 import { QuickChat } from '../blocks/QuickChat.tsx'
 import type { ProjectsData, ProjectsUi } from '../types.ts'
 import { ProjectDetail } from './ProjectDetail.tsx'
@@ -44,6 +46,10 @@ export type ProjectsScreenProps = {
   onRunDrift?: (() => void) | undefined
   /** A Chats panel row was pressed (R7): open that chat. */
   onChatOpen?: ((id: string) => void) | undefined
+  /** New project was pressed on the home. */
+  onNewProject?: (() => void) | undefined
+  /** New project's form, open while set (increment four). */
+  newProject?: NewProjectView | undefined
 }
 
 export function ProjectsScreen({
@@ -61,6 +67,8 @@ export function ProjectsScreen({
   onQuickChatRetry,
   onRunDrift,
   onChatOpen,
+  onNewProject,
+  newProject,
 }: ProjectsScreenProps) {
   // The project page of `ui.open` (R4); the home when it names no card.
   const open = data.projects.find((p) => p.slug === ui.open)
@@ -69,6 +77,7 @@ export function ProjectsScreen({
     <ViewportFrame initial={viewport}>
       {(layout) => {
         const nav = navLayout(navPages, layout)
+        const fullForm = newProject !== undefined && layout !== 'desktop'
         const quickChat =
           chat === undefined || onQuickChatSend === undefined ? null : (
             <QuickChat
@@ -100,7 +109,7 @@ export function ProjectsScreen({
               // The home runs under the tab bar, as T10 and M10 draw it; its end scrolls clear of it.
               tabBarOverlay
               tabBar={
-                layout === 'desktop' ? undefined : (
+                layout === 'desktop' || fullForm ? undefined : (
                   <AppTabBar
                     selected="projects"
                     pages={nav.tabs}
@@ -115,7 +124,9 @@ export function ProjectsScreen({
                 )
               }
               detail={
-                open === undefined ? (
+                fullForm ? (
+                  <NewProjectForm view={newProject} layout={layout} />
+                ) : open === undefined ? (
                   <ProjectsHome
                     data={data}
                     ui={ui}
@@ -123,6 +134,7 @@ export function ProjectsScreen({
                     onUiChange={onUiChange}
                     onPin={onPin}
                     onOpen={onOpen}
+                    onNewProject={onNewProject}
                   />
                 ) : (
                   <ProjectDetail
@@ -142,6 +154,9 @@ export function ProjectsScreen({
               }
             />
             {quickChat}
+            {newProject !== undefined && layout === 'desktop' ? (
+              <NewProjectForm view={newProject} layout={layout} />
+            ) : null}
             {/* The tablet's and the phone's More open the shared More drawer (d-119). */}
             <MoreDrawer
               settings={settingsEntry}

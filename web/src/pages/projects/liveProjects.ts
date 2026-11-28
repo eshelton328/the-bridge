@@ -13,6 +13,8 @@
 // Its Ideas tab reads `GET /api/projects/:slug/ideas` only while it shows (R10),
 // and its Repositories tab `GET /api/projects/:slug/repositories` (increment two).
 // The Context drift panel (R9) reads the last check with it; Run check is `runDrift`.
+// New project (increment four) reads the folder of a typed name (`readSlug`,
+// `GET /api/projects/-/slug`).
 //
 // A read or a pin that misses shows one short line by status ("Projects not
 // read — the server answered 500"), and a list that misses shows no projects,
@@ -32,6 +34,7 @@ import {
   ProjectsResponse,
   type ProjectSummary,
   RepositoriesResponse,
+  SlugResponse,
 } from '@bridge/contract'
 import { err, ok, type Result } from '@bridge/shared'
 import { report } from '../../errors/reporter.ts'
@@ -51,7 +54,7 @@ type ProjectsMiss = {
   readonly status: number | undefined
 }
 
-type ProjectsStep = 'list' | 'pin' | 'detail' | 'ideas' | 'repositories' | 'drift' | 'runDrift' | 'chats'
+type ProjectsStep = 'list' | 'pin' | 'detail' | 'ideas' | 'repositories' | 'drift' | 'runDrift' | 'chats' | 'slug'
 
 /** A miss for report(): a stable name and, in its message, only the step, the kind and the status. */
 class ProjectsMissError extends Error {
@@ -349,4 +352,19 @@ export async function pinProject(slug: string, pinned: boolean): Promise<Result<
   if (sent.ok) return ok(undefined)
   reportMiss('pin', sent.error)
   return err(missLine(pinned ? 'Not pinned' : 'Not unpinned', sent.error))
+}
+
+/** The line under New project's name (R2, R3): "Folder: <slug>" when `free`, else why the name cannot be made. */
+export type SlugCheck = { readonly line: string; readonly free: boolean }
+
+/** The folder of the typed `name` and whether it is free (`GET /api/projects/-/slug`); a miss gives its line. */
+export async function readSlug(name: string): Promise<SlugCheck> {
+  const answer = await send((signal) => api.api.projects['-'].slug.$get({ query: { name } }, { init: { signal } }))
+  if (!answer.ok) {
+    reportMiss('slug', answer.error)
+    return { line: missLine('Folder not checked', answer.error), free: false }
+  }
+  const { slug, free } = SlugResponse.parse(readJson(answer.value))
+  if (slug === null) return { line: 'This name gives no folder name', free: false }
+  return free ? { line: `Folder: ${slug}`, free } : { line: `Folder: ${slug} is taken by another project`, free }
 }

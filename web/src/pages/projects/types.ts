@@ -166,7 +166,7 @@ export type ProjectRepositories = z.infer<typeof ProjectRepositories>
 
 export const ProjectsData = z.object({
   title: z.string(),
-  /** New project: drawn as the frames do; it has no action until increment four (d-133). */
+  /** New project: drawn as the frames do; it opens New project's form (increment four, d-133). */
   newProject: z.string(),
   /** The Inbox needs-you count on the rail and the tab bar. */
   railBadge: z.number().int().nonnegative(),

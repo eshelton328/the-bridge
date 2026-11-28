@@ -16,9 +16,15 @@ T10b, M10 for the home, D01, T01, T01b, M01 for a project's page), read with
 - A part or value the library cannot draw is a row in `LIBRARY_GAPS.md`;
   use the part under "Used now" and list the difference in the frame's
   `deviations.md`.
-- New project and Edit details show as the frames draw them and do
-  nothing: both are increment four (d-133). A click on a card opens its
-  project's page.
+- Edit details shows as the frames draw it and does nothing (increment
+  four, d-133). A click on a card opens its project's page.
+- New project (increment four, NCC-162) opens its form, plain on every
+  size (`useNewProject.ts`, `blocks/NewProjectForm.tsx`): a dialog on the
+  desktop, a full screen with no tab bar on a tablet or phone. Each name
+  change reads `GET /api/projects/-/slug`; only the newest answer counts,
+  and Create project is off until the folder is free. Create project and
+  the picture are the next commit's. On fixtures no read goes out.
+  `app/ProjectsNewProject.test.tsx` checks it at 1440, 1024 and 390 px.
 - A project's page is `ui.open` on the same state, so it shares the
   home's data and screen. It shows the header and the tabs Overview,
   Repositories (increment two) and Ideas (d-133). The Overview draws the Inbox and Queue
