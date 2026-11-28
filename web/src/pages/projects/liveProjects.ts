@@ -393,6 +393,7 @@ export async function withLiveRepositories(
       role: r.role,
       github: r.github,
       visibility: r.visibility,
+      release: r.release?.tag ?? null,
       openPulls: r.openPulls,
       worktrees: r.worktrees,
       unread: r.unread,

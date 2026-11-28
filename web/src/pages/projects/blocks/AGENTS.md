@@ -40,7 +40,7 @@ moves to `web/src/blocks/`.
   (D08, T08, T08b, M08, D09 and their tablet and phone frames) are a later
   issue's.
 - `RepositoriesList` is the Repositories tab: a `RepositoryCard` per
-  repository (d-135). `RepositoryHead` draws the name (`title`, an h2),
+  repository (d-135), each after the first under a `border.default` rule. `RepositoryHead` draws the name (`title`, an h2),
   the visibility as `Badge variant="pill" tone="idle"`, the role
   (`small`, muted) and Architecture and View on GitHub ("GitHub" on the
   phone), secondary, md on the desktop and lg elsewhere; View on GitHub is

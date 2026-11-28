@@ -1,11 +1,12 @@
-// The head of a repository card (d-135): its name with its visibility pill,
+// The head of a repository card (d-135): its name with its visibility and release pills,
 // its role from project.yaml (with the line of GitHub's facts not read), and
 // Architecture and View on GitHub ("GitHub" on the phone), secondary, with a
 // 16 px icon, md on the desktop and lg elsewhere, as the project's header
 // sizes Quick chat. View on GitHub is a plain link that opens a new tab, drawn
 // with the library's `button` recipe as `Button` draws it (as Artifacts' Open
 // artifact), so the Home Screen app opens Safari. Off GitHub it is left out.
-// Props only; the entry opens the Architecture tab.
+// The buttons sit centred beside the name and role, 4 apart (D02). Props
+// only; the entry opens the Architecture tab.
 import { Badge, Button, ExternalLinkIcon, LinksIcon } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import { button } from '../../../../styled-system/recipes/index.js'
@@ -15,18 +16,18 @@ import type { ProjectPageWords, RepositoryRow } from '../types.ts'
 const head = css({
   display: 'flex',
   flexWrap: 'wrap',
-  alignItems: 'flex-start',
+  alignItems: 'center',
   justifyContent: 'space-between',
   gap: '12',
 })
-const titled = css({ display: 'flex', flexDirection: 'column' })
+const titled = css({ display: 'flex', flexDirection: 'column', gap: '4' })
 const nameRow = css({ display: 'flex', alignItems: 'center', gap: '8', flexWrap: 'wrap' })
 const name = css({ textStyle: 'title', color: 'fg.default', overflowWrap: 'anywhere' })
 const role = css({ textStyle: 'small', color: 'fg.muted' })
 const actions = css({ display: 'flex', gap: '8', flexWrap: 'wrap' })
 
 /** The words the head draws. */
-export type RepositoryHeadWords = Pick<ProjectPageWords, 'visibility' | 'unread' | 'architecture' | 'repository'>
+type RepositoryHeadWords = Pick<ProjectPageWords, 'visibility' | 'unread' | 'architecture' | 'repository'>
 
 export type RepositoryHeadProps = {
   row: RepositoryRow
@@ -52,6 +53,7 @@ export function RepositoryHead({ row, words, layout, nameId, onArchitecture }: R
           {row.visibility === null ? null : (
             <Badge variant="pill" tone="idle" label={words.visibility[row.visibility]} />
           )}
+          {row.release === null ? null : <Badge variant="pill" tone="idle" label={row.release} />}
         </div>
         <p className={role}>{[row.role, ...about].filter((part) => part !== '').join(' · ')}</p>
       </div>

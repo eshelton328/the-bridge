@@ -244,6 +244,8 @@ export const RepositoryRow = z.object({
   /** Its GitHub repository, for View on GitHub; null off GitHub. */
   github: z.object({ owner: z.string().min(1), name: z.string().min(1) }).nullable(),
   visibility: z.enum(['public', 'private', 'internal']).nullable(),
+  /** Its newest release tag, such as "v1.0.0-beta.133"; null with none or not read. */
+  release: z.string().nullable(),
   openPulls: z.number().int().nonnegative().nullable(),
   worktrees: z.number().int().nonnegative().nullable(),
   unread: z.array(z.enum(['about', 'pulls', 'worktrees'])),

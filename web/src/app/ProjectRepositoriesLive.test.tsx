@@ -196,6 +196,7 @@ describe("A project's Repositories tab (increment two)", () => {
       const app = card('example-app')
       await expect.element(app.getByRole('heading', { level: 2, name: 'example-app' })).toBeVisible()
       await expect.element(app.getByText('Public', { exact: true })).toBeVisible()
+      await expect.element(app.getByText('v1.0.0-beta.2', { exact: true })).toBeVisible()
       await expect.element(app.getByText('The app', { exact: true })).toBeVisible()
       await expect.element(app.getByRole('button', { name: 'Architecture' })).toBeVisible()
       const github = app.getByRole('link', { name: width === 390 ? 'GitHub' : 'View on GitHub', exact: true })
