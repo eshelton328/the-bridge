@@ -117,6 +117,7 @@ const scope = (id: string, title: string) => ({
   generatedAt: null,
   stale: false,
   running: false,
+  failed: null,
 })
 
 /** The Inbox fake of the last `withServer()`, which sends the feed's events. */
