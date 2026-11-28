@@ -39,11 +39,6 @@ export type ArchitectureRunner = {
   ): Promise<Result<{ readonly model: ArchitectureModel; readonly commit: string }, ProjectFault>>
 }
 
-/** The runner until the snapshot runner comes (A1b): each run fails with `not-built`. */
-export const unbuiltRunner: ArchitectureRunner = {
-  run: () => Promise.resolve({ ok: false, error: { reason: 'failed', code: 'not-built' } }),
-}
-
 type NotFound = 'notFound'
 export type Architecture = {
   scopes(slug: ProjectSlug): Promise<Result<ArchitectureResponse | NotFound, ProjectFault>>
@@ -64,7 +59,7 @@ export type Architecture = {
 const hexCommit = /^[0-9a-f]{40}$/
 
 /** `text` with each control character made a space: a runner reads names from the code. */
-export function cleanText(text: string): string {
+function cleanText(text: string): string {
   let out = ''
   for (const ch of text) {
     const code = ch.charCodeAt(0)
@@ -74,7 +69,7 @@ export function cleanText(text: string): string {
 }
 
 /** The model with each text cleaned, before the contract checks it. */
-export function cleanModel(model: ArchitectureModel): ArchitectureModel {
+function cleanModel(model: ArchitectureModel): ArchitectureModel {
   return {
     ...model,
     parts: model.parts.map((p) => ({ ...p, name: cleanText(p.name), typeLine: cleanText(p.typeLine) })),
