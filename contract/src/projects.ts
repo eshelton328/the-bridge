@@ -346,3 +346,81 @@ export type MakeFeatureRequest = z.infer<typeof MakeFeatureRequest>
 /** The answer of Make a feature (201): the new feature's ID and the idea's row, now In design (R16). */
 export const MakeFeatureResponse = z.strictObject({ feature: FeatureId, idea: Idea })
 export type MakeFeatureResponse = z.infer<typeof MakeFeatureResponse>
+
+/**
+ * The kinds of problem that the `agents-md` check prints (increment two, R7); the panel groups the findings by kind. A
+ * kind the check adds later fails the run (`unknown-kind`) until it is added here.
+ */
+export const AgentsMdKind = z.enum([
+  'missing',
+  'shim',
+  'stray',
+  'unlinked',
+  'dead-link',
+  'old-pointer',
+  'over-budget',
+  'stub',
+  'exempt',
+])
+export type AgentsMdKind = z.infer<typeof AgentsMdKind>
+
+/** True when `p` has a control character (code below 32, or 127). */
+const hasControl = (p: string) => {
+  for (let i = 0; i < p.length; i += 1) {
+    const code = p.charCodeAt(i)
+    if (code < 32 || code === 127) return true
+  }
+  return false
+}
+
+/**
+ * A path in a repository, from its root: "." for the root folder, else no leading "/" and no "." or ".." part; no
+ * control character and no backslash, as a file name may hold an escape character.
+ */
+const RepositoryPath = z
+  .string()
+  .min(1)
+  .max(500)
+  .refine((p) => !p.includes('\\') && !hasControl(p), { message: 'no control character or backslash' })
+  .refine((p) => p === '.' || p.split('/').every((part) => part !== '' && part !== '.' && part !== '..'), {
+    message: 'a path from the repository root',
+  })
+
+/** One problem of the `agents-md` check on a repository's snapshot: its kind, its path and the rest of its line. */
+export const RepositoryDriftFinding = z.strictObject({
+  kind: AgentsMdKind,
+  path: RepositoryPath,
+  /** The text after the path, such as "(165 > 60 lines)", with any local path masked; null when the line has none. */
+  detail: z.string().min(1).max(500).nullable(),
+})
+export type RepositoryDriftFinding = z.infer<typeof RepositoryDriftFinding>
+
+/**
+ * One `agents-md` check of a repository (R7): `clean`, `findings` or `failed` (no snapshot, or no answer the server
+ * reads), with the snapshot's commit on `main` (null when the snapshot did not sync). `findings` holds the first
+ * `maxDriftFindings` and `total` counts them all, so the page can say "200 of N".
+ */
+export const RepositoryDriftRun = z
+  .strictObject({
+    result: z.enum(['clean', 'findings', 'failed']),
+    checkedAt: z.iso.datetime(),
+    commit: z
+      .string()
+      .regex(/^[0-9a-f]{40}$/)
+      .nullable(),
+    findings: z.array(RepositoryDriftFinding).max(maxDriftFindings),
+    total: z.number().int().nonnegative(),
+  })
+  .refine((r) => (r.result === 'findings') === r.findings.length > 0, {
+    message: 'only a run with findings lists findings',
+    path: ['findings'],
+  })
+  .refine((r) => r.findings.length === Math.min(r.total, maxDriftFindings), {
+    message: 'the run lists its first findings and counts them all',
+    path: ['total'],
+  })
+export type RepositoryDriftRun = z.infer<typeof RepositoryDriftRun>
+
+/** The response of `GET` and `POST /api/projects/:slug/repositories/:repo/drift`: the last run, null before the first. */
+export const RepositoryDriftResponse = z.strictObject({ last: RepositoryDriftRun.nullable() })
+export type RepositoryDriftResponse = z.infer<typeof RepositoryDriftResponse>

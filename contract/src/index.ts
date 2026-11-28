@@ -123,6 +123,10 @@ export {
   RunDriftRequest,
   SlugQuery,
   SlugResponse,
+  AgentsMdKind,
+  RepositoryDriftFinding,
+  RepositoryDriftResponse,
+  RepositoryDriftRun,
 } from './projects.ts'
 export {
   LinearPriority,
