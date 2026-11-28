@@ -1,3 +1,4 @@
+// The package entry. Name each export; no `export *`.
 export {
   ArchitectureArrow,
   ArchitectureBoundary,
@@ -10,6 +11,7 @@ export {
   maxArchitectureArrows,
   maxArchitectureBoundaries,
   maxArchitectureParts,
+  maxArchitectureScopes,
   maxArchitectureText,
   maxStackBadge,
   maxStackBadges,
@@ -21,7 +23,6 @@ export {
   StackGroup,
   systemScope,
 } from './architecture.ts'
-// The package entry. Name each export; no `export *`.
 export {
   ArtifactId,
   FileId,

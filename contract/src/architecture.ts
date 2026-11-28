@@ -16,6 +16,8 @@ export const maxArchitectureBoundaries = 50
 export const maxArchitectureArrows = 400
 export const maxStackGroups = 20
 export const maxStackBadges = 50
+/** The most scopes of one project: `@system` and each repository of its `project.yaml`. */
+export const maxArchitectureScopes = 51
 
 /** The system scope: the project's repositories together. A RepositoryId cannot start with "@", so no repository has it. */
 export const systemScope = '@system'
@@ -138,10 +140,7 @@ export type ArchitectureScopeState = z.infer<typeof ArchitectureScopeState>
 
 /** The response of `GET /api/projects/:slug/architecture`: `@system`, then each repository in `project.yaml` order. */
 export const ArchitectureResponse = z.strictObject({
-  scopes: z
-    .array(ArchitectureScopeState)
-    .min(1)
-    .max(maxArchitectureBoundaries + 1),
+  scopes: z.array(ArchitectureScopeState).min(1).max(maxArchitectureScopes),
 })
 export type ArchitectureResponse = z.infer<typeof ArchitectureResponse>
 

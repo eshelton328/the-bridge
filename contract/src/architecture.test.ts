@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import {
   ArchitectureModel,
+  ArchitectureResponse,
   ArchitectureScope,
   ArchitectureScopeState,
   RegenerateRequest,
+  maxArchitectureScopes,
   RepositoryPath,
   systemScope,
 } from './architecture.ts'
@@ -80,6 +82,24 @@ describe('the Architecture contract', () => {
     expect(ArchitectureScopeState.safeParse({ ...kept, generatedAt: 'yesterday' }).success).toBe(false)
     expect(ArchitectureScopeState.safeParse({ ...kept, generatedAt: null }).success).toBe(false)
     expect(ArchitectureScopeState.safeParse({ ...state, commit: 'a'.repeat(40) }).success).toBe(false)
+  })
+
+  it('caps the scopes of a project', () => {
+    const state = {
+      scope: systemScope,
+      title: 'How the system works',
+      commit: null,
+      generatedAt: null,
+      stale: false,
+      running: false,
+    }
+    expect(
+      ArchitectureResponse.safeParse({ scopes: Array.from({ length: maxArchitectureScopes }, () => state) }).success,
+    ).toBe(true)
+    expect(
+      ArchitectureResponse.safeParse({ scopes: Array.from({ length: maxArchitectureScopes + 1 }, () => state) })
+        .success,
+    ).toBe(false)
   })
 
   it('takes an empty regenerate body only, and answers a busy run with 409', () => {
