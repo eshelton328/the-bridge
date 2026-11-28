@@ -40,11 +40,14 @@ const appModel = {
   ],
 }
 
-/** The fake Projects server with the project alpha and its scopes, and an empty Inbox, as `fetch`. */
-export function withServer() {
+/**
+ * The fake Projects server with the project alpha and its scopes (none with `{ scopes: false }`, so the fake's own
+ * default shows), and an empty Inbox, as `fetch`.
+ */
+export function withServer({ scopes: withScopes = true } = {}) {
   const projects = fakeProjectsServer(
     [{ slug: 'alpha', name: 'Alpha', purpose: 'Made up.', icon: null, pinned: false }],
-    { architecture: { alpha: { scopes, models: { 'example-app': appModel } } } },
+    { architecture: withScopes ? { alpha: { scopes, models: { 'example-app': appModel } } } : {} },
   )
   const inbox = fakeInboxServer({ items: [] })
   vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit) => {
