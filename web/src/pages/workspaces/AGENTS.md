@@ -717,6 +717,11 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   after each scroll and moves the scroll back so the first of them still
   there starts where it did, as Safari has no scroll anchoring of its own
   (`app/WorkspacesRewrittenReply.test.tsx`).
+  The desktop sidebar's Hide and Show mount the chat's pane again (D2's
+  chat alone, D1's workbench): the new pane takes the old one's watch and
+  place until that commit ends (`lib/remountGrace.ts`, `remountWatch.ts`),
+  so a toggle reads nothing and keeps the reader's entry
+  (`app/WorkspacesSidebarToggle.test.tsx`, NCC-175).
   Fixture chats keep their scroll, so the fidelity frames do not move.
   More than a screen above the end, a button labelled "Scroll to the
   newest message" sticks 8 above the transcript's bottom, centred on it,

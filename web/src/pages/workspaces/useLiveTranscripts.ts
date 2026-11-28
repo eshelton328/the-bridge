@@ -6,6 +6,7 @@
 import { useEffect, useMemo, useState, useSyncExternalStore } from 'react'
 import type { TranscriptWatch } from './blocks/ChatPane.tsx'
 import type * as LiveTranscript from './liveTranscript.ts'
+import { keptAcrossRemount } from './remountWatch.ts'
 import type { WorkspacesData } from './types.ts'
 
 const noViews: ReadonlyMap<string, LiveTranscript.TranscriptView> = new Map()
@@ -34,7 +35,8 @@ export function useLiveTranscripts(
     () =>
       shown === undefined
         ? undefined
-        : { watch: shown.watchTranscript, retry: shown.retryTranscript, older: shown.loadEarlier },
+        : // A pane that mounts again in a layout switch keeps its stream (NCC-175).
+          { watch: keptAcrossRemount(shown.watchTranscript), retry: shown.retryTranscript, older: shown.loadEarlier },
     [shown],
   )
   const withViews = useMemo(
