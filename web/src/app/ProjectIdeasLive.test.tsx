@@ -18,8 +18,9 @@ import { resetAllStores } from '../state/resetStores.ts'
 import { withInboxFeed } from './inboxLiveHelpers.ts'
 import { routeTree } from './routeTree.gen.ts'
 
-// A live project's Ideas tab (f-008 R10; NCC-132's live slice) with the contract-checked fakes only: the tab
-// (`?tab=ideas`) lists the project's idea records, and the Overview reads none.
+// A live project's Ideas tab and idea page (f-008 R10, R11; NCC-132's live slice) with the contract-checked fakes
+// only: the tab (`?tab=ideas`) lists the project's idea records, the Overview reads none, a row opens its page
+// (`?idea=`), and Back to Ideas returns.
 document.documentElement.classList.add('dark')
 document.documentElement.dataset.pandaTheme = 'viewscreen'
 
@@ -103,9 +104,30 @@ describe("A project's Ideas tab (R10)", () => {
       await expect.element(ideaList().getByText('Idea · In design · voice')).toBeVisible()
       expect(router.state.location.search).toEqual({ tab: 'ideas' })
       expect(projects.calls('ideas').map((r) => r.path)).toEqual(['/api/projects/alpha/ideas'])
+      await userEvent.click(ideaList().getByText('Sample idea about speech'))
+      await expect.element(page.getByRole('heading', { name: 'Sample idea about speech', level: 2 })).toBeVisible()
+      await expect.element(page.getByText('Which engine?')).toBeVisible()
+      expect(router.state.location.search).toEqual({ tab: 'ideas', idea: speech })
+      await userEvent.click(page.getByRole('button', { name: 'Back to Ideas' }))
+      await expect.element(ideaList().getByText('Sample proposal about tags')).toBeVisible()
+      expect(router.state.location.search).toEqual({ tab: 'ideas' })
       expect(getReports()).toEqual([])
     })
   }
+
+  it("opens an idea's page from its address, as a reload does", async () => {
+    const projects = withServer()
+    await open(`/projects/alpha?idea=${speech}`)
+    await expect.element(page.getByRole('heading', { name: 'Sample idea about speech', level: 2 })).toBeVisible()
+    expect(projects.calls('idea').map((r) => r.path)).toEqual([`/api/projects/alpha/ideas/${speech}`])
+    expect(projects.calls('chats')).toEqual([])
+  })
+
+  it('says an idea the server does not know is not found', async () => {
+    withServer()
+    await open('/projects/alpha?tab=ideas&idea=3f0c6a52-6a1e-4d55-9a4e-2f1b8f1d0a09')
+    await expect.element(page.getByRole('heading', { name: 'Page not found' })).toBeVisible()
+  })
 
   it('opens on the Ideas tab from its address, as a reload does, and goes back to the Overview', async () => {
     withServer()

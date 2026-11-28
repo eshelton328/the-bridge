@@ -5,8 +5,8 @@
 // live project only (liveQuickChat.ts): each send is a new start, Retry the last.
 // The Inbox panel loads again on each `inbox.changed` burst (no timer, NCC-138),
 // and the Chats panel too while the Overview tab is open (NCC-130).
-// The tab is in the address (`?tab=ideas`), so a reload and the browser's Back
-// keep it (R10).
+// The tab and the open idea are in the address (`?tab=ideas`, `?idea=`), so a
+// reload and the browser's Back keep them (R10, R11).
 // Run check (R9) keeps its busy state here, as the server has none.
 import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { useEffect, useRef, useState } from 'react'
@@ -29,11 +29,12 @@ export function ProjectPage() {
   const navigate = route.useNavigate()
   const [changed, setChanged] = useState<Changed>({ of: search.state, ui: {} })
   const ui = { ...state.ui, ...(changed.of === search.state ? changed.ui : {}), tab: search.tab ?? state.ui.tab }
-  // The search with `tab` as given; a key with no value is left out, so the address has none.
-  const view = (tab: ProjectsUi['tab']) => ({
+  // The search with `tab` and `idea` as given; a key with no value is left out, so the address has none.
+  const view = (tab: ProjectsUi['tab'], idea?: string) => ({
     ...(search.state === undefined ? {} : { state: search.state }),
     ...(search.source === undefined ? {} : { source: search.source }),
     ...(tab === undefined || tab === 'overview' ? {} : { tab }),
+    ...(idea === undefined ? {} : { idea }),
   })
   const live = state.data.live !== undefined
   const railBadge = useInboxBadge(state.data.railBadge, live)
@@ -157,6 +158,8 @@ export function ProjectPage() {
       }
       onRunDrift={state.data.live === undefined ? undefined : () => void runDrift()}
       onChatOpen={(chat) => void navigate({ to: '/workspaces', search: { chat } })}
+      onIdeaOpen={(idea) => void navigate({ search: view('ideas', idea) })}
+      onIdeaBack={() => void navigate({ search: view('ideas') })}
       onQuickChatRetry={() => {
         if (attemptRef.current !== undefined) void run(attemptRef.current)
       }}

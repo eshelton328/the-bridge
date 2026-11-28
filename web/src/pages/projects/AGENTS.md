@@ -58,11 +58,13 @@ T10b, M10 for the home, D01, T01, T01b, M01 for a project's page), read with
     (`app/ProjectOverviewPanels.test.tsx`). The server gives its kept PRs
     at once and runs gh behind the read; on `projects.changed` the page
     runs its loader again, so new PRs show with no reload (NCC-156).
-  - The Ideas tab (R10; NCC-132's live slice, plain on every size) is in
-    the address, `?tab=ideas`, so a reload and Back keep it. Only then
-    does the loader read `GET /api/projects/:slug/ideas`; the Overview
-    reads none. A list that misses shows one line ("Ideas not read — the
-    server answered 500"). `app/ProjectIdeasLive.test.tsx` checks it at
+  - The Ideas tab and an idea's page (R10, R11; NCC-132's live slice, plain
+    on every size) are in the address: `?tab=ideas` and `?idea=<id>`, so a
+    reload and Back keep them. Only then does the loader read
+    `GET /api/projects/:slug/ideas`, or `.../ideas/:id` for an idea, and no
+    chats; the Overview reads no ideas. An idea the server does not know is
+    not found; a list or an idea that misses shows one line ("Ideas not
+    read — the server answered 500"). `app/ProjectIdeasLive.test.tsx` checks it at
     1440, 1024 and 390 px with the fake.
   - The same read fills the Context drift panel (R9) from
     `GET /api/projects/:slug/drift`. Run check's POST answers when the check

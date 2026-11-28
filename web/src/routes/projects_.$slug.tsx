@@ -4,7 +4,7 @@ import { ProjectPage, loadProjectState, projectsSearch } from '../pages/projects
 
 export const Route = createFileRoute('/projects_/$slug')({
   validateSearch: projectsSearch,
-  loaderDeps: ({ search }) => ({ state: search.state, source: search.source, tab: search.tab }),
+  loaderDeps: ({ search }) => ({ state: search.state, source: search.source, tab: search.tab, idea: search.idea }),
   loader: ({ params, deps, abortController }) =>
     loadProjectState(params.slug, deps.state, deps.source, abortController.signal, deps),
   component: ProjectPage,

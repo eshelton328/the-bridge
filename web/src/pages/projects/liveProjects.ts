@@ -10,8 +10,10 @@
 // and the Inbox panel (R5) is the project's items of `GET /api/inbox`, read
 // with it and again on each `inbox.changed` (ProjectPage.tsx; NCC-138), as is
 // the Chats panel (R7, `GET /api/projects/:slug/chats`) on the Overview tab.
-// Its Ideas tab reads `GET /api/projects/:slug/ideas` only while it shows (R10),
-// and its Repositories tab `GET /api/projects/:slug/repositories` (increment two).
+// Its Ideas tab reads `GET /api/projects/:slug/ideas` only while it shows,
+// and an idea's page `GET /api/projects/:slug/ideas/:id` (R10, R11); an
+// idea the server does not know is not found. Its Repositories tab reads
+// `GET /api/projects/:slug/repositories` (increment two).
 // The Context drift panel (R9) reads the last check with it; Run check is `runDrift`.
 //
 // A read or a pin that misses shows one short line by status ("Projects not
@@ -25,6 +27,7 @@ import {
   ErrorBody,
   type ErrorKind,
   type Idea,
+  IdeaDetailResponse,
   IdeasResponse,
   ProjectChatsResponse,
   ProjectDetailResponse,
@@ -51,7 +54,7 @@ type ProjectsMiss = {
   readonly status: number | undefined
 }
 
-type ProjectsStep = 'list' | 'pin' | 'detail' | 'ideas' | 'repositories' | 'drift' | 'runDrift' | 'chats'
+type ProjectsStep = 'list' | 'pin' | 'detail' | 'ideas' | 'idea' | 'repositories' | 'drift' | 'runDrift' | 'chats'
 
 /** A miss for report(): a stable name and, in its message, only the step, the kind and the status. */
 class ProjectsMissError extends Error {
@@ -291,13 +294,35 @@ const ideaRow = (i: Idea, now: Date): IdeaRow => ({
   age: ageOf(i.updated, now),
 })
 
-/** `state` with project `slug`'s Ideas tab (R10); a list that misses shows no rows and its line. */
+/**
+ * `state` with project `slug`'s Ideas tab (R10), or with the idea `idea`'s page (R11) when it is set. A list that
+ * misses shows no rows and its line; an idea the server does not know keeps `ui.idea` with no page, so the loader
+ * says it is not found, and another miss shows the list's place with the miss's line.
+ */
 export async function withLiveIdeas(
   state: ProjectsState,
   slug: string,
+  idea: string | undefined,
   { signal }: { readonly signal?: AbortSignal | undefined } = {},
 ): Promise<ProjectsState> {
   const now = new Date()
+  if (idea !== undefined) {
+    const answer = await send(
+      (init) => api.api.projects[':slug'].ideas[':id'].$get({ param: { slug, id: idea } }, { init: { signal: init } }),
+      signal,
+    )
+    if (answer.ok) {
+      const read = IdeaDetailResponse.parse(readJson(answer.value))
+      return {
+        ...state,
+        ui: { ...state.ui, idea },
+        data: { ...state.data, idea: { row: ideaRow(read.idea, now), body: read.body } },
+      }
+    }
+    if (answer.error.kind === 'not-found') return { ...state, ui: { ...state.ui, idea } }
+    reportMiss('idea', answer.error)
+    return { ...state, data: { ...state.data, ideas: { rows: [], notRead: missLine('Idea not read', answer.error) } } }
+  }
   const answer = await send(
     (init) => api.api.projects[':slug'].ideas.$get({ param: { slug } }, { init: { signal: init } }),
     signal,
