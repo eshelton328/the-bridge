@@ -62,6 +62,12 @@ describe('ciRunsOf', () => {
     expect(runs[3]).toMatchObject({ end: at(9), minutes: 8 })
   })
 
+  it('gives no CI run for a commit whose workflow runs were all skipped', () => {
+    expect(
+      ciRunsOf([run('a', 'skipped', 0, 1, 'pull_request', 1), run('a', 'skipped', 0, 1, 'pull_request', 2)]),
+    ).toEqual([])
+  })
+
   it('picks the newest run of a workflow before it leaves out a skipped one', () => {
     const runs = ciRunsOf([
       run('a', 'success', 0, 10, 'pull_request', 1),
