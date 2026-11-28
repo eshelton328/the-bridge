@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { useState } from 'react'
 import { expect, userEvent } from 'storybook/test'
 import { ChatsPanel } from './ChatsPanel.tsx'
 
@@ -43,6 +44,34 @@ export const Filtered: Story = {
     await expect(canvas.getByText('1–6 of 6')).toBeVisible()
     await userEvent.type(canvas.getByRole('searchbox', { name: 'Search chats' }), 'nothing like this')
     await expect(canvas.getByText('No chat matches')).toBeVisible()
+  },
+}
+
+/** A refresh that drops the picked area's last chat clears that chip's filter (Codex P2 on #595). */
+function Refreshed(props: Parameters<typeof ChatsPanel>[0]) {
+  const [list, setList] = useState(rows)
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => {
+          setList(rows.slice(0, 12))
+        }}
+      >
+        Refresh
+      </button>
+      <ChatsPanel {...props} chats={{ rows: list }} />
+    </>
+  )
+}
+
+export const AreaGone: Story = {
+  render: (args) => <Refreshed {...args} />,
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByRole('button', { name: /area\/library/ }))
+    await expect(canvas.getByText('1–6 of 6')).toBeVisible()
+    await userEvent.click(canvas.getByRole('button', { name: 'Refresh' }))
+    await expect(canvas.getByText('1–10 of 12')).toBeVisible()
   },
 }
 

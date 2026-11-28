@@ -53,14 +53,16 @@ export function ChatsPanel({ chats, words, layout, onChatOpen }: ChatsPanelProps
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState<number>(pageSizes[0])
   const text = query.trim().toLowerCase()
+  const chips = areas(chats.rows)
+  // A refresh can drop an area's last chat and so its chip: a pick with no chip filters nothing.
+  const active = picked.filter((t) => chips.some((c) => c.value === t))
   const shown = chats.rows.filter(
     (c) =>
       (text === '' || `${c.title} ${c.workspace}`.toLowerCase().includes(text)) &&
-      (picked.length === 0 || picked.some((t) => c.tags?.includes(t))),
+      (active.length === 0 || active.some((t) => c.tags?.includes(t))),
   )
   const pages = Math.max(1, Math.ceil(shown.length / pageSize))
   const at = Math.min(page, pages)
-  const chips = areas(chats.rows)
   const read = chats.notRead === undefined
   return (
     <section className={column} aria-label={words.title}>
@@ -83,7 +85,7 @@ export function ChatsPanel({ chats, words, layout, onChatOpen }: ChatsPanelProps
             <FilterChips
               label={words.chips}
               items={chips}
-              value={picked}
+              value={active}
               size={layout === 'phone' ? 'phone' : 'compact'}
               onValueChange={(next) => {
                 setPicked(next)
