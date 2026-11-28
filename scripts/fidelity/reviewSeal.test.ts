@@ -4,7 +4,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { cpSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
@@ -17,9 +17,10 @@ import {
   reviewInputs,
   reviewRunProblem,
   sealedReviewGate,
+  sealedReviewText,
   sealReview,
 } from './reviewSeal.ts'
-import { referencesDir } from './references.ts'
+import { referencesDir, repoRoot } from './references.ts'
 
 const record = (findings: { priority: string }[] = []) => ({
   verdict: findings.length > 0 ? 'differences' : 'match',
@@ -235,4 +236,12 @@ void test('--sealed takes a current committed record as the reviewer gate', (t) 
   assert.match(gate().detail, /^gate:/)
   s.write('references/settings/D01/review.json', '{')
   assert.match(gate().detail, /^invalid:/)
+})
+
+void test('the seal step writes the record as biome formats it, a short array on one line (NCC-183)', () => {
+  // T10b's record has a one-item limits list, which JSON.stringify puts on three lines.
+  const committed = readFileSync(join(referencesDir, 'projects', 'T10b', 'review.json'), 'utf8')
+  const record: unknown = JSON.parse(committed)
+  assert.notEqual(`${JSON.stringify(record, null, 2)}\n`, committed)
+  assert.equal(sealedReviewText(repoRoot, record), committed)
 })

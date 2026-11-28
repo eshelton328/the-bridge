@@ -17,6 +17,18 @@ import { parseReview, pngReviewGate, type ReviewGate } from './pngReview.ts'
 import { frameKind, parsePngRef } from './references.ts'
 import { stateForFrame } from './storyServer.ts'
 
+/**
+ * The text of a sealed record as `pnpm format:check` wants it. `JSON.stringify` puts each item of a short array on its
+ * own line and biome joins them, so the record goes through the repository's own biome (NCC-183).
+ */
+export function sealedReviewText(root: string, record: unknown): string {
+  return execFileSync(join(root, 'node_modules', '.bin', 'biome'), ['format', `--stdin-file-path=${reviewFileName}`], {
+    cwd: root,
+    input: `${JSON.stringify(record, null, 2)}\n`,
+    encoding: 'utf8',
+  })
+}
+
 /** The name of the sealed record in a frame folder. */
 export const reviewFileName = 'review.json'
 
