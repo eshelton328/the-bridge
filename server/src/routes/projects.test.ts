@@ -18,7 +18,7 @@ import {
   RepositoryCiResponse,
 } from '@bridge/contract'
 import { err, ok } from '@bridge/shared'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createBrainProjects, createDiskDriftStore, createDiskPins } from '../adapters/diskProjects.ts'
 import { createFakeAgents } from '../adapters/fakeAgents.ts'
 import { createDiskWorktrees } from '../adapters/diskWorktrees.ts'
@@ -28,7 +28,7 @@ import { createNccCheck } from '../adapters/projectDrift.ts'
 import { createApp } from '../app.ts'
 import { memoryLogger } from '../logger.ts'
 import { createProjects } from '../services/projects.ts'
-import type { CiSource } from '../services/repositoryCi.ts'
+import type { CiSource, CiStore, KeptCi } from '../services/repositoryCi.ts'
 
 const local = { Host: '127.0.0.1:5181' }
 const json = { ...local, 'Content-Type': 'application/json' }
@@ -137,12 +137,12 @@ beforeEach(async () => {
 afterEach(() => rm(dir, { recursive: true, force: true }))
 
 /** An app on the fixture brain; a second call is a new server process on the same data folder. */
-function server(ci?: CiSource) {
+function server(ci?: CiSource, ciStore?: CiStore, brainSource = createBrainProjects(brain)) {
   const logger = memoryLogger()
   const agents = createFakeAgents(MachineId.parse('test-mac'))
   const projects = createProjects({
     agents,
-    brain: createBrainProjects(brain),
+    brain: brainSource,
     pins: createDiskPins(data),
     pulls: createGhPulls({ command: join(bin, 'gh'), env: process.env }),
     check: createNccCheck({ command: join(bin, 'ncc'), root: join(dir, 'root'), env: process.env }),
@@ -150,6 +150,7 @@ function server(ci?: CiSource) {
     facts: createGhRepositoryFacts({ command: join(bin, 'gh'), env: process.env }),
     worktrees: createDiskWorktrees(join(dir, 'root')),
     ...(ci === undefined ? {} : { ci }),
+    ...(ciStore === undefined ? {} : { ciStore }),
     ciLog: (event) => {
       if (event.kind === 'failed') logger.log.warn('ci read failed', { code: event.code })
       else logger.log.debug('ci read timed', { part: event.part, ms: event.ms })
@@ -157,7 +158,7 @@ function server(ci?: CiSource) {
     now: () => new Date('2026-11-22T09:00:00.000Z'),
   })
   const app = createApp({ agents, owner: 'owner@example.com', log: logger.log, projects })
-  return { app, logger, agents }
+  return { app, logger, agents, projects }
 }
 
 const read = async (app: ReturnType<typeof server>['app'], path: string) => app.request(path, { headers: local })
@@ -494,62 +495,145 @@ describe('/api/projects/:slug/repositories/:repo/ci', () => {
     return { source, calls }
   }
 
-  it('gives the window, run counts, run and merge times and the job medians, and keeps them', async () => {
-    const { source, calls } = fakeCi()
-    const { app } = server(source)
-    const res = await read(app, '/api/projects/example-project/repositories/example-repo/ci')
-    expect(res.status).toBe(200)
-    expect(RepositoryCiResponse.parse(await res.json()).ci).toEqual({
-      since: '2026-10-23T09:00:00.000Z',
-      runs: { green: 1, finished: 2 },
-      runMinutes: 4,
-      merge: { count: 1, medianHours: 2, p90Hours: 2 },
-      jobs: [{ name: 'lint', medianMinutes: 2 }],
-      jobRuns: 1,
+  const numbers = {
+    since: '2026-10-23T09:00:00.000Z',
+    runs: { green: 1, finished: 2 },
+    runMinutes: 4,
+    merge: { count: 1, medianHours: 2, p90Hours: 2 },
+    jobs: [{ name: 'lint', medianMinutes: 2 }],
+    jobRuns: 1,
+  }
+  const path = '/api/projects/example-project/repositories/example-repo/ci'
+  const answer = async (app: ReturnType<typeof server>['app']) =>
+    RepositoryCiResponse.parse(await (await read(app, path)).json())
+  /** A store in memory, with the repositories each prune kept. */
+  const memoryStore = (start: KeptCi | null = null) => {
+    let kept = start
+    const prunes: string[][] = []
+    const store: CiStore = {
+      load: () => Promise.resolve(kept),
+      save: (_r, next) => {
+        kept = next
+        return Promise.resolve(ok(undefined))
+      },
+      prune: (keep) => {
+        prunes.push(keep.map((r) => `${r.owner}/${r.name}`))
+        return Promise.resolve(ok(undefined))
+      },
+    }
+    return { store, prunes, kept: () => kept }
+  }
+  /** Resolves on the next `projects.changed` of the app's projects. */
+  const nextChange = (projects: ReturnType<typeof server>['projects']) =>
+    new Promise<void>((resolve) => {
+      const stop = projects.watch(() => {
+        stop()
+        resolve()
+      })
     })
-    await read(app, '/api/projects/example-project/repositories/example-repo/ci')
+
+  it('answers a first read at once as reading, then gives the numbers with their read time and keeps them', async () => {
+    const { source, calls } = fakeCi()
+    const { store, kept } = memoryStore()
+    const { app, projects } = server(source, store)
+    const changed = nextChange(projects)
+    const res = await read(app, path)
+    expect(res.status).toBe(200)
+    expect(RepositoryCiResponse.parse(await res.json())).toEqual({ ci: null, readAt: null, reading: true })
+    await changed
+    expect(await answer(app)).toEqual({ ci: numbers, readAt: '2026-11-22T09:00:00.000Z', reading: false })
+    expect(kept()).toEqual({ ci: numbers, readAt: '2026-11-22T09:00:00.000Z' })
     expect(calls).toEqual(['runs 2026-10-23T09:00:00.000Z', 'jobs 1'])
   })
 
-  it('is null for a repository off GitHub, and null with the code in the log when GitHub fails', async () => {
-    const { app } = server(fakeCi().source)
-    const local = await read(app, '/api/projects/example-project/repositories/local-repo/ci')
-    expect(RepositoryCiResponse.parse(await local.json()).ci).toBeNull()
-    const failing = server(fakeCi('exit-1').source)
-    const res = await read(failing.app, '/api/projects/example-project/repositories/example-repo/ci')
-    expect(res.status).toBe(200)
-    expect(RepositoryCiResponse.parse(await res.json()).ci).toBeNull()
-    expect(failing.logger.lines()).toContainEqual(expect.objectContaining({ msg: 'ci read failed', code: 'exit-1' }))
+  it('answers from the store after a restart with no read, and reads again in the background once it is 10 minutes old', async () => {
+    const fresh = memoryStore({ ci: numbers, readAt: '2026-11-22T08:55:00.000Z' })
+    const first = fakeCi()
+    expect(await answer(server(first.source, fresh.store).app)).toEqual({
+      ci: numbers,
+      readAt: '2026-11-22T08:55:00.000Z',
+      reading: false,
+    })
+    expect(first.calls).toEqual([])
+    const old = memoryStore({ ci: numbers, readAt: '2026-11-22T08:40:00.000Z' })
+    const second = fakeCi()
+    const { app } = server(second.source, old.store)
+    expect(await answer(app)).toEqual({ ci: numbers, readAt: '2026-11-22T08:40:00.000Z', reading: true })
+    await vi.waitFor(() => {
+      expect(old.kept()?.readAt).toBe('2026-11-22T09:00:00.000Z')
+    })
+    expect(second.calls).toHaveLength(2)
   })
 
-  it('is null with the code threw when the CI source throws, and reads again on the next request', async () => {
+  it('sends one projects.changed at the end of each refresh, also when its numbers are equal', async () => {
+    const same = memoryStore({ ci: numbers, readAt: '2026-11-22T08:40:00.000Z' })
+    const { app, projects } = server(fakeCi().source, same.store)
+    let changes = 0
+    projects.watch(() => {
+      changes++
+    })
+    expect((await answer(app)).reading).toBe(true)
+    await vi.waitFor(() => {
+      expect(changes).toBe(1)
+    })
+    expect(await answer(app)).toEqual({ ci: numbers, readAt: '2026-11-22T09:00:00.000Z', reading: false })
+    expect(changes).toBe(1)
+  })
+
+  it('keeps the old answer when a refresh fails or throws, with the code in the log', async () => {
+    const before = { ci: { ...numbers, jobRuns: 9 }, readAt: '2026-11-22T08:40:00.000Z' }
+    const failing = memoryStore(before)
+    const one = server(fakeCi('exit-1').source, failing.store)
+    await answer(one.app)
+    await vi.waitFor(() => {
+      expect(one.logger.lines()).toContainEqual(expect.objectContaining({ msg: 'ci read failed', code: 'exit-1' }))
+    })
+    // The failed refresh ended, and it holds the next read off, so the old answer comes with no read.
+    await vi.waitFor(async () => {
+      expect(await answer(one.app)).toEqual({ ...before, reading: false })
+    })
+    expect(failing.kept()).toEqual(before)
+    const throwing: CiSource = { ...fakeCi().source, runs: () => Promise.reject(new Error('gh went away')) }
+    const two = server(throwing, memoryStore(before).store)
+    expect(await answer(two.app)).toEqual({ ...before, reading: true })
+    await vi.waitFor(() => {
+      expect(two.logger.lines()).toContainEqual(expect.objectContaining({ msg: 'ci read failed', code: 'threw' }))
+    })
+  })
+
+  it('ends a first read that fails as not read, with an event, and reads no more for 10 minutes', async () => {
     let reads = 0
-    const throwing: CiSource = {
-      ...fakeCi().source,
-      runs: () => {
+    const { source } = fakeCi('exit-1')
+    const counted: CiSource = {
+      ...source,
+      runs: (r, since) => {
         reads++
-        return Promise.reject(new Error('gh went away'))
+        return source.runs(r, since)
       },
     }
-    const { app, logger } = server(throwing)
-    const res = await read(app, '/api/projects/example-project/repositories/example-repo/ci')
-    expect(res.status).toBe(200)
-    expect(RepositoryCiResponse.parse(await res.json()).ci).toBeNull()
-    expect(logger.lines()).toContainEqual(expect.objectContaining({ msg: 'ci read failed', code: 'threw' }))
-    await read(app, '/api/projects/example-project/repositories/example-repo/ci')
-    expect(reads).toBe(2)
+    const { app, projects } = server(counted, memoryStore().store)
+    const changed = nextChange(projects)
+    expect((await answer(app)).reading).toBe(true)
+    await changed
+    expect(await answer(app)).toEqual({ ci: null, readAt: null, reading: false })
+    expect(await answer(app)).toEqual({ ci: null, readAt: null, reading: false })
+    expect(reads).toBe(1)
   })
 
   it('logs the time of each part at debug, with no owner or name', async () => {
-    const { app, logger } = server(fakeCi().source)
-    await read(app, '/api/projects/example-project/repositories/example-repo/ci')
+    const { app, projects, logger } = server(fakeCi().source, memoryStore().store)
+    const changed = nextChange(projects)
+    await answer(app)
+    await changed
     const timed = logger.lines().filter((l) => l.msg === 'ci read timed')
     expect(timed.map((l) => l.part).sort()).toEqual(['jobs', 'merged', 'runs'])
     expect(JSON.stringify(timed)).not.toContain('example')
   })
 
-  it('is 404 for a repository the project does not have', async () => {
+  it('is not read for a repository off GitHub, and 404 for a repository the project does not have', async () => {
     const { app } = server(fakeCi().source)
+    const local = await read(app, '/api/projects/example-project/repositories/local-repo/ci')
+    expect(RepositoryCiResponse.parse(await local.json())).toEqual({ ci: null, readAt: null, reading: false })
     const res = await read(app, '/api/projects/example-project/repositories/no-repo/ci')
     expect(ErrorBody.parse(await res.json()).error.kind).toBe('not-found')
     expect((await read(app, '/api/projects/no-such-project/repositories/example-repo/ci')).status).toBe(404)

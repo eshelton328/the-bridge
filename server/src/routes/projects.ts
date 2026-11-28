@@ -102,7 +102,7 @@ export function projectsRoutes(projects: Projects, log: Logger) {
       const read = await projects.ci(slug.data, repo.data)
       if (!read.ok) return failed(c, read.error)
       if (read.value === 'notFound') return noRepository(c)
-      return c.json(RepositoryCiResponse.parse(read.value.response), 200)
+      return c.json(RepositoryCiResponse.parse(read.value), 200)
     })
     .get('/:slug/drift', async (c) => {
       const slug = slugOf(c)

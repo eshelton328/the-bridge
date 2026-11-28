@@ -145,5 +145,13 @@ from the outside world.
   pull_request workflow runs of one commit, the newest run of each
   workflow only (a PR title edit runs the title check again), timed by
   its longest workflow run, and take the job medians from the newest 10
-  green ones; an answer is kept 10 minutes and shared by the requests
-  that cross, a GitHub fault is not kept (`repositoryCi.test.ts`).
+  green ones (`repositoryCi.test.ts`). A request gets the kept answer at
+  once, from memory or the `CiStore` (so a restart does not make the
+  read cold); with none, or one 10 minutes old, it also starts one read
+  in the background for that repository. A read that throws is `threw`,
+  and a failed read keeps the old answer; no read of the repository starts
+  for 10 minutes after a failed one, so a GitHub fault and its event never
+  loop. The watchers hear of each read that ends, good or failed, so a
+  page that showed `reading` reads the end and the new `readAt`. Each
+  part's time goes to `ciLog`, with no owner or name
+  (`../routes/projects.test.ts`).
