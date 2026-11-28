@@ -11,7 +11,12 @@ import { createDiskArtifactStore } from './adapters/diskArtifacts.ts'
 import { createDiskFiles } from './adapters/diskFiles.ts'
 import { createBrainRequests, createDiskInboxMarks, watchBrainInbox } from './adapters/diskInbox.ts'
 import { createDiskPushStore } from './adapters/diskPush.ts'
-import { createBrainProjects, createDiskDriftStore, createDiskPins } from './adapters/diskProjects.ts'
+import {
+  createBrainProjects,
+  createDiskCiStore,
+  createDiskDriftStore,
+  createDiskPins,
+} from './adapters/diskProjects.ts'
 import { createDiskWorktrees } from './adapters/diskWorktrees.ts'
 import { createGhCi } from './adapters/ghCi.ts'
 import { createGhPulls } from './adapters/ghPulls.ts'
@@ -105,6 +110,7 @@ const projects = createProjects({
   drift: createDiskDriftStore(projectsRoot),
   facts: createGhRepositoryFacts({ command: 'gh', env: process.env }),
   ci: createGhCi({ command: 'gh', env: process.env }),
+  ciStore: createDiskCiStore(projectsRoot),
   // A GitHub fault is a null the page shows: its code goes to the log, and each part's time at debug.
   ciLog: (event) => {
     if (event.kind === 'failed') log.warn('ci read failed', { code: event.code })

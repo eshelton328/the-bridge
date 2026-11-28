@@ -166,10 +166,14 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
   open PR and worktree counts, each null when not read or off GitHub, and
   `unread` names the parts not read. `RepositoryCi` gives a repository's
   CI numbers since `since` (30 days, or the oldest run one read gives),
-  each time null (never 0) with no data; the response's `ci` null means
-  not read, as `unread` does.
+  each time null (never 0) with no data. The CI response gives the kept
+  answer at once: `ci` null with `reading` false means not read, as
+  `unread` does; `ci` null with `reading` true means the first read runs;
+  `ci` with `reading` true means a refresh runs. `readAt`, the time of the
+  GitHub read, is null exactly when `ci` is null.
   `projects.changed` on `/api/events` says that a
-  project's open PRs changed: read the project again (NCC-156). Increment four: a create or edit body holds a
+  project's open PRs or a repository's CI answer changed: read the
+  project and its CI numbers again (NCC-156); its data is `{}`. Increment four: a create or edit body holds a
   one-line name and purpose (no control character, the contract's
   limits) and an icon or null, never a slug or a path. The Queue
   (`queue.ts`): an item is named by a `QueueItemId` (16 hex characters of

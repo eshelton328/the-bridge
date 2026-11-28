@@ -21,6 +21,7 @@ import type {
   ProjectsResponse,
   ProjectSummary,
   RepositoriesResponse,
+  RepositoryCi,
   RepositoryCiResponse,
   RepositoryId,
   RepositoryPart,
@@ -31,7 +32,16 @@ import type {
 import { ciWindowDays, maxDriftFindings } from '@bridge/contract'
 import { err, ok, type Result } from '@bridge/shared'
 import type { AgentPort, AgentPortError } from './agentPort.ts'
-import { type CiSource, ciOf, ciRunsOf, type JobRun, jobRunsOf, windowOf } from './repositoryCi.ts'
+import {
+  type CiSource,
+  type CiStore,
+  ciOf,
+  ciRunsOf,
+  type JobRun,
+  jobRunsOf,
+  type KeptCi,
+  windowOf,
+} from './repositoryCi.ts'
 
 export type ProjectFault = { readonly reason: 'failed'; readonly code: string }
 
@@ -108,6 +118,8 @@ type Deps = {
   readonly worktrees?: WorktreeCount
   /** GitHub's CI runs, merged PRs and jobs; with none, each CI read is null. */
   readonly ci?: CiSource
+  /** The last CI answer of each repository across restarts; with none, it is kept in memory only. */
+  readonly ciStore?: CiStore
   /** Where a CI read tells a fault code or a part's duration; never a repository's owner or name. */
   readonly ciLog?: CiLog
   /** The chats and their tags; none (each chats read fails) where an app has no agents to give. */
@@ -116,9 +128,6 @@ type Deps = {
 }
 
 type NotFound = 'notFound'
-
-/** A CI read's answer, and the fault code of a GitHub read that failed, else null. */
-type CiOutcome = { readonly response: RepositoryCiResponse; readonly code: string | null }
 
 /** What a CI read tells the log: a fault code, or the milliseconds of one part. */
 type CiLog = (
@@ -139,8 +148,11 @@ export type Projects = {
   drift(slug: ProjectSlug): Promise<Result<DriftResponse | NotFound, ProjectFault>>
   /** The Repositories tab (R2, R5, R8): a part that does not read is named in `unread`, never a fault. */
   repositories(slug: ProjectSlug): Promise<Result<RepositoriesResponse | NotFound, ProjectFault>>
-  /** A repository's CI numbers (R4, R6), kept `ciKeptMs`; null when GitHub did not answer. */
-  ci(slug: ProjectSlug, repository: RepositoryId): Promise<Result<CiOutcome | NotFound, ProjectFault>>
+  /**
+   * A repository's CI numbers (R4, R6): the kept answer at once, and one read in the background when there is none or
+   * it is `ciKeptMs` old.
+   */
+  ci(slug: ProjectSlug, repository: RepositoryId): Promise<Result<RepositoryCiResponse | NotFound, ProjectFault>>
   runDrift(slug: ProjectSlug): Promise<Result<DriftRunOutcome | NotFound, ProjectFault>>
   /** A fault of the agents is the port's own, so the route answers it as the workspaces routes do. */
   chats(slug: ProjectSlug): Promise<Result<ProjectChatsResponse | NotFound, ProjectFault | AgentPortError>>
@@ -211,30 +223,8 @@ export function keptPulls(source: PullSource, now: () => Date, changed: () => vo
   }
 }
 
-/** How long a repository's CI numbers are kept before gh runs again for it. */
+/** How old a repository's kept CI numbers may be before a read starts a new gh read for it. */
 const ciKeptMs = 600_000
-
-/**
- * One answer for each key, kept `keptMs` and shared by the requests that ask while it runs; an answer `keep` refuses
- * is not kept, so the next request reads again. A read that throws is not kept either.
- */
-function keptAnswers<T>(keptMs: number, now: () => Date, keep: (answer: T) => boolean) {
-  const kept = new Map<string, { readonly at: number; readonly answer: Promise<T> }>()
-  return (key: string, read: () => Promise<T>): Promise<T> => {
-    const at = now().getTime()
-    const last = kept.get(key)
-    if (last !== undefined && at - last.at < keptMs) return last.answer
-    const entry = { at, answer: read() }
-    kept.set(key, entry)
-    const drop = () => {
-      if (kept.get(key) === entry) kept.delete(key)
-    }
-    void entry.answer.then((answer) => {
-      if (!keep(answer)) drop()
-    }, drop)
-    return entry.answer
-  }
-}
 
 /** How long a repository's visibility and release are kept before gh runs again for it. */
 export const aboutKeptMs = 300_000
@@ -294,34 +284,35 @@ export function createProjects({
   facts: factsSource,
   worktrees,
   ci,
+  ciStore,
   ciLog = () => undefined,
   now = () => new Date(),
 }: Deps): Projects {
-  const keptCi = keptAnswers<CiOutcome>(ciKeptMs, now, (answer) => answer.code === null)
   const watchers = new Set<() => void>()
-  const pulls = keptPulls(source, now, () => {
+  const changed = () => {
     for (const watcher of [...watchers]) watcher()
-  })
+  }
+  const pulls = keptPulls(source, now, changed)
   const facts = factsSource === undefined ? undefined : keptFacts(factsSource, now)
   const notRead = Promise.resolve(err({ reason: 'failed' as const, code: 'no-source' }))
 
+  type GithubName = { readonly owner: string; readonly name: string }
+  type CiEntry = { kept: KeptCi | null; loaded: Promise<void> | null; running: boolean }
+  const ciEntries = new Map<string, CiEntry>()
   const timed = async <T>(part: 'runs' | 'merged' | 'jobs', read: Promise<T>): Promise<T> => {
     const start = performance.now()
     const value = await read
     ciLog({ kind: 'timed', part, ms: Math.round(performance.now() - start) })
     return value
   }
-  const readCi = async (github: { readonly owner: string; readonly name: string }): Promise<CiOutcome> => {
-    const none = (code: string) => ({ response: { ci: null }, code })
-    const source = ci
-    if (source === undefined) return none('no-source')
+  const readCi = async (source: CiSource, github: GithubName): Promise<Result<RepositoryCi, ProjectFault>> => {
     const since = new Date(now().getTime() - ciWindowDays * 86_400_000).toISOString()
     const [runs, merged] = await Promise.all([
       timed('runs', source.runs(github, since)),
       timed('merged', source.merged(github, since)),
     ])
-    if (!runs.ok) return none(runs.error.code)
-    if (!merged.ok) return none(merged.error.code)
+    if (!runs.ok) return runs
+    if (!merged.ok) return merged
     const ciRuns = ciRunsOf(runs.value)
     const reads = await timed(
       'jobs',
@@ -331,12 +322,39 @@ export function createProjects({
     for (const read of reads) {
       const got: JobRun[] = []
       for (const r of read) {
-        if (!r.ok) return none(r.error.code)
+        if (!r.ok) return r
         got.push(...r.value)
       }
       jobs.push(got)
     }
-    return { response: { ci: ciOf(windowOf(since, runs.value), ciRuns, merged.value, jobs) }, code: null }
+    return ok(ciOf(windowOf(since, runs.value), ciRuns, merged.value, jobs))
+  }
+  /**
+   * One read of a repository in the background, as `keptPulls` runs one: a read that throws is the fault `threw`, so
+   * no rejection is left unhandled, and a failed read keeps the old answer. The watchers hear of it when the numbers
+   * differ from the kept ones, or when a first read ends, so the page stops showing that it reads.
+   */
+  const refreshCi = (source: CiSource, entry: CiEntry, github: GithubName) => {
+    entry.running = true
+    const readAt = now().toISOString()
+    void readCi(source, github)
+      .catch((): Result<RepositoryCi, ProjectFault> => err({ reason: 'failed', code: 'threw' }))
+      .then(async (read) => {
+        const before = entry.kept
+        if (!read.ok) {
+          ciLog({ kind: 'failed', code: read.error.code })
+          return before === null
+        }
+        entry.kept = { ci: read.value, readAt }
+        const saved = await ciStore?.save(github, entry.kept)
+        if (saved !== undefined && !saved.ok) ciLog({ kind: 'failed', code: saved.error.code })
+        return before === null || JSON.stringify(before.ci) !== JSON.stringify(read.value)
+      })
+      .catch(() => false)
+      .then((news) => {
+        entry.running = false
+        if (news) changed()
+      })
   }
 
   const sectionOf = async (slug: ProjectSlug, repository: ProjectRepository): Promise<RepositorySection> => {
@@ -488,13 +506,22 @@ export function createProjects({
       const repository = record.value.repositories.find((r) => r.id === id)
       if (repository === undefined) return ok('notFound')
       const github = repository.github
-      if (github === null) return ok({ response: { ci: null }, code: null })
-      // A read that throws is the fault `threw`, so no rejection is left unhandled; its message is not kept.
-      const read = () => readCi(github).catch((): CiOutcome => ({ response: { ci: null }, code: 'threw' }))
-      const outcome = await keptCi(`${github.owner}/${github.name}`, read)
-      // GitHub's fault is a null the page shows; its code goes to the log only.
-      if (outcome.code !== null && outcome.code !== 'no-source') ciLog({ kind: 'failed', code: outcome.code })
-      return ok(outcome)
+      if (github === null) return ok({ ci: null, readAt: null, reading: false })
+      const key = `${github.owner}/${github.name}`.toLowerCase()
+      const entry = ciEntries.get(key) ?? { kept: null, loaded: null, running: false }
+      ciEntries.set(key, entry)
+      // The store is read once for each repository; a server that restarts answers from it at once.
+      entry.loaded ??= (ciStore?.load(github) ?? Promise.resolve(null)).then(
+        (stored) => {
+          entry.kept ??= stored
+        },
+        () => undefined,
+      )
+      await entry.loaded
+      const kept = entry.kept
+      const old = kept === null || now().getTime() - Date.parse(kept.readAt) >= ciKeptMs
+      if (ci !== undefined && !entry.running && old) refreshCi(ci, entry, github)
+      return ok({ ci: kept?.ci ?? null, readAt: kept?.readAt ?? null, reading: entry.running })
     },
 
     async runDrift(slug) {

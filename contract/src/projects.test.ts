@@ -13,6 +13,7 @@ import {
   ProjectSummary,
   RunDriftRequest,
   SlugResponse,
+  RepositoryCiResponse,
 } from './projects.ts'
 
 const card = { slug: 'example-project', name: 'Example', purpose: 'marker-5150', icon: null, pinned: false }
@@ -122,5 +123,36 @@ describe('the increment four contract', () => {
   it('takes strict empty bodies only', () => {
     expect(MakeFeatureRequest.safeParse({}).success).toBe(true)
     expect(MakeFeatureRequest.safeParse({ path: 'x' }).success).toBe(false)
+  })
+})
+
+describe('RepositoryCiResponse', () => {
+  const ci = {
+    since: '2026-10-23T09:00:00.000Z',
+    runs: { green: 1, finished: 2 },
+    runMinutes: 4,
+    merge: { count: 1, medianHours: 2, p90Hours: 2 },
+    jobs: [],
+    jobRuns: 0,
+  }
+
+  it('takes ci null with reading false (not read) and with reading true (the first read runs)', () => {
+    expect(RepositoryCiResponse.safeParse({ ci: null, readAt: null, reading: false }).success).toBe(true)
+    expect(RepositoryCiResponse.safeParse({ ci: null, readAt: null, reading: true }).success).toBe(true)
+  })
+
+  it('takes numbers with their read time, with reading true while a refresh runs', () => {
+    expect(RepositoryCiResponse.safeParse({ ci, readAt: '2026-11-22T09:00:00.000Z', reading: false }).success).toBe(
+      true,
+    )
+    expect(RepositoryCiResponse.safeParse({ ci, readAt: '2026-11-22T09:00:00.000Z', reading: true }).success).toBe(true)
+  })
+
+  it('refuses a read time with no numbers, numbers with no read time, and a missing reading', () => {
+    expect(
+      RepositoryCiResponse.safeParse({ ci: null, readAt: '2026-11-22T09:00:00.000Z', reading: false }).success,
+    ).toBe(false)
+    expect(RepositoryCiResponse.safeParse({ ci, readAt: null, reading: false }).success).toBe(false)
+    expect(RepositoryCiResponse.safeParse({ ci: null, readAt: null }).success).toBe(false)
   })
 })

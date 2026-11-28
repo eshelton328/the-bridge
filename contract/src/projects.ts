@@ -155,11 +155,24 @@ export const RepositoryCi = z.strictObject({
 export type RepositoryCi = z.infer<typeof RepositoryCi>
 
 /**
- * The response of `GET /api/projects/:slug/repositories/:repo/ci`. `ci` null means not read, as a part in a
- * `RepositorySection`'s `unread`: GitHub did not answer, or the repository is not on it. The page shows "not read",
- * never "no CI".
+ * The response of `GET /api/projects/:slug/repositories/:repo/ci`: the last answer the server keeps, at once.
+ * - `ci` null with `reading` false: not read, as a part in a `RepositorySection`'s `unread` (GitHub did not
+ *   answer, or the repository is not on it). The page shows "not read", never "no CI".
+ * - `ci` null with `reading` true: the first read of the repository runs; `projects.changed` follows when it ends.
+ * - `ci` not null with `reading` true: a refresh runs; the page shows the kept numbers meanwhile.
+ * `readAt` is the time of the GitHub read that gave `ci`, null exactly when `ci` is null; the page shows it when
+ * it is older than 10 minutes.
  */
-export const RepositoryCiResponse = z.strictObject({ ci: RepositoryCi.nullable() })
+export const RepositoryCiResponse = z
+  .strictObject({
+    ci: RepositoryCi.nullable(),
+    readAt: z.iso.datetime({ offset: true }).nullable(),
+    reading: z.boolean(),
+  })
+  .refine((response) => (response.ci === null) === (response.readAt === null), {
+    message: 'readAt is null exactly when ci is null',
+    path: ['readAt'],
+  })
 export type RepositoryCiResponse = z.infer<typeof RepositoryCiResponse>
 
 /** A chat tag the app reads (d-120): the key `project`, `area` or `role`, and a value written as a slug is. */
