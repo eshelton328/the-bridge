@@ -125,6 +125,8 @@ export {
   SlugResponse,
   AgentsMdKind,
   RepositoryDriftFinding,
+  RepositoryPath,
+  RepositoryPathOrRoot,
   RepositoryDriftResponse,
   RepositoryDriftRun,
 } from './projects.ts'

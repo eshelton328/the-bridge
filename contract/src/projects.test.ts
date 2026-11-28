@@ -13,6 +13,7 @@ import {
   ProjectSlug,
   ProjectSummary,
   RepositoryDriftRun,
+  RepositoryPath,
   RunDriftRequest,
   SlugResponse,
   RepositoryCiResponse,
@@ -101,6 +102,8 @@ describe('the projects contract', () => {
     })
     expect(RepositoryDriftRun.safeParse(run('contract/src/AGENTS.md')).success).toBe(true)
     expect(RepositoryDriftRun.safeParse(run('.', 'missing')).success).toBe(true)
+    expect(RepositoryPath.safeParse('.').success).toBe(false)
+    expect(RepositoryPath.safeParse('web/src').success).toBe(true)
     for (const path of [
       '/etc/AGENTS.md',
       '../AGENTS.md',
