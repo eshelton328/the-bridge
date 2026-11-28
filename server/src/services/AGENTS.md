@@ -158,7 +158,8 @@ from the outside world.
   that succeeded, never after a failed one. Each part's time goes to
   `ciLog`, with no owner or name (`../routes/projects.test.ts`). A
   repository's drift run syncs its snapshot and runs the `agents-md` check under one
-  lock for each snapshot, so a sync never changes files a check reads;
+  lock for each snapshot (`snapshotLock.ts`, shared with the Architecture
+  runner), so a sync never changes files a check reads;
   a second run of that snapshot while one waits or runs gets its answer.
   A repository off GitHub, a sync fault or a check fault is a `failed`
   run with its code for the log, never a fault (`../routes/projects.test.ts`).
@@ -169,7 +170,10 @@ from the outside world.
   characters from each text, keeps only a model the contract takes with
   a 40-hex commit, prunes after a list read that succeeded and tells the
   watchers at each run end. `running` is in memory only. A log keeps the
-  code only (`architecture.test.ts`).
+  code only (`architecture.test.ts`). `architectureRunner.ts` syncs a
+  repository scope's snapshot and reads it with a `SnapshotReader`, both
+  under that snapshot's lock; `@system` fails `not-built` until A2, and a
+  repository off GitHub `no-github` (`architectureRunner.test.ts`).
 - The QA tab (f-008 increment three): `qaAsk.ts` reads the newest Linear
   comment whose first line is `QA check` as data. Its `Repository:` counts
   only when `project.yaml` lists it, and its `PR:` only as a positive

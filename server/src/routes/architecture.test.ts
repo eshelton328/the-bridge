@@ -12,7 +12,14 @@ import { describe, expect, it } from 'vitest'
 import { createFakeAgents } from '../adapters/fakeAgents.ts'
 import { createApp } from '../app.ts'
 import { memoryLogger } from '../logger.ts'
-import { type ArchitectureStore, createArchitecture, type KeptDiagram } from '../services/architecture.ts'
+import {
+  type ArchitectureRunner,
+  type ArchitectureStore,
+  createArchitecture,
+  type KeptDiagram,
+} from '../services/architecture.ts'
+import { createSnapshotRunner } from '../services/architectureRunner.ts'
+import { createSnapshotLock } from '../services/snapshotLock.ts'
 import type { ProjectFault } from '../services/projects.ts'
 
 const local = { Host: '127.0.0.1:5181' }
@@ -26,7 +33,7 @@ const model: ArchitectureModel = {
 }
 type RunAnswer = Result<{ readonly model: ArchitectureModel; readonly commit: string }, ProjectFault>
 
-function setup(repositories = [{ id: 'example-repo', role: 'the app', github: null }]) {
+function setup(runner?: ArchitectureRunner, repositories = [{ id: 'example-repo', role: 'the app', github: null }]) {
   const files = new Map<string, KeptDiagram>()
   const store: ArchitectureStore = {
     load: (key) => Promise.resolve(files.get(`${key.slug} ${key.scope}`) ?? null),
@@ -54,7 +61,7 @@ function setup(repositories = [{ id: 'example-repo', role: 'the app', github: nu
       ideas: () => Promise.resolve(ok([])),
     },
     store,
-    runner: { run: () => new Promise<RunAnswer>((resolve) => pending.push(resolve)) },
+    runner: runner ?? { run: () => new Promise<RunAnswer>((resolve) => pending.push(resolve)) },
   })
   const app = createApp({
     agents: createFakeAgents(MachineId.parse('test-mac')),
@@ -108,7 +115,7 @@ describe('/api/projects/:slug/architecture', () => {
 
   it('lists a project of more repositories than the scope cap, and 404s a repository past it', async () => {
     const many = Array.from({ length: 51 }, (_, i) => ({ id: `repo-${String(i)}`, role: 'a repository', github: null }))
-    const { app } = setup(many)
+    const { app } = setup(undefined, many)
     const res = await app.request('/api/projects/example-project/architecture', { headers: local })
     expect(res.status).toBe(200)
     const scopes = ArchitectureResponse.parse(await res.json()).scopes.map((s) => s.scope)
@@ -117,5 +124,20 @@ describe('/api/projects/:slug/architecture', () => {
     expect((await app.request('/api/projects/example-project/architecture/repo-50', { headers: local })).status).toBe(
       404,
     )
+  })
+
+  it('answers a @system run of the snapshot runner, which fails until A2, with a failed run, never a 500', async () => {
+    const sync = () => Promise.resolve(ok({ dir: '/snapshots/x', commit: 'c'.repeat(40) }))
+    const runner = createSnapshotRunner({
+      snapshots: { sync },
+      lock: createSnapshotLock(),
+      reader: { read: () => Promise.resolve(ok(model)) },
+    })
+    const { app, architecture, regenerate } = setup(runner)
+    expect((await regenerate('%40system')).status).toBe(202)
+    await architecture.idle()
+    const read = await app.request('/api/projects/example-project/architecture/%40system', { headers: local })
+    expect(read.status).toBe(200)
+    expect(await read.json()).toMatchObject({ state: { commit: null, generatedAt: null, running: false }, model: null })
   })
 })

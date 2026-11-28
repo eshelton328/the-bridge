@@ -41,6 +41,7 @@ import { createArtifacts } from './services/artifacts.ts'
 import { createFiles } from './services/files.ts'
 import { createInbox } from './services/inbox.ts'
 import { createProjects } from './services/projects.ts'
+import { createSnapshotLock } from './services/snapshotLock.ts'
 import { createQa } from './services/qa.ts'
 import { createLinearIssues } from './adapters/linearGraphql.ts'
 import { createPushSeen } from './services/push.ts'
@@ -109,6 +110,8 @@ const inbox = createInbox({
 // `ncc check` on the chat tree, and a project's chats by their herdr tags; the pins and the last drift runs go beside
 // the database too (f-008).
 const projectsRoot = join(dirname(dbFile), 'projects')
+// One lock for each snapshot, which the drift check holds now and the Architecture runner will hold with A1b-2.
+const snapshotLock = createSnapshotLock()
 const projects = createProjects({
   brain: brainProjects,
   pins: createDiskPins(projectsRoot),
@@ -130,6 +133,7 @@ const projects = createProjects({
   },
   worktrees: createDiskWorktrees(config.value.chatRoot),
   agents,
+  snapshotLock,
 })
 // The Architecture tab keeps each scope's diagram beside the database; until the snapshot runner (A1b) each run
 // fails with `not-built`, and its code goes to the log.
