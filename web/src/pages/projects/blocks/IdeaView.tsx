@@ -1,9 +1,10 @@
 // An idea's page on a project's page (R11, NCC-132's live slice): Back to
 // Ideas, the title with its kind, state and tags, and the record's text as
-// Markdown, which holds its open questions and links. Plain on every size for
+// Markdown in a `MarkdownView` (links underlined, list markers), which holds
+// its open questions and links. Plain on every size for
 // now; the frames (D09, T09, M09) and "Chat about this idea" are later
 // issues'. Props only.
-import { BackRow } from '@eshelton328/component-library-1701'
+import { BackRow, MarkdownView } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import { MarkdownText } from '../../../blocks/MarkdownText.tsx'
 import type { IdeaPage, ProjectPageWords } from '../types.ts'
@@ -30,7 +31,9 @@ export function IdeaView({ idea, words, onBack }: IdeaViewProps) {
         <h2 className={title}>{idea.row.title}</h2>
         <p className={meta}>{ideaMeta(idea.row, words)}</p>
       </div>
-      <MarkdownText text={bodyOf(idea.body)} />
+      <MarkdownView padding="none">
+        <MarkdownText text={bodyOf(idea.body)} />
+      </MarkdownView>
     </article>
   )
 }

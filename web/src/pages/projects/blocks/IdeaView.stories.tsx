@@ -49,3 +49,13 @@ export const Default: Story = {
     await expect(args.onBack).toHaveBeenCalled()
   },
 }
+
+export const LinksAndLists: Story = {
+  args: { idea: { ...meta.args.idea, body: 'See [the spec](https://example.com/spec).\n\n- First point\n' } },
+  play: async ({ canvas }) => {
+    const link = canvas.getByRole('link', { name: 'the spec' })
+    await expect(getComputedStyle(link).textDecorationLine).toContain('underline')
+    const item = canvas.getByText('First point').closest('li')
+    await expect(item === null ? 'none' : getComputedStyle(item).listStyleType).not.toBe('none')
+  },
+}
