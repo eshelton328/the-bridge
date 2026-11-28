@@ -1,13 +1,14 @@
 // A project's page in the shell's detail (D01, T01, T01b, M01; R4): its
-// header and the tabs of increment one, Overview and Ideas (d-133). The
-// Overview shows the Inbox and Queue panels (R5, R6) and the Ideas tab the
-// idea records (R10).
+// header and its tabs, Overview, Repositories and Ideas (d-133). The
+// Overview shows the Inbox and Queue panels (R5, R6), the Repositories tab
+// each repository (increment two) and the Ideas tab the idea records (R10).
 // The Overview's other panels are later issues'. Props only.
-import { BulbIcon, GridIcon, ItemTabs } from '@eshelton328/component-library-1701'
+import { BulbIcon, FolderIcon, GridIcon, ItemTabs } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { IdeasList } from '../blocks/IdeasList.tsx'
 import { OverviewPanels } from '../blocks/OverviewPanels.tsx'
+import { RepositoriesList } from '../blocks/RepositoriesList.tsx'
 import { ProjectHeader } from '../blocks/ProjectHeader.tsx'
 import { type ProjectCard, ProjectTab, type ProjectsData, type ProjectsUi } from '../types.ts'
 
@@ -50,6 +51,10 @@ export function ProjectDetail(props: ProjectDetailProps) {
         onChatOpen={onChatOpen}
       />
     ) : null
+  const repositories =
+    data.repositories === undefined ? null : (
+      <RepositoriesList repositories={data.repositories} words={words} layout={layout} />
+    )
   const ideas = data.ideas === undefined ? null : <IdeasList ideas={data.ideas} words={words} layout={layout} />
   return (
     <div className={page[layout]}>
@@ -66,6 +71,7 @@ export function ProjectDetail(props: ProjectDetailProps) {
           }}
           items={[
             { value: 'overview', label: words.overview, icon: <GridIcon />, content: overview },
+            { value: 'repositories', label: words.repositories, icon: <FolderIcon />, content: repositories },
             { value: 'ideas', label: words.ideas, icon: <BulbIcon />, content: ideas },
           ]}
         />

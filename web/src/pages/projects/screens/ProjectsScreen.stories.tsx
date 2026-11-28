@@ -73,12 +73,12 @@ export const ProjectsPhone: Story = {
   },
 }
 
-/** What a project's page shows (R4): Back to Projects, the name, Quick chat and only the tabs Overview and Ideas. */
+/** What a project's page shows (R4): Back to Projects, the name, Quick chat and the tabs Overview, Repositories and Ideas. */
 async function expectProject(canvas: Canvas) {
   await expect(canvas.getByRole('button', { name: 'Back to Projects' })).toBeVisible()
   await expect(canvas.getByRole('heading', { level: 1, name: 'NCC-1701' })).toBeVisible()
   await expect(canvas.getByRole('button', { name: 'Quick chat' })).toBeVisible()
-  await expect(canvas.getAllByRole('tab').map((t) => t.textContent)).toEqual(['Overview', 'Ideas'])
+  await expect(canvas.getAllByRole('tab').map((t) => t.textContent)).toEqual(['Overview', 'Repositories', 'Ideas'])
   await expect(canvas.getByRole('tab', { name: 'Overview' })).toHaveAttribute('aria-selected', 'true')
 }
 

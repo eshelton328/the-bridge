@@ -5,7 +5,8 @@
 // repositories, and the test's open PRs and unread repositories by slug) and
 // `GET /api/projects/:slug/chats` (the test's chats of the project, none by
 // default), `GET /api/projects/:slug/ideas` (the test's ideas of the
-// project, none by default), `GET /api/projects/:slug/drift` (the test's last
+// project, none by default), `GET /api/projects/:slug/repositories` (the
+// test's sections of the project, none by default), `GET /api/projects/:slug/drift` (the test's last
 // drift run, none by default) and `POST /api/projects/:slug/drift` (a clean run
 // now, kept as the last). Every project, body and answer is checked against the
 // contract, so a test cannot send or get what the server would not: a body the
@@ -24,12 +25,13 @@ import {
   ProjectDetailResponse,
   ProjectsResponse,
   ProjectSummary,
+  RepositoriesResponse,
   RunDriftRequest,
 } from '@bridge/contract'
 import { errorAnswer } from './fakeTranscriptServer.ts'
 
 /** A request kind the fake takes. */
-export type ProjectsCall = 'list' | 'pin' | 'detail' | 'chats' | 'ideas' | 'drift' | 'runDrift'
+export type ProjectsCall = 'list' | 'pin' | 'detail' | 'chats' | 'ideas' | 'repositories' | 'drift' | 'runDrift'
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } })
@@ -56,14 +58,19 @@ type FakeProjectsOptions = {
   readonly queues?: Readonly<Record<string, unknown>>
   /** Each project's ideas (`{ idea, body }`) by its slug, in the list's order; each is checked against the contract. */
   readonly ideas?: Readonly<Record<string, readonly unknown[]>>
+  /** Each project's repository sections (`RepositorySection`) by its slug; none by default. */
+  readonly repositories?: Readonly<Record<string, readonly unknown[]>>
   /** Each project's last drift run (`DriftRun`) by its slug; none (never checked) by default. */
   readonly drift?: Readonly<Record<string, unknown>>
 }
 
 export function fakeProjectsServer(
   projects: readonly unknown[] = [],
-  { chats = {}, queues = {}, ideas = {}, drift = {} }: FakeProjectsOptions = {},
+  { chats = {}, queues = {}, ideas = {}, repositories = {}, drift = {} }: FakeProjectsOptions = {},
 ) {
+  const sectionsOf = new Map(
+    Object.entries(repositories).map(([slug, list]) => [slug, RepositoriesResponse.parse({ repositories: list })]),
+  )
   const ideasOf = new Map(
     Object.entries(ideas).map(([slug, list]) => [slug, list.map((i) => IdeaDetailResponse.parse(i))]),
   )
@@ -127,6 +134,7 @@ export function fakeProjectsServer(
       const detailPath = /^\/api\/projects\/([^/]+)$/.exec(path)
       const chatsPath = /^\/api\/projects\/([^/]+)\/chats$/.exec(path)
       const ideasPath = /^\/api\/projects\/([^/]+)\/ideas$/.exec(path)
+      const reposPath = /^\/api\/projects\/([^/]+)\/repositories$/.exec(path)
       const driftPath = /^\/api\/projects\/([^/]+)\/drift$/.exec(path)
       const call: ProjectsCall | undefined =
         path === '/api/projects' && method === 'GET'
@@ -139,11 +147,13 @@ export function fakeProjectsServer(
                 ? 'chats'
                 : ideasPath !== null && method === 'GET'
                   ? 'ideas'
-                  : driftPath !== null && method === 'GET'
-                    ? 'drift'
-                    : driftPath !== null && method === 'POST'
-                      ? 'runDrift'
-                      : undefined
+                  : reposPath !== null && method === 'GET'
+                    ? 'repositories'
+                    : driftPath !== null && method === 'GET'
+                      ? 'drift'
+                      : driftPath !== null && method === 'POST'
+                        ? 'runDrift'
+                        : undefined
       if (call === undefined) return undefined
       requests.push({ call, path, body: bodyOf(init) })
       const next = answers.get(call)
@@ -160,6 +170,12 @@ export function fakeProjectsServer(
         if (!stored.has(slug))
           return errorAnswer({ kind: 'not-found', path, message: 'no project has this slug', requestId: 'r-404' }, 404)
         return json(ProjectChatsResponse.parse({ chats: chatsOf.get(slug) ?? [] }))
+      }
+      if (call === 'repositories') {
+        const slug = decodeURIComponent(reposPath?.[1] ?? '')
+        if (!stored.has(slug))
+          return errorAnswer({ kind: 'not-found', path, message: 'no project has this slug', requestId: 'r-404' }, 404)
+        return json(sectionsOf.get(slug) ?? { repositories: [] })
       }
       if (call === 'ideas') {
         const slug = decodeURIComponent(ideasPath?.[1] ?? '')

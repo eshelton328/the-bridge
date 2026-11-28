@@ -48,9 +48,11 @@ against the installed library 1.0.0-beta.137), each with its reason. The library
   on the phone).
 - **Panel gap.** One panel over the other, they are 24 apart where the
   frame has 28, which no spacing token has (`LIBRARY_GAPS.md`).
-- **Tabs.** The tab row shows Overview and Ideas, where the frame shows
-  Overview, Repositories, Architecture and QA: only the tabs of shipped
-  increments show (d-133), and Ideas is increment one's.
+- **Tabs.** The tab row shows Overview, Repositories and Ideas, where the
+  frame shows Overview, Repositories, Architecture and QA: only the tabs of
+  shipped increments show (d-133). Repositories is increment two's live
+  slice, and Ideas is increment one's. So Ideas sits where the frame draws
+  Architecture, and the frame's QA tab is not there.
 - **Quick chat** shows as the frame draws it; no frame draws its
   composer, so it is the library Dialog on every size, and in a state
   it opens nothing.
@@ -68,7 +70,7 @@ against the installed library 1.0.0-beta.137), each with its reason. The library
 - **Tab padding.** The selected tab is the library's large item tab, 4 px
   wider than the frame's and 2 px further in from the page's edge
   (`LIBRARY_GAPS.md`, Phone item tabs).
-- **Tab row.** The two tabs fit the width; the frame's row of five
+- **Tab row.** The three tabs fit the width; the frame's row of five
   scrolls past the right edge.
 - **Tab bar.** The tab bar is the app's shared one in the default order
   (d-105): Home, Inbox, Workspaces, Projects and More. The frame draws

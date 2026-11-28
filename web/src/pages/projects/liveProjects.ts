@@ -10,7 +10,8 @@
 // and the Inbox panel (R5) is the project's items of `GET /api/inbox`, read
 // with it and again on each `inbox.changed` (ProjectPage.tsx; NCC-138), as is
 // the Chats panel (R7, `GET /api/projects/:slug/chats`) on the Overview tab.
-// Its Ideas tab reads `GET /api/projects/:slug/ideas` only while it shows (R10).
+// Its Ideas tab reads `GET /api/projects/:slug/ideas` only while it shows (R10),
+// and its Repositories tab `GET /api/projects/:slug/repositories` (increment two).
 // The Context drift panel (R9) reads the last check with it; Run check is `runDrift`.
 //
 // A read or a pin that misses shows one short line by status ("Projects not
@@ -30,6 +31,7 @@ import {
   type ProjectPull,
   ProjectsResponse,
   type ProjectSummary,
+  RepositoriesResponse,
 } from '@bridge/contract'
 import { err, ok, type Result } from '@bridge/shared'
 import { report } from '../../errors/reporter.ts'
@@ -49,7 +51,7 @@ type ProjectsMiss = {
   readonly status: number | undefined
 }
 
-type ProjectsStep = 'list' | 'pin' | 'detail' | 'ideas' | 'drift' | 'runDrift' | 'chats'
+type ProjectsStep = 'list' | 'pin' | 'detail' | 'ideas' | 'repositories' | 'drift' | 'runDrift' | 'chats'
 
 /** A miss for report(): a stable name and, in its message, only the step, the kind and the status. */
 class ProjectsMissError extends Error {
@@ -306,6 +308,37 @@ export async function withLiveIdeas(
   }
   const { ideas } = IdeasResponse.parse(readJson(answer.value))
   return { ...state, data: { ...state.data, ideas: { rows: ideas.map((i) => ideaRow(i, now)) } } }
+}
+
+/**
+ * The project's Repositories tab (increment two, R2, R8) from `GET /api/projects/:slug/repositories`, in
+ * `project.yaml` order; a part the server could not read stays named in `unread`, and a miss gives its line.
+ */
+export async function withLiveRepositories(
+  state: ProjectsState,
+  slug: string,
+  { signal }: { readonly signal?: AbortSignal | undefined } = {},
+): Promise<ProjectsState> {
+  const answer = await send(
+    (init) => api.api.projects[':slug'].repositories.$get({ param: { slug } }, { init: { signal: init } }),
+    signal,
+  )
+  if (!answer.ok) {
+    reportMiss('repositories', answer.error)
+    const notRead = missLine('Repositories not read', answer.error)
+    return { ...state, data: { ...state.data, repositories: { rows: [], notRead } } }
+  }
+  const { repositories } = RepositoriesResponse.parse(readJson(answer.value))
+  const rows = repositories.map((r) => ({
+    id: r.id,
+    role: r.role,
+    visibility: r.visibility,
+    release: r.release?.tag ?? null,
+    openPulls: r.openPulls,
+    worktrees: r.worktrees,
+    unread: r.unread,
+  }))
+  return { ...state, data: { ...state.data, repositories: { rows } } }
 }
 
 /** Pins or unpins the project `slug` (`PUT /api/projects/:slug/pin`); a miss gives its line. */
