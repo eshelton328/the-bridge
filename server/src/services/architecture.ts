@@ -188,6 +188,7 @@ export function createArchitecture({
       if (found.value === 'notFound') return ok('notFound')
       if (!scopesOf(found.value).includes(scope)) return ok('notFound')
       const key = { slug, scope }
+      // No await between this check of `current` and its set below, so two regenerates that cross cannot both start.
       if (current !== null && current.key !== keyOf(key)) return ok('busy')
       if (current === null) {
         const repositories = found.value.repositories
@@ -197,7 +198,13 @@ export function createArchitecture({
           })
           .finally(() => {
             current = null
-            for (const watcher of watchers) watcher(key)
+            for (const watcher of watchers)
+              try {
+                watcher(key)
+              } catch {
+                // A watcher that throws must not reject the run, which only idle() awaits.
+                log({ code: 'watcher' })
+              }
           })
         current = { key: keyOf(key), done }
       }

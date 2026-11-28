@@ -107,6 +107,19 @@ describe('the Architecture service', () => {
     ])
   })
 
+  it('logs a watcher that throws, and still tells the other watchers', async () => {
+    const { architecture, log } = setup({ run: runs(ok({ model, commit })) })
+    const after = vi.fn()
+    architecture.watch(() => {
+      throw new Error('watcher fault')
+    })
+    architecture.watch(after)
+    await architecture.regenerate(slug, '@system')
+    await architecture.idle()
+    expect(log).toHaveBeenCalledWith({ code: 'watcher' })
+    expect(after).toHaveBeenCalledWith({ slug, scope: '@system' })
+  })
+
   it('joins a regenerate of the running scope, and answers busy for another scope', async () => {
     let finish: (value: Awaited<ReturnType<ArchitectureRunner['run']>>) => void = () => undefined
     const run = vi.fn(
