@@ -59,6 +59,9 @@ describe('createGitSnapshots', () => {
     expect(made[0]).toContain(
       'clone --quiet --depth 1 --no-recurse-submodules -- https://github.com/example-owner/example-repo.git',
     )
+    expect(made[2]).toContain(
+      'fetch --quiet --depth 1 --no-recurse-submodules -- https://github.com/example-owner/example-repo.git HEAD',
+    )
   })
 
   it('refuses an ID or a GitHub name that could leave the folder, with no git call', async () => {
@@ -80,6 +83,35 @@ describe('createGitSnapshots', () => {
     })
     await rm(join(dir, 'snapshots'), { recursive: true, force: true })
     expect(await (await stub('not-a-hash')).sync('example-repo', github)).toMatchObject({ error: { code: 'EBADDATA' } })
+  })
+
+  it('leaves no snapshot after a first clone with no commit, so the next sync clones again', async () => {
+    expect(await (await stub(hash, 'rev-parse')).sync('example-repo', github)).toMatchObject({
+      error: { code: 'exit-128' },
+    })
+    const good = await (await stub()).sync('example-repo', github)
+    expect(good.ok && good.value.commit).toBe(hash)
+    expect((await calls()).map((c) => c.replace(/^.*?(clone|fetch|reset|rev-parse).*$/, '$1'))).toEqual([
+      'clone',
+      'rev-parse',
+      'clone',
+      'rev-parse',
+    ])
+  })
+
+  it('removes a snapshot whose fetch fails, so the next sync clones again', async () => {
+    await (await stub()).sync('example-repo', github)
+    expect(await (await stub(hash, 'fetch')).sync('example-repo', github)).toMatchObject({
+      error: { code: 'exit-128' },
+    })
+    await (await stub()).sync('example-repo', github)
+    expect((await calls()).map((c) => c.replace(/^.*?(clone|fetch|reset|rev-parse).*$/, '$1'))).toEqual([
+      'clone',
+      'rev-parse',
+      'fetch',
+      'clone',
+      'rev-parse',
+    ])
   })
 
   it('shares a running sync of one ID, so two syncs at once give one clone', async () => {

@@ -9,7 +9,7 @@
 // token, so no token is stored or passed. A fault is its code only; git's stderr
 // never goes into an error or a log.
 import { execFile } from 'node:child_process'
-import { mkdir, realpath, stat } from 'node:fs/promises'
+import { mkdir, mkdtemp, realpath, rename, rm, stat } from 'node:fs/promises'
 import { join, relative, isAbsolute } from 'node:path'
 import { RepositoryId } from '@bridge/contract'
 import { err, ok, type Result } from '@bridge/shared'
@@ -46,6 +46,13 @@ type Snapshot = { readonly dir: string; readonly commit: string }
 export type GitSnapshots = {
   sync(id: string, github: { readonly owner: string; readonly name: string }): Promise<Result<Snapshot, ProjectFault>>
 }
+
+/** Removes a folder of the server's own; false when it could not. */
+const removed = (folder: string) =>
+  rm(folder, { recursive: true, force: true }).then(
+    () => true,
+    () => false,
+  )
 
 const githubPart = /^[A-Za-z0-9._-]{1,100}$/
 const commitHash = /^[0-9a-f]{40}$/
@@ -98,7 +105,12 @@ export function createGitSnapshots({
     } catch {
       return err({ reason: 'failed', code: 'no-root' })
     }
-    const top = await realpath(root)
+    let top: string
+    try {
+      top = await realpath(root)
+    } catch {
+      return err({ reason: 'failed', code: 'no-root' })
+    }
     const dir = join(top, id)
     const rel = relative(top, dir)
     if (rel === '' || rel.startsWith('..') || isAbsolute(rel)) return err({ reason: 'failed', code: 'outside-root' })
@@ -106,19 +118,55 @@ export function createGitSnapshots({
       () => true,
       () => false,
     )
+    // The URL of each call, never the clone's own origin, so a renamed repository in project.yaml is the one read.
     const url = `${base}/${github.owner}/${github.name}.git`
-    const synced = cloned
-      ? await git(['-C', dir, 'fetch', '--quiet', '--depth', '1', '--no-recurse-submodules', 'origin', 'HEAD'])
-      : await git(['clone', '--quiet', '--depth', '1', '--no-recurse-submodules', '--', url, dir])
-    if (!synced.ok) return synced
-    if (cloned) {
-      const reset = await git(['-C', dir, 'reset', '--quiet', '--hard', 'FETCH_HEAD'])
-      if (!reset.ok) return reset
+    const commitOf = async (folder: string): Promise<Result<string, ProjectFault>> => {
+      const head = await git(['-C', folder, 'rev-parse', 'HEAD'])
+      if (!head.ok) return head
+      const commit = head.value.trim()
+      return commitHash.test(commit) ? ok(commit) : err({ reason: 'failed', code: 'EBADDATA' })
     }
-    const head = await git(['-C', dir, 'rev-parse', 'HEAD'])
-    if (!head.ok) return head
-    const commit = head.value.trim()
-    return commitHash.test(commit) ? ok({ dir, commit }) : err({ reason: 'failed', code: 'EBADDATA' })
+    if (cloned) {
+      const fetched = await git([
+        '-C',
+        dir,
+        'fetch',
+        '--quiet',
+        '--depth',
+        '1',
+        '--no-recurse-submodules',
+        '--',
+        url,
+        'HEAD',
+      ])
+      const reset = fetched.ok ? await git(['-C', dir, 'reset', '--quiet', '--hard', 'FETCH_HEAD']) : fetched
+      const commit = reset.ok ? await commitOf(dir) : reset
+      // A snapshot that does not sync is the server's own data: it goes, so the next sync clones again.
+      if (!commit.ok) await removed(dir)
+      return commit.ok ? ok({ dir, commit: commit.value }) : commit
+    }
+    // A first clone goes into a new folder and takes the snapshot's name only once it has a commit, so a clone that
+    // fails or is stopped at the time limit never leaves a broken snapshot.
+    await removed(dir)
+    let fresh: string
+    try {
+      fresh = await mkdtemp(join(top, '.sync-'))
+    } catch {
+      return err({ reason: 'failed', code: 'no-root' })
+    }
+    const made = await git(['clone', '--quiet', '--depth', '1', '--no-recurse-submodules', '--', url, fresh])
+    const commit = made.ok ? await commitOf(fresh) : made
+    if (!commit.ok) {
+      await removed(fresh)
+      return commit
+    }
+    try {
+      await rename(fresh, dir)
+    } catch {
+      await removed(fresh)
+      return err({ reason: 'failed', code: 'rename' })
+    }
+    return ok({ dir, commit: commit.value })
   }
   // One sync of a snapshot at a time: a second sync of the ID while one runs gets its answer, so two clones never
   // write one folder.

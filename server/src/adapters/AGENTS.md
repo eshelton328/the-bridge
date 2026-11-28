@@ -470,8 +470,11 @@ client of a socket or a file sits beside them.
   (`ghCi.test.ts`).
   `gitSnapshots.ts` (increment two) keeps the server's own shallow clone
   of each repository in `snapshots/<repository ID>` beside the database
-  (0700): a first sync clones the default branch at depth 1, a later one
-  fetches it and resets to it. git runs with an argument list, a 120 s
+  (0700): a first sync clones the default branch at depth 1 into a new
+  folder that takes the snapshot's name only once it has a commit, a later
+  one fetches the URL's `HEAD` and resets to it, and a snapshot that does
+  not sync is removed, so the next sync clones again. One sync of an ID
+  runs at a time; a second one gets its answer. git runs with an argument list, a 120 s
   limit, no hooks, no submodules, no symlinks (`core.symlinks=false`), no
   file or ext protocol, no global or system config, gh as the only
   credential helper and only PATH, HOME, LANG and GIT_TERMINAL_PROMPT=0;
