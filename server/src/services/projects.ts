@@ -13,6 +13,8 @@ import type {
   IdeaFile,
   IdeaDetailResponse,
   IdeaId,
+  IdeaLink,
+  IdeaSource,
   IdeasResponse,
   ProjectChatsResponse,
   ProjectDetailResponse,
@@ -62,13 +64,25 @@ export type ProjectRecord = {
 }
 
 /** An idea record: its row, its Markdown after the front matter and its file (`ideas/<name>.md`, from the folder entry's name, never its text). */
-export type IdeaRecord = { readonly idea: Idea; readonly body: string; readonly file: IdeaFile | null }
+export type IdeaRecord = {
+  readonly idea: Idea
+  readonly body: string
+  readonly file: IdeaFile | null
+  /** The record's `created` time, and the kind of its `source` (never its text); null when it has none. */
+  readonly created: string | null
+  readonly source: IdeaSource | null
+  /** The records its body links to; only the record that `ideas` was asked to link has them. */
+  readonly links?: readonly IdeaLink[]
+}
 
 /** The brain's projects and their idea records. It only reads, and only when called. */
 export type BrainProjects = {
   list(): Promise<Result<readonly ProjectRecord[], ProjectFault>>
-  /** The idea records of one project folder; none for a folder with no `ideas/`. */
-  ideas(slug: ProjectSlug): Promise<Result<readonly IdeaRecord[], ProjectFault>>
+  /**
+   * The idea records of one project folder; none for a folder with no `ideas/`. The record of `linked`, when
+   * given, also has its links, so a list reads no linked record.
+   */
+  ideas(slug: ProjectSlug, linked?: IdeaId): Promise<Result<readonly IdeaRecord[], ProjectFault>>
 }
 
 /** The slugs that the owner pinned, in the order of their pins. */
@@ -579,10 +593,12 @@ export function createProjects({
       const record = await recordOf(slug)
       if (!record.ok) return record
       if (record.value === 'notFound') return ok('notFound')
-      const ideas = await brain.ideas(slug)
+      const ideas = await brain.ideas(slug, id)
       if (!ideas.ok) return ideas
       const found = ideas.value.find((i) => i.idea.id === id)
-      return ok(found === undefined ? 'notFound' : { idea: found.idea, body: found.body, file: found.file })
+      if (found === undefined) return ok('notFound')
+      const { idea, body, file, created, source } = found
+      return ok({ idea, body, file, created, source, links: [...(found.links ?? [])] })
     },
 
     async drift(slug) {

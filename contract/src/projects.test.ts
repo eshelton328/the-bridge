@@ -2,8 +2,11 @@ import { describe, expect, it } from 'vitest'
 import {
   DriftRun,
   Idea,
+  IdeaDetailResponse,
   IdeaFile,
+  IdeaLink,
   IdeaStateRequest,
+  maxIdeaLinks,
   MakeFeatureRequest,
   MakeFeatureResponse,
   maxProjectTitle,
@@ -214,5 +217,41 @@ describe('RepositoryCiResponse', () => {
     ).toBe(false)
     expect(RepositoryCiResponse.safeParse({ ci, readAt: null, reading: false }).success).toBe(false)
     expect(RepositoryCiResponse.safeParse({ ci: null, readAt: null }).success).toBe(false)
+  })
+})
+
+describe("an idea's detail", () => {
+  const detail = { idea, body: '# An example idea', file: 'ideas/an-idea.md', created: null, source: null, links: [] }
+  const ideaLink = { kind: 'idea', ref: null, title: 'Another idea', idea: '5d0c9e2a-7b61-4c3f-9e8d-2a1b3c4d5e6f' }
+  const decision = { kind: 'decision', ref: 'd-112', title: 'Push and machine load', idea: null }
+
+  it('takes its created time, its source kind and its links, and needs each key', () => {
+    expect(IdeaDetailResponse.safeParse(detail).success).toBe(true)
+    const full = { ...detail, created: '2026-11-23T09:00:00.000Z', source: 'chat', links: [ideaLink, decision] }
+    expect(IdeaDetailResponse.safeParse(full).success).toBe(true)
+    for (const key of ['created', 'source', 'links'] as const) {
+      const missing = Object.fromEntries(Object.entries(full).filter(([k]) => k !== key))
+      expect(IdeaDetailResponse.safeParse(missing).success, key).toBe(false)
+    }
+    expect(IdeaDetailResponse.safeParse({ ...full, source: "marker-owner's discussion" }).success).toBe(false)
+    const many = Array.from({ length: maxIdeaLinks + 1 }, () => decision)
+    expect(IdeaDetailResponse.safeParse({ ...full, links: many }).success).toBe(false)
+  })
+
+  it('gives an idea link its idea ID only, and a decision or feature link its own ref only', () => {
+    expect(IdeaLink.safeParse(ideaLink).success).toBe(true)
+    expect(IdeaLink.safeParse(decision).success).toBe(true)
+    expect(IdeaLink.safeParse({ kind: 'feature', ref: 'f-008', title: 'Projects app', idea: null }).success).toBe(true)
+    for (const bad of [
+      { ...ideaLink, idea: null },
+      { ...ideaLink, ref: 'd-112' },
+      { ...decision, ref: null },
+      { ...decision, ref: 'f-008' },
+      { ...decision, idea: ideaLink.idea },
+      { ...decision, ref: 'd-12' },
+      { ...decision, title: '' },
+      { ...decision, path: 'decisions/d-112.md' },
+    ])
+      expect(IdeaLink.safeParse(bad).success).toBe(false)
   })
 })

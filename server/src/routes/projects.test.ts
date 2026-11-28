@@ -298,7 +298,42 @@ describe('/api/projects', () => {
     )
     expect(one.body).toContain('## Open questions')
     expect(one.file).toBe('ideas/an-idea.md')
+    expect([one.created, one.source, one.links]).toEqual([null, null, []])
     expect((await read(app, '/api/projects/another-project/ideas')).status).toBe(200)
+  })
+
+  it("gives an idea's created time, its source kind and the records its body links to", async () => {
+    const project = join(brain, 'projects/example-project')
+    const other = '5d0c9e2a-7b61-4c3f-9e8d-2a1b3c4d5e6f'
+    await mkdir(join(project, 'decisions'), { recursive: true })
+    await writeFile(
+      join(project, 'ideas/linked.md'),
+      [
+        '---',
+        `id: ${other}`,
+        'type: idea',
+        'title: A linking idea',
+        "created: '2026-11-23T09:00:00Z'",
+        "source: marker-owner's discussion, 2026-11-23",
+        '---',
+        '# A linking idea',
+        '',
+        'See [the example](an-idea.md) and [d-112](../decisions/d-112-push-and-machine-load.md).',
+      ].join('\n'),
+    )
+    await writeFile(
+      join(project, 'decisions/d-112-push-and-machine-load.md'),
+      ['---', 'type: decision', 'title: Push and machine load', '---', '# Push'].join('\n'),
+    )
+    const { app } = server()
+    const one = IdeaDetailResponse.parse(await (await read(app, `/api/projects/example-project/ideas/${other}`)).json())
+    expect(one.created).toBe('2026-11-23T09:00:00.000Z')
+    expect(one.source).toBe('chat')
+    expect(one.links).toEqual([
+      { kind: 'idea', ref: null, title: 'An example idea', idea: ideaId },
+      { kind: 'decision', ref: 'd-112', title: 'Push and machine load', idea: null },
+    ])
+    expect(JSON.stringify(one)).not.toContain('marker-owner')
   })
 
   it('runs the layout check, keeps the project findings and gives them again after a restart', async () => {

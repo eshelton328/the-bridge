@@ -35,7 +35,7 @@ import type {
 import type { ArchitectureStore, KeptDiagram } from '../services/architecture.ts'
 import type { CiStore, KeptCi } from '../services/repositoryCi.ts'
 import { unquote } from './diskInbox.ts'
-import { readIdeas, readInside } from './projectIdeas.ts'
+import { readIdeas, readInside, readLinks } from './projectIdeas.ts'
 
 /** A `project.yaml` larger than this is not read: it is a page of keys. */
 const maxProjectFileBytes = 64 * 1024
@@ -143,14 +143,19 @@ export function createBrainProjects(brainDir: string): BrainProjects {
       }
       return ok(found)
     },
-    async ideas(slug) {
+    async ideas(slug, linked) {
       const projects = await root()
       if (!projects.ok) return projects
       const folder = projects.value === null ? null : await folderOf(projects.value, slug)
       if (folder === null) return ok([])
       try {
         const ideas: IdeaRecord[] = await readIdeas(folder)
-        return ok(ideas)
+        if (linked === undefined) return ok(ideas)
+        // Only the asked record reads its links, so a list reads no other record.
+        const linkedIdeas: IdeaRecord[] = []
+        for (const idea of ideas)
+          linkedIdeas.push(idea.idea.id === linked ? { ...idea, links: await readLinks(folder, idea.body) } : idea)
+        return ok(linkedIdeas)
       } catch (thrown) {
         return err({ reason: 'failed', code: codeOf(thrown) })
       }
