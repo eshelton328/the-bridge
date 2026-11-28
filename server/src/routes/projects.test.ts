@@ -620,6 +620,31 @@ describe('/api/projects/:slug/repositories/:repo/ci', () => {
     expect(reads).toBe(1)
   })
 
+  it('prunes the kept answers only after a project list read that succeeded', async () => {
+    const good = memoryStore()
+    const one = server(fakeCi().source, good.store)
+    const changed = nextChange(one.projects)
+    await answer(one.app)
+    await changed
+    await vi.waitFor(() => {
+      expect(good.prunes).toHaveLength(1)
+    })
+    expect(good.prunes[0]).toContain('example-owner/example-repo')
+    const real = createBrainProjects(brain)
+    let lists = 0
+    const failingList = {
+      ...real,
+      list: () => (++lists === 1 ? real.list() : Promise.resolve(err({ reason: 'failed' as const, code: 'EIO' }))),
+    }
+    const bad = memoryStore()
+    const two = server(fakeCi().source, bad.store, failingList)
+    const twoChanged = nextChange(two.projects)
+    await answer(two.app)
+    await twoChanged
+    expect(bad.kept()?.readAt).toBe('2026-11-22T09:00:00.000Z')
+    expect(bad.prunes).toEqual([])
+  })
+
   it('logs the time of each part at debug, with no owner or name', async () => {
     const { app, projects, logger } = server(fakeCi().source, memoryStore().store)
     const changed = nextChange(projects)

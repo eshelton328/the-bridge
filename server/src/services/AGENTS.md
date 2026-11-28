@@ -152,6 +152,7 @@ from the outside world.
   and a failed read keeps the old answer; no read of the repository starts
   for 10 minutes after a failed one, so a GitHub fault and its event never
   loop. The watchers hear of each read that ends, good or failed, so a
-  page that showed `reading` reads the end and the new `readAt`. Each
-  part's time goes to `ciLog`, with no owner or name
-  (`../routes/projects.test.ts`).
+  page that showed `reading` reads the end and the new `readAt`. After a
+  save, the store is pruned to the repositories of a project list read
+  that succeeded, never after a failed one. Each part's time goes to
+  `ciLog`, with no owner or name (`../routes/projects.test.ts`).
