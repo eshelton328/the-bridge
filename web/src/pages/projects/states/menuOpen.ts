@@ -26,6 +26,7 @@ export const menuOpen = {
       ideas: 'Ideas',
       repositories: 'Repositories',
       qa: 'QA',
+      architecture: 'Architecture',
       message: 'First message',
       retry: 'Retry',
       panels: {
@@ -94,6 +95,19 @@ export const menuOpen = {
         running: 'Running',
         failed: 'Failed',
         servedApp: 'Served app',
+      },
+      arch: {
+        chips: 'Diagram scope',
+        system: 'System',
+        none: 'No diagram yet',
+        caption: '{view} view from main at {commit}, {date}',
+        views: { container: 'Container', component: 'Component', build: 'Build' },
+        parts: 'Parts',
+        arrows: 'Arrows',
+        arrow: '{from} {label} {to}',
+        stack: 'Stack',
+        stackSource: 'From package.json',
+        running: 'Making the diagram',
       },
     },
     projects: [

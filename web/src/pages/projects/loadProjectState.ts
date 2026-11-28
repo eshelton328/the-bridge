@@ -7,7 +7,8 @@
 // `?tab=ideas` reads the live Ideas tab and `?idea=` the live idea's page
 // (R10, R11; an idea the server does not know, or an ID IdeaId refuses
 // (no read), is not found), `?tab=repositories` the live Repositories tab
-// (increment two) and `?tab=qa` the live QA tab (increment three).
+// (increment two), `?tab=architecture` the live Architecture tab on `?scope=`
+// (increment two, R9) and `?tab=qa` the live QA tab (increment three).
 import { IdeaId, ProjectSlug } from '@bridge/contract'
 import { notFound } from '@tanstack/react-router'
 import { parseState } from '../../errors/parseState.ts'
@@ -36,7 +37,11 @@ export function loadProjectState(
   requested: string | undefined,
   source: string | undefined,
   signal?: AbortSignal,
-  view: { readonly tab?: ProjectTab | undefined; readonly idea?: string | undefined } = {},
+  view: {
+    readonly tab?: ProjectTab | undefined
+    readonly idea?: string | undefined
+    readonly scope?: string | undefined
+  } = {},
 ): State | Promise<State> {
   if (!ProjectSlug.safeParse(slug).success) throw notFound({ data: 'not a project slug' })
   if (view.idea !== undefined && !IdeaId.safeParse(view.idea).success) throw notFound({ data: 'not an idea ID' })
@@ -60,6 +65,7 @@ export function loadProjectState(
         if (tab === undefined || tab === 'overview' || project.data.projects.length === 0) return project
         const shownTab = { ...project, ui: { ...project.ui, tab } }
         if (tab === 'ideas') return live.withLiveIdeas(shownTab, slug, view.idea, { signal })
+        if (tab === 'architecture') return live.withLiveArchitecture(shownTab, slug, view.scope, { signal })
         return tab === 'qa'
           ? live.withLiveQa(shownTab, slug, { signal })
           : live.withLiveRepositories(shownTab, slug, { signal })

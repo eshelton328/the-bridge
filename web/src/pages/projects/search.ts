@@ -11,4 +11,6 @@ export const projectsSearch = z.object({
   tab: ProjectTab.optional().catch(undefined),
   /** The idea whose page shows on a project's page (R11). */
   idea: z.string().min(1).optional().catch(undefined),
+  /** The Architecture tab's scope (R9): `@system` or a repository ID; the first scope when not set. */
+  scope: z.string().min(1).optional().catch(undefined),
 })

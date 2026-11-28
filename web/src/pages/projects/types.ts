@@ -1,5 +1,5 @@
 // The Projects page's view models, display-ready, each from its Zod schema.
-import { ChatStatus, QaItem, QaPhase, QaStatus, QaWorktree } from '@bridge/contract'
+import { ArchitectureModel, ChatStatus, QaItem, QaPhase, QaStatus, QaWorktree } from '@bridge/contract'
 import { z } from 'zod'
 
 /** One card of the Projects home (R2): the project's tile, name and purpose, and whether the owner pinned it (R3). */
@@ -49,6 +49,7 @@ export const ProjectPageWords = z.object({
   overview: z.string(),
   ideas: z.string(),
   repositories: z.string(),
+  architecture: z.string(),
   /** Quick chat's words (R8). */
   message: z.string(),
   retry: z.string(),
@@ -113,14 +114,32 @@ export const ProjectPageWords = z.object({
   noQa: z.string(),
   qaStatuses: z.record(QaStatus, z.string()),
   qaWorktrees: z.record(QaWorktree, z.string()),
+  /**
+   * The Architecture tab (increment two, R9, R10, R14, R15): the chip row's name and the System chip, the line with
+   * no diagram, the caption (`{view}`, `{commit}`, `{date}`) and each view's name, the text version's lists, one
+   * arrow (`{from}`, `{label}`, `{to}`), the Stack's heading and source, and the line while a run goes.
+   */
+  arch: z.object({
+    chips: z.string(),
+    system: z.string(),
+    none: z.string(),
+    caption: z.string(),
+    views: z.record(z.enum(['container', 'component', 'build']), z.string()),
+    parts: z.string(),
+    arrows: z.string(),
+    arrow: z.string(),
+    stack: z.string(),
+    stackSource: z.string(),
+    running: z.string(),
+  }),
 })
 export type ProjectPageWords = z.infer<typeof ProjectPageWords>
 
 /**
- * A project page's tab (R4): Overview and Ideas of increment one, Repositories of increment two (d-133) and QA of
- * increment three.
+ * A project page's tab (R4): Overview and Ideas of increment one, Repositories and Architecture of increment two
+ * (d-133) and QA of increment three.
  */
-export const ProjectTab = z.enum(['overview', 'repositories', 'qa', 'ideas'])
+export const ProjectTab = z.enum(['overview', 'repositories', 'architecture', 'qa', 'ideas'])
 export type ProjectTab = z.infer<typeof ProjectTab>
 
 /** An Inbox panel row (R5): the item's kind tile, title, project and age ("5d"). */
@@ -228,6 +247,24 @@ export type ProjectRepositories = z.infer<typeof ProjectRepositories>
 export const ProjectQa = z.object({ rows: z.array(QaItem), notRead: z.string().optional() })
 export type ProjectQa = z.infer<typeof ProjectQa>
 
+/** A scope chip of the Architecture tab (R9): the contract's scope (`@system` or a repository ID) and its label. */
+const ArchitectureChip = z.object({ value: z.string().min(1), label: z.string().min(1) })
+
+/**
+ * The Architecture tab (increment two, R9, R10): the scope chips, the shown scope with its title, its caption (null
+ * with no diagram) and its kept model, whether a run goes, or the line of a read that missed.
+ */
+export const ProjectArchitecture = z.object({
+  chips: z.array(ArchitectureChip),
+  scope: z.string().min(1),
+  title: z.string(),
+  caption: z.string().nullable(),
+  running: z.boolean(),
+  model: ArchitectureModel.nullable(),
+  notRead: z.string().optional(),
+})
+export type ProjectArchitecture = z.infer<typeof ProjectArchitecture>
+
 /** An idea's page (R11): its row and its record's text as Markdown. */
 export const IdeaPage = z.object({
   row: IdeaRow,
@@ -259,6 +296,8 @@ export const ProjectsData = z.object({
   repositories: ProjectRepositories.optional(),
   /** The open project's QA tab (increment three), read when the tab shows; with none the tab draws nothing. */
   qa: ProjectQa.optional(),
+  /** The open project's Architecture tab (increment two), read when the tab shows; with none the tab draws nothing. */
+  architecture: ProjectArchitecture.optional(),
   /** The idea whose page shows in place of the tabs (R11). */
   idea: IdeaPage.optional(),
   /** The line of a read or a pin that missed, such as "Projects not read — the server answered 500". */
@@ -284,6 +323,8 @@ export const ProjectsUi = z.object({
   open: z.string().optional(),
   /** The project page's selected tab; Overview when not set. */
   tab: ProjectTab.optional(),
+  /** The Architecture tab's scope (`?scope=`, R9): `@system` or a repository ID; the first scope when not set. */
+  scope: z.string().optional(),
   quickChat: QuickChatStatus.optional(),
   /** "Chat about this idea" on an idea's page (NCC-132 AC2): busy, or the line of a start or send that missed. */
   ideaChat: QuickChatStatus.optional(),
