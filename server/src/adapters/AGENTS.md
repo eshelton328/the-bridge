@@ -502,6 +502,17 @@ client of a socket or a file sits beside them.
   credential helper and only PATH, HOME, LANG and GIT_TERMINAL_PROMPT=0;
   an ID or a GitHub name that could leave the folder is refused with no
   call (`gitSnapshots.test.ts`, a stub git).
+  `snapshotReader.ts` (increment two, A1b) reads a repository's diagram
+  from its snapshot: `git ls-files -z --stage` with an argument list, no
+  global or system config, no fsmonitor, a time limit and a buffer for
+  20,000 paths (more is `too-many-files`); only regular files (100644 or
+  100755), and only the `package.json` files outside `node_modules`, each
+  after an lstat, a realpath check in the snapshot and a 1 MB cap, with
+  64 MB for all (`too-large`). A worker_thread with memory limits and a
+  60 s limit (`timeout`) gets only the bytes and runs the rules
+  (`architectureWorker.ts`, `../services/architectureRules.ts`); it runs
+  no git, no child process and no fs (`snapshotReader.test.ts`, a real
+  git repository in a temporary folder).
   `agentsMdCheck.ts` (increment two, R7) runs the brain's `agents-md`
   `scripts/check` on a snapshot as `python3 -I`, from the brain folder,
   with a 60 s limit and only PATH, HOME and LANG: exit 0 is clean, exit 1
