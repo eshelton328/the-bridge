@@ -5,14 +5,15 @@
 // live project only (liveQuickChat.ts): each send is a new start, Retry the last.
 // The Inbox panel loads again on each `inbox.changed` burst (no timer, NCC-138),
 // and the Chats panel too while the Overview tab is open (NCC-130).
-// The tab is in the address (`?tab=ideas`), so a reload and the browser's Back
-// keep it (R10).
+// The tab and the open idea are in the address (`?tab=ideas`, `?idea=`), so a
+// reload and the browser's Back keep them (R10, R11).
 // Run check (R9) keeps its busy state here, as the server has none.
 import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { useEffect, useRef, useState } from 'react'
 import { useInboxBadge, useInboxChanges, useProjectsChanges } from '../../lib/inboxFeed.ts'
 import { navRoute } from '../../lib/navRoutes.ts'
-import { useVisibleNavPages } from '../../state/settingsStore.ts'
+import { MarkdownFeaturesContext } from '../../blocks/markdownFeatures.ts'
+import { useSettingsRichText, useVisibleNavPages } from '../../state/settingsStore.ts'
 import type { ProjectChats, ProjectInbox } from './liveProjects.ts'
 import type { QuickChatAttempt } from './liveQuickChat.ts'
 import { ProjectsScreen } from './screens/ProjectsScreen.tsx'
@@ -29,13 +30,16 @@ export function ProjectPage() {
   const navigate = route.useNavigate()
   const [changed, setChanged] = useState<Changed>({ of: search.state, ui: {} })
   const ui = { ...state.ui, ...(changed.of === search.state ? changed.ui : {}), tab: search.tab ?? state.ui.tab }
-  // The search with `tab` as given; a key with no value is left out, so the address has none.
-  const view = (tab: ProjectsUi['tab']) => ({
+  // The search with `tab` and `idea` as given; a key with no value is left out, so the address has none.
+  const view = (tab: ProjectsUi['tab'], idea?: string) => ({
     ...(search.state === undefined ? {} : { state: search.state }),
     ...(search.source === undefined ? {} : { source: search.source }),
     ...(tab === undefined || tab === 'overview' ? {} : { tab }),
+    ...(idea === undefined ? {} : { idea }),
   })
   const live = state.data.live !== undefined
+  // The owner's rich text settings, for an idea's page (Settings → Rich text).
+  const richText = useSettingsRichText()
   const railBadge = useInboxBadge(state.data.railBadge, live)
   // The Inbox panel's latest read after a change, for the loaded state it replaces.
   const [inbox, setInbox] = useState<{ of: typeof state; read: ProjectInbox } | undefined>(undefined)
@@ -133,7 +137,7 @@ export function ProjectPage() {
     return 'chat' in result
   }
   const slug = state.ui.open
-  return (
+  const screen = (
     <ProjectsScreen
       settingsEntry
       navPages={navPages}
@@ -157,9 +161,12 @@ export function ProjectPage() {
       }
       onRunDrift={state.data.live === undefined ? undefined : () => void runDrift()}
       onChatOpen={(chat) => void navigate({ to: '/workspaces', search: { chat } })}
+      onIdeaOpen={(idea) => void navigate({ search: view('ideas', idea) })}
+      onIdeaBack={() => void navigate({ search: view('ideas') })}
       onQuickChatRetry={() => {
         if (attemptRef.current !== undefined) void run(attemptRef.current)
       }}
     />
   )
+  return <MarkdownFeaturesContext value={richText}>{screen}</MarkdownFeaturesContext>
 }

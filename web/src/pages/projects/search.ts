@@ -9,4 +9,6 @@ export const projectsSearch = z.object({
   source: dataSourceParam,
   /** A project page's tab (R4); Overview when not set or unknown. */
   tab: ProjectTab.optional().catch(undefined),
+  /** The idea whose page shows on a project's page (R11). */
+  idea: z.string().min(1).optional().catch(undefined),
 })

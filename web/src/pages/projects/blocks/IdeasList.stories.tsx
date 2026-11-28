@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { expect } from 'storybook/test'
+import { expect, fn } from 'storybook/test'
 import type { IdeaRow } from '../types.ts'
 import { IdeasList } from './IdeasList.tsx'
 
@@ -27,16 +27,18 @@ const row: IdeaRow = {
 const meta = {
   title: 'Pages/Projects/Blocks/IdeasList',
   component: IdeasList,
-  args: { words, layout: 'desktop', ideas: { rows: [row] } },
+  args: { words, layout: 'desktop', onOpen: fn(), ideas: { rows: [row] } },
 } satisfies Meta<typeof IdeasList>
 
 export default meta
 type Story = StoryObj<typeof meta>
 
 export const Rows: Story = {
-  play: async ({ canvas }) => {
+  play: async ({ canvas, args, userEvent }) => {
     await expect(canvas.getByText('Sample idea about speech')).toBeVisible()
     await expect(canvas.getByText('Idea · In design · voice')).toBeVisible()
+    await userEvent.click(canvas.getByText('Sample idea about speech'))
+    await expect(args.onOpen).toHaveBeenCalledWith('sample-1')
   },
 }
 

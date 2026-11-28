@@ -14,12 +14,14 @@ import { answerLateServerReads } from '../lib/lateServerReads.ts'
 import { queryClient } from '../lib/queryClient.ts'
 import { setViewport } from '../lib/rendering.ts'
 import { testRender, unmountRendered } from '../lib/testRender.ts'
+import { settingsStore } from '../state/settingsStore.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { withInboxFeed } from './inboxLiveHelpers.ts'
 import { routeTree } from './routeTree.gen.ts'
 
-// A live project's Ideas tab (f-008 R10; NCC-132's live slice) with the contract-checked fakes only: the tab
-// (`?tab=ideas`) lists the project's idea records, and the Overview reads none.
+// A live project's Ideas tab and idea page (f-008 R10, R11; NCC-132's live slice) with the contract-checked fakes
+// only: the tab (`?tab=ideas`) lists the project's idea records, the Overview reads none, a row opens its page
+// (`?idea=`), and Back to Ideas returns.
 document.documentElement.classList.add('dark')
 document.documentElement.dataset.pandaTheme = 'viewscreen'
 
@@ -35,6 +37,7 @@ afterEach(async () => {
 })
 
 const speech = '3f0c6a52-6a1e-4d55-9a4e-2f1b8f1d0a01'
+const tags = '3f0c6a52-6a1e-4d55-9a4e-2f1b8f1d0a02'
 const ideas = [
   {
     id: speech,
@@ -46,7 +49,7 @@ const ideas = [
     updated: '2026-11-25T10:00:00.000Z',
   },
   {
-    id: '3f0c6a52-6a1e-4d55-9a4e-2f1b8f1d0a02',
+    id: tags,
     title: 'Sample proposal about tags',
     summary: 'Tag each chat with its project.',
     tags: [],
@@ -56,12 +59,13 @@ const ideas = [
   },
 ]
 const body = '# Sample idea about speech\n\nTalk to a chat from the phone.\n\n## Open questions\n\n- Which engine?\n'
+const tagsBody = '# Sample proposal about tags\n\n![A tag chart](https://example.com/tags.png)\n'
 
 /** The fakes as the page's fetch: Alpha with two ideas and an empty Inbox. */
 function withServer() {
   const projects = fakeProjectsServer(
     [{ slug: 'alpha', name: 'Alpha', purpose: 'Made up.', icon: null, pinned: false }],
-    { ideas: { alpha: ideas.map((idea) => ({ idea, body: idea.id === speech ? body : '' })) } },
+    { ideas: { alpha: ideas.map((idea) => ({ idea, body: idea.id === speech ? body : tagsBody })) } },
   )
   const inbox = fakeInboxServer({ items: [] })
   vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -103,9 +107,57 @@ describe("A project's Ideas tab (R10)", () => {
       await expect.element(ideaList().getByText('Idea · In design · voice')).toBeVisible()
       expect(router.state.location.search).toEqual({ tab: 'ideas' })
       expect(projects.calls('ideas').map((r) => r.path)).toEqual(['/api/projects/alpha/ideas'])
+      await userEvent.click(ideaList().getByText('Sample idea about speech'))
+      await expect.element(page.getByRole('heading', { name: 'Sample idea about speech', level: 2 })).toBeVisible()
+      await expect.element(page.getByText('Which engine?')).toBeVisible()
+      expect(router.state.location.search).toEqual({ tab: 'ideas', idea: speech })
+      await userEvent.click(page.getByRole('button', { name: 'Back to Ideas' }))
+      await expect.element(ideaList().getByText('Sample proposal about tags')).toBeVisible()
+      expect(router.state.location.search).toEqual({ tab: 'ideas' })
       expect(getReports()).toEqual([])
     })
   }
+
+  it("opens an idea's page from its address, as a reload does", async () => {
+    const projects = withServer()
+    await open(`/projects/alpha?idea=${speech}`)
+    await expect.element(page.getByRole('heading', { name: 'Sample idea about speech', level: 2 })).toBeVisible()
+    expect(projects.calls('idea').map((r) => r.path)).toEqual([`/api/projects/alpha/ideas/${speech}`])
+    expect(projects.calls('chats')).toEqual([])
+  })
+
+  it("opens an idea's page on the Ideas tab when the address names another tab", async () => {
+    const projects = withServer()
+    await open(`/projects/alpha?tab=repositories&idea=${speech}`)
+    await expect.element(page.getByRole('heading', { name: 'Sample idea about speech', level: 2 })).toBeVisible()
+    expect(projects.calls('idea').map((r) => r.path)).toEqual([`/api/projects/alpha/ideas/${speech}`])
+    expect(projects.calls('repositories')).toEqual([])
+    expect(projects.calls('chats')).toEqual([])
+  })
+
+  it("draws an idea's image as a link when Settings turns images off", async () => {
+    settingsStore.getState().actions.setRichText('images', false)
+    withServer()
+    await open(`/projects/alpha?idea=${tags}`)
+    const idea = page.getByRole('article')
+    await expect.element(idea.getByRole('heading', { name: 'Sample proposal about tags', level: 2 })).toBeVisible()
+    await expect.element(idea.getByRole('link', { name: /A tag chart|tags\.png/ })).toBeVisible()
+    expect(idea.getByRole('img').elements()).toEqual([])
+  })
+
+  it('says an idea ID the contract refuses is not found, with no read', async () => {
+    const projects = withServer()
+    await open('/projects/alpha?tab=ideas&idea=..%2Fchats')
+    await expect.element(page.getByRole('heading', { name: 'Page not found' })).toBeVisible()
+    expect(projects.calls('idea')).toEqual([])
+    expect(projects.calls('chats')).toEqual([])
+  })
+
+  it('says an idea the server does not know is not found', async () => {
+    withServer()
+    await open('/projects/alpha?tab=ideas&idea=3f0c6a52-6a1e-4d55-9a4e-2f1b8f1d0a09')
+    await expect.element(page.getByRole('heading', { name: 'Page not found' })).toBeVisible()
+  })
 
   it('opens on the Ideas tab from its address, as a reload does, and goes back to the Overview', async () => {
     withServer()

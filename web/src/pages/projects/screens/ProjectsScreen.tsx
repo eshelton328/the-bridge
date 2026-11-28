@@ -44,6 +44,9 @@ export type ProjectsScreenProps = {
   onRunDrift?: (() => void) | undefined
   /** A Chats panel row was pressed (R7): open that chat. */
   onChatOpen?: ((id: string) => void) | undefined
+  /** An idea row was picked (R11), and Back to Ideas on its page. */
+  onIdeaOpen?: ((id: string) => void) | undefined
+  onIdeaBack?: (() => void) | undefined
 }
 
 export function ProjectsScreen({
@@ -61,6 +64,8 @@ export function ProjectsScreen({
   onQuickChatRetry,
   onRunDrift,
   onChatOpen,
+  onIdeaOpen,
+  onIdeaBack,
 }: ProjectsScreenProps) {
   // The project page of `ui.open` (R4); the home when it names no card.
   const open = data.projects.find((p) => p.slug === ui.open)
@@ -134,6 +139,8 @@ export function ProjectsScreen({
                     onBack={onBack}
                     onRunDrift={onRunDrift}
                     onChatOpen={onChatOpen}
+                    onIdeaOpen={onIdeaOpen}
+                    onIdeaBack={onIdeaBack}
                     onQuickChat={() => {
                       onUiChange?.({ quickChat: {} })
                     }}

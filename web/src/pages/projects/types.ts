@@ -44,7 +44,9 @@ export const ProjectPageWords = z.object({
   pulls: z.record(z.enum(['draft', 'ciFailed', 'ciRunning', 'inReview']), z.string()),
   /** Each Inbox kind's word, the name of its row's kind tile for assistive tech. */
   kinds: z.record(z.enum(['approval', 'question', 'review', 'action']), z.string()),
-  /** The Ideas tab (R10): the empty list, each kind and state. */
+  /** The Ideas tab and an idea's page (R10, R11): the back row to the list, the empty list, each kind and state. */
+  ideaBack: z.string(),
+  ideaBackLabel: z.string(),
   noIdeas: z.string(),
   ideaKinds: z.record(z.enum(['idea', 'proposal', 'audit']), z.string()),
   ideaStates: z.record(z.enum(['open', 'in-design', 'needs-you', 'decided', 'parked']), z.string()),
@@ -164,6 +166,10 @@ export type RepositoryRow = z.infer<typeof RepositoryRow>
 export const ProjectRepositories = z.object({ rows: z.array(RepositoryRow), notRead: z.string().optional() })
 export type ProjectRepositories = z.infer<typeof ProjectRepositories>
 
+/** An idea's page (R11): its row and its record's text as Markdown. */
+export const IdeaPage = z.object({ row: IdeaRow, body: z.string() })
+export type IdeaPage = z.infer<typeof IdeaPage>
+
 export const ProjectsData = z.object({
   title: z.string(),
   /** New project: drawn as the frames do; it has no action until increment four (d-133). */
@@ -184,6 +190,8 @@ export const ProjectsData = z.object({
   ideas: ProjectIdeas.optional(),
   /** The open project's Repositories tab (increment two), read when the tab shows; with none the tab draws nothing. */
   repositories: ProjectRepositories.optional(),
+  /** The idea whose page shows in place of the tabs (R11). */
+  idea: IdeaPage.optional(),
   /** The line of a read or a pin that missed, such as "Projects not read — the server answered 500". */
   notice: z.string().optional(),
 })
@@ -208,6 +216,8 @@ export const ProjectsUi = z.object({
   /** The project page's selected tab; Overview when not set. */
   tab: ProjectTab.optional(),
   quickChat: QuickChatStatus.optional(),
+  /** The ID of the idea whose page shows (`?idea=`, R11). */
+  idea: z.string().optional(),
   /** The Overview's groups the owner opened or closed; "Needs you" and "In progress" start open. */
   groupsOpen: z.partialRecord(z.enum(['needsYou', 'toReview', 'inProgress']), z.boolean()).optional(),
 })

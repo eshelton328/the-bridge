@@ -4,9 +4,10 @@
 // card as it is now) and `GET /api/projects/:slug` (the project, with no
 // repositories, and the test's open PRs and unread repositories by slug) and
 // `GET /api/projects/:slug/chats` (the test's chats of the project, none by
-// default), `GET /api/projects/:slug/ideas` (the test's ideas of the
-// project, none by default), `GET /api/projects/:slug/repositories` (the
-// test's sections of the project, none by default), `GET /api/projects/:slug/drift` (the test's last
+// default), `GET /api/projects/:slug/ideas` and `.../ideas/:id` (the test's
+// ideas of the project, none by default; an unknown idea is 404),
+// `GET /api/projects/:slug/repositories` (the test's sections of the
+// project, none by default), `GET /api/projects/:slug/drift` (the test's last
 // drift run, none by default) and `POST /api/projects/:slug/drift` (a clean run
 // now, kept as the last). Every project, body and answer is checked against the
 // contract, so a test cannot send or get what the server would not: a body the
@@ -31,7 +32,16 @@ import {
 import { errorAnswer } from './fakeTranscriptServer.ts'
 
 /** A request kind the fake takes. */
-export type ProjectsCall = 'list' | 'pin' | 'detail' | 'chats' | 'ideas' | 'repositories' | 'drift' | 'runDrift'
+export type ProjectsCall =
+  | 'list'
+  | 'pin'
+  | 'detail'
+  | 'chats'
+  | 'ideas'
+  | 'idea'
+  | 'repositories'
+  | 'drift'
+  | 'runDrift'
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } })
@@ -135,6 +145,7 @@ export function fakeProjectsServer(
       const chatsPath = /^\/api\/projects\/([^/]+)\/chats$/.exec(path)
       const ideasPath = /^\/api\/projects\/([^/]+)\/ideas$/.exec(path)
       const reposPath = /^\/api\/projects\/([^/]+)\/repositories$/.exec(path)
+      const ideaPath = /^\/api\/projects\/([^/]+)\/ideas\/([^/]+)$/.exec(path)
       const driftPath = /^\/api\/projects\/([^/]+)\/drift$/.exec(path)
       const call: ProjectsCall | undefined =
         path === '/api/projects' && method === 'GET'
@@ -149,11 +160,13 @@ export function fakeProjectsServer(
                   ? 'ideas'
                   : reposPath !== null && method === 'GET'
                     ? 'repositories'
-                    : driftPath !== null && method === 'GET'
-                      ? 'drift'
-                      : driftPath !== null && method === 'POST'
-                        ? 'runDrift'
-                        : undefined
+                    : ideaPath !== null && method === 'GET'
+                      ? 'idea'
+                      : driftPath !== null && method === 'GET'
+                        ? 'drift'
+                        : driftPath !== null && method === 'POST'
+                          ? 'runDrift'
+                          : undefined
       if (call === undefined) return undefined
       requests.push({ call, path, body: bodyOf(init) })
       const next = answers.get(call)
@@ -177,11 +190,16 @@ export function fakeProjectsServer(
           return errorAnswer({ kind: 'not-found', path, message: 'no project has this slug', requestId: 'r-404' }, 404)
         return json(sectionsOf.get(slug) ?? { repositories: [] })
       }
-      if (call === 'ideas') {
-        const slug = decodeURIComponent(ideasPath?.[1] ?? '')
+      if (call === 'ideas' || call === 'idea') {
+        const slug = decodeURIComponent((ideasPath ?? ideaPath)?.[1] ?? '')
         if (!stored.has(slug))
           return errorAnswer({ kind: 'not-found', path, message: 'no project has this slug', requestId: 'r-404' }, 404)
-        return json(IdeasResponse.parse({ ideas: (ideasOf.get(slug) ?? []).map((i) => i.idea) }))
+        const list = ideasOf.get(slug) ?? []
+        if (call === 'ideas') return json(IdeasResponse.parse({ ideas: list.map((i) => i.idea) }))
+        const found = list.find((i) => i.idea.id === decodeURIComponent(ideaPath?.[2] ?? ''))
+        if (found === undefined)
+          return errorAnswer({ kind: 'not-found', path, message: 'no idea has this ID', requestId: 'r-404' }, 404)
+        return json(found)
       }
       return pin(decodeURIComponent(pinPath?.[1] ?? ''), path, init)
     },

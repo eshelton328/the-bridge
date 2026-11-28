@@ -1,5 +1,6 @@
 // The Ideas tab (R10): a compact `ListRow` for each idea record, with its kind,
-// state and tags in the meta and its age at the end. Plain on every size for
+// state and tags in the meta and its age at the end; a row opens its idea's
+// page (R11). Plain on every size for
 // now; the frames' table (D08, T08, M08) is a later issue's. Props only.
 import { ListRow } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
@@ -16,13 +17,14 @@ export type IdeasListProps = {
   ideas: ProjectIdeas
   words: IdeaWords
   layout: Viewport
+  onOpen?: ((id: string) => void) | undefined
 }
 
 /** The row's meta: its kind, state and tags, as one line. */
-const ideaMeta = (idea: IdeaRow, words: IdeaWords) =>
+export const ideaMeta = (idea: IdeaRow, words: IdeaWords) =>
   [words.ideaKinds[idea.kind], words.ideaStates[idea.state], ...idea.tags].join(' · ')
 
-export function IdeasList({ ideas, words, layout }: IdeasListProps) {
+export function IdeasList({ ideas, words, layout, onOpen }: IdeasListProps) {
   if (ideas.notRead !== undefined)
     return (
       <p role="status" className={line}>
@@ -40,6 +42,7 @@ export function IdeasList({ ideas, words, layout }: IdeasListProps) {
             title={idea.title}
             meta={ideaMeta(idea, words)}
             trailing={idea.age}
+            onSelect={() => onOpen?.(idea.id)}
           />
         </li>
       ))}

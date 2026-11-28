@@ -1,12 +1,14 @@
 // A project's page in the shell's detail (D01, T01, T01b, M01; R4): its
 // header and its tabs, Overview, Repositories and Ideas (d-133). The
 // Overview shows the Inbox and Queue panels (R5, R6), the Repositories tab
-// each repository (increment two) and the Ideas tab the idea records (R10).
+// each repository (increment two) and the Ideas tab the idea records (R10);
+// an open idea's page shows in place of the tabs (R11).
 // The Overview's other panels are later issues'. Props only.
 import { BulbIcon, FolderIcon, GridIcon, ItemTabs } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { IdeasList } from '../blocks/IdeasList.tsx'
+import { IdeaView } from '../blocks/IdeaView.tsx'
 import { OverviewPanels } from '../blocks/OverviewPanels.tsx'
 import { RepositoriesList } from '../blocks/RepositoriesList.tsx'
 import { ProjectHeader } from '../blocks/ProjectHeader.tsx'
@@ -32,10 +34,14 @@ export type ProjectDetailProps = {
   onQuickChat?: (() => void) | undefined
   onRunDrift?: (() => void) | undefined
   onChatOpen?: ((id: string) => void) | undefined
+  /** Opens an idea's page (R11), and goes back from it to the Ideas tab. */
+  onIdeaOpen?: ((id: string) => void) | undefined
+  onIdeaBack?: (() => void) | undefined
 }
 
 export function ProjectDetail(props: ProjectDetailProps) {
-  const { project, data, ui, layout, onUiChange, onBack, onQuickChat, onRunDrift, onChatOpen } = props
+  const { project, data, ui, layout, onUiChange, onBack, onQuickChat, onRunDrift, onChatOpen, onIdeaOpen, onIdeaBack } =
+    props
   const words = data.page
   // The panels are the Overview tab's content, so its tab controls them; the tabs' 12 gap and the panels' own
   // top (12, or 6 on a phone) keep them 24 (18) under the tabs.
@@ -55,7 +61,14 @@ export function ProjectDetail(props: ProjectDetailProps) {
     data.repositories === undefined ? null : (
       <RepositoriesList repositories={data.repositories} words={words} layout={layout} />
     )
-  const ideas = data.ideas === undefined ? null : <IdeasList ideas={data.ideas} words={words} layout={layout} />
+  const ideas =
+    data.ideas === undefined ? null : <IdeasList ideas={data.ideas} words={words} layout={layout} onOpen={onIdeaOpen} />
+  if (ui.idea !== undefined && data.idea !== undefined)
+    return (
+      <div className={page[layout]}>
+        <IdeaView idea={data.idea} words={words} onBack={onIdeaBack} />
+      </div>
+    )
   return (
     <div className={page[layout]}>
       <ProjectHeader project={project} words={words} layout={layout} onBack={onBack} onQuickChat={onQuickChat} />
