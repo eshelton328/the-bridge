@@ -68,6 +68,8 @@ function slowServer() {
   const transcripts = fakeTranscriptServer()
   transcripts.set(plan, [user('u1', 'Fix the build'), reply('a1', 'Looking at the build now.')])
   let layoutReads = 0
+  let layoutAnswered = false
+  let listReads = 0
   let open: (() => void) | undefined
   const held = new Promise<void>((resolve) => {
     open = resolve
@@ -80,6 +82,7 @@ function slowServer() {
       if (/^\/api\/chats\/[^/]+\/transcript$/.test(path)) await held
       const transcript = transcripts.handle(path, init)
       if (transcript !== undefined) return transcript
+      if (path === '/api/workspaces' && !layoutAnswered) listReads += 1
       if (path === '/api/workspaces')
         return new Response(
           JSON.stringify({ machine: 'mac-mini', workspaces: [{ id: workspace, label: 'live work', chats }] }),
@@ -91,6 +94,7 @@ function slowServer() {
           await new Promise((resolve) => {
             setTimeout(resolve, layoutDelayMs)
           })
+        layoutAnswered = true
         return new Response(layout, { status: 200 })
       }
       if (path === '/api/events') {
@@ -108,6 +112,8 @@ function slowServer() {
     release: () => {
       open?.()
     },
+    /** The list reads before the first layout answer: while the loading layout shows. */
+    listReads: () => listReads,
   }
 }
 
@@ -189,4 +195,31 @@ describe('a Workspaces page whose first live read is slow (NCC-181)', () => {
       if (!device.taps) expect(document.querySelector(device.nav)).toBe(nav)
       expect(getReports()).toEqual([])
     })
+})
+
+// A `?chat=` link (a push notification's tap, d-118) waits for the first state: the loading layout's home lists no
+// chat, so the link read the list again, and a miss of that read cleared it (the review of the-bridge #624).
+it('reads the list no more while the loading layout shows with a ?chat= link, and opens the chat, on the phone', async () => {
+  const load = async (entry: string, shows: () => Promise<void>) => {
+    const server = slowServer()
+    const router = createRouter({ routeTree, history: createMemoryHistory({ initialEntries: [entry] }) })
+    view = await testRender(<RouterProvider router={router} />, rootErrorOptions)
+    await shows()
+    await view.unmount()
+    view = undefined
+    queryClient.clear()
+    resetAllStores()
+    return { reads: server.listReads(), search: router.state.location.searchStr }
+  }
+  await setViewport(390, 844)
+  const plain = await load('/workspaces', async () => {
+    await expect.element(page.getByText(title, { exact: true }).first(), { timeout: 2 * layoutDelayMs }).toBeVisible()
+  })
+  const linked = await load(`/workspaces?chat=${encodeURIComponent(plan)}`, async () => {
+    await expect.element(page.getByRole('heading', { name: title }), { timeout: 2 * layoutDelayMs }).toBeVisible()
+    // The chat's own pane: its transcript read is held, so it shows the chat's skeleton.
+    await expect.element(page.getByRole('status', { name: 'Loading this chat' })).toBeInTheDocument()
+  })
+  expect(linked.reads).toBe(plain.reads)
+  expect(linked.search).toBe('')
 })
