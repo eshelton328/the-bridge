@@ -36,7 +36,15 @@ describe('createSnapshotRunner', () => {
     const { runner, sync } = setup({ read })
     expect(await runner.run({ ...key, repositories: onGithub })).toEqual(ok({ model, commit }))
     expect(sync).toHaveBeenCalledWith({ owner: 'owner', name: 'the-repo' })
-    expect(read).toHaveBeenCalledWith('/snapshots/owner/the-repo')
+    expect(read).toHaveBeenCalledWith('/snapshots/owner/the-repo', [])
+  })
+
+  it("gives the reader the IDs of the project's other repositories", async () => {
+    const read = vi.fn<SnapshotReader['read']>(() => Promise.resolve(ok(model)))
+    const { runner } = setup({ read })
+    const library = { id: RepositoryId.parse('the-library'), role: 'the library', github: null }
+    await runner.run({ ...key, repositories: [...onGithub, library] })
+    expect(read).toHaveBeenCalledWith('/snapshots/owner/the-repo', ['the-library'])
   })
 
   it('holds the snapshot lock, so a drift run of that snapshot waits for the read', async () => {
