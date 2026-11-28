@@ -44,6 +44,11 @@ moves to `web/src/blocks/`.
   meta on the phone, each part not read named), then the CI numbers or
   their line. The frames' sections and
   tiles are later PRs'.
+- `QaList` is the QA tab: an h3 and a list for each group with items
+  (Before merge, then After merge) of compact `ListRow` rows (issue ID and
+  `<repository>#<pr>` in the meta, the status and worktree at the end, or
+  after the meta on the phone). The frames' tables, search, chips and pager
+  are later PRs'.
 - `ContextDrift` is the Context drift panel (R9): `PageHeader` with the
   secondary Run check and its `RefreshIcon` (off while `busy`) over a
   `Panel` with the check's time and scope and a compact `ListRow` for each
