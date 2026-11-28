@@ -12,7 +12,8 @@ import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { useEffect, useRef, useState } from 'react'
 import { useInboxBadge, useInboxChanges, useProjectsChanges } from '../../lib/inboxFeed.ts'
 import { navRoute } from '../../lib/navRoutes.ts'
-import { useVisibleNavPages } from '../../state/settingsStore.ts'
+import { MarkdownFeaturesContext } from '../../blocks/markdownFeatures.ts'
+import { useSettingsRichText, useVisibleNavPages } from '../../state/settingsStore.ts'
 import type { ProjectChats, ProjectInbox } from './liveProjects.ts'
 import type { QuickChatAttempt } from './liveQuickChat.ts'
 import { ProjectsScreen } from './screens/ProjectsScreen.tsx'
@@ -37,6 +38,8 @@ export function ProjectPage() {
     ...(idea === undefined ? {} : { idea }),
   })
   const live = state.data.live !== undefined
+  // The owner's rich text settings, for an idea's page (Settings → Rich text).
+  const richText = useSettingsRichText()
   const railBadge = useInboxBadge(state.data.railBadge, live)
   // The Inbox panel's latest read after a change, for the loaded state it replaces.
   const [inbox, setInbox] = useState<{ of: typeof state; read: ProjectInbox } | undefined>(undefined)
@@ -135,34 +138,36 @@ export function ProjectPage() {
   }
   const slug = state.ui.open
   return (
-    <ProjectsScreen
-      settingsEntry
-      navPages={navPages}
-      data={{ ...state.data, railBadge, overview: overview && { ...overview, drift: shownDrift } }}
-      ui={ui}
-      viewport="desktop"
-      onNavigate={(page) => {
-        const to = navRoute(page)
-        if (to !== undefined) void navigate({ to })
-      }}
-      onUiChange={(change) => {
-        if ('quickChat' in change && change.quickChat === undefined) runRef.current += 1
-        if (change.tab !== undefined) void navigate({ search: view(change.tab) })
-        else changeUi(change)
-      }}
-      onBack={() => void navigate({ to: '/projects', search: { source: search.source } })}
-      onQuickChatSend={
-        state.data.live === undefined || slug === undefined
-          ? undefined
-          : (text) => run({ project: slug, text, createId: crypto.randomUUID(), sendId: crypto.randomUUID() })
-      }
-      onRunDrift={state.data.live === undefined ? undefined : () => void runDrift()}
-      onChatOpen={(chat) => void navigate({ to: '/workspaces', search: { chat } })}
-      onIdeaOpen={(idea) => void navigate({ search: view('ideas', idea) })}
-      onIdeaBack={() => void navigate({ search: view('ideas') })}
-      onQuickChatRetry={() => {
-        if (attemptRef.current !== undefined) void run(attemptRef.current)
-      }}
-    />
+    <MarkdownFeaturesContext value={richText}>
+      <ProjectsScreen
+        settingsEntry
+        navPages={navPages}
+        data={{ ...state.data, railBadge, overview: overview && { ...overview, drift: shownDrift } }}
+        ui={ui}
+        viewport="desktop"
+        onNavigate={(page) => {
+          const to = navRoute(page)
+          if (to !== undefined) void navigate({ to })
+        }}
+        onUiChange={(change) => {
+          if ('quickChat' in change && change.quickChat === undefined) runRef.current += 1
+          if (change.tab !== undefined) void navigate({ search: view(change.tab) })
+          else changeUi(change)
+        }}
+        onBack={() => void navigate({ to: '/projects', search: { source: search.source } })}
+        onQuickChatSend={
+          state.data.live === undefined || slug === undefined
+            ? undefined
+            : (text) => run({ project: slug, text, createId: crypto.randomUUID(), sendId: crypto.randomUUID() })
+        }
+        onRunDrift={state.data.live === undefined ? undefined : () => void runDrift()}
+        onChatOpen={(chat) => void navigate({ to: '/workspaces', search: { chat } })}
+        onIdeaOpen={(idea) => void navigate({ search: view('ideas', idea) })}
+        onIdeaBack={() => void navigate({ search: view('ideas') })}
+        onQuickChatRetry={() => {
+          if (attemptRef.current !== undefined) void run(attemptRef.current)
+        }}
+      />
+    </MarkdownFeaturesContext>
   )
 }

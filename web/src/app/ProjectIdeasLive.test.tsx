@@ -14,6 +14,7 @@ import { answerLateServerReads } from '../lib/lateServerReads.ts'
 import { queryClient } from '../lib/queryClient.ts'
 import { setViewport } from '../lib/rendering.ts'
 import { testRender, unmountRendered } from '../lib/testRender.ts'
+import { settingsStore } from '../state/settingsStore.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { withInboxFeed } from './inboxLiveHelpers.ts'
 import { routeTree } from './routeTree.gen.ts'
@@ -36,6 +37,7 @@ afterEach(async () => {
 })
 
 const speech = '3f0c6a52-6a1e-4d55-9a4e-2f1b8f1d0a01'
+const tags = '3f0c6a52-6a1e-4d55-9a4e-2f1b8f1d0a02'
 const ideas = [
   {
     id: speech,
@@ -47,7 +49,7 @@ const ideas = [
     updated: '2026-11-25T10:00:00.000Z',
   },
   {
-    id: '3f0c6a52-6a1e-4d55-9a4e-2f1b8f1d0a02',
+    id: tags,
     title: 'Sample proposal about tags',
     summary: 'Tag each chat with its project.',
     tags: [],
@@ -57,12 +59,13 @@ const ideas = [
   },
 ]
 const body = '# Sample idea about speech\n\nTalk to a chat from the phone.\n\n## Open questions\n\n- Which engine?\n'
+const tagsBody = '# Sample proposal about tags\n\n![A tag chart](https://example.com/tags.png)\n'
 
 /** The fakes as the page's fetch: Alpha with two ideas and an empty Inbox. */
 function withServer() {
   const projects = fakeProjectsServer(
     [{ slug: 'alpha', name: 'Alpha', purpose: 'Made up.', icon: null, pinned: false }],
-    { ideas: { alpha: ideas.map((idea) => ({ idea, body: idea.id === speech ? body : '' })) } },
+    { ideas: { alpha: ideas.map((idea) => ({ idea, body: idea.id === speech ? body : tagsBody })) } },
   )
   const inbox = fakeInboxServer({ items: [] })
   vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -121,6 +124,16 @@ describe("A project's Ideas tab (R10)", () => {
     await expect.element(page.getByRole('heading', { name: 'Sample idea about speech', level: 2 })).toBeVisible()
     expect(projects.calls('idea').map((r) => r.path)).toEqual([`/api/projects/alpha/ideas/${speech}`])
     expect(projects.calls('chats')).toEqual([])
+  })
+
+  it("draws an idea's image as a link when Settings turns images off", async () => {
+    settingsStore.getState().actions.setRichText('images', false)
+    withServer()
+    await open(`/projects/alpha?idea=${tags}`)
+    const idea = page.getByRole('article')
+    await expect.element(idea.getByRole('heading', { name: 'Sample proposal about tags', level: 2 })).toBeVisible()
+    await expect.element(idea.getByRole('link', { name: /A tag chart|tags\.png/ })).toBeVisible()
+    expect(idea.getByRole('img').elements()).toEqual([])
   })
 
   it('says an idea the server does not know is not found', async () => {
