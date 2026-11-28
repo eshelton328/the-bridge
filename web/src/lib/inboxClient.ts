@@ -152,6 +152,8 @@ export type WatchInboxDeps = {
   readonly onWorkspaces?: () => void
   /** A chat's status changed (`chat.status`, NCC-149). A frame the contract refuses gives no call. */
   readonly onChatStatus?: (event: ChatStatusEvent['data']) => void
+  /** The stream opened (its `open` frame), the first time too; an event sent while it was closed is lost. */
+  readonly onOpen?: () => void
   readonly open?: OpenStream
   /** How long a burst of events waits before it gives one `onChange`, in ms. */
   readonly settleMs?: number
@@ -182,6 +184,7 @@ export function watchInboxChanges({
   onProjects,
   onWorkspaces,
   onChatStatus,
+  onOpen,
   open = openEvents,
   settleMs = 100,
   random = () => Math.random(),
@@ -229,6 +232,7 @@ export function watchInboxChanges({
         backoff.reset()
         for await (const frame of frames(res.body)) {
           // Each open, the first too, may follow events the page missed while the stream was closed (the contract's rule).
+          if (frame.event === 'open') onOpen?.()
           if (frame.event === 'open' || frame.event === 'inbox.changed') changed()
           if (frame.event === 'projects.changed') onProjects?.()
           if (frame.event === 'open' || frame.event === 'workspaces.changed') workspacesChanged()

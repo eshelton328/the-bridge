@@ -100,8 +100,8 @@ T10b, M10 for the home, D01, T01, T01b, M01 for a project's page), read with
     (`GET .../repositories/:repo/ci`, R4): green of finished runs, a green
     run's median minutes and "as of" the read's age when it is older than
     10 minutes; "Reading CI" while the first read runs, "CI not read" for
-    a miss or no numbers. On `projects.changed` the loader reads them
-    again.
+    a miss or no numbers. On `projects.changed`, and when the feed's
+    stream opens again, the loader reads them again.
     `app/ProjectRepositoriesLive.test.tsx` checks it at 1440, 1024 and
     390 px with the fake.
   - report() gets only a miss the server answered, as `ProjectsMissError`

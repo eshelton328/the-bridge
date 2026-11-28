@@ -14,7 +14,10 @@ not-found components, so no route needs a boundary of its own (d-084).
   `GET /api/inbox` per `inbox.changed` burst and per stream open, and
   no timer but the restart grace: a read with no answer (or a 5xx with no
   error body) keeps the count with no report for 10 s, then reads once
-  more and reports one miss for the outage (review R43b). A page entry reads it with `useInboxBadge` (`lib/inboxFeed.ts`)
+  more and reports one miss for the outage (review R43b). Each open of
+  its stream after the first also calls the `projects.changed`
+  followers, as a change sent while the stream was closed is lost
+  (`ProjectRepositoriesLive.test.tsx`). A page entry reads it with `useInboxBadge` (`lib/inboxFeed.ts`)
   and passes the count to its screen, so `AppRail` and `AppTabBar` stay
   props-only. A live page shows no sample number; `?state=`,
   `?source=fixtures` and stories keep theirs (`InboxBadgeLive.test.tsx`).

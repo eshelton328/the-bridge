@@ -30,6 +30,8 @@ document.documentElement.dataset.pandaTheme = 'viewscreen'
 answerLateServerReads()
 
 afterEach(async () => {
+  Reflect.deleteProperty(document, 'visibilityState')
+  Reflect.deleteProperty(document, 'hidden')
   await unmountRendered()
   vi.unstubAllGlobals()
   queryClient.clear()
@@ -132,6 +134,18 @@ async function open(path: string, width = 1440, height = 900) {
   return router
 }
 
+/** Makes the page hidden (`hidden` true) or visible again, with the events Safari sends. */
+function setHidden(hidden: boolean) {
+  Object.defineProperty(document, 'visibilityState', {
+    configurable: true,
+    get: () => (hidden ? 'hidden' : 'visible'),
+  })
+  Object.defineProperty(document, 'hidden', { configurable: true, get: () => hidden })
+  if (hidden) window.dispatchEvent(new PageTransitionEvent('pagehide', { persisted: true }))
+  document.dispatchEvent(new Event('visibilitychange'))
+  if (!hidden) window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }))
+}
+
 const repoList = () => page.getByRole('list', { name: 'Repositories' })
 
 describe("A project's Repositories tab (increment two)", () => {
@@ -205,6 +219,20 @@ describe("A project's Repositories tab (increment two)", () => {
     await expect.element(repoList().getByText('CI 19/20 green · 6.5 min a run', { exact: true })).toBeVisible()
     await expect.element(repoList().getByText('No finished CI runs in 30 days', { exact: true })).toBeVisible()
     expect(projects.calls('ci')).toHaveLength(4)
+  })
+
+  it('reads the CI numbers again when the page comes back from the background, as a projects.changed may be lost', async () => {
+    const projects = withServer()
+    await open('/projects/alpha?tab=repositories')
+    await expect.element(repoList().getByText('Reading CI', { exact: true })).toBeVisible()
+    await expect.poll(() => inbox.streams()).toBe(1)
+    setHidden(true)
+    await expect.poll(() => inbox.streams()).toBe(0)
+    // The first CI read ends while the page is in the background: its projects.changed reaches no stream.
+    projects.setCi('alpha', 'example-lib', appCi(0, 5))
+    inbox.emit('projects.changed')
+    setHidden(false)
+    await expect.element(repoList().getByText('CI 5/20 green · 6.5 min a run', { exact: true })).toBeVisible()
   })
 
   it('says CI not read for a CI read that misses or a repository the server has no CI for, and keeps the rows', async () => {
