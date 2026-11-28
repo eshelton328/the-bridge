@@ -50,6 +50,13 @@ export const ProjectPageWords = z.object({
   noIdeas: z.string(),
   ideaKinds: z.record(z.enum(['idea', 'proposal', 'audit']), z.string()),
   ideaStates: z.record(z.enum(['open', 'in-design', 'needs-you', 'decided', 'parked']), z.string()),
+  /** The Ideas tab's search and sort (NCC-132 AC1): their labels, each sort's name and the line when no idea matches. */
+  ideaTools: z.object({
+    search: z.string(),
+    sort: z.string(),
+    sorts: z.record(z.enum(['updated', 'title', 'kind', 'state']), z.string()),
+    noMatch: z.string(),
+  }),
   /**
    * The Chats panel (R7): its heading, the line with no chat and each status's pill word, as Workspaces words it;
    * the search's name, the chip row's name and the line when no chat matches.

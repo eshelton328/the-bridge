@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { expect, fn } from 'storybook/test'
+import { expect, fn, screen } from 'storybook/test'
 import type { IdeaRow } from '../types.ts'
 import { IdeasList } from './IdeasList.tsx'
 
@@ -13,6 +13,12 @@ const words = {
     'needs-you': 'Needs you',
     decided: 'Decided',
     parked: 'Parked',
+  },
+  ideaTools: {
+    search: 'Search ideas',
+    sort: 'Sort by',
+    sorts: { updated: 'Updated', title: 'Idea', kind: 'Kind', state: 'State' },
+    noMatch: 'No idea matches',
   },
 }
 const row: IdeaRow = {
@@ -53,5 +59,42 @@ export const NotRead: Story = {
   args: { ideas: { rows: [], notRead: 'Ideas not read — the server answered 500' } },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole('status')).toHaveTextContent('Ideas not read — the server answered 500')
+  },
+}
+
+const three: IdeaRow[] = [
+  row,
+  { ...row, id: 'sample-2', title: 'Another idea about tags', tags: [], kind: 'proposal', state: 'open' },
+  { ...row, id: 'sample-3', title: 'Bridge audit of the library', tags: ['audit'], kind: 'audit', state: 'parked' },
+]
+const titles = (canvas: { getAllByRole: (role: 'listitem') => HTMLElement[] }) =>
+  canvas.getAllByRole('listitem').map((li) => li.textContent.split(/Idea|Proposal|Audit/)[0])
+
+export const Sorted: Story = {
+  args: { ideas: { rows: three } },
+  play: async ({ canvas, userEvent }) => {
+    await expect(titles(canvas)).toEqual([
+      'Sample idea about speech',
+      'Another idea about tags',
+      'Bridge audit of the library',
+    ])
+    await userEvent.click(canvas.getByRole('button', { name: /Sort by/ }))
+    await userEvent.click(await screen.findByRole('menuitemradio', { name: 'Idea' }))
+    await expect(titles(canvas)).toEqual([
+      'Another idea about tags',
+      'Bridge audit of the library',
+      'Sample idea about speech',
+    ])
+  },
+}
+
+export const Searched: Story = {
+  args: { ideas: { rows: three } },
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.type(canvas.getByRole('searchbox', { name: 'Search ideas' }), 'parked')
+    await expect(canvas.getAllByRole('listitem')).toHaveLength(1)
+    await expect(canvas.getByText('Bridge audit of the library')).toBeVisible()
+    await userEvent.type(canvas.getByRole('searchbox', { name: 'Search ideas' }), ' nothing')
+    await expect(canvas.getByText('No idea matches')).toBeVisible()
   },
 }

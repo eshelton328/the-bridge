@@ -64,8 +64,9 @@ T10b, M10 for the home, D01, T01, T01b, M01 for a project's page), read with
     `GET /api/projects/:slug/ideas`, or `.../ideas/:id` for an idea, and no
     chats; the Overview reads no ideas. An idea the server does not know is
     not found; a list or an idea that misses shows one line ("Ideas not
-    read — the server answered 500"). `app/ProjectIdeasLive.test.tsx` checks it at
-    1440, 1024 and 390 px with the fake.
+    read — the server answered 500"). The search, the sort and the 10-row
+    pager work on the rows read. `app/ProjectIdeasLive.test.tsx` checks it
+    at 1440, 1024 and 390 px with the fake.
   - The same read fills the Context drift panel (R9) from
     `GET /api/projects/:slug/drift`. Run check's POST answers when the check
     ends (at most 60 s), so it waits 75 s; the server keeps no busy state, so

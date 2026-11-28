@@ -47,6 +47,12 @@ export const menuOpen = {
         decided: 'Decided',
         parked: 'Parked',
       },
+      ideaTools: {
+        search: 'Search ideas',
+        sort: 'Sort by',
+        sorts: { updated: 'Updated', title: 'Idea', kind: 'Kind', state: 'State' },
+        noMatch: 'No idea matches',
+      },
       chats: {
         title: 'Chats',
         none: 'No chats tagged with this project',

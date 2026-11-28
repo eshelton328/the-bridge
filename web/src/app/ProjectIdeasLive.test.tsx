@@ -62,12 +62,12 @@ const body = '# Sample idea about speech\n\nTalk to a chat from the phone.\n\n##
 const tagsBody = '# Sample proposal about tags\n\n![A tag chart](https://example.com/tags.png)\n'
 
 /** The fakes as the page's fetch: Alpha with two ideas and an empty Inbox. */
-function withServer() {
+function withServer(list = ideas) {
   const projects = fakeProjectsServer(
     [{ slug: 'alpha', name: 'Alpha', purpose: 'Made up.', icon: null, pinned: false }],
     {
       ideas: {
-        alpha: ideas.map((idea) => ({
+        alpha: list.map((idea) => ({
           idea,
           body: idea.id === speech ? body : tagsBody,
           file: `ideas/${idea.id}.md`,
@@ -159,6 +159,27 @@ describe("A project's Ideas tab (R10)", () => {
     await expect.element(page.getByRole('heading', { name: 'Page not found' })).toBeVisible()
     expect(projects.calls('idea')).toEqual([])
     expect(projects.calls('chats')).toEqual([])
+  })
+
+  it('pages 16 ideas 10 at a time, and a search goes back to page 1 (AC1)', async () => {
+    const many = Array.from({ length: 16 }, (_, n) => ({
+      summary: '',
+      tags: [],
+      kind: 'proposal',
+      state: 'open',
+      updated: '2026-11-20T10:00:00.000Z',
+      id: `3f0c6a52-6a1e-4d55-9a4e-2f1b8f1d1${String(n).padStart(3, '0')}`,
+      title: `Idea number ${String(n + 1)}`,
+    }))
+    withServer(many)
+    await open('/projects/alpha?tab=ideas')
+    await expect.element(page.getByText('1–10 of 16')).toBeVisible()
+    expect(ideaList().getByRole('listitem').elements()).toHaveLength(10)
+    await userEvent.click(page.getByRole('button', { name: 'Next page' }))
+    await expect.element(page.getByText('11–16 of 16')).toBeVisible()
+    expect(ideaList().getByRole('listitem').elements()).toHaveLength(6)
+    await userEvent.fill(page.getByRole('searchbox', { name: 'Search ideas' }), 'number 1')
+    await expect.element(page.getByText('1–8 of 8')).toBeVisible()
   })
 
   it('says an idea the server does not know is not found', async () => {

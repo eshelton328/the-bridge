@@ -24,8 +24,12 @@ moves to `web/src/blocks/`.
   word (`words.kinds`) as its `title`, so assistive tech names the kind.
   `ProjectDetail` passes the block as the Overview tab's `content`, so the
   tab's `aria-controls` panel holds it.
-- `IdeasList` is the Ideas tab: a list of compact `ListRow` rows (kind,
-  state and tags in the meta, the age at the end); a row opens its idea.
+- `IdeasList` is the Ideas tab: a `SearchField` (title, tags, kind and
+  state words) and a `SelectField` sort (Updated, the server's order, or
+  Idea, Kind or State) over compact `ListRow` rows (kind, state and tags in
+  the meta, the age at the end), with the library `Pager` (10, 25 or 50
+  rows). It keeps the search, sort and page in `useState`; a search or a
+  sort goes back to page 1. A row opens its idea.
   `IdeaView` is an idea's page: `BackRow` (Back to Ideas), the title as an
   `h2`, and the record's text with `MarkdownText`, less its first `# `
   heading. Each takes only the words it draws. The frames' table and page
