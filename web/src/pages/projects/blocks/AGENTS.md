@@ -11,7 +11,9 @@ moves to `web/src/blocks/`.
   project's page; the ⋯ button lifts over the card's button.
 - `ProjectTile` draws the project's library icon when its `icon` names one
   in the tile's list, else the first letter of its name in capitals; its
-  `picture` size is the 64 px square of a project's page.
+  `picture` size is the 64 px square of a project's page. Its
+  `projectIcons` map satisfies the contract's `ProjectIconName`, so the
+  two lists cannot drift.
 - `ProjectHeader` is a project page's head: `BackRow` with Quick chat at its
   end, then the picture beside the name and purpose.
 - `QuickChat` is Quick chat's composer: the library `Dialog` and `Composer`
