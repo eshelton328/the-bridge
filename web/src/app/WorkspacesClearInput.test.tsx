@@ -13,7 +13,7 @@ import { RouteError } from '../errors/RouteError.tsx'
 import { resetRetries } from '../errors/retryGuard.ts'
 import { errorAnswer, type FakeTranscriptServer, fakeTranscriptServer } from '../lib/fakeTranscriptServer.ts'
 import { queryClient } from '../lib/queryClient.ts'
-import { setViewport } from '../lib/rendering.ts'
+import { afterRendering, setViewport } from '../lib/rendering.ts'
 import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
@@ -401,9 +401,18 @@ describe('a chat switch around "Clear the terminal input", on the phone (R28 par
   it('keeps the page out of reach while the dialog shows, and clears nothing when the owner then opens another chat', async () => {
     const fake = withChats()
     await sendIntoTypedInput(fake, phone)
+    const back = page.getByRole('button', { name: 'Back to Workspaces' }).first().element()
     await askToClear()
     // The dialog is modal: while it shows, the chat's back and the rest of the page are out of reach, so no switch
     // starts from the page. Escape (or Cancel) closes it; the back then opens the list.
+    // A tap: from the frame the dialog shows, its cover is on top at the back's centre.
+    const at = back.getBoundingClientRect()
+    const onTop = document.elementFromPoint(at.x + at.width / 2, at.y + at.height / 2)
+    expect(onTop !== null && back.contains(onTop)).toBe(false)
+    // Assistive tech: the dialog hides the rest of the page one frame after it shows (NCC-133: in that frame the
+    // back is still in the role tree), so this check waits two rendering steps.
+    await afterRendering()
+    await afterRendering()
     expect(page.getByRole('button', { name: 'Back to Workspaces' }).elements()).toHaveLength(0)
     await userEvent.keyboard('{Escape}')
     await expect.element(dialog()).not.toBeInTheDocument()
