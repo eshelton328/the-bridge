@@ -1,3 +1,26 @@
+export {
+  ArchitectureArrow,
+  ArchitectureBoundary,
+  ArchitectureModel,
+  ArchitecturePart,
+  ArchitectureResponse,
+  ArchitectureScope,
+  ArchitectureScopeResponse,
+  ArchitectureScopeState,
+  maxArchitectureArrows,
+  maxArchitectureBoundaries,
+  maxArchitectureParts,
+  maxArchitectureText,
+  maxStackBadge,
+  maxStackBadges,
+  maxStackGroups,
+  PartShape,
+  RegenerateRequest,
+  RegenerateResponse,
+  RepositoryPath,
+  StackGroup,
+  systemScope,
+} from './architecture.ts'
 // The package entry. Name each export; no `export *`.
 export {
   ArtifactId,
@@ -262,6 +285,7 @@ export {
 } from './sideAnswers.ts'
 export { ChatSkill, ChatSkillsResponse, maxSkillDescription, maxSkills, SkillSource } from './skills.ts'
 export {
+  ArchitectureChangedEvent,
   ChatStatusEvent,
   InboxChangedEvent,
   LayoutChangedEvent,

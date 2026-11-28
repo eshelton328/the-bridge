@@ -208,6 +208,7 @@ async function missOf(action: WorkspaceEdit, res: Response): Promise<EditAnswer>
     case 'storage-full':
     case 'inbox-read-only':
     case 'qa-not-ready':
+    case 'architecture-busy':
     case 'linear-bad-reply':
     case 'linear-unavailable':
     case 'project-not-ready':
@@ -364,6 +365,7 @@ async function createMissOf(res: Response): Promise<CreateAnswer> {
     case 'forbidden':
     case 'inbox-read-only':
     case 'qa-not-ready':
+    case 'architecture-busy':
     case 'linear-bad-reply':
     case 'linear-unavailable':
     case 'project-not-ready':

@@ -190,6 +190,19 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
   is an integer 0 to 4, and a PR is `local` exactly when it names no
   issue. An idea state body is `parked` or `open`
   only. `queue.changed` carries only the slug.
+- The Architecture tab (f-008 increment two, `architecture.ts`): a scope
+  is `@system` (which no `RepositoryId` parses) or a repository's ID. A
+  diagram is a strict model of parts (a shape, `ours`, a type line and an
+  optional boundary), boundaries and labelled arrows; a refine checks that
+  each arrow and boundary it names is in it. A folder or file part's name
+  is its path relative to its repository's root (POSIX, no `..`, no
+  leading `/`, no control character): the one place besides a drift
+  finding where the contract carries a repository path. Each text and list
+  has a maximum. A scope's state gives its commit (40 hex) and time or
+  null, and `stale` and `running` (in memory: false after a restart). A
+  regenerate while a run of another scope goes is 409
+  `architecture-busy`. `architecture.changed` carries the slug and scope
+  only (`architecture.test.ts`).
 - The QA tab (f-008 increment three, `qa.ts`): an issue is named by its
   Linear key (`QaIssueId`, such as `NCC-12`), so a path word such as
   `stop` is never one, and a draft by a 16-hex `QaDraftId`. An item
