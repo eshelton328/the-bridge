@@ -43,6 +43,7 @@ const logMessages = [
   'ci read failed',
   'ci read timed',
   'files read failed',
+  'qa read failed',
 ] as const
 export type LogMessage = (typeof logMessages)[number]
 const listed: ReadonlySet<unknown> = new Set(logMessages)

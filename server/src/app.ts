@@ -11,6 +11,7 @@ import { artifactsRoutes } from './routes/artifacts.ts'
 import { filesRoutes } from './routes/files.ts'
 import { inboxRoutes } from './routes/inbox.ts'
 import { projectsRoutes } from './routes/projects.ts'
+import { qaRoutes } from './routes/qa.ts'
 import { chatsRoutes } from './routes/chats.ts'
 import { sidesRoutes } from './routes/sides.ts'
 import { createSideAnswers } from './services/sideAnswers.ts'
@@ -24,6 +25,7 @@ import { type Artifacts, createArtifacts } from './services/artifacts.ts'
 import { createFiles, type Files } from './services/files.ts'
 import { createInbox, type Inbox } from './services/inbox.ts'
 import { noProjects, type Projects } from './services/projects.ts'
+import { noQa, type Qa } from './services/qa.ts'
 import { createLiveEvents, type InboxWatch } from './services/liveEvents.ts'
 import { createNewChats } from './services/newChats.ts'
 import { createPushSeen, type PushSeen, type PushStore } from './services/push.ts'
@@ -54,6 +56,8 @@ export type AppDeps = {
   readonly files?: Files
   /** The Projects app (f-008); with none, each projects route answers 500. main.ts gives the brain, gh, ncc and the disk stores. */
   readonly projects?: Projects
+  /** The QA tab (f-008 increment three); with none, each QA route answers 503. */
+  readonly qa?: Qa
 }
 
 /** The store of an app with none: each call fails, so an upload answers 500 and is logged. */
@@ -120,6 +124,7 @@ export function createApp({
   watchProjects,
   files = noFiles,
   projects = noProjects,
+  qa = noQa,
 }: AppDeps) {
   const live = createLiveEvents(agents, watchInbox, watchProjects)
   return (
@@ -158,6 +163,7 @@ export function createApp({
       .route('/api/artifacts', artifactsRoutes(artifacts, agents, log))
       .route('/api/inbox', inboxRoutes(inbox, log, live.inboxChanged))
       .route('/api/files', filesRoutes(files, log))
+      .route('/api/projects', qaRoutes(qa, log))
       .route('/api/projects', projectsRoutes(projects, log))
       .route('/api/client-errors', clientErrorsRoutes(log, createRateLimit(60, 60_000)))
       .notFound((c) => errorJson(c, 'not-found', { path: c.req.path, message: 'no route has this path' }))

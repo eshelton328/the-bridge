@@ -223,3 +223,7 @@ Thin Hono sub-apps, one file for each area, named after the area
   a store fault is 500 with its code in the log only; herdr's fault on
   `GET /:slug/chats` is 503 or 502 through `agentErrorJson`, as on the
   workspaces routes (`projects.test.ts`).
+- `qa.ts`: `GET /api/projects/:slug/qa` lists the QA items; 404 for no
+  project, 503 `linear-unavailable` (also with no key), 502
+  `linear-bad-reply`, 500 for a key file fault. The log line holds the
+  reason and code only, never a key, title or text (`qa.test.ts`).

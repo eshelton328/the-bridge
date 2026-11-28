@@ -52,9 +52,16 @@ export function askOf(comments: readonly QaCommentText[], repositories: readonly
   return { repository, pr, steps, at: found.createdAt }
 }
 
-/** The newest answer of an issue's comments and its time, or null when it has none. */
-export function answerOf(comments: readonly QaCommentText[]): { answer: QaAnswer; at: string } | null {
-  for (const c of newestFirst(comments)) {
+/**
+ * The newest answer of an issue's comments and its time, or null when it has none. Only a comment whose ID is in
+ * `recorded` (the answers that the server posted for this issue) counts: the key is the owner's, as is each agent
+ * chat's Linear access, so the author cannot tell them apart.
+ */
+export function answerOf(
+  comments: readonly QaCommentText[],
+  recorded: ReadonlySet<string>,
+): { answer: QaAnswer; at: string } | null {
+  for (const c of newestFirst(comments.filter((c) => recorded.has(c.id)))) {
     const answer = answerWord(c)
     if (answer !== undefined) return { answer, at: c.createdAt }
   }

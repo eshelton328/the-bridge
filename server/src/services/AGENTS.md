@@ -161,5 +161,15 @@ from the outside world.
   only when `project.yaml` lists it, and its `PR:` only as a positive
   integer of that repository; its numbered lines are the steps, cut to the
   contract's limits. `QA answer: <Approved|Changes requested|Denied>` is an
-  answer, and any other word none (`qaAsk.test.ts`). No comment text goes
-  into a log.
+  answer, and any other word none, and only when its comment ID is one the
+  server recorded when it posted it: the key is the owner's, as is each
+  agent chat's Linear access, so the author cannot tell them apart. Submit
+  (build plan PR 11) records them; until then the record is empty, so no
+  issue has an answer: each row waits, and "After merge" lists each `Main`
+  issue in Done (`qaAsk.test.ts`). No comment text goes into a log.
+- `qa.ts` lists the `Branch` issues in QA and the `Main` issues in Done
+  with no answer of the project's `linearTeam`, through the Linear port
+  (`LinearIssues`). A read is kept 30 s from its end and shared while it
+  runs; a failed or thrown one is not kept. A comment time that is not ISO
+  is left out; with no port (no key) a read is `unavailable`
+  (`../routes/qa.test.ts`, a fake Linear).

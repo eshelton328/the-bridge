@@ -3,7 +3,11 @@ import { describe, expect, it } from 'vitest'
 import { answerOf, askOf, isQaComment } from './qaAsk.ts'
 
 const repos = [RepositoryId.parse('the-bridge')]
-const comment = (body: string, createdAt = '2026-11-27T10:00:00.000Z') => ({ id: 'c', body, createdAt })
+const comment = (body: string, createdAt = '2026-11-27T10:00:00.000Z', id = `c-${createdAt}`) => ({
+  id,
+  body,
+  createdAt,
+})
 const ask = (repo: string, pr: string) =>
   comment(
     [
@@ -45,8 +49,13 @@ describe('answerOf', () => {
       comment('QA answer: Approved\nThanks', '2026-11-27T12:00:00.000Z'),
       comment('QA answer: maybe', '2026-11-27T13:00:00.000Z'),
     ]
-    expect(answerOf(answers)).toEqual({ answer: 'approve', at: '2026-11-27T12:00:00.000Z' })
-    expect(answerOf([comment('no answer')])).toBeNull()
+    const ids = (list: { id: string }[]) => new Set(list.map((c) => c.id))
+    expect(answerOf(answers, ids(answers))).toEqual({ answer: 'approve', at: '2026-11-27T12:00:00.000Z' })
+    expect(answerOf([comment('no answer')], new Set(['c']))).toBeNull()
     expect(answers.map(isQaComment)).toEqual([true, true, false])
+  })
+  it('counts no answer whose comment ID the server did not record, as each comment has the same author', () => {
+    const answer = comment('QA answer: Approved', '2026-11-27T12:00:00.000Z', 'by-another-chat')
+    expect(answerOf([answer], new Set(['posted-by-the-server']))).toBeNull()
   })
 })

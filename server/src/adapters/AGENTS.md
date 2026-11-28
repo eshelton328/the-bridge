@@ -446,7 +446,9 @@ client of a socket or a file sits beside them.
   in a real folder, never a symlink; the folder name is the slug): the
   top-level scalars and the `repositories` and `linear` lists only, as the
   project template writes them; the first `linear` team key of capital
-  letters is the project's `linearTeam`. It keeps the pins (`pins.json`) and the last
+  letters is the project's `linearTeam`. `fakeLinear.ts` is the fake of the
+  Linear port: the issues of each team with one of the labels, and a count
+  of reads; the real adapter comes with the key file. It keeps the pins (`pins.json`) and the last
   drift runs (`drift.json`) in a 0700 folder beside the database, 0600
   and replaced in one rename; a bad file is `EBADDATA`
   (`diskProjects.test.ts`). The last CI answer of each GitHub repository
