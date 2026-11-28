@@ -158,7 +158,9 @@ describe('Chat about this idea (NCC-132 AC2)', () => {
     await expect.element(page.getByRole('status')).toHaveTextContent('Could not start the chat')
     await userEvent.click(button)
     await expect.poll(() => router.state.location.pathname).toBe('/workspaces')
-    expect(workspaces.starts).toEqual([workspaces.starts[0], workspaces.starts[0]])
+    // The second start is the first one's body again, with its create ID.
+    expect(workspaces.starts).toHaveLength(2)
+    expect(workspaces.starts[1]).toEqual(workspaces.starts[0])
     expect(chats.prompts).toEqual([{ chat: 'test-box/new1', text: prompt }])
   })
 })
