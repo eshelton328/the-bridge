@@ -26,7 +26,7 @@ import type { ComponentType } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 
 /** The library icons a project can name in `project.yaml`, by the contract's names (`projectIconNames`). */
-const projectIcons = {
+export const projectIcons = {
   book: BookIcon,
   brain: BrainIcon,
   branch: BranchIcon,

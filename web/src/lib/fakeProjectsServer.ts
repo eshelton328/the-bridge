@@ -9,7 +9,8 @@
 // test's sections of the project, none by default), `GET /api/projects/:slug/drift` (the test's last
 // drift run, none by default) and `POST /api/projects/:slug/drift` (a clean run
 // now, kept as the last), `GET /api/projects/-/slug?name=` (the server's slug of
-// the name, free when no project has it). Every project, body and answer is checked against the
+// the name, free when no project has it) and `POST /api/projects` (the new
+// project, unpinned, or 409 slugTaken). Every project, body and answer is checked against the
 // contract, so a test cannot send or get what the server would not: a body the
 // contract refuses is 400 invalid-input, and an unknown slug is 404. The pins
 // live in the fake, as the server keeps them in a file, so a new page (a
@@ -21,6 +22,7 @@ import {
   IdeaDetailResponse,
   IdeasResponse,
   PinProjectRequest,
+  ProjectDetailsRequest,
   ProjectChat,
   ProjectChatsResponse,
   ProjectDetailResponse,
@@ -43,6 +45,7 @@ export type ProjectsCall =
   | 'drift'
   | 'runDrift'
   | 'slug'
+  | 'create'
 
 /** The server's slug of a name (server/src/services/brainWrites.ts `slugOf`), or null. */
 const slugOf = (name: string) => {
@@ -126,6 +129,26 @@ export function fakeProjectsServer(
     )
   }
 
+  const create = (init: RequestInit | undefined): Response => {
+    const parsed = ProjectDetailsRequest.safeParse(bodyOf(init))
+    const slug = parsed.success ? slugOf(parsed.data.name) : null
+    if (new Headers(init?.headers).get('content-type') !== 'application/json' || !parsed.success || slug === null)
+      return invalid()
+    if (stored.has(slug))
+      return errorAnswer(
+        {
+          kind: 'project-not-ready',
+          state: 'slugTaken',
+          message: 'a project folder has this name',
+          requestId: 'r-409',
+        },
+        409,
+      )
+    const project = ProjectSummary.parse({ ...parsed.data, slug, pinned: false })
+    stored.set(slug, project)
+    return json({ project }, 201)
+  }
+
   const driftAnswer = (call: 'drift' | 'runDrift', slug: string, path: string, init: RequestInit | undefined) => {
     if (!stored.has(slug))
       return errorAnswer({ kind: 'not-found', path, message: 'no project has this slug', requestId: 'r-404' }, 404)
@@ -176,7 +199,9 @@ export function fakeProjectsServer(
                         ? 'runDrift'
                         : path === '/api/projects/-/slug' && method === 'GET'
                           ? 'slug'
-                          : undefined
+                          : path === '/api/projects' && method === 'POST'
+                            ? 'create'
+                            : undefined
       if (call === undefined) return undefined
       requests.push({ call, path: url, body: bodyOf(init) })
       const next = answers.get(call)
@@ -184,6 +209,7 @@ export function fakeProjectsServer(
         answers.delete(call)
         return next()
       }
+      if (call === 'create') return create(init)
       if (call === 'slug') {
         const slug = slugOf(new URLSearchParams(query).get('name') ?? '')
         return json(SlugResponse.parse({ slug, free: slug !== null && !stored.has(slug) }))
