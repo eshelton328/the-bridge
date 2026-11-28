@@ -36,6 +36,7 @@ import type {
 import { ciWindowDays, maxDriftFindings } from '@bridge/contract'
 import { err, ok, type Result } from '@bridge/shared'
 import type { AgentPort, AgentPortError } from './agentPort.ts'
+import { createSnapshotLock, type SnapshotLock, snapshotKey } from './snapshotLock.ts'
 import {
   type CiSource,
   type CiStore,
@@ -159,6 +160,8 @@ type Deps = {
   }
   /** The chats and their tags; none (each chats read fails) where an app has no agents to give. */
   readonly agents?: Pick<AgentPort, 'listWorkspaces' | 'chatTags'>
+  /** The lock of each snapshot, shared with the Architecture runner; with none, the service has its own. */
+  readonly snapshotLock?: SnapshotLock
   readonly now?: () => Date
 }
 
@@ -335,6 +338,7 @@ export function createProjects({
   ciStore,
   ciLog = () => undefined,
   repositoryDrift,
+  snapshotLock = createSnapshotLock(),
   now = () => new Date(),
 }: Deps): Projects {
   const watchers = new Set<() => void>()
@@ -449,14 +453,13 @@ export function createProjects({
   let running: Promise<Result<readonly string[], ProjectFault>> | undefined
 
   type Checked = { readonly commit: string | null; readonly run: Awaited<ReturnType<RepositoryCheck['run']>> }
-  // One lock for each snapshot holds its sync and its check, so a sync never changes files that a check reads; a
-  // second request for a snapshot while its run waits or runs gets that run.
-  // Keyed by the GitHub repository, as its snapshot is: two IDs of one repository share a snapshot and its lock.
-  const snapshotLocks = new Map<string, Promise<unknown>>()
+  // One request for a snapshot while its run waits or runs gets that run. The shared lock holds the sync and the
+  // check, so no sync (of a drift run or a diagram run) changes files that a check reads. A diagram run does not
+  // join a drift run, so a drift run can wait in the lock's chain behind one (NCC-182 item 2).
   const snapshotRuns = new Map<string, Promise<Checked>>()
   const checkSnapshot = (repository: ProjectRepository): Promise<Checked> => {
     const github = repository.github
-    const key = github === null ? `id:${repository.id}` : `${github.owner}/${github.name}`.toLowerCase()
+    const key = github === null ? `id:${repository.id}` : snapshotKey(github)
     const joined = snapshotRuns.get(key)
     if (joined !== undefined) return joined
     const work = async (): Promise<Checked> => {
@@ -467,15 +470,13 @@ export function createProjects({
       if (!snapshot.ok) return { commit: null, run: snapshot }
       return { commit: snapshot.value.commit, run: await repositoryDrift.check.run(snapshot.value.dir) }
     }
-    const before = snapshotLocks.get(key) ?? Promise.resolve()
-    const started = before.then(work, work)
-    const held = started.catch(() => undefined)
-    snapshotLocks.set(key, held)
+    const started = snapshotLock.hold(key, work)
     snapshotRuns.set(key, started)
-    void held.then(() => {
-      if (snapshotRuns.get(key) === started) snapshotRuns.delete(key)
-      if (snapshotLocks.get(key) === held) snapshotLocks.delete(key)
-    })
+    void started
+      .catch(() => undefined)
+      .then(() => {
+        if (snapshotRuns.get(key) === started) snapshotRuns.delete(key)
+      })
     return started
   }
   const repositoryOf = async (
