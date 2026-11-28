@@ -81,6 +81,20 @@ describe('createDiskBrainWrites', () => {
     await expect(access(`${paths.python}.args`)).rejects.toThrow()
   })
 
+  it('undoes the home and the folder when the commit fails, so a retry makes the project', async () => {
+    const hook = join(paths.brain, '.git', 'hooks', 'pre-commit')
+    await writeFile(hook, '#!/bin/sh\nexit 1\n')
+    execFileSync('chmod', ['755', hook])
+    expect(await writes().createProject(project)).toEqual({
+      ok: false,
+      error: { reason: 'failed', code: 'git-exit-1' },
+    })
+    expect(await writes().taken(slug)).toEqual({ ok: true, value: false })
+    expect(git('status', '--porcelain')).toBe('')
+    await rm(hook)
+    expect(await writes().createProject(project)).toEqual({ ok: true, value: 'created' })
+  })
+
   it('refuses a chat root whose projects folder is a symlink', async () => {
     await rm(join(paths.chatRoot, 'projects'), { recursive: true })
     execFileSync('ln', ['-s', dir, join(paths.chatRoot, 'projects')])

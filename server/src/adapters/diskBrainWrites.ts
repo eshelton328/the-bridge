@@ -2,9 +2,11 @@
 // `python -I` with an argument list, never a shell, a time limit and only PATH, HOME, LANG and TMPDIR (the helper's
 // lock file is in TMPDIR). Then it makes `<chat root>/projects/<slug>/` with its `CLAUDE.md` and commits the brain's
 // paths with `git add --` and `git commit --`, a fixed message and the brain's hooks. Each folder is checked by real
-// path, so a symlink cannot move a write out of it. A fault is its code only; the helper's output is never logged.
+// path, so a symlink cannot move a write out of it. A write that fails after `init` made the home removes both new
+// folders and puts back the two index files, so a retry can make the project. A fault is its code only; the
+// helper's output is never logged.
 import { execFile } from 'node:child_process'
-import { lstat, mkdir, realpath, writeFile } from 'node:fs/promises'
+import { lstat, mkdir, readFile, realpath, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { err, ok, type Result } from '@bridge/shared'
 import { z } from 'zod'
@@ -144,6 +146,32 @@ export function createDiskBrainWrites({
         const taken = await takenIn([brainProjects, chatProjects], slug)
         if (!taken.ok) return taken
         if (taken.value) return ok('taken')
+        const indexes = ['projects/AGENTS.md', 'projects/README.md']
+        let before: string[]
+        try {
+          before = await Promise.all(indexes.map((path) => readFile(join(brain, path), 'utf8')))
+        } catch (error) {
+          return failed(codeOf(error))
+        }
+        const paths = [
+          ...['README.md', 'AGENTS.md', 'CLAUDE.md', 'project.yaml'].map((file) => `projects/${slug}/${file}`),
+          ...indexes,
+        ]
+        /** Undoes this write: the two folders were not there before it, and the index files get their old text. */
+        const undo = async (fault: Result<never, BrainWriteFault>) => {
+          await run('git', ['reset', '-q', '--', ...paths], brain, gitEnv)
+          try {
+            await Promise.all([
+              rm(join(brainProjects, slug), { recursive: true, force: true }),
+              rm(join(chatProjects, slug), { recursive: true, force: true }),
+              ...indexes.map((path, i) => writeFile(join(brain, path), before[i] ?? '')),
+            ])
+          } catch (error) {
+            // The home may stay, so a retry is `taken`: the fault says so.
+            return failed(`undo-${codeOf(error)}`)
+          }
+          return fault
+        }
         // "--key=value", so a name that starts with "-" stays a value.
         const args = ['-I', helper, 'init', '--brain', '.', `--slug=${slug}`, `--name=${name}`]
         if (purpose !== '') args.push(`--purpose=${purpose}`)
@@ -163,17 +191,12 @@ export function createDiskBrainWrites({
           await mkdir(join(chatProjects, slug))
           await writeFile(join(chatProjects, slug, 'CLAUDE.md'), projectShim(slug), { flag: 'wx' })
         } catch (error) {
-          return failed(codeOf(error))
+          return undo(failed(codeOf(error)))
         }
-        const paths = [
-          ...['README.md', 'AGENTS.md', 'CLAUDE.md', 'project.yaml'].map((file) => `projects/${slug}/${file}`),
-          'projects/AGENTS.md',
-          'projects/README.md',
-        ]
         const added = await git(brain, ['add', '--', ...paths])
-        if (!added.ok) return added
+        if (!added.ok) return undo(added)
         const committed = await git(brain, ['commit', '-q', '-m', createMessage, '--', ...paths])
-        return committed.ok ? ok('created') : committed
+        return committed.ok ? ok('created') : undo(committed)
       }),
   }
 }
