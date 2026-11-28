@@ -14,7 +14,7 @@ import { open, withServer } from './architectureLiveHelpers.ts'
 
 // A live project's Architecture tab (f-008 increment two, R9, R10, R14, R15; part one) with the contract-checked
 // fakes only: the tab (`?tab=architecture`) shows the scope chips, System and then each repository, and the shown
-// scope (`?scope=`) with its title, caption and text version: its parts and its arrows with their labels; a
+// scope (`?scope=`) with its title and its drawn diagram (the caption, and lists of its parts and arrows); a
 // repository shows its Stack. A scope with no diagram says so, and a read that misses shows its line.
 document.documentElement.classList.add('dark')
 document.documentElement.dataset.pandaTheme = 'viewscreen'
@@ -38,7 +38,7 @@ describe("A project's Architecture tab (increment two, part one)", () => {
     [1024, 1366],
     [390, 844],
   ] as const) {
-    it(`shows each scope and a repository's diagram as text at ${String(width)} px`, async () => {
+    it(`shows each scope and a repository's drawn diagram at ${String(width)} px`, async () => {
       const projects = withServer()
       const router = await open('/projects/alpha', width, height)
       await userEvent.click(page.getByRole('tab', { name: 'Architecture' }))
@@ -49,12 +49,21 @@ describe("A project's Architecture tab (increment two, part one)", () => {
       await expect.element(page.getByText('How example-app works')).toBeVisible()
       expect(router.state.location.search).toEqual({ tab: 'architecture', scope: 'example-app' })
       await expect.element(page.getByText('Component view from main at aaaaaaa, 2026-11-28')).toBeVisible()
-      const parts = page.getByRole('list', { name: 'Parts' })
-      await expect.element(parts.getByText('@example/web')).toBeVisible()
-      await expect.element(parts.getByText('web', { exact: true })).toBeVisible()
+      // The drawing is hidden from screen readers; its lists name each part and arrow.
+      const figure = page.getByRole('figure', { name: 'How example-app works' })
+      await expect.element(figure).toBeVisible()
       await expect
-        .element(page.getByRole('list', { name: 'Arrows' }).getByText('@example/web depends on example-app'))
-        .toBeVisible()
+        .element(
+          figure.getByRole('list', { name: 'Parts of How example-app works' }).getByText('@example/web, web, our code'),
+        )
+        .toBeInTheDocument()
+      await expect
+        .element(
+          figure
+            .getByRole('list', { name: 'Arrows of How example-app works' })
+            .getByText('@example/web → example-app: depends on'),
+        )
+        .toBeInTheDocument()
       await expect.element(page.getByRole('region', { name: 'Runtime' }).getByText('react')).toBeVisible()
       await expect.element(page.getByRole('region', { name: 'Build' }).getByText('vite')).toBeVisible()
       expect(projects.calls('diagram').map((r) => r.path)).toEqual([

@@ -1,11 +1,13 @@
-// The Architecture tab (f-008 increment two, R9, R10, R14, R15): the scope
-// chips (System, then each repository), and the shown scope's title, caption
-// and diagram as its text version: its parts and its arrows with their labels.
-// A repository's Stack groups its package.json badges. The drawn diagram, its
-// legend and Regenerate are a later PR's. Props only.
-import { Badge, FilterChips, ListRow, Panel } from '@eshelton328/component-library-1701'
+// The Architecture tab (f-008 increment two, R9, R10, R14, R15, R16): the
+// scope chips (System, then each repository), and the shown scope's title,
+// caption and drawn diagram: the library's ArchitectureDiagram with the boxes
+// of `layoutOf`, its legend and the hidden lists of its parts, boundaries and
+// arrows. A repository's Stack groups its package.json badges. Regenerate and
+// the Parts panel are a later PR's. Props only.
+import { ArchitectureDiagram, Badge, FilterChips, Panel } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
+import { layoutOf } from '../../../lib/architectureLayout.ts'
 import type { ProjectArchitecture, ProjectPageWords } from '../types.ts'
 
 const tab = css({ display: 'flex', flexDirection: 'column', gap: '20', pt: '12' })
@@ -21,7 +23,6 @@ const body = {
   phone: css({ display: 'flex', flexDirection: 'column', gap: '20' }),
 } as const satisfies Record<Viewport, string>
 const line = css({ textStyle: 'small', color: 'fg.muted', px: '10', py: '6' })
-const list = css({ display: 'flex', flexDirection: 'column' })
 const group = css({ display: 'flex', flexDirection: 'column', gap: '6', px: '10', py: '6' })
 const badges = css({ display: 'flex', flexWrap: 'wrap', gap: '4' })
 
@@ -39,7 +40,7 @@ export type ArchitectureViewProps = {
 export function ArchitectureView({ architecture, words, layout, onScopeChange }: ArchitectureViewProps) {
   const { arch } = words
   const { model } = architecture
-  const nameOf = new Map(model?.parts.map((p) => [p.id, p.name]) ?? [])
+  const drawing = model === null ? null : layoutOf(model)
   const chips =
     architecture.chips.length === 0 ? null : (
       <FilterChips
@@ -73,29 +74,19 @@ export function ArchitectureView({ architecture, words, layout, onScopeChange }:
               {arch.running}
             </p>
           ) : null}
-          <p className={line}>{architecture.caption ?? arch.none}</p>
-          {model === null ? null : (
-            <>
-              <ul className={list} aria-label={arch.parts}>
-                {model.parts.map((p) => (
-                  <li key={p.id}>
-                    <ListRow density="compact" title={p.name} meta={p.typeLine} />
-                  </li>
-                ))}
-              </ul>
-              {model.arrows.length === 0 ? null : (
-                <ul className={list} aria-label={arch.arrows}>
-                  {model.arrows.map((a) => (
-                    <li key={`${a.from} ${a.to}`} className={line}>
-                      {arch.arrow
-                        .replace('{from}', nameOf.get(a.from) ?? a.from)
-                        .replace('{label}', a.label)
-                        .replace('{to}', nameOf.get(a.to) ?? a.to)}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </>
+          {drawing === null ? (
+            <p className={line}>{arch.none}</p>
+          ) : (
+            <ArchitectureDiagram
+              title={architecture.title}
+              caption={architecture.caption ?? undefined}
+              width={drawing.width}
+              height={drawing.height}
+              parts={drawing.parts}
+              boundaries={drawing.boundaries}
+              arrows={drawing.arrows}
+              scrollHint={arch.scrollHint}
+            />
           )}
         </Panel>
         {stack.length === 0 ? null : (

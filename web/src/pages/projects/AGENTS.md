@@ -118,11 +118,10 @@ T10b, M10 for the home, D01, T01, T01b, M01 for a project's page), read with
     `GET /api/projects/:slug/architecture` (System, then each repository,
     as chips) and `.../architecture/:scope` for the shown scope, the first
     one when `?scope=` names none the project has. It shows the scope's
-    title, the caption (view, commit and date) or "No diagram yet", and the
-    diagram as text: its parts and its arrows with their labels, and a
-    repository's Stack. A miss shows one line ("Architecture not read — the
-    server answered 500"). The drawn diagram, Regenerate and the live
-    refresh are part two's. `app/ProjectArchitectureLive.test.tsx` checks
+    title, "No diagram yet" or the drawn diagram (`ArchitectureView`) with
+    its caption (view, commit and date), and a repository's Stack. A miss
+    shows one line ("Architecture not read — the server answered 500").
+    Regenerate and the live refresh are part two's next PRs. `app/ProjectArchitectureLive.test.tsx` checks
     it at 1440, 1024 and 390 px with the fake.
   - report() gets only a miss the server answered, as `ProjectsMissError`
     with its step, kind and status, never a name.

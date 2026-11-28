@@ -116,8 +116,8 @@ export const ProjectPageWords = z.object({
   qaWorktrees: z.record(QaWorktree, z.string()),
   /**
    * The Architecture tab (increment two, R9, R10, R14, R15): the chip row's name and the System chip, the line with
-   * no diagram, the caption (`{view}`, `{commit}`, `{date}`) and each view's name, the text version's lists, one
-   * arrow (`{from}`, `{label}`, `{to}`), the Stack's heading and source, and the line while a run goes.
+   * no diagram, the caption (`{view}`, `{commit}`, `{date}`) and each view's name, the line under a diagram wider
+   * than its box (R16), the Stack's heading and source, and the line while a run goes.
    */
   arch: z.object({
     chips: z.string(),
@@ -125,9 +125,7 @@ export const ProjectPageWords = z.object({
     none: z.string(),
     caption: z.string(),
     views: z.record(z.enum(['container', 'component', 'build']), z.string()),
-    parts: z.string(),
-    arrows: z.string(),
-    arrow: z.string(),
+    scrollHint: z.string(),
     stack: z.string(),
     stackSource: z.string(),
     running: z.string(),
