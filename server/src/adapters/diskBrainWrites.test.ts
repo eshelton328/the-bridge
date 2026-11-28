@@ -1,5 +1,6 @@
 // The brain's writes on disk, on a scratch brain with a stub of the helper (never the real brain).
 import { execFileSync } from 'node:child_process'
+import { existsSync } from 'node:fs'
 import { access, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
@@ -36,18 +37,8 @@ describe('createDiskBrainWrites', () => {
   it('runs init as python -I with an argument list and a minimum environment, then commits only its paths', async () => {
     await writeFile(join(paths.brain, 'projects', 'other', 'notes.md'), 'two\n')
     expect(await writes().createProject(project)).toEqual({ ok: true, value: 'created' })
-    expect((await readFile(`${paths.python}.args`, 'utf8')).split('\n')).toEqual([
-      '-I',
-      '/the/helper.py',
-      'init',
-      '--brain',
-      '.',
-      '--slug=new-app',
-      '--name=-New app',
-      '--purpose=One line.',
-      '--icon=rocket',
-      '',
-    ])
+    const args = '-I|/the/helper.py|init|--brain|.|--slug=new-app|--name=-New app|--purpose=One line.|--icon=rocket|'
+    expect(await readFile(`${paths.python}.args`, 'utf8')).toBe(args.replaceAll('|', '\n'))
     const env = (await readFile(`${paths.python}.env`, 'utf8')).split('\n').map((line) => line.split('=')[0] ?? '')
     expect(
       env.filter(
@@ -55,14 +46,15 @@ describe('createDiskBrainWrites', () => {
       ),
     ).toEqual([])
     expect(git('log', '-1', '--format=%s')).toBe(`${createMessage}\n`)
-    expect(git('show', '--name-only', '--format=', 'HEAD').trim().split('\n').sort()).toEqual([
-      'projects/AGENTS.md',
-      'projects/README.md',
-      'projects/new-app/AGENTS.md',
-      'projects/new-app/CLAUDE.md',
-      'projects/new-app/README.md',
-      'projects/new-app/project.yaml',
-    ])
+    const files = [
+      'AGENTS.md',
+      'README.md',
+      'new-app/AGENTS.md',
+      'new-app/CLAUDE.md',
+      'new-app/README.md',
+      'new-app/project.yaml',
+    ]
+    expect(git('show', '--name-only', '--format=', 'HEAD')).toBe(`${files.map((f) => `projects/${f}`).join('\n')}\n`)
     // The second changed file stays out of the commit, still changed in the work tree.
     expect(git('status', '--porcelain')).toBe(' M projects/other/notes.md\n')
     expect(await readFile(join(paths.chatRoot, 'projects', 'new-app', 'CLAUDE.md'), 'utf8')).toBe(projectShim(slug))
@@ -95,6 +87,16 @@ describe('createDiskBrainWrites', () => {
     expect(await writes().createProject(project)).toEqual({ ok: true, value: 'created' })
   })
 
+  it('keeps a chat-root folder that another process made after the check', async () => {
+    await writeFile(
+      paths.python,
+      `#!/bin/sh\nmkdir "${join(paths.chatRoot, 'projects', 'new-app')}"\nmkdir projects/new-app\necho '{"ok": true, "created": true}'\n`,
+    )
+    expect(await writes().createProject(project)).toEqual({ ok: false, error: { reason: 'failed', code: 'EEXIST' } })
+    await expect(access(join(paths.chatRoot, 'projects', 'new-app'))).resolves.toBeUndefined()
+    await expect(access(join(paths.brain, 'projects', 'new-app'))).rejects.toThrow()
+  })
+
   it('refuses a chat root whose projects folder is a symlink', async () => {
     await rm(join(paths.chatRoot, 'projects'), { recursive: true })
     execFileSync('ln', ['-s', dir, join(paths.chatRoot, 'projects')])
@@ -104,15 +106,9 @@ describe('createDiskBrainWrites', () => {
 
 // The brain's ncc script is beside the clone, not in the repository, so CI has no copy to compare with.
 const nccSource = (() => {
-  for (let at = dirname(fileURLToPath(import.meta.url)); at !== dirname(at); at = dirname(at)) {
-    const path = join(at, 'engine', 'toolkit', 'layout', 'ncc')
-    try {
-      execFileSync('test', ['-f', path])
-      return path
-    } catch {
-      // Not in this folder: look in its parent.
-    }
-  }
+  for (let at = dirname(fileURLToPath(import.meta.url)); at !== dirname(at); at = dirname(at))
+    if (existsSync(join(at, 'engine', 'toolkit', 'layout', 'ncc')))
+      return join(at, 'engine', 'toolkit', 'layout', 'ncc')
   return null
 })()
 

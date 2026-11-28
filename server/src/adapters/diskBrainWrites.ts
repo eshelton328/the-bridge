@@ -57,14 +57,25 @@ const run = (command: string, args: readonly string[], cwd: string, env: Record<
 const failed = (code: string): Result<never, BrainWriteFault> => err({ reason: 'failed', code })
 const codeOf = (error: unknown) =>
   error instanceof Error && 'code' in error && typeof error.code === 'string' ? error.code : 'unknown'
-const exists = async (path: string) => {
+/** The value of `work`, or its errno code as the fault. */
+const attempt = async <T>(work: () => Promise<T>): Promise<Result<T, BrainWriteFault>> => {
   try {
-    await lstat(path)
-    return true
+    return ok(await work())
   } catch (error) {
-    if (codeOf(error) === 'ENOENT') return false
-    throw error
+    return failed(codeOf(error))
   }
+}
+/** True when one of `paths` names an entry, a symlink too; a fault other than ENOENT throws. */
+const anyExists = async (paths: readonly string[]) => {
+  const entry = (path: string) =>
+    lstat(path).then(
+      () => true,
+      (error: unknown) => {
+        if (codeOf(error) === 'ENOENT') return false
+        throw error
+      },
+    )
+  return (await Promise.all(paths.map(entry))).includes(true)
 }
 
 export function createDiskBrainWrites({
@@ -97,23 +108,12 @@ export function createDiskBrainWrites({
       return failed(codeOf(error))
     }
   }
-  const takenIn = async (folders: readonly string[], slug: string): Promise<Result<boolean, BrainWriteFault>> => {
-    try {
-      const found = await Promise.all(folders.map((folder) => exists(join(folder, slug))))
-      return ok(found.includes(true))
-    } catch (error) {
-      return failed(codeOf(error))
-    }
-  }
+  const takenIn = (folders: readonly string[], slug: string) =>
+    attempt(() => anyExists(folders.map((folder) => join(folder, slug))))
   const busy = async (brain: string): Promise<Result<boolean, BrainWriteFault>> => {
     const dir = await run('git', ['rev-parse', '--absolute-git-dir'], brain, gitEnv)
     if (!dir.ok) return failed(`git-${dir.code}`)
-    const gitDir = dir.stdout.trim()
-    try {
-      return ok((await Promise.all(busyMarks.map((mark) => exists(join(gitDir, mark))))).includes(true))
-    } catch (error) {
-      return failed(codeOf(error))
-    }
+    return attempt(() => anyExists(busyMarks.map((mark) => join(dir.stdout.trim(), mark))))
   }
   const git = async (brain: string, args: readonly string[]): Promise<Result<void, BrainWriteFault>> => {
     const ran = await run('git', args, brain, gitEnv)
@@ -146,24 +146,22 @@ export function createDiskBrainWrites({
         if (!taken.ok) return taken
         if (taken.value) return ok('taken')
         const indexes = ['projects/AGENTS.md', 'projects/README.md']
-        let before: string[]
-        try {
-          before = await Promise.all(indexes.map((path) => readFile(join(brain, path), 'utf8')))
-        } catch (error) {
-          return failed(codeOf(error))
-        }
+        const before = await attempt(() => Promise.all(indexes.map((path) => readFile(join(brain, path), 'utf8'))))
+        if (!before.ok) return before
         const paths = [
           ...['README.md', 'AGENTS.md', 'CLAUDE.md', 'project.yaml'].map((file) => `projects/${slug}/${file}`),
           ...indexes,
         ]
-        /** Undoes this write: the two folders were not there before it, and the index files get their old text. */
+        /** True once this write made the chat-root folder, so an undo never removes one that another process made. */
+        let madeFolder = false
+        /** Undoes this write: the brain home was not there before it, and the index files get their old text. */
         const undo = async (fault: Result<never, BrainWriteFault>) => {
           await run('git', ['reset', '-q', '--', ...paths], brain, gitEnv)
           try {
             await Promise.all([
               rm(join(brainProjects, slug), { recursive: true, force: true }),
-              rm(join(chatProjects, slug), { recursive: true, force: true }),
-              ...indexes.map((path, i) => writeFile(join(brain, path), before[i] ?? '')),
+              ...(madeFolder ? [rm(join(chatProjects, slug), { recursive: true, force: true })] : []),
+              ...indexes.map((path, i) => writeFile(join(brain, path), before.value[i] ?? '')),
             ])
           } catch (error) {
             // The home may stay, so a retry is `taken`: the fault says so.
@@ -188,6 +186,7 @@ export function createDiskBrainWrites({
         if (!read.data.created) return ok('taken')
         try {
           await mkdir(join(chatProjects, slug))
+          madeFolder = true
           await writeFile(join(chatProjects, slug, 'CLAUDE.md'), projectShim(slug), { flag: 'wx' })
         } catch (error) {
           return undo(failed(codeOf(error)))
