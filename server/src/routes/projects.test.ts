@@ -183,6 +183,11 @@ const commit = 'c'.repeat(40)
  */
 function fakeDrift(answer: Awaited<ReturnType<RepositoryCheck['run']>>, gate?: Promise<void>) {
   const seen = { syncs: 0, checks: 0, active: 0, most: 0, steps: [] as string[] }
+  let checking: () => void = () => undefined
+  /** Ends when the first check starts, so a test can wait for that step and not for a time. */
+  const checkStarted = new Promise<void>((resolve) => {
+    checking = resolve
+  })
   const enter = () => {
     seen.active += 1
     seen.most = Math.max(seen.most, seen.active)
@@ -203,13 +208,14 @@ function fakeDrift(answer: Awaited<ReturnType<RepositoryCheck['run']>>, gate?: P
       enter()
       seen.checks += 1
       seen.steps.push('check')
+      checking()
       await gate
       seen.steps.push('checked')
       seen.active -= 1
       return answer
     },
   }
-  return { seen, source: { snapshots, check } }
+  return { seen, checkStarted, source: { snapshots, check } }
 }
 
 const read = async (app: ReturnType<typeof server>['app'], path: string) => app.request(path, { headers: local })
@@ -789,7 +795,7 @@ describe('/api/projects/:slug/repositories/:repo/drift', () => {
     const fake = fakeDrift({ ok: true, value: { findings: [], total: 0 } }, gate)
     const { app } = driftServer(fake.source)
     const first = post(app)
-    await new Promise((resolve) => setTimeout(resolve, 20))
+    await fake.checkStarted
     expect(fake.seen.steps).toEqual(['sync', 'synced', 'check'])
     open()
     await first
