@@ -35,6 +35,7 @@ import {
   ProjectsResponse,
   type ProjectSummary,
   RepositoriesResponse,
+  RepositoryCiResponse,
 } from '@bridge/contract'
 import { err, ok, type Result } from '@bridge/shared'
 import { report } from '../../errors/reporter.ts'
@@ -54,7 +55,17 @@ type ProjectsMiss = {
   readonly status: number | undefined
 }
 
-type ProjectsStep = 'list' | 'pin' | 'detail' | 'ideas' | 'idea' | 'repositories' | 'drift' | 'runDrift' | 'chats'
+type ProjectsStep =
+  | 'list'
+  | 'pin'
+  | 'detail'
+  | 'ideas'
+  | 'idea'
+  | 'repositories'
+  | 'ci'
+  | 'drift'
+  | 'runDrift'
+  | 'chats'
 
 /** A miss for report(): a stable name and, in its message, only the step, the kind and the status. */
 class ProjectsMissError extends Error {
@@ -354,16 +365,44 @@ export async function withLiveRepositories(
     return { ...state, data: { ...state.data, repositories: { rows: [], notRead } } }
   }
   const { repositories } = RepositoriesResponse.parse(readJson(answer.value))
-  const rows = repositories.map((r) => ({
-    id: r.id,
-    role: r.role,
-    visibility: r.visibility,
-    release: r.release?.tag ?? null,
-    openPulls: r.openPulls,
-    worktrees: r.worktrees,
-    unread: r.unread,
-  }))
+  const now = new Date()
+  const rows = await Promise.all(
+    repositories.map(async (r) => ({
+      id: r.id,
+      role: r.role,
+      visibility: r.visibility,
+      release: r.release?.tag ?? null,
+      openPulls: r.openPulls,
+      worktrees: r.worktrees,
+      unread: r.unread,
+      ...(r.github === null ? {} : { ci: await readRepositoryCi(slug, r.id, now, signal) }),
+    })),
+  )
   return { ...state, data: { ...state.data, repositories: { rows } } }
+}
+
+/** How old a CI read may be before its row says "as of" (the contract's 10 minutes). */
+const ciFreshMs = 10 * 60_000
+
+/**
+ * Repository `repo`'s kept CI numbers (`GET /api/projects/:slug/repositories/:repo/ci`, R4): null when not read or
+ * when the read misses, `runs` null while the server's first read runs. The page reads them again on each
+ * `projects.changed`, which follows a CI read's end (ProjectPage.tsx).
+ */
+async function readRepositoryCi(slug: string, repo: string, now: Date, signal: AbortSignal | undefined) {
+  const answer = await send(
+    (init) =>
+      api.api.projects[':slug'].repositories[':repo'].ci.$get({ param: { slug, repo } }, { init: { signal: init } }),
+    signal,
+  )
+  if (!answer.ok) {
+    reportMiss('ci', answer.error)
+    return null
+  }
+  const { ci, readAt, reading } = RepositoryCiResponse.parse(readJson(answer.value))
+  if (ci === null) return reading ? { runs: null, runMinutes: null, asOf: null } : null
+  const old = readAt !== null && now.getTime() - Date.parse(readAt) > ciFreshMs
+  return { runs: ci.runs, runMinutes: ci.runMinutes, asOf: old ? ageOf(readAt, now) : null }
 }
 
 /** Pins or unpins the project `slug` (`PUT /api/projects/:slug/pin`); a miss gives its line. */

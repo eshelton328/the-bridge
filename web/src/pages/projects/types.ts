@@ -92,6 +92,20 @@ export const ProjectPageWords = z.object({
   visibility: z.record(z.enum(['public', 'private', 'internal']), z.string()),
   counts: z.record(z.enum(['openPull', 'openPulls', 'worktree', 'worktrees']), z.string()),
   unread: z.record(z.enum(['about', 'pulls', 'worktrees']), z.string()),
+  /**
+   * A repository's CI numbers (R4): the green runs of the finished ones (`{green}`, `{finished}`), a green run's
+   * median minutes (`{n}`), the read's age when it is older than 10 minutes (`{age}`), no finished run (runs that
+   * did not end or were cancelled do not count), the first read and
+   * a read that missed.
+   */
+  ci: z.object({
+    runs: z.string(),
+    minutes: z.string(),
+    asOf: z.string(),
+    none: z.string(),
+    reading: z.string(),
+    notRead: z.string(),
+  }),
 })
 export type ProjectPageWords = z.infer<typeof ProjectPageWords>
 
@@ -181,6 +195,18 @@ export const RepositoryRow = z.object({
   openPulls: z.number().int().nonnegative().nullable(),
   worktrees: z.number().int().nonnegative().nullable(),
   unread: z.array(z.enum(['about', 'pulls', 'worktrees'])),
+  /**
+   * Its CI numbers (R4), on the live page only: null when not read, `runs` null while the first read runs, and `asOf`
+   * the read's age ("3h") when it is older than 10 minutes, else null.
+   */
+  ci: z
+    .object({
+      runs: z.object({ green: z.number().int().nonnegative(), finished: z.number().int().nonnegative() }).nullable(),
+      runMinutes: z.number().nonnegative().nullable(),
+      asOf: z.string().nullable(),
+    })
+    .nullable()
+    .optional(),
 })
 export type RepositoryRow = z.infer<typeof RepositoryRow>
 

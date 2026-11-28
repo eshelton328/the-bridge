@@ -56,7 +56,10 @@ const settleMs = 100
 /** The feed's state that its stream, its reads and its hooks share; it lives as long as the provider. */
 type Hub = {
   followers: Set<() => void>
+  /** The project pages that read again on each `projects.changed`, and on each open of the stream after its first. */
   projectFollowers: Set<() => void>
+  /** Whether the feed's stream opened once: a later open may follow a `projects.changed` lost while it was closed. */
+  opened: boolean
   /** The pages that read their chats on each stream open and `workspaces.changed`, and change a pill on `chat.status`. */
   workspaceFollowers: Set<() => void>
   statusFollowers: Set<(event: ChatStatusEvent['data']) => void>
@@ -76,6 +79,7 @@ type Hub = {
 const newHub = (): Hub => ({
   followers: new Set(),
   projectFollowers: new Set(),
+  opened: false,
   workspaceFollowers: new Set(),
   statusFollowers: new Set(),
   hosts: 0,
@@ -153,6 +157,12 @@ export function InboxFeedProvider({ children }: { children: ReactNode }) {
             },
             onProjects: () => {
               for (const follower of [...hub.projectFollowers]) follower()
+            },
+            // The page's loader just read the project at the first open; a later one (back from the background, or
+            // after a drop) reads it again, as a CI read that ended meanwhile sent its projects.changed to no one.
+            onOpen: () => {
+              if (hub.opened) for (const follower of [...hub.projectFollowers]) follower()
+              hub.opened = true
             },
             onWorkspaces: () => {
               for (const follower of [...hub.workspaceFollowers]) follower()

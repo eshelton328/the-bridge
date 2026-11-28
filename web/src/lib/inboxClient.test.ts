@@ -20,6 +20,19 @@ afterEach(() => {
 })
 
 describe('watchInboxChanges (R70)', () => {
+  it('calls onOpen on each open of the stream, the first one too', async () => {
+    vi.useFakeTimers()
+    const open = vi.fn(() => ended('event: open\ndata: {}\n\n'))
+    const onOpen = vi.fn()
+    // The first miss after a stream that opened waits 0.6 of 0.5 s: the second open is at about 300 ms.
+    const stop = watchInboxChanges({ onChange: () => undefined, onOpen, open, random: () => 0.6 })
+    await vi.advanceTimersByTimeAsync(200)
+    expect(onOpen).toHaveBeenCalledTimes(1)
+    await vi.advanceTimersByTimeAsync(200)
+    expect([open.mock.calls.length, onOpen.mock.calls.length]).toEqual([2, 2])
+    stop()
+  })
+
   it("connects again on the jittered backoff when the stream ends, not after the stream's retry time", async () => {
     vi.useFakeTimers()
     const open = vi.fn(() => ended('event: open\nretry: 100\ndata: {}\n\n'))

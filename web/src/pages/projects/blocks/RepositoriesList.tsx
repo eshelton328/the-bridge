@@ -11,9 +11,14 @@ import type { ProjectPageWords, ProjectRepositories, RepositoryRow } from '../ty
 
 const list = css({ display: 'flex', flexDirection: 'column', pt: '12' })
 const line = css({ textStyle: 'small', color: 'fg.muted', px: '10', pt: '12' })
+// The CI numbers' own line under the meta, which wraps, so a narrow row never pushes them over its text.
+const ciLine = css({ display: 'block', textStyle: 'small', color: 'fg.muted', overflowWrap: 'anywhere' })
 
 /** The words the list draws. */
-type RepositoryWords = Pick<ProjectPageWords, 'repositories' | 'noRepositories' | 'visibility' | 'counts' | 'unread'>
+type RepositoryWords = Pick<
+  ProjectPageWords,
+  'repositories' | 'noRepositories' | 'visibility' | 'counts' | 'unread' | 'ci'
+>
 
 export type RepositoriesListProps = {
   repositories: ProjectRepositories
@@ -29,6 +34,26 @@ function metaOf(row: RepositoryRow, words: RepositoryWords): string {
     ? [words.unread.about]
     : [row.visibility === null ? null : words.visibility[row.visibility], row.release]
   return [row.role, ...github].filter((part) => part !== null && part !== '').join(' · ')
+}
+
+/** A green run's median minutes, to one decimal under 10. */
+const minutesOf = (n: number) => (n < 10 ? String(Math.round(n * 10) / 10) : String(Math.round(n)))
+
+/** The row's CI line (R4): green of finished, the minutes and the read's age; or its line; none off GitHub. */
+function ciOf(row: RepositoryRow, words: RepositoryWords): string | null {
+  const { ci } = words
+  if (row.ci === undefined) return null
+  if (row.ci === null) return ci.notRead
+  const { runs, runMinutes, asOf } = row.ci
+  if (runs === null) return ci.reading
+  const parts = [
+    runs.finished === 0
+      ? ci.none
+      : ci.runs.replace('{green}', String(runs.green)).replace('{finished}', String(runs.finished)),
+    runMinutes === null ? null : ci.minutes.replace('{n}', minutesOf(runMinutes)),
+    asOf === null ? null : ci.asOf.replace('{age}', asOf),
+  ]
+  return parts.filter((part) => part !== null).join(' · ')
 }
 
 /** The row's end: the open PRs and the worktrees, each as a count or its line not read; none off GitHub. */
@@ -60,6 +85,7 @@ export function RepositoriesList({ repositories, words, layout }: RepositoriesLi
       {repositories.rows.map((row) => {
         const meta = metaOf(row, words)
         const counts = countsOf(row, words)
+        const ci = ciOf(row, words)
         const phone = layout === 'phone'
         return (
           <li key={row.id}>
@@ -69,7 +95,9 @@ export function RepositoriesList({ repositories, words, layout }: RepositoriesLi
               title={row.id}
               meta={phone ? [meta, counts].filter((part) => part !== '').join(' · ') : meta}
               trailing={phone ? undefined : counts}
-            />
+            >
+              {ci === null ? null : <span className={ciLine}>{ci}</span>}
+            </ListRow>
           </li>
         )
       })}

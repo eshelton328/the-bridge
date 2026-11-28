@@ -7,7 +7,9 @@
 // default), `GET /api/projects/:slug/ideas` and `.../ideas/:id` (the test's
 // ideas of the project, none by default; an unknown idea is 404),
 // `GET /api/projects/:slug/repositories` (the test's sections of the
-// project, none by default), `GET /api/projects/:slug/drift` (the test's last
+// project, none by default), `.../repositories/:repo/ci` (the test's CI
+// answer, not read by default; `setCi` changes it; a repository the
+// project does not list is 404), `GET /api/projects/:slug/drift` (the test's last
 // drift run, none by default) and `POST /api/projects/:slug/drift` (a clean run
 // now, kept as the last). Every project, body and answer is checked against the
 // contract, so a test cannot send or get what the server would not: a body the
@@ -27,6 +29,7 @@ import {
   ProjectsResponse,
   ProjectSummary,
   RepositoriesResponse,
+  RepositoryCiResponse,
   RunDriftRequest,
 } from '@bridge/contract'
 import { errorAnswer } from './fakeTranscriptServer.ts'
@@ -40,6 +43,7 @@ export type ProjectsCall =
   | 'ideas'
   | 'idea'
   | 'repositories'
+  | 'ci'
   | 'drift'
   | 'runDrift'
 
@@ -70,17 +74,20 @@ type FakeProjectsOptions = {
   readonly ideas?: Readonly<Record<string, readonly unknown[]>>
   /** Each project's repository sections (`RepositorySection`) by its slug; none by default. */
   readonly repositories?: Readonly<Record<string, readonly unknown[]>>
+  /** Each repository's CI answer (`RepositoryCiResponse`) by `<slug>/<repository ID>`; not read by default. */
+  readonly ci?: Readonly<Record<string, unknown>>
   /** Each project's last drift run (`DriftRun`) by its slug; none (never checked) by default. */
   readonly drift?: Readonly<Record<string, unknown>>
 }
 
 export function fakeProjectsServer(
   projects: readonly unknown[] = [],
-  { chats = {}, queues = {}, ideas = {}, repositories = {}, drift = {} }: FakeProjectsOptions = {},
+  { chats = {}, queues = {}, ideas = {}, repositories = {}, ci = {}, drift = {} }: FakeProjectsOptions = {},
 ) {
   const sectionsOf = new Map(
     Object.entries(repositories).map(([slug, list]) => [slug, RepositoriesResponse.parse({ repositories: list })]),
   )
+  const ciOf = new Map(Object.entries(ci).map(([key, answer]) => [key, RepositoryCiResponse.parse(answer)]))
   const ideasOf = new Map(
     Object.entries(ideas).map(([slug, list]) => [slug, list.map((i) => IdeaDetailResponse.parse(i))]),
   )
@@ -133,6 +140,10 @@ export function fakeProjectsServer(
     calls: (call: ProjectsCall) => requests.filter((r) => r.call === call),
     /** The projects in the order the next list gives them. */
     projects: shown,
+    /** Sets repository `repo`'s CI answer, as a server's CI read that ends does. */
+    setCi: (slug: string, repo: string, answer: unknown) => {
+      ciOf.set(`${slug}/${repo}`, RepositoryCiResponse.parse(answer))
+    },
     /** Answers the next request of `call` with `answer`. */
     answerNext: (call: ProjectsCall, answer: () => Response | Promise<Response>) => {
       answers.set(call, answer)
@@ -145,6 +156,7 @@ export function fakeProjectsServer(
       const chatsPath = /^\/api\/projects\/([^/]+)\/chats$/.exec(path)
       const ideasPath = /^\/api\/projects\/([^/]+)\/ideas$/.exec(path)
       const reposPath = /^\/api\/projects\/([^/]+)\/repositories$/.exec(path)
+      const ciPath = /^\/api\/projects\/([^/]+)\/repositories\/([^/]+)\/ci$/.exec(path)
       const ideaPath = /^\/api\/projects\/([^/]+)\/ideas\/([^/]+)$/.exec(path)
       const driftPath = /^\/api\/projects\/([^/]+)\/drift$/.exec(path)
       const call: ProjectsCall | undefined =
@@ -160,13 +172,15 @@ export function fakeProjectsServer(
                   ? 'ideas'
                   : reposPath !== null && method === 'GET'
                     ? 'repositories'
-                    : ideaPath !== null && method === 'GET'
-                      ? 'idea'
-                      : driftPath !== null && method === 'GET'
-                        ? 'drift'
-                        : driftPath !== null && method === 'POST'
-                          ? 'runDrift'
-                          : undefined
+                    : ciPath !== null && method === 'GET'
+                      ? 'ci'
+                      : ideaPath !== null && method === 'GET'
+                        ? 'idea'
+                        : driftPath !== null && method === 'GET'
+                          ? 'drift'
+                          : driftPath !== null && method === 'POST'
+                            ? 'runDrift'
+                            : undefined
       if (call === undefined) return undefined
       requests.push({ call, path, body: bodyOf(init) })
       const next = answers.get(call)
@@ -189,6 +203,17 @@ export function fakeProjectsServer(
         if (!stored.has(slug))
           return errorAnswer({ kind: 'not-found', path, message: 'no project has this slug', requestId: 'r-404' }, 404)
         return json(sectionsOf.get(slug) ?? { repositories: [] })
+      }
+      if (call === 'ci') {
+        const slug = decodeURIComponent(ciPath?.[1] ?? '')
+        const repo = decodeURIComponent(ciPath?.[2] ?? '')
+        const listed = sectionsOf.get(slug)?.repositories.some((r) => r.id === repo) ?? false
+        if (!stored.has(slug) || !listed)
+          return errorAnswer(
+            { kind: 'not-found', path, message: 'no project has a repository with this name', requestId: 'r-404' },
+            404,
+          )
+        return json(ciOf.get(`${slug}/${repo}`) ?? { ci: null, readAt: null, reading: false })
       }
       if (call === 'ideas' || call === 'idea') {
         const slug = decodeURIComponent((ideasPath ?? ideaPath)?.[1] ?? '')
