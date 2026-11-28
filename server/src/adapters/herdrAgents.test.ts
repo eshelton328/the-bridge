@@ -1306,15 +1306,30 @@ describe('herdr agents: input to a chat', () => {
       agents: results['agent.list'].agents.map((a) => (a.pane_id === 'w17:p1' ? { ...a, agent_status: 'idle' } : a)),
     })
     const logger = memoryLogger()
-    const timed = createHerdrAgents({ socket: socket.path, machine, log: logger.log, claudeProjects: projects, home })
+    // The waits are recorded and end at once: the adapter decides on the waits it asks for, and a timer can fire
+    // 1 ms early by Date.now() on a busy runner, which once logged a check of 149 ms (NCC-38).
+    const waits: number[] = []
+    const timed = createHerdrAgents({
+      socket: socket.path,
+      machine,
+      log: logger.log,
+      claudeProjects: projects,
+      home,
+      wait: (ms) => {
+        waits.push(ms)
+        return Promise.resolve()
+      },
+    })
     try {
       expect(await timed.sendPrompt(chat, 'Deploy with marker-5150')).toEqual({ ok: true, value: 'sent' })
       const [line] = logger.lines().filter((e) => e.msg === 'prompt sent')
-      // Reads at 30, 80 and 150 ms: the box of the fake is empty at once and never shows the prompt.
+      // Reads after waits of 30, 50 and 70 ms: the box of the fake is empty at once and never shows the prompt, so the
+      // third read, at 150 ms, takes it as sent.
       expect(line).toMatchObject({ outcome: 'sent', checkReads: 3 })
       for (const step of ['totalMs', 'locateMs', 'boxMs', 'promptMs', 'checkMs'])
         expect(typeof line?.[step]).toBe('number')
-      expect(Number(line?.checkMs)).toBeGreaterThanOrEqual(150)
+      expect(waits).toEqual([30, 50, 70])
+      expect(waits.reduce((sum, ms) => sum + ms, 0)).toBeGreaterThanOrEqual(150)
       expect(JSON.stringify(logger.lines())).not.toContain('marker-5150')
     } finally {
       socket.set('agent.list', undefined)
