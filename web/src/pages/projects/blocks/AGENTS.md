@@ -17,7 +17,8 @@ moves to `web/src/blocks/`.
 - `NewProjectForm` is New project's form: the library `Dialog` on the
   desktop, else `BackRow` (Projects, Create project) over the fields.
   `NewProjectFields` holds Name with its folder line (an error when the
-  folder is not free) and Description.
+  folder is not free), the tile with Choose picture and its icon grid,
+  and Description.
 - `ProjectHeader` is a project page's head: `BackRow` with Quick chat at its
   end, then the picture beside the name and purpose.
 - `QuickChat` is Quick chat's composer: the library `Dialog` and `Composer`

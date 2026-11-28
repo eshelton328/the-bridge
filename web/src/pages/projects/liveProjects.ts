@@ -14,7 +14,7 @@
 // and its Repositories tab `GET /api/projects/:slug/repositories` (increment two).
 // The Context drift panel (R9) reads the last check with it; Run check is `runDrift`.
 // New project (increment four) reads the folder of a typed name (`readSlug`,
-// `GET /api/projects/-/slug`).
+// `GET /api/projects/-/slug`) and sends `POST /api/projects` (`createProject`).
 //
 // A read or a pin that misses shows one short line by status ("Projects not
 // read — the server answered 500"), and a list that misses shows no projects,
@@ -30,6 +30,8 @@ import {
   IdeasResponse,
   ProjectChatsResponse,
   ProjectDetailResponse,
+  type ProjectDetailsRequest,
+  ProjectDetailsResponse,
   type ProjectPull,
   ProjectsResponse,
   type ProjectSummary,
@@ -54,7 +56,17 @@ type ProjectsMiss = {
   readonly status: number | undefined
 }
 
-type ProjectsStep = 'list' | 'pin' | 'detail' | 'ideas' | 'repositories' | 'drift' | 'runDrift' | 'chats' | 'slug'
+type ProjectsStep =
+  | 'list'
+  | 'pin'
+  | 'detail'
+  | 'ideas'
+  | 'repositories'
+  | 'drift'
+  | 'runDrift'
+  | 'chats'
+  | 'slug'
+  | 'create'
 
 /** A miss for report(): a stable name and, in its message, only the step, the kind and the status. */
 class ProjectsMissError extends Error {
@@ -367,4 +379,15 @@ export async function readSlug(name: string): Promise<SlugCheck> {
   const { slug, free } = SlugResponse.parse(readJson(answer.value))
   if (slug === null) return { line: 'This name gives no folder name', free: false }
   return free ? { line: `Folder: ${slug}`, free } : { line: `Folder: ${slug} is taken by another project`, free }
+}
+
+/** Makes a project (`POST /api/projects`, R6): its slug on a 201, else the miss's line by kind. */
+export async function createProject(details: ProjectDetailsRequest): Promise<Result<string, string>> {
+  const sent = await send((signal) => api.api.projects.$post({ json: details }, { init: { signal } }))
+  if (sent.ok) return ok(ProjectDetailsResponse.parse(readJson(sent.value)).project.slug)
+  if (sent.error.kind === 'project-not-ready') return err('Not created — a project folder has this name')
+  if (sent.error.kind === 'brain-busy') return err('Not created — the brain is busy; try again in a moment')
+  if (sent.error.kind === 'invalid-input') return err('Not created — check the name and the description')
+  reportMiss('create', sent.error)
+  return err(missLine('Not created', sent.error))
 }

@@ -22,8 +22,9 @@ T10b, M10 for the home, D01, T01, T01b, M01 for a project's page), read with
   size (`useNewProject.ts`, `blocks/NewProjectForm.tsx`): a dialog on the
   desktop, a full screen with no tab bar on a tablet or phone. Each name
   change reads `GET /api/projects/-/slug`; only the newest answer counts,
-  and Create project is off until the folder is free. Create project and
-  the picture are the next commit's. On fixtures no read goes out.
+  and Create project waits for a free folder. A 201 opens the project's
+  page and reads the list again; a miss keeps the form with one line. On
+  fixtures no read goes out and Create project does nothing.
   `app/ProjectsNewProject.test.tsx` checks it at 1440, 1024 and 390 px.
 - A project's page is `ui.open` on the same state, so it shares the
   home's data and screen. It shows the header and the tabs Overview,

@@ -1,6 +1,7 @@
 // New project's form (increment four, R1), plain: the library `Dialog` on the
 // desktop, else a full screen whose back row has Projects and Create project,
-// which is off while `canCreate` is false and creates nothing yet. Props only.
+// which is off while `canCreate` is false and does nothing without `onCreate`
+// (fixtures). Props only.
 import { BackRow, Button, Dialog, DialogClose, Stack } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
@@ -15,15 +16,16 @@ const title = css({ textStyle: 'heading', color: 'fg.default' })
 
 export type NewProjectView = NewProjectFieldsProps & {
   canCreate: boolean
+  onCreate?: (() => void) | undefined
   onClose: () => void
 }
 
 export type NewProjectFormProps = { view: NewProjectView; layout: Viewport }
 
 export function NewProjectForm({ view, layout }: NewProjectFormProps) {
-  const { canCreate, onClose, ...fields } = view
+  const { canCreate, onCreate, onClose, ...fields } = view
   const create = (
-    <Button variant="primary" size={layout === 'desktop' ? 'md' : 'lg'} disabled={!canCreate}>
+    <Button variant="primary" size={layout === 'desktop' ? 'md' : 'lg'} disabled={!canCreate} onClick={onCreate}>
       {words.create}
     </Button>
   )

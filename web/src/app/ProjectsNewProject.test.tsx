@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
 import { RouteError } from '../errors/RouteError.tsx'
 import { type FakeProjectsServer, fakeProjectsServer } from '../lib/fakeProjectsServer.ts'
+import { errorAnswer } from '../lib/fakeTranscriptServer.ts'
 import { answerLateServerReads } from '../lib/lateServerReads.ts'
 import { setViewport } from '../lib/rendering.ts'
 import { testRender, unmountRendered } from '../lib/testRender.ts'
@@ -13,8 +14,8 @@ import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
 
 // New project (NCC-162) on the owner's path: New project on the home opens the form (a dialog on the desktop, a full
-// screen on an iPad or a phone), and the Name's folder line comes from the fake's slug route
-// (lib/fakeProjectsServer.ts). Every name and purpose is made up.
+// screen on an iPad or a phone), the Name's folder line comes from the fake's slug route, and Create project posts the
+// form and opens the new project's page (lib/fakeProjectsServer.ts). Every name and purpose is made up.
 document.documentElement.classList.add('dark')
 document.documentElement.dataset.pandaTheme = 'viewscreen'
 
@@ -84,6 +85,41 @@ describe('New project', () => {
       await expect.element(page.getByText('Folder: gamma-ray')).toBeVisible()
       await expect.element(create()).toBeEnabled()
     })
+
+    it(`picks an icon and opens the new project on ${device}`, async () => {
+      const server = withServer()
+      const router = await openForm(width, height)
+      await userEvent.fill(name(), 'Gamma Ray')
+      await expect.element(page.getByText('Folder: gamma-ray')).toBeVisible()
+      await userEvent.click(page.getByRole('button', { name: 'Choose picture' }))
+      await expect.element(page.getByRole('group', { name: 'Project icons' })).toBeVisible()
+      await userEvent.click(page.getByRole('button', { name: 'compass' }))
+      await expect.element(page.getByRole('button', { name: 'compass' })).toHaveAttribute('aria-pressed', 'true')
+      await userEvent.fill(page.getByRole('textbox', { name: 'Description' }), 'A made-up new project.')
+      await userEvent.click(create())
+      await expect.poll(() => router.state.location.pathname).toBe('/projects/gamma-ray')
+      await expect.element(page.getByRole('heading', { level: 1, name: 'Gamma Ray' })).toBeVisible()
+      expect(server.calls('create').map((c) => c.body)).toEqual([
+        { name: 'Gamma Ray', purpose: 'A made-up new project.', icon: 'compass' },
+      ])
+      expect(server.calls('list').length).toBeGreaterThan(1)
+    })
+
+    it(`keeps the form and its values with one line when the brain is busy on ${device}`, async () => {
+      const server = withServer()
+      const router = await openForm(width, height)
+      await userEvent.fill(name(), 'Gamma')
+      await expect.element(page.getByText('Folder: gamma')).toBeVisible()
+      server.answerNext('create', () =>
+        errorAnswer({ kind: 'brain-busy', message: 'another git command runs', requestId: 'r-503' }, 503),
+      )
+      await userEvent.click(create())
+      await expect
+        .element(page.getByRole('status').filter({ hasText: 'Not created — the brain is busy; try again in a moment' }))
+        .toBeVisible()
+      await expect.element(name()).toHaveValue('Gamma')
+      expect(router.state.location.pathname).toBe('/projects')
+    })
   }
 
   it('counts only the newest folder answer when answers cross', async () => {
@@ -108,12 +144,13 @@ describe('New project', () => {
     await expect.element(create()).toBeDisabled()
   })
 
-  it('opens on the sample projects, where no folder read goes out', async () => {
+  it('opens on the sample projects, where Create project sends nothing', async () => {
     const server = withServer()
     await openForm(1440, 900, '/projects?source=fixtures')
     await userEvent.fill(name(), 'Gamma')
     await userEvent.click(create())
     await expect.element(page.getByRole('dialog', { name: 'New project' })).toBeVisible()
     expect(server.calls('slug')).toEqual([])
+    expect(server.calls('create')).toEqual([])
   })
 })

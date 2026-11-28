@@ -3,8 +3,9 @@
 // menu, the More drawer) for the shown `?state=` and passes everything to the
 // props-only screen. On the live projects (liveProjects.ts) a pin goes to the
 // server and the page reads the list again, so the pinned card moves first
-// (R3); a pin that misses shows its line over the cards. New project opens
-// its form (useNewProject.ts).
+// (R3); a pin that misses shows its line over the cards. New project's form
+// (useNewProject.ts) opens the new project's page after a create, and the
+// home list reads again.
 import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 import { useInboxBadge } from '../../lib/inboxFeed.ts'
@@ -37,7 +38,11 @@ export function ProjectsPage() {
   // The Inbox badge: the app's live count on the live home, the shown state's number on fixtures (lib/inboxFeed.ts).
   const railBadge = useInboxBadge(state.data.railBadge, isLive)
   const notice = pinNotice ?? state.data.notice
-  const newProject = useNewProject(isLive)
+  const newProject = useNewProject(isLive, (slug) => {
+    void router
+      .invalidate()
+      .then(() => navigate({ to: '/projects/$slug', params: { slug }, search: { source: search.source } }))
+  })
   return (
     <ProjectsScreen
       // The app always shows the Settings gear and the drawer's Settings row (d-119); a state's story does not.
