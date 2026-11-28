@@ -56,17 +56,17 @@ describe('modelOf', () => {
       ['p0.services', 'server/services', 'Services', true],
       ['p0.adapters', 'server/adapters', 'Adapters', true],
       ['p1', 'shared/', 'Library', true],
-      ['x.web-push', 'Web Push service', 'External · web-push', false],
-      ['x.herdr', 'herdr', 'Terminal app', false],
-      ['x.disk', 'Disk stores', 'Data store', false],
+      ['dep.web-push', 'Web Push service', 'External · web-push', false],
+      ['system.herdr', 'herdr', 'Terminal app', false],
+      ['system.disk', 'Disk stores', 'Data store', false],
     ])
     expect(model?.arrows).toEqual([
       { from: 'p0.routes', to: 'p0.services', label: 'calls' },
       { from: 'p0.services', to: 'p0.adapters', label: 'calls' },
       { from: 'p0.routes', to: 'p1', label: 'depends on' },
-      { from: 'p0.adapters', to: 'x.web-push', label: 'calls' },
-      { from: 'p0.adapters', to: 'x.herdr', label: 'calls' },
-      { from: 'p0.adapters', to: 'x.disk', label: 'calls' },
+      { from: 'p0.adapters', to: 'dep.web-push', label: 'calls' },
+      { from: 'p0.adapters', to: 'system.herdr', label: 'calls' },
+      { from: 'p0.adapters', to: 'system.disk', label: 'calls' },
     ])
   })
 
@@ -80,11 +80,37 @@ describe('modelOf', () => {
       { others: ['the-library'], paths: [] },
     )
     expect(model?.parts.filter((p) => p.boundary === undefined)).toEqual([
-      { id: 'x.the-library', name: 'the-library', shape: 'package', ours: true, typeLine: 'npm package' },
+      { id: 'repo.the-library', name: 'the-library', shape: 'package', ours: true, typeLine: 'npm package' },
     ])
     expect(model?.arrows).toEqual([
-      { from: 'p0', to: 'x.the-library', label: 'depends on' },
-      { from: 'p1', to: 'x.the-library', label: 'depends on' },
+      { from: 'p0', to: 'repo.the-library', label: 'depends on' },
+      { from: 'p1', to: 'repo.the-library', label: 'depends on' },
+    ])
+  })
+
+  it('keeps a repository and an outer system of one name as two parts', () => {
+    const model = modelOf(
+      [
+        pkg('package.json', { name: 'root' }),
+        pkg('server/package.json', { name: '@x/server', dependencies: { linear: '1' } }),
+      ],
+      { others: ['linear'], paths: ['server/src/adapters/linearGraphql.ts'] },
+    )
+    expect(ArchitectureModel.safeParse(model).success).toBe(true)
+    expect(model?.parts.filter((p) => p.boundary === undefined).map((p) => [p.id, p.name])).toEqual([
+      ['repo.linear', 'linear'],
+      ['system.linear', 'Linear'],
+    ])
+  })
+
+  it("keeps the root package's runtime dependencies in the Stack", () => {
+    const model = modelOf([
+      pkg('package.json', { name: 'root', dependencies: { zod: '4' } }),
+      pkg('web/package.json', { name: '@x/web', dependencies: { react: '19' } }),
+    ])
+    expect(model?.stack).toEqual([
+      { name: 'Runtime', badges: ['zod'] },
+      { name: 'Web', badges: ['react'] },
     ])
   })
 

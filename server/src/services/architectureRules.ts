@@ -163,9 +163,9 @@ function workspaceModel(root: Manifest, packages: readonly Manifest[], context: 
   }
   const outer: ArchitecturePart[] = []
   const outerPart = (key: string, part: Omit<ArchitecturePart, 'id'>) => {
-    const known = outer.find((p) => p.id === `x.${key}`)
+    const known = outer.find((p) => p.id === key)
     if (known !== undefined) return known
-    const made = { ...part, id: `x.${key}` }
+    const made = { ...part, id: key }
     outer.push(made)
     return made
   }
@@ -184,15 +184,16 @@ function workspaceModel(root: Manifest, packages: readonly Manifest[], context: 
         if (to !== undefined) arrow(first.id, to.id, 'depends on')
         continue
       }
+      // A scoped name ("@owner/<id>") counts too, so a package of another owner with a repository's name does as well.
       const repo = context.others.find((id) => name === id || name.endsWith(`/${id}`))
       if (repo !== undefined) {
-        const to = outerPart(repo, { name: repo, shape: 'package', ours: true, typeLine: 'npm package' })
+        const to = outerPart(`repo.${repo}`, { name: repo, shape: 'package', ours: true, typeLine: 'npm package' })
         arrow(first.id, to.id, 'depends on')
       }
       const service = m.dependencies.some(([dep]) => dep === name) ? services.find((s) => s.dep === name) : undefined
       if (service !== undefined) {
         const { name: label, shape, typeLine } = service
-        arrow(last.id, outerPart(service.dep, { name: label, shape, ours: false, typeLine }).id, 'calls')
+        arrow(last.id, outerPart(`dep.${service.dep}`, { name: label, shape, ours: false, typeLine }).id, 'calls')
       }
     }
     if (!folders.has(`${m.folder}/src/adapters`)) return
@@ -207,7 +208,7 @@ function workspaceModel(root: Manifest, packages: readonly Manifest[], context: 
     for (const system of systems) {
       if (!words.has(system.word)) continue
       const { name, shape, typeLine } = system
-      arrow(last.id, outerPart(system.word, { name, shape, ours: false, typeLine }).id, 'calls')
+      arrow(last.id, outerPart(`system.${system.word}`, { name, shape, ours: false, typeLine }).id, 'calls')
     }
   })
   const group = (name: string, deps: readonly (readonly [string, string])[]) => ({
@@ -219,6 +220,7 @@ function workspaceModel(root: Manifest, packages: readonly Manifest[], context: 
   })
   const title = (folder: string) => folder.charAt(0).toUpperCase() + folder.slice(1)
   const stack: StackGroup[] = [
+    group('Runtime', root.dependencies),
     ...packages.map((m) => group(title(m.folder), m.dependencies)),
     group(
       'Build',
