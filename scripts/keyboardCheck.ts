@@ -11,7 +11,16 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { parseArgs } from 'node:util'
 import { devices, webkit } from 'playwright'
-import { checkFrames, cubicBezier, type Frame, servedUrl, sheetArgs } from './keyboardCheckLib.ts'
+import { probeInput } from './inputProbe.ts'
+import {
+  checkFrames,
+  cubicBezier,
+  devServerProblem,
+  type Frame,
+  isViteClient,
+  servedUrl,
+  sheetArgs,
+} from './keyboardCheckLib.ts'
 
 const { values } = parseArgs({
   options: {
@@ -88,8 +97,26 @@ function installKeyboard() {
   })
 }
 
+// The pages are `?state=` keys, which only a dev server reads: a build ignores `?state=` (d-134), so a served build
+// would show its live homes. A Vite dev server answers /@vite/client with JavaScript (isViteClient).
+const vite = await fetch(`${url}/@vite/client`).then(
+  (r) => isViteClient(r.status, r.headers.get('content-type')),
+  () => false,
+)
+if (!vite) {
+  console.error(devServerProblem(url))
+  process.exit(2)
+}
+
 mkdirSync(out, { recursive: true })
 const browser = await webkit.launch()
+// The check takes the composer's focus with a tap: stop when this browser's taps miss (NCC-179).
+const missed = await probeInput(browser, { ...iphone, viewport: screen })
+if (missed !== undefined) {
+  await browser.close()
+  console.error(missed)
+  process.exit(2)
+}
 const pages = []
 for (const target of targets) {
   const context = await browser.newContext({

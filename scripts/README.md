@@ -24,7 +24,7 @@ It leaves `TODO` markers; the tests fail until each is filled in.
 
 ## The served keyboard check
 
-`pnpm keyboard:served` checks the keyboard on the served app, before
+`pnpm keyboard:served` checks the keyboard on a dev server, before
 bridge-coord tells the owner that a chat screen is ready. It opens the
 Workspaces chat (`?state=phoneChatFull`, R20), the Inbox chat
 (`?state=chat`, R21) and the Inbox discussion (`?state=discussionPage`
@@ -50,9 +50,15 @@ It writes `<chat>-frames.json` and `<chat>-sheet.png` (24 frames of a
 recording, the keyboard drawn grey) to `reports/keyboard/<time>/`, which
 git ignores, prints one JSON line and exits 1 when a check fails. The
 repo holds no host: the app's URL comes from `--url <url>` or the
-`SERVED_APP_URL` environment variable (the served-app facts in the brain
-give its value), and with neither set the check stops with exit 2 and a
-message that names both. Flags: `--url`, `--keyboard <px>`, `--only workspaces|inbox|discuss|discussThread`, `--out <dir>` and
+`SERVED_APP_URL` environment variable, and with neither set the check
+stops with exit 2 and a message that names both. The URL must be a
+`pnpm dev` in a worktree, with its own `BRIDGE_SERVER_URL`: the served
+app is a build, which ignores `?state=` (d-134), so the check stops with
+exit 2 when the URL does not answer `/@vite/client`. It also stops with
+exit 2 when a tap on a blank page with the same profile does not land
+at its point (`inputProbe.ts`): on the owner's Mac, Playwright 1.65.1's
+WebKit puts every tap at the wrong point (NCC-179), so the check cannot
+take the composer's focus there. Flags: `--url`, `--keyboard <px>`, `--only workspaces|inbox|discuss|discussThread`, `--out <dir>` and
 `--no-focus-scroll`. It needs WebKit (`pnpm exec playwright install
 webkit`) and `ffmpeg` on the PATH. Desktop WebKit is not iOS: the fake
 keyboard stands in for iOS's, and desktop WebKit scrolls the window
