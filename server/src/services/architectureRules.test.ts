@@ -88,6 +88,19 @@ describe('modelOf', () => {
     ])
   })
 
+  it('drops the arrows of the parts past the cap, so the contract takes a model of many layered packages', () => {
+    const names = Array.from({ length: 70 }, (_, i) => `s${String(i).padStart(2, '0')}`)
+    const model = modelOf(
+      [
+        pkg('package.json', { name: 'root' }),
+        ...names.map((n) => pkg(`${n}/package.json`, { name: n, dependencies: { 'web-push': '3' } })),
+      ],
+      { others: [], paths: names.flatMap((n) => ['routes', 'services', 'adapters'].map((l) => `${n}/src/${l}/a.ts`)) },
+    )
+    expect(model?.parts).toHaveLength(200)
+    expect(ArchitectureModel.safeParse(model).success).toBe(true)
+  })
+
   it('keeps one part for each package of a repository with no root package.json', () => {
     const model = modelOf([pkg('b/package.json', { name: 'b' }), pkg('a/package.json', { name: 'a' })])
     expect(model?.boundaries).toEqual([])

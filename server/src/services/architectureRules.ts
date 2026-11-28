@@ -227,11 +227,14 @@ function workspaceModel(root: Manifest, packages: readonly Manifest[], context: 
   ]
     .filter((g) => g.badges.length > 0)
     .slice(0, caps.groups)
+  // A part past the cap takes its arrows with it, or the contract refuses the whole model.
+  const kept = [...perPackage.flat(), ...outer].slice(0, caps.parts)
+  const keptIds = new Set(kept.map((p) => p.id))
   return {
     view: 'component',
-    parts: [...perPackage.flat(), ...outer].slice(0, caps.parts),
+    parts: kept,
     boundaries: [{ id: 'b0', label: `${root.name} repository`.slice(0, caps.text), kind: 'repository' }],
-    arrows: arrows.slice(0, caps.arrows),
+    arrows: arrows.filter((a) => keptIds.has(a.from) && keptIds.has(a.to)).slice(0, caps.arrows),
     stack,
   }
 }
