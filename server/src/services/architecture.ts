@@ -204,8 +204,10 @@ export function createArchitecture({
               failures.delete(keyOf(key))
               return
             }
-            log({ code })
-            failures.set(keyOf(key), failureOf(code))
+            const failure = failureOf(code)
+            failures.set(keyOf(key), failure)
+            // The cleaned code only, so a path in a runner's code never goes to the log.
+            log({ code: failure.code })
           })
           .finally(() => {
             current = null

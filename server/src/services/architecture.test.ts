@@ -195,7 +195,9 @@ describe('the Architecture service', () => {
     await architecture.regenerate(slug, 'system')
     await architecture.idle()
     expect((await stateNow())?.failed).toEqual({ at: '2026-11-28T08:00:00.000Z', code: 'no-github' })
-    expect((await architecture.scope(slug, '@system')).ok && (await stateNow())?.commit).toBe(null)
+    const system = await architecture.scope(slug, '@system')
+    expect(system.ok && system.value !== 'notFound' && system.value.state.failed).toBe(null)
+    expect((await stateNow())?.commit).toBe(null)
 
     at = new Date('2026-11-28T09:00:00Z')
     answer = ok({ model, commit })
@@ -231,6 +233,8 @@ describe('the Architecture service', () => {
       at: '2026-11-28T08:00:00.000Z',
       code: 'unknown',
     })
+    expect(odd.log).toHaveBeenCalledWith({ code: 'unknown' })
+    expect(odd.log).not.toHaveBeenCalledWith({ code: 'no such file /Users/x' })
     const thrown = setup({ run: vi.fn(() => Promise.reject(new Error('boom'))) })
     await thrown.architecture.regenerate(slug, '@system')
     await thrown.architecture.idle()
