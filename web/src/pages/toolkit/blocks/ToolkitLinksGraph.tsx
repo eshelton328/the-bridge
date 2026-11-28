@@ -81,6 +81,9 @@ export function ToolkitLinksGraph({ links, item, layout = 'desktop', onOpenItem 
   useWideFocus(ref, graph, item.path, wide, setWideItem)
   const [pointer, setPointer] = useState<Marked | null>(null)
   const [focus, setFocus] = useState<Marked | null>(null)
+  const point = (id: string | null) => {
+    setPointer((m) => (m !== null && m.item === item.path && m.id === id ? m : { item: item.path, id }))
+  }
   const on = (m: Marked | null) => (m !== null && m.item === item.path ? m.id : null)
   const selected = litNode(graph, layout, on(pointer), on(focus))
   const empty = links.from.links.length === 0 ? links.from.empty?.graph : undefined
@@ -89,8 +92,16 @@ export function ToolkitLinksGraph({ links, item, layout = 'desktop', onOpenItem 
       ref={ref}
       className={root}
       data-figma="links graph"
+      // A mouse selects only when it moves: Chromium also sends pointerover to a node drawn under a mouse that stays
+      // still, and that must not select it (NCC-158). A touch or a pen over a node is a real contact.
       onPointerOver={(e) => {
-        setPointer({ item: item.path, id: nodeOf(graph, e) })
+        const id = nodeOf(graph, e)
+        if (e.pointerType !== 'mouse') point(id)
+        // A still mouse never selects, but a scroll that moves its node away from it ends that selection.
+        else setPointer((m) => (m !== null && m.item === item.path && m.id !== id ? null : m))
+      }}
+      onPointerMove={(e) => {
+        point(nodeOf(graph, e))
       }}
       onPointerLeave={() => {
         setPointer(null)
