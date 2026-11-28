@@ -166,8 +166,11 @@ from the outside world.
 - The Architecture tab (f-008 increment two, `architecture.ts`): a
   project's scopes are `@system` and each repository of `project.yaml`.
   One run goes at a time over all projects: a regenerate of the running
-  scope joins it, another scope is `busy`. The service cleans control
-  characters from each text, keeps only a model the contract takes with
+  scope joins it, another scope is `busy`. A failed run's time and code
+  stay in memory as the scope's `failed` until a good run (a new run start
+  keeps it; a code the contract does not take is `unknown`). The service
+  makes each C0 and C1 control and bidi character (U+202A to U+202E,
+  U+2066 to U+2069) a space in each text, keeps only a model the contract takes with
   a 40-hex commit, prunes after a list read that succeeded and tells the
   watchers at each run end. `running` is in memory only. A log keeps the
   code only (`architecture.test.ts`). `architectureRunner.ts` syncs a

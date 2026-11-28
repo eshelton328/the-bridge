@@ -26,7 +26,7 @@ const model: ArchitectureModel = {
 }
 const commit = 'b'.repeat(40)
 /** A scope's state before its first run. */
-const never = { commit: null, generatedAt: null, stale: false, running: false }
+const never = { commit: null, generatedAt: null, stale: false, running: false, failed: null }
 
 function memoryStore() {
   const files = new Map<string, KeptDiagram>()
@@ -92,6 +92,7 @@ describe('the Architecture service', () => {
           generatedAt: '2026-11-28T08:00:00.000Z',
           stale: false,
           running: false,
+          failed: null,
         },
         model,
       }),
@@ -139,6 +140,102 @@ describe('the Architecture service', () => {
     await architecture.regenerate(slug, '@system')
     await architecture.idle()
     expect(files.get(`${slug} @system`)?.model.parts[0]).toMatchObject({ name: 'ser ver', typeLine: 'a b' })
+  })
+
+  it('makes each C1 control and bidi character a space too', async () => {
+    const dirty: ArchitectureModel = {
+      ...model,
+      parts: [
+        {
+          id: 'server',
+          name: 'a\u{85}b\u{9f}c',
+          shape: 'service',
+          ours: true,
+          typeLine: '\u{202a}x\u{202e}y\u{2066}z\u{2069}',
+        },
+      ],
+      stack: [{ name: 'Run\u{80}time', badges: ['No\u{2067}de'] }],
+    }
+    const { architecture, files } = setup({ run: runs(ok({ model: dirty, commit })) })
+    await architecture.regenerate(slug, '@system')
+    await architecture.idle()
+    const kept = files.get(`${slug} @system`)?.model
+    expect(kept?.parts[0]).toMatchObject({ name: 'a b c', typeLine: ' x y z ' })
+    expect(kept?.stack).toEqual([{ name: 'Run time', badges: ['No de'] }])
+    // The characters just outside the ranges stay.
+    const near: ArchitectureModel = {
+      ...model,
+      parts: [
+        { id: 'server', name: '\u{a0}\u{2029}\u{202f}\u{2065}\u{206a}', shape: 'service', ours: true, typeLine: 't' },
+      ],
+    }
+    const other = setup({ run: runs(ok({ model: near, commit })) })
+    await other.architecture.regenerate(slug, '@system')
+    await other.architecture.idle()
+    expect(other.files.get(`${slug} @system`)?.model.parts[0]?.name).toBe('\u{a0}\u{2029}\u{202f}\u{2065}\u{206a}')
+  })
+
+  it('keeps the last failed run until a good run, through a new run start, and gives null after a restart', async () => {
+    let answer: Awaited<ReturnType<ArchitectureRunner['run']>> = err({ reason: 'failed', code: 'no-github' })
+    let finish: () => void = () => undefined
+    let held = false
+    const run = vi.fn(async () => {
+      if (held) await new Promise<void>((resolve) => (finish = resolve))
+      return answer
+    })
+    const { store, files } = memoryStore()
+    const brain: BrainProjects = { list: () => Promise.resolve(ok([project])), ideas: () => Promise.resolve(ok([])) }
+    let at = new Date('2026-11-28T08:00:00Z')
+    const make = () => createArchitecture({ brain, store, runner: { run }, now: () => at })
+    const architecture = make()
+    const stateNow = async () => {
+      const read = await architecture.scope(slug, 'system')
+      return read.ok && read.value !== 'notFound' ? read.value.state : null
+    }
+    await architecture.regenerate(slug, 'system')
+    await architecture.idle()
+    expect((await stateNow())?.failed).toEqual({ at: '2026-11-28T08:00:00.000Z', code: 'no-github' })
+    expect((await architecture.scope(slug, '@system')).ok && (await stateNow())?.commit).toBe(null)
+
+    at = new Date('2026-11-28T09:00:00Z')
+    answer = ok({ model, commit })
+    held = true
+    await architecture.regenerate(slug, 'system')
+    expect(await stateNow()).toMatchObject({
+      running: true,
+      failed: { at: '2026-11-28T08:00:00.000Z', code: 'no-github' },
+    })
+    finish()
+    await architecture.idle()
+    expect(await stateNow()).toMatchObject({ running: false, failed: null, commit })
+
+    held = false
+    answer = err({ reason: 'failed', code: 'too-large' })
+    await architecture.regenerate(slug, 'system')
+    await architecture.idle()
+    expect(await stateNow()).toMatchObject({ commit, failed: { at: '2026-11-28T09:00:00.000Z', code: 'too-large' } })
+    expect(files.size).toBe(1)
+    const restarted = await make().scope(slug, 'system')
+    expect(restarted.ok && restarted.value !== 'notFound' && restarted.value.state).toMatchObject({
+      commit,
+      failed: null,
+    })
+  })
+
+  it('gives "unknown" for a fault code the contract does not take, and "threw" for a runner that throws', async () => {
+    const odd = setup({ run: runs(err({ reason: 'failed', code: 'no such file /Users/x' })) })
+    await odd.architecture.regenerate(slug, '@system')
+    await odd.architecture.idle()
+    const read = await odd.architecture.scope(slug, '@system')
+    expect(read.ok && read.value !== 'notFound' && read.value.state.failed).toEqual({
+      at: '2026-11-28T08:00:00.000Z',
+      code: 'unknown',
+    })
+    const thrown = setup({ run: vi.fn(() => Promise.reject(new Error('boom'))) })
+    await thrown.architecture.regenerate(slug, '@system')
+    await thrown.architecture.idle()
+    const after = await thrown.architecture.scope(slug, '@system')
+    expect(after.ok && after.value !== 'notFound' && after.value.state.failed).toMatchObject({ code: 'threw' })
   })
 
   it('keeps no diagram from a failed run, a bad model or a bad commit, and logs the code only', async () => {

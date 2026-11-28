@@ -7,6 +7,7 @@ export {
   ArchitectureResponse,
   ArchitectureScope,
   ArchitectureScopeResponse,
+  ArchitectureFailure,
   ArchitectureScopeState,
   maxArchitectureArrows,
   maxArchitectureBoundaries,

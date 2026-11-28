@@ -198,7 +198,10 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
   is a `RepositoryPath` from `projects.ts`: the one place besides a drift
   finding where the contract carries a repository path. Each text and list
   has a maximum. A scope's state gives its commit (40 hex) and time or
-  null, and `stale` and `running` (in memory: false after a restart). A
+  null, and `stale` and `running` (in memory: false after a restart), and
+  `failed`: the last failed run's time and fault code (`ArchitectureFailure`,
+  letters, digits and "-" only), or null; in memory, so null after a
+  restart, and only a good run clears it. A
   regenerate while a run of another scope goes is 409
   `architecture-busy`. `architecture.changed` carries the slug and scope
   only (`architecture.test.ts`).

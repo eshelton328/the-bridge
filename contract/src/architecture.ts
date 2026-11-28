@@ -100,9 +100,20 @@ export const ArchitectureModel = z
 export type ArchitectureModel = z.infer<typeof ArchitectureModel>
 
 /**
+ * The last failed run of a scope: its end time and the runner's fault code (letters, digits and "-" only; the server
+ * sends "unknown" for any other code). In memory only, so a restart gives null; only a good run clears it.
+ */
+export const ArchitectureFailure = z.strictObject({
+  at: z.iso.datetime({ offset: true }),
+  code: z.string().regex(/^[A-Za-z0-9-]{1,40}$/),
+})
+export type ArchitectureFailure = z.infer<typeof ArchitectureFailure>
+
+/**
  * A scope's state: its title ("How the system works"), the commit and time of its diagram (null before the first
  * run), `stale` when `main` moved past that commit, and `running` while a run for it goes (in the server's memory,
- * so false after a restart). Until the server compares the snapshot's commit, `stale` is false.
+ * so false after a restart), and `failed`, its last failed run. Until the server compares the snapshot's commit,
+ * `stale` is false.
  */
 export const ArchitectureScopeState = z
   .strictObject({
@@ -115,6 +126,7 @@ export const ArchitectureScopeState = z
     generatedAt: z.iso.datetime({ offset: true }).nullable(),
     stale: z.boolean(),
     running: z.boolean(),
+    failed: ArchitectureFailure.nullable(),
   })
   .refine((s) => (s.commit === null) === (s.generatedAt === null), {
     message: 'a diagram has a commit and a time, or neither',
