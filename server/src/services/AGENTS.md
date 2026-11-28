@@ -161,6 +161,14 @@ from the outside world.
   a second run of that snapshot while one waits or runs gets its answer.
   A repository off GitHub, a sync fault or a check fault is a `failed`
   run with its code for the log, never a fault (`../routes/projects.test.ts`).
+- The Architecture tab (f-008 increment two, `architecture.ts`): a
+  project's scopes are `@system` and each repository of `project.yaml`.
+  One run goes at a time over all projects: a regenerate of the running
+  scope joins it, another scope is `busy`. The service cleans control
+  characters from each text, keeps only a model the contract takes with
+  a 40-hex commit, prunes after a list read that succeeded and tells the
+  watchers at each run end. `running` is in memory only. A log keeps the
+  code only (`architecture.test.ts`).
 - The QA tab (f-008 increment three): `qaAsk.ts` reads the newest Linear
   comment whose first line is `QA check` as data. Its `Repository:` counts
   only when `project.yaml` lists it, and its `PR:` only as a positive
