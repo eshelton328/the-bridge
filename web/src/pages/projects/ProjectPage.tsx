@@ -8,9 +8,16 @@
 // The tab and the open idea are in the address (`?tab=ideas`, `?idea=`), so a
 // reload and the browser's Back keep them (R10, R11).
 // Run check (R9) keeps its busy state here, as the server has none.
+import type { ChatStatus } from '@bridge/contract'
 import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { useEffect, useRef, useState } from 'react'
-import { useInboxBadge, useInboxChanges, useProjectsChanges } from '../../lib/inboxFeed.ts'
+import {
+  useInboxBadge,
+  useInboxChanges,
+  useChatStatus,
+  useProjectsChanges,
+  useWorkspacesChanges,
+} from '../../lib/inboxFeed.ts'
 import { navRoute } from '../../lib/navRoutes.ts'
 import { MarkdownFeaturesContext } from '../../blocks/markdownFeatures.ts'
 import { useSettingsRichText, useVisibleNavPages } from '../../state/settingsStore.ts'
@@ -50,7 +57,8 @@ export function ProjectPage() {
   useProjectsChanges(live && state.ui.open !== undefined, () => void router.invalidate())
   // The Chats panel's latest read after a change. One read at a time; a change during it gives one more after it.
   const [chats, setChats] = useState<{ of: typeof state; read: ProjectChats } | undefined>(undefined)
-  const chatsRef = useRef({ busy: false, again: false, gone: false })
+  // `seen`: each chat.status that came during the running read, newer than that read's answer may be.
+  const chatsRef = useRef({ busy: false, again: false, gone: false, seen: new Map<string, ChatStatus>() })
   // The latest render's read, so a tab change counts at once: only while the Overview tab is open.
   const readChatsRef = useRef<() => void>(() => undefined)
   useEffect(() => {
@@ -59,11 +67,15 @@ export function ProjectPage() {
       if (slug === undefined || (ui.tab ?? 'overview') !== 'overview' || flight.gone) return
       if (flight.busy) return void (flight.again = true)
       flight.busy = true
+      flight.seen = new Map()
       void import('./liveProjects.ts')
         .then((m) => m.readProjectChats(slug))
         .then((read) => {
           // A read that missed keeps the rows shown, as the Inbox's does.
-          if (read.notRead === undefined && !flight.gone) setChats({ of: state, read })
+          if (read.notRead === undefined && !flight.gone) {
+            const rows = read.rows.map((c) => ({ ...c, status: flight.seen.get(c.id) ?? c.status }))
+            setChats({ of: state, read: { ...read, rows } })
+          }
         })
         .finally(() => {
           const again = flight.again
@@ -97,10 +109,21 @@ export function ProjectPage() {
           // A read that a leave or a later change stopped throws its abort.
           if (!reading.signal.aborted) throw thrown
         })
-      readChatsRef.current()
     },
     shown?.count ?? railBadge,
   )
+  // The chats read again on each stream open and workspaces.changed; a chat.status changes one pill (NCC-149).
+  useWorkspacesChanges(live && state.ui.open !== undefined, () => {
+    readChatsRef.current()
+  })
+  useChatStatus(live && state.ui.open !== undefined, ({ chat, status }) => {
+    if (chatsRef.current.busy) chatsRef.current.seen.set(chat, status)
+    setChats((before) => {
+      const rows = before?.of === state ? before.read : state.data.overview?.chats
+      if (!rows?.rows.some((c) => c.id === chat && c.status !== status)) return before
+      return { of: state, read: { ...rows, rows: rows.rows.map((c) => (c.id === chat ? { ...c, status } : c)) } }
+    })
+  })
   useEffect(() => () => readingRef.current?.abort(), [])
   const shownChats = chats?.of === state ? chats.read : undefined
   const loaded = state.data.overview

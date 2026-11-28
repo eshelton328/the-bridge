@@ -18,7 +18,8 @@ import { brainItem, quiet, withInboxFeed } from './inboxLiveHelpers.ts'
 import { routeTree } from './routeTree.gen.ts'
 
 // A live project's Chats panel (f-008 R7, NCC-130 B1) with the contract-checked fakes only: each herdr chat tagged
-// with the project, in the server's order, read with the page and again on inbox.changed while the Overview is open.
+// with the project, in the server's order, read with the page, on each stream open and on workspaces.changed while the
+// Overview is open (NCC-149); chat.status changes one pill with no read.
 document.documentElement.classList.add('dark')
 document.documentElement.dataset.pandaTheme = 'viewscreen'
 
@@ -124,23 +125,69 @@ describe("A project's Chats panel (R7)", () => {
     expect(getReports().map((r) => r.error.message)).toContain('A projects request missed: chats internal 500')
   })
 
-  it('reads the chats once more for each inbox.changed while the Overview is open, and none on the Ideas tab', async () => {
+  it('reads the chats once more for each workspaces.changed while the Overview is open, and none on the Ideas tab', async () => {
     const server = withServer()
     const before = await settled(server)
-    server.inbox.emit('inbox.changed')
+    server.inbox.emit('workspaces.changed')
     await expect.poll(() => reads(server)).toBe(before + 1)
     await quiet()
-    server.inbox.emit('inbox.changed')
+    server.inbox.emit('workspaces.changed')
     await expect.poll(() => reads(server)).toBe(before + 2)
     await quiet()
     // The Ideas tab's loader reads the project again, but not its chats.
     await userEvent.click(page.getByRole('tab', { name: 'Ideas' }))
-    server.inbox.emit('inbox.changed')
+    server.inbox.emit('workspaces.changed')
     await quiet()
     expect(reads(server)).toBe(before + 2)
   })
 
-  it('gives exactly one more read for two inbox.changed that come during one held read', async () => {
+  it('reads no chats on inbox.changed, and reads the Inbox panel as before', async () => {
+    const server = withServer()
+    const before = await settled(server)
+    const lists = server.inbox.calls('list').length
+    server.inbox.emit('inbox.changed')
+    await expect.poll(() => server.inbox.calls('list').length).toBe(lists + 1)
+    await quiet()
+    expect(reads(server)).toBe(before)
+  })
+
+  it("changes only that chat's pill on chat.status, with no read; an unknown chat or a bad frame changes nothing", async () => {
+    const server = withServer()
+    const before = await settled(server)
+    const pills = () =>
+      (['Needs you', 'Working', 'Done'] as const).map((w) => panel().getByText(w, { exact: true }).elements().length)
+    expect(pills()).toEqual([1, 1, 1])
+    server.inbox.emit('chat.status', { chat: 'test-box/c1', status: 'done' })
+    await expect.poll(pills).toEqual([1, 0, 2])
+    server.inbox.emit('chat.status', { chat: 'test-box/c99', status: 'working' })
+    server.inbox.emit('chat.status', { chat: 'test-box/c2', status: 'not-a-status' })
+    await quiet()
+    expect(pills()).toEqual([1, 0, 2])
+    expect(reads(server)).toBe(before)
+    expect(getReports()).toEqual([])
+  })
+
+  it('keeps a chat.status that comes during a chats read when the read answers', async () => {
+    const server = withServer()
+    const before = await settled(server)
+    const pills = () =>
+      (['Needs you', 'Working', 'Done'] as const).map((w) => panel().getByText(w, { exact: true }).elements().length)
+    const gate: { open?: () => void } = {}
+    const held = new Promise<void>((resolve) => {
+      gate.open = resolve
+    })
+    // The read answers with the list from before the status change: c1 still working.
+    server.projects.answerNext('chats', () => held.then(() => Response.json({ chats })))
+    server.inbox.emit('workspaces.changed')
+    await expect.poll(() => reads(server)).toBe(before + 1)
+    server.inbox.emit('chat.status', { chat: 'test-box/c1', status: 'done' })
+    await expect.poll(pills).toEqual([1, 0, 2])
+    gate.open?.()
+    await quiet()
+    expect(pills()).toEqual([1, 0, 2])
+  })
+
+  it('gives exactly one more read for two workspaces.changed that come during one held read', async () => {
     const server = withServer()
     const before = await settled(server)
     const gate: { open?: () => void } = {}
@@ -148,10 +195,10 @@ describe("A project's Chats panel (R7)", () => {
       gate.open = resolve
     })
     server.projects.answerNext('chats', () => held.then(() => Response.json({ chats })))
-    server.inbox.emit('inbox.changed')
+    server.inbox.emit('workspaces.changed')
     await expect.poll(() => reads(server)).toBe(before + 1)
     for (let i = 0; i < 2; i += 1) {
-      server.inbox.emit('inbox.changed')
+      server.inbox.emit('workspaces.changed')
       await quiet()
     }
     expect(reads(server)).toBe(before + 1)

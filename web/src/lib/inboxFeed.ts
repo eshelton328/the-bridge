@@ -7,6 +7,7 @@
 // Without the provider (a route test that renders only the router) a page
 // shows its own data's number and the Inbox page watches the stream itself,
 // as before the feed.
+import type { ChatStatusEvent } from '@bridge/contract'
 import { createContext, use, useCallback, useEffect, useRef } from 'react'
 import { readsLiveServer } from './dataSource.ts'
 
@@ -20,6 +21,10 @@ export type InboxFeed = {
   readonly follow: (onChange: () => void) => () => void
   /** Each `projects.changed` of the feed's stream calls `onChange` (NCC-156); the result stops it. */
   readonly followProjects: (onChange: () => void) => () => void
+  /** Each open of the feed's stream and each `workspaces.changed` call `onChange` (NCC-149); the result stops it. */
+  readonly followWorkspaces: (onChange: () => void) => () => void
+  /** Each `chat.status` the contract accepts calls `onStatus` (NCC-149); the result stops it. */
+  readonly followChatStatus: (onStatus: (event: ChatStatusEvent['data']) => void) => () => void
   /** The `counts.needsYou` of the list the Inbox page loaded. */
   readonly publish: (count: number) => void
   /**
@@ -78,19 +83,37 @@ export function useInboxChanges(live: boolean, onChange: () => void, count: numb
   }, [publish, live, count])
 }
 
-/** A live project page's reads on each `projects.changed` of the app's feed; with no feed it reads none. */
-export function useProjectsChanges(live: boolean, onChange: () => void): void {
-  const followProjects = use(InboxFeedContext)?.followProjects
-  const changeRef = useRef(onChange)
+/** `call` on each event that `follow` gives, while the page is `live` and reads the live server; with no feed none. */
+function useFollow<A extends unknown[]>(
+  follow: ((call: (...args: A) => void) => () => void) | undefined,
+  live: boolean,
+  call: (...args: A) => void,
+) {
+  const callRef = useRef(call)
   useEffect(() => {
-    changeRef.current = onChange
+    callRef.current = call
   })
   useEffect(() => {
-    if (!readsLiveServer() || !live || followProjects === undefined) return undefined
-    return followProjects(() => {
-      changeRef.current()
+    if (!readsLiveServer() || !live || follow === undefined) return undefined
+    return follow((...args) => {
+      callRef.current(...args)
     })
-  }, [followProjects, live])
+  }, [follow, live])
+}
+
+/** A live project page's reads on each `projects.changed` of the app's feed; with no feed it reads none. */
+export function useProjectsChanges(live: boolean, onChange: () => void): void {
+  useFollow(use(InboxFeedContext)?.followProjects, live, onChange)
+}
+
+/** A live page's chats reads on each open of the feed's stream and each `workspaces.changed` (NCC-149). */
+export function useWorkspacesChanges(live: boolean, onChange: () => void): void {
+  useFollow(use(InboxFeedContext)?.followWorkspaces, live, onChange)
+}
+
+/** A live page's change of one chat's status on each `chat.status` of the feed (NCC-149), with no read. */
+export function useChatStatus(live: boolean, onStatus: (event: ChatStatusEvent['data']) => void): void {
+  useFollow(use(InboxFeedContext)?.followChatStatus, live, onStatus)
 }
 
 /**

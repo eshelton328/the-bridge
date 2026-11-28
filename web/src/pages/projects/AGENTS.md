@@ -72,9 +72,12 @@ T10b, M10 for the home, D01, T01, T01b, M01 for a project's page), read with
     `ProjectPage.tsx` keeps Run check off until the answer. A miss shows one
     line and keeps the last check (`app/ProjectDrift.test.tsx`).
   - The Chats panel (R7) reads `GET /api/projects/:slug/chats` with the
-    page, and again on `inbox.changed` only while the merged `ui.tab` is
-    Overview, one read at a time (`app/ProjectChatsPanel.test.tsx`). A tag
-    change shows after a page open until NCC-139; NCC-149 moves the reads.
+    page, and again on each open of the feed's stream and each burst of
+    `workspaces.changed`, only while the merged `ui.tab` is Overview, one
+    read at a time (`useWorkspacesChanges`, NCC-149). A `chat.status`
+    changes only that chat's pill, with no read (`useChatStatus`);
+    `inbox.changed` reads no chats (`app/ProjectChatsPanel.test.tsx`). A tag
+    change shows after a page open until NCC-139.
     The search, the area chips and the 10-row pager work on the rows read
     (`app/ProjectChatsTable.test.tsx`); a read that missed shows no count.
   - The Repositories tab (increment two; the live slice, plain on every
