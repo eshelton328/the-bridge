@@ -377,6 +377,11 @@ export type HerdrAgentsOptions = {
   readonly guardedAgents?: readonly string[]
   /** The time in ms, for the stop hold; a test can move it. */
   readonly now?: () => number
+  /**
+   * Waits ms before the next read of a sent prompt's box, and of a box a stop may fill again; a test can record the
+   * waits and go on at once, as a timer can fire early by `Date.now()` on a busy runner (NCC-38).
+   */
+  readonly wait?: (ms: number) => Promise<void>
   /** Answers a side question from a copy of a session; with none, a side question of a saved session is `unreachable`. */
   readonly runSide?: SideRunner
   /** A folder's real path, or null when it is none; a test gives a map. */
@@ -434,6 +439,7 @@ export function createHerdrAgents({
   log,
   watch: watchFs = (path, listener) => watch(path, listener),
   now = Date.now,
+  wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
   chatRoot,
   serverPids = () => Promise.resolve(new Set<number>()),
   guardedAgents = [],
@@ -947,7 +953,7 @@ export function createHerdrAgents({
         return
       }
       // The turn ended, but the prompt may come back a moment later.
-      await new Promise((resolve) => setTimeout(resolve, putBackReadGapMs))
+      await wait(putBackReadGapMs)
     }
   }
 
@@ -969,7 +975,7 @@ export function createHerdrAgents({
     let left: { box: InputBox; ours: boolean } | null = null
     let waited = 0
     for (const gap of submitReadGapsMs) {
-      await new Promise((resolve) => setTimeout(resolve, gap))
+      await wait(gap)
       waited += gap
       const now = await inputBox(pane)
       steps.checkReads = (steps.checkReads ?? 0) + 1
