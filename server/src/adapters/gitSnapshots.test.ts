@@ -82,6 +82,13 @@ describe('createGitSnapshots', () => {
     expect(await (await stub('not-a-hash')).sync('example-repo', github)).toMatchObject({ error: { code: 'EBADDATA' } })
   })
 
+  it('shares a running sync of one ID, so two syncs at once give one clone', async () => {
+    const snapshots = await stub()
+    const [a, b] = await Promise.all([snapshots.sync('example-repo', github), snapshots.sync('example-repo', github)])
+    expect(a).toEqual(b)
+    expect((await calls()).filter((c) => c.includes(' clone '))).toHaveLength(1)
+  })
+
   it('makes the snapshots folder private', async () => {
     await (await stub()).sync('example-repo', github)
     const { mode } = await stat(join(dir, 'snapshots'))

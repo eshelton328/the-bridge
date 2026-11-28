@@ -86,37 +86,50 @@ export function createGitSnapshots({
         resolve(err({ reason: 'failed', code: 'spawn' }))
       }
     })
+  const syncOnce = async (
+    id: string,
+    github: { readonly owner: string; readonly name: string },
+  ): Promise<Result<Snapshot, ProjectFault>> => {
+    if (!RepositoryId.safeParse(id).success) return err({ reason: 'failed', code: 'bad-id' })
+    if (!githubPart.test(github.owner) || !githubPart.test(github.name) || github.name.startsWith('.'))
+      return err({ reason: 'failed', code: 'bad-name' })
+    try {
+      await mkdir(root, { recursive: true, mode: 0o700 })
+    } catch {
+      return err({ reason: 'failed', code: 'no-root' })
+    }
+    const top = await realpath(root)
+    const dir = join(top, id)
+    const rel = relative(top, dir)
+    if (rel === '' || rel.startsWith('..') || isAbsolute(rel)) return err({ reason: 'failed', code: 'outside-root' })
+    const cloned = await stat(join(dir, '.git')).then(
+      () => true,
+      () => false,
+    )
+    const url = `${base}/${github.owner}/${github.name}.git`
+    const synced = cloned
+      ? await git(['-C', dir, 'fetch', '--quiet', '--depth', '1', '--no-recurse-submodules', 'origin', 'HEAD'])
+      : await git(['clone', '--quiet', '--depth', '1', '--no-recurse-submodules', '--', url, dir])
+    if (!synced.ok) return synced
+    if (cloned) {
+      const reset = await git(['-C', dir, 'reset', '--quiet', '--hard', 'FETCH_HEAD'])
+      if (!reset.ok) return reset
+    }
+    const head = await git(['-C', dir, 'rev-parse', 'HEAD'])
+    if (!head.ok) return head
+    const commit = head.value.trim()
+    return commitHash.test(commit) ? ok({ dir, commit }) : err({ reason: 'failed', code: 'EBADDATA' })
+  }
+  // One sync of a snapshot at a time: a second sync of the ID while one runs gets its answer, so two clones never
+  // write one folder.
+  const running = new Map<string, Promise<Result<Snapshot, ProjectFault>>>()
   return {
-    async sync(id, github) {
-      if (!RepositoryId.safeParse(id).success) return err({ reason: 'failed', code: 'bad-id' })
-      if (!githubPart.test(github.owner) || !githubPart.test(github.name) || github.name.startsWith('.'))
-        return err({ reason: 'failed', code: 'bad-name' })
-      try {
-        await mkdir(root, { recursive: true, mode: 0o700 })
-      } catch {
-        return err({ reason: 'failed', code: 'no-root' })
-      }
-      const top = await realpath(root)
-      const dir = join(top, id)
-      const rel = relative(top, dir)
-      if (rel === '' || rel.startsWith('..') || isAbsolute(rel)) return err({ reason: 'failed', code: 'outside-root' })
-      const cloned = await stat(join(dir, '.git')).then(
-        () => true,
-        () => false,
-      )
-      const url = `${base}/${github.owner}/${github.name}.git`
-      const synced = cloned
-        ? await git(['-C', dir, 'fetch', '--quiet', '--depth', '1', '--no-recurse-submodules', 'origin', 'HEAD'])
-        : await git(['clone', '--quiet', '--depth', '1', '--no-recurse-submodules', '--', url, dir])
-      if (!synced.ok) return synced
-      if (cloned) {
-        const reset = await git(['-C', dir, 'reset', '--quiet', '--hard', 'FETCH_HEAD'])
-        if (!reset.ok) return reset
-      }
-      const head = await git(['-C', dir, 'rev-parse', 'HEAD'])
-      if (!head.ok) return head
-      const commit = head.value.trim()
-      return commitHash.test(commit) ? ok({ dir, commit }) : err({ reason: 'failed', code: 'EBADDATA' })
+    sync(id, github) {
+      const run = running.get(id)
+      if (run !== undefined) return run
+      const next = syncOnce(id, github).finally(() => running.delete(id))
+      running.set(id, next)
+      return next
     },
   }
 }
