@@ -34,11 +34,16 @@ moves to `web/src/blocks/`.
   page, says when no idea matches, so a screen reader hears it. A row opens its idea.
   `IdeaView` is an idea's page: `BackRow` (Back to Ideas), the title as an
   `h2`, and the record's text with `MarkdownText`, less its first `# `
-  heading; with `onChat` it shows Chat about this idea (secondary, off
-  while `chat.busy`) over a `role="status"` line for a miss. Each takes
-  only the words it draws. The frames' table and page
-  (D08, T08, T08b, M08, D09 and their tablet and phone frames) are a later
-  issue's.
+  heading; the loader takes its "## Open questions" list out of the text
+  (`../ideaBody.ts`; a section with more than a list stays in it) and
+  `IdeaQuestions` draws it. `IdeaActions` is the action
+  card (d-135, D09): Chat about this idea (primary, across the card, off
+  while `chat.busy`; a press does nothing without `onChat`, as on
+  fixtures), then Make a feature and Park, which do nothing until
+  increment four, over a `role="status"` line for a miss.
+  `IdeaQuestions` is a `Panel` with the list's items and their count.
+  Each takes only the words it draws. The frames' table (D08, T08, T08b,
+  M08) is a later issue's; the idea page's layout by size is next.
 - `RepositoriesList` is the Repositories tab: compact `ListRow` rows (role,
   visibility and release in the meta, the counts at the end, or after the
   meta on the phone, each part not read named), then the CI numbers or

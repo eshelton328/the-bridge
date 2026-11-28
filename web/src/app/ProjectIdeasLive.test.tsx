@@ -131,6 +131,10 @@ describe("A project's Ideas tab (R10)", () => {
     await open(`/projects/alpha?idea=${speech}`)
     await expect.element(page.getByRole('heading', { name: 'Sample idea about speech', level: 2 })).toBeVisible()
     expect(projects.calls('idea').map((r) => r.path)).toEqual([`/api/projects/alpha/ideas/${speech}`])
+    // The record's Open questions list shows in its own panel (d-135, D09), and the text keeps no copy of it.
+    const questions = page.getByRole('region', { name: 'Open questions' })
+    await expect.element(questions.getByText('Which engine?')).toBeVisible()
+    expect(page.getByText('Which engine?').elements()).toHaveLength(1)
     expect(projects.calls('chats')).toEqual([])
   })
 
