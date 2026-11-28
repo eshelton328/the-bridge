@@ -15,6 +15,7 @@ import type {
   IdeasResponse,
   ProjectChatsResponse,
   ProjectDetailResponse,
+  ProjectDetailsRequest,
   ProjectPull,
   ProjectRepository,
   ProjectSlug,
@@ -28,10 +29,12 @@ import type {
   RepositoryRelease,
   RepositorySection,
   RepositoryVisibility,
+  SlugResponse,
 } from '@bridge/contract'
 import { ciWindowDays, maxDriftFindings } from '@bridge/contract'
 import { err, ok, type Result } from '@bridge/shared'
 import type { AgentPort, AgentPortError } from './agentPort.ts'
+import { type BrainWriteFault, type BrainWrites, slugOf } from './brainWrites.ts'
 import {
   type CiSource,
   type CiStore,
@@ -126,6 +129,8 @@ type Deps = {
   readonly ciLog?: CiLog
   /** The chats and their tags; none (each chats read fails) where an app has no agents to give. */
   readonly agents?: Pick<AgentPort, 'listWorkspaces' | 'chatTags'>
+  /** The brain's writes (increment four); with none, each slug read and each create fails. */
+  readonly writes?: BrainWrites
   readonly now?: () => Date
 }
 
@@ -158,7 +163,19 @@ export type Projects = {
   runDrift(slug: ProjectSlug): Promise<Result<DriftRunOutcome | NotFound, ProjectFault>>
   /** A fault of the agents is the port's own, so the route answers it as the workspaces routes do. */
   chats(slug: ProjectSlug): Promise<Result<ProjectChatsResponse | NotFound, ProjectFault | AgentPortError>>
-  /** Calls `onChange` each time a run in the background finds other open PRs (NCC-156); the result stops it. */
+  /** The folder name for a project name and whether it is free (R2, R3). */
+  slug(name: string): Promise<Result<SlugResponse, BrainWriteFault>>
+  /**
+   * A new project (R5, R7): its card, `noSlug` for a name that gives no folder name, `taken` for a folder that is there.
+   * It makes no GitHub repository and no Linear team or project.
+   */
+  create(
+    details: ProjectDetailsRequest,
+  ): Promise<Result<ProjectSummary | 'noSlug' | 'taken', ProjectFault | BrainWriteFault>>
+  /**
+   * Calls `onChange` each time a run in the background finds other open PRs (NCC-156), and after each create; the
+   * result stops it.
+   */
   watch(onChange: () => void): () => void
 }
 
@@ -288,6 +305,7 @@ export function createProjects({
   ci,
   ciStore,
   ciLog = () => undefined,
+  writes,
   now = () => new Date(),
 }: Deps): Projects {
   const watchers = new Set<() => void>()
@@ -587,6 +605,29 @@ export function createProjects({
       return ok({ chats })
     },
 
+    async slug(name) {
+      const slug = slugOf(name)
+      if (slug === null) return ok({ slug: null, free: false })
+      if (writes === undefined) return err({ reason: 'failed', code: 'no-writes' })
+      const taken = await writes.taken(slug)
+      return taken.ok ? ok({ slug, free: !taken.value }) : taken
+    },
+
+    async create({ name, purpose, icon }) {
+      const slug = slugOf(name)
+      if (slug === null) return ok('noSlug')
+      if (writes === undefined) return err({ reason: 'failed', code: 'no-writes' })
+      const made = await writes.createProject({ slug, name, purpose, icon })
+      if (!made.ok) return made
+      if (made.value === 'taken') return ok('taken')
+      changed()
+      const cards = await summaries()
+      if (!cards.ok) return cards
+      const card = cards.value.find((c) => c.slug === slug)
+      // A home that the list cannot read (its project.yaml) is a fault: the brain has the folder, the page no card.
+      return card === undefined ? err({ reason: 'failed', code: 'not-listed' }) : ok(card)
+    },
+
     watch(onChange) {
       const watcher = () => {
         onChange()
@@ -614,6 +655,8 @@ export const noProjects: Projects = (() => {
     ci: fault,
     runDrift: fault,
     chats: fault,
+    slug: fault,
+    create: fault,
     watch,
   }
 })()
