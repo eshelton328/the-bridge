@@ -86,25 +86,47 @@ export const ProjectPageWords = z.object({
     noMatch: z.string(),
   }),
   /**
-   * The Repositories tab (increment two, R2, R8): the empty list, each visibility, and each count with `{n}` and the
-   * line of a part not read.
+   * The Repositories tab (increment two, R2, R8): the empty list, each visibility, the worktree count with `{n}` and
+   * the line of a part not read.
    */
   noRepositories: z.string(),
   visibility: z.record(z.enum(['public', 'private', 'internal']), z.string()),
-  counts: z.record(z.enum(['openPull', 'openPulls', 'worktree', 'worktrees']), z.string()),
-  unread: z.record(z.enum(['about', 'pulls', 'worktrees']), z.string()),
+  counts: z.record(z.enum(['worktree', 'worktrees']), z.string()),
+  unread: z.record(z.enum(['about', 'worktrees']), z.string()),
   /**
-   * A repository's CI numbers (R4): the green runs of the finished ones (`{green}`, `{finished}`), a green run's
-   * median minutes (`{n}`), the read's age when it is older than 10 minutes (`{age}`), no finished run (runs that
-   * did not end or were cancelled do not count), the first read and
-   * a read that missed.
+   * A repository's CI read (R4): the read's age when it is older than 10 minutes (`{age}`), no finished run (runs
+   * that did not end or were cancelled do not count), the first read and a read that missed.
    */
   ci: z.object({
-    runs: z.string(),
-    minutes: z.string(),
     asOf: z.string(),
     none: z.string(),
     reading: z.string(),
+    notRead: z.string(),
+  }),
+  /** A repository card's head (d-135): its link to GitHub, in full and on the phone. */
+  repository: z.object({ github: z.string(), githubShort: z.string() }),
+  /**
+   * A repository card's stat tiles (d-135): each label, value (`{n}`) and caption (`{green}`, `{finished}`,
+   * `{p90}`); `none` is the value of a figure read with nothing to count, under the line that says why
+   * (`noMerge`, `noGreen`, `noCheck`, `checkFailed`), and `notRead` the value of one not read.
+   */
+  stats: z.object({
+    passRate: z.string(),
+    passRuns: z.string(),
+    mergeTime: z.string(),
+    hours: z.string(),
+    mergeP90: z.string(),
+    runTime: z.string(),
+    minutes: z.string(),
+    runMedian: z.string(),
+    openPulls: z.string(),
+    drift: z.string(),
+    driftAt: z.string(),
+    none: z.string(),
+    noMerge: z.string(),
+    noGreen: z.string(),
+    noCheck: z.string(),
+    checkFailed: z.string(),
     notRead: z.string(),
   }),
   /** The QA tab's label. */
@@ -213,27 +235,42 @@ export const ProjectIdeas = z.object({ rows: z.array(IdeaRow), notRead: z.string
 export type ProjectIdeas = z.infer<typeof ProjectIdeas>
 
 /**
- * One repository of the Repositories tab (increment two, R2, R8), as the server gives it: each count or fact null when
- * not read or off GitHub, and `unread` naming the parts not read.
+ * One repository of the Repositories tab (increment two, R2, R8; its card, d-135), as the server gives it: each count
+ * or fact null when not read or off GitHub, and `unread` naming the parts not read.
  */
 export const RepositoryRow = z.object({
   id: z.string().min(1),
   role: z.string(),
+  /** Its GitHub repository, for View on GitHub; null off GitHub. */
+  github: z.object({ owner: z.string().min(1), name: z.string().min(1) }).nullable(),
   visibility: z.enum(['public', 'private', 'internal']).nullable(),
+  /** Its newest release tag, such as "v1.0.0-beta.133"; null with none or not read. */
   release: z.string().nullable(),
   openPulls: z.number().int().nonnegative().nullable(),
   worktrees: z.number().int().nonnegative().nullable(),
   unread: z.array(z.enum(['about', 'pulls', 'worktrees'])),
   /**
-   * Its CI numbers (R4), on the live page only: null when not read, `runs` null while the first read runs, and `asOf`
-   * the read's age ("3h") when it is older than 10 minutes, else null.
+   * Its CI numbers (R4), on the live page only: null when not read, `runs` null while the first read runs, `merge`
+   * the merged PRs' median and p90 hours (each null with no PR merged), and `asOf` the read's age ("3h") when it is
+   * older than 10 minutes, else null.
    */
   ci: z
     .object({
       runs: z.object({ green: z.number().int().nonnegative(), finished: z.number().int().nonnegative() }).nullable(),
       runMinutes: z.number().nonnegative().nullable(),
+      merge: z
+        .object({ medianHours: z.number().nonnegative().nullable(), p90Hours: z.number().nonnegative().nullable() })
+        .nullable(),
       asOf: z.string().nullable(),
     })
+    .nullable()
+    .optional(),
+  /**
+   * Its last drift check (R7), on the live page only: its findings, `unchecked` before the first check, `failed`
+   * when the check did not run, and null when the read missed.
+   */
+  drift: z
+    .union([z.number().int().nonnegative(), z.enum(['unchecked', 'failed'])])
     .nullable()
     .optional(),
 })

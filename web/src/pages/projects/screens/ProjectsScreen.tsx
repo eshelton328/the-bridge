@@ -49,6 +49,8 @@ export type ProjectsScreenProps = {
   onIdeaBack?: (() => void) | undefined
   /** Starts a chat about the open idea (NCC-132 AC2); with none the idea's page shows no button. */
   onIdeaChat?: (() => void) | undefined
+  /** A repository card's Architecture (d-135): open the Architecture tab on that repository. */
+  onArchitecture?: ((repo: string) => void) | undefined
 }
 
 export function ProjectsScreen({
@@ -69,6 +71,7 @@ export function ProjectsScreen({
   onIdeaOpen,
   onIdeaBack,
   onIdeaChat,
+  onArchitecture,
 }: ProjectsScreenProps) {
   // The project page of `ui.open` (R4); the home when it names no card.
   const open = data.projects.find((p) => p.slug === ui.open)
@@ -145,6 +148,7 @@ export function ProjectsScreen({
                     onIdeaOpen={onIdeaOpen}
                     onIdeaBack={onIdeaBack}
                     onIdeaChat={onIdeaChat}
+                    onArchitecture={onArchitecture}
                     onQuickChat={() => {
                       onUiChange?.({ quickChat: {} })
                     }}

@@ -9,7 +9,9 @@
 // `GET /api/projects/:slug/repositories` (the test's sections of the
 // project, none by default), `.../repositories/:repo/ci` (the test's CI
 // answer, not read by default; `setCi` changes it; a repository the
-// project does not list is 404), `GET /api/projects/:slug/qa` (the test's QA
+// project does not list is 404), `.../repositories/:repo/drift` (the test's
+// last drift run of the repository, none by default; `setRepositoryDrift`
+// changes it; 404 as the CI route), `GET /api/projects/:slug/qa` (the test's QA
 // items of the project, none by default), `GET /api/projects/:slug/architecture` and
 // `.../architecture/:scope` (the test's scopes and kept diagrams; by default
 // System alone with no diagram, as the server answers; an unknown scope is 404), `GET /api/projects/:slug/drift` (the test's last
@@ -37,6 +39,7 @@ import {
   QaListResponse,
   RepositoriesResponse,
   RepositoryCiResponse,
+  RepositoryDriftResponse,
   RunDriftRequest,
 } from '@bridge/contract'
 import { errorAnswer } from './fakeTranscriptServer.ts'
@@ -51,6 +54,7 @@ export type ProjectsCall =
   | 'idea'
   | 'repositories'
   | 'ci'
+  | 'repositoryDrift'
   | 'qa'
   | 'drift'
   | 'runDrift'
@@ -101,6 +105,8 @@ type FakeProjectsOptions = {
   readonly repositories?: Readonly<Record<string, readonly unknown[]>>
   /** Each repository's CI answer (`RepositoryCiResponse`) by `<slug>/<repository ID>`; not read by default. */
   readonly ci?: Readonly<Record<string, unknown>>
+  /** Each repository's drift answer (`RepositoryDriftResponse`) by `<slug>/<repository ID>`; no run by default. */
+  readonly repositoryDrift?: Readonly<Record<string, unknown>>
   /** Each project's QA items (`QaItem`) by its slug, in the list's order; none by default. */
   readonly qa?: Readonly<Record<string, readonly unknown[]>>
   /** Each project's last drift run (`DriftRun`) by its slug; none (never checked) by default. */
@@ -122,6 +128,7 @@ export function fakeProjectsServer(
     ideas = {},
     repositories = {},
     ci = {},
+    repositoryDrift = {},
     qa = {},
     drift = {},
     architecture = {},
@@ -142,6 +149,9 @@ export function fakeProjectsServer(
     Object.entries(repositories).map(([slug, list]) => [slug, RepositoriesResponse.parse({ repositories: list })]),
   )
   const ciOf = new Map(Object.entries(ci).map(([key, answer]) => [key, RepositoryCiResponse.parse(answer)]))
+  const repoDriftOf = new Map(
+    Object.entries(repositoryDrift).map(([key, answer]) => [key, RepositoryDriftResponse.parse(answer)]),
+  )
   const qaOf = new Map(Object.entries(qa).map(([slug, list]) => [slug, QaListResponse.parse({ items: list })]))
   const ideasOf = new Map(
     Object.entries(ideas).map(([slug, list]) => [slug, list.map((i) => IdeaDetailResponse.parse(i))]),
@@ -199,6 +209,10 @@ export function fakeProjectsServer(
     setCi: (slug: string, repo: string, answer: unknown) => {
       ciOf.set(`${slug}/${repo}`, RepositoryCiResponse.parse(answer))
     },
+    /** Sets repository `repo`'s drift answer, as a check of its snapshot that ends does. */
+    setRepositoryDrift: (slug: string, repo: string, answer: unknown) => {
+      repoDriftOf.set(`${slug}/${repo}`, RepositoryDriftResponse.parse(answer))
+    },
     /** Answers the next request of `call` with `answer`. */
     answerNext: (call: ProjectsCall, answer: () => Response | Promise<Response>) => {
       answers.set(call, answer)
@@ -212,6 +226,7 @@ export function fakeProjectsServer(
       const ideasPath = /^\/api\/projects\/([^/]+)\/ideas$/.exec(path)
       const reposPath = /^\/api\/projects\/([^/]+)\/repositories$/.exec(path)
       const ciPath = /^\/api\/projects\/([^/]+)\/repositories\/([^/]+)\/ci$/.exec(path)
+      const repoDriftPath = /^\/api\/projects\/([^/]+)\/repositories\/([^/]+)\/drift$/.exec(path)
       const qaPath = /^\/api\/projects\/([^/]+)\/qa$/.exec(path)
       const ideaPath = /^\/api\/projects\/([^/]+)\/ideas\/([^/]+)$/.exec(path)
       const driftPath = /^\/api\/projects\/([^/]+)\/drift$/.exec(path)
@@ -232,19 +247,21 @@ export function fakeProjectsServer(
                     ? 'repositories'
                     : ciPath !== null && method === 'GET'
                       ? 'ci'
-                      : ideaPath !== null && method === 'GET'
-                        ? 'idea'
-                        : driftPath !== null && method === 'GET'
-                          ? 'drift'
-                          : driftPath !== null && method === 'POST'
-                            ? 'runDrift'
-                            : qaPath !== null && method === 'GET'
-                              ? 'qa'
-                              : archPath !== null && method === 'GET'
-                                ? 'architecture'
-                                : diagramPath !== null && method === 'GET'
-                                  ? 'diagram'
-                                  : undefined
+                      : repoDriftPath !== null && method === 'GET'
+                        ? 'repositoryDrift'
+                        : ideaPath !== null && method === 'GET'
+                          ? 'idea'
+                          : driftPath !== null && method === 'GET'
+                            ? 'drift'
+                            : driftPath !== null && method === 'POST'
+                              ? 'runDrift'
+                              : qaPath !== null && method === 'GET'
+                                ? 'qa'
+                                : archPath !== null && method === 'GET'
+                                  ? 'architecture'
+                                  : diagramPath !== null && method === 'GET'
+                                    ? 'diagram'
+                                    : undefined
       if (call === undefined) return undefined
       requests.push({ call, path, body: bodyOf(init) })
       const next = answers.get(call)
@@ -268,15 +285,17 @@ export function fakeProjectsServer(
           return errorAnswer({ kind: 'not-found', path, message: 'no project has this slug', requestId: 'r-404' }, 404)
         return json(sectionsOf.get(slug) ?? { repositories: [] })
       }
-      if (call === 'ci') {
-        const slug = decodeURIComponent(ciPath?.[1] ?? '')
-        const repo = decodeURIComponent(ciPath?.[2] ?? '')
+      if (call === 'ci' || call === 'repositoryDrift') {
+        const found = ciPath ?? repoDriftPath
+        const slug = decodeURIComponent(found?.[1] ?? '')
+        const repo = decodeURIComponent(found?.[2] ?? '')
         const listed = sectionsOf.get(slug)?.repositories.some((r) => r.id === repo) ?? false
         if (!stored.has(slug) || !listed)
           return errorAnswer(
             { kind: 'not-found', path, message: 'no project has a repository with this name', requestId: 'r-404' },
             404,
           )
+        if (call === 'repositoryDrift') return json(repoDriftOf.get(`${slug}/${repo}`) ?? { last: null })
         return json(ciOf.get(`${slug}/${repo}`) ?? { ci: null, readAt: null, reading: false })
       }
       if (call === 'qa') {
