@@ -57,7 +57,7 @@ moves to `web/src/blocks/`.
 - `ContextDrift` is the Context drift panel (R9): `PageHeader` with the
   secondary Run check and its `RefreshIcon` (off while `busy`) over a
   `Panel` with the check's time and scope and a compact `ListRow` for each
-  finding; `OverviewPanels` draws it under Inbox and Queue, across both
+  finding, its backtick spans shown as plain text (`plainFinding`, NCC-189); `OverviewPanels` draws it under Inbox and Queue, across both
   columns on the desktop.
 - `ChatsPanel` is the Overview's Chats panel (R7): a `SearchField` (title
   or workspace) and `FilterChips` of the chats' area tags over compact

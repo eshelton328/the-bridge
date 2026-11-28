@@ -105,6 +105,12 @@ export const ProjectOverview: Story = {
     for (const kind of ['Question', 'Action', 'Review']) {
       await expect(panel.getByRole('img', { name: kind })).toBeVisible()
     }
+    // A Context drift row shows the command `ncc check` names with no backticks (NCC-189).
+    const drift = within(panel.getByRole('region', { name: 'Context drift' }))
+    await expect(
+      drift.getByText('no commit-msg hook in component-library-1701 (run ncc check --fix)', { exact: true }),
+    ).toBeVisible()
+    await expect(drift.queryByText(/`/)).toBeNull()
   },
 }
 
