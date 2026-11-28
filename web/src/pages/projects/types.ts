@@ -47,8 +47,18 @@ export const ProjectPageWords = z.object({
   noIdeas: z.string(),
   ideaKinds: z.record(z.enum(['idea', 'proposal', 'audit']), z.string()),
   ideaStates: z.record(z.enum(['open', 'in-design', 'needs-you', 'decided', 'parked']), z.string()),
-  /** The Chats panel (R7): its heading, the line with no chat and each status's pill word, as Workspaces words it. */
-  chats: z.object({ title: z.string(), none: z.string(), statuses: z.record(ChatStatus, z.string()) }),
+  /**
+   * The Chats panel (R7): its heading, the line with no chat and each status's pill word, as Workspaces words it;
+   * the search's name, the chip row's name and the line when no chat matches.
+   */
+  chats: z.object({
+    title: z.string(),
+    none: z.string(),
+    statuses: z.record(ChatStatus, z.string()),
+    search: z.string(),
+    chips: z.string(),
+    noMatch: z.string(),
+  }),
 })
 export type ProjectPageWords = z.infer<typeof ProjectPageWords>
 
@@ -69,8 +79,17 @@ const PullRow = z.object({
   meta: z.string(),
   status: z.enum(['draft', 'ciFailed', 'ciRunning', 'inReview']),
 })
-/** A chat of the Chats panel (R7): a herdr chat tagged with the project, its workspace's label and its status. */
-const ChatRow = z.object({ id: z.string(), title: z.string(), workspace: z.string(), status: ChatStatus })
+/**
+ * A chat of the Chats panel (R7): a herdr chat tagged with the project, its workspace's label, its status and its
+ * other tags as `<key>/<value>` ("area/bridge").
+ */
+const ChatRow = z.object({
+  id: z.string(),
+  title: z.string(),
+  workspace: z.string(),
+  status: ChatStatus,
+  tags: z.array(z.string()).optional(),
+})
 
 /** The Context drift panel (R9): when the check ran ("Checked 5m ago"), its findings or `empty`, and Run check. */
 export const ProjectDrift = z.object({

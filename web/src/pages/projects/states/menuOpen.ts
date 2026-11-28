@@ -48,6 +48,9 @@ export const menuOpen = {
         title: 'Chats',
         none: 'No chats tagged with this project',
         statuses: { working: 'Working', needsYou: 'Needs you', idle: 'Idle', done: 'Done', unknown: 'Unknown' },
+        search: 'Search chats',
+        chips: 'Filter by area',
+        noMatch: 'No chat matches',
       },
     },
     projects: [
