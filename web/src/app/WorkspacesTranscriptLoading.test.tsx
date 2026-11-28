@@ -277,6 +277,15 @@ describe('a live chat while its transcript loads', () => {
             scrollTop: body.scrollTop,
             messageBoxHeight: messageBox().query()?.getBoundingClientRect().height ?? null,
           })
+        // NCC-181: a CI run waited here with no check counted. With the reply still in the page but `body` gone, the
+        // pane mounted a new scroller, and `rowOf` gave an element outside the transcript; count that case apart.
+        else if (text !== null)
+          Object.assign(seen, {
+            staleChecks: Number(seen.staleChecks ?? 0) + 1,
+            msSinceRelease: Math.round(performance.now() - releasedAt),
+            textInBody: body.contains(text),
+            newestTag: newest.tagName,
+          })
         return Math.abs(newest.getBoundingClientRect().bottom - loadedFrom) <= 1
       })
       expect(Math.abs(newest.getBoundingClientRect().bottom - loadedFrom)).toBeLessThanOrEqual(1)
