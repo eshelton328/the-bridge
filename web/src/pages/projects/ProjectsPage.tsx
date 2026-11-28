@@ -3,7 +3,8 @@
 // menu, the More drawer) for the shown `?state=` and passes everything to the
 // props-only screen. On the live projects (liveProjects.ts) a pin goes to the
 // server and the page reads the list again, so the pinned card moves first
-// (R3); a pin that misses shows its line over the cards.
+// (R3); a pin that misses shows its line over the cards. New project opens
+// its form (useNewProject.ts).
 import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 import { useInboxBadge } from '../../lib/inboxFeed.ts'
@@ -11,6 +12,7 @@ import { navRoute } from '../../lib/navRoutes.ts'
 import { useVisibleNavPages } from '../../state/settingsStore.ts'
 import { pinProject } from './liveProjects.ts'
 import { ProjectsScreen } from './screens/ProjectsScreen.tsx'
+import { useNewProject } from './useNewProject.ts'
 import type { ProjectsUi } from './types.ts'
 
 const route = getRouteApi('/projects')
@@ -35,6 +37,7 @@ export function ProjectsPage() {
   // The Inbox badge: the app's live count on the live home, the shown state's number on fixtures (lib/inboxFeed.ts).
   const railBadge = useInboxBadge(state.data.railBadge, isLive)
   const notice = pinNotice ?? state.data.notice
+  const newProject = useNewProject(isLive)
   return (
     <ProjectsScreen
       // The app always shows the Settings gear and the drawer's Settings row (d-119); a state's story does not.
@@ -49,6 +52,8 @@ export function ProjectsPage() {
         if (to !== undefined && to !== '/projects') void navigate({ to })
       }}
       onUiChange={changeUi}
+      newProject={newProject.view}
+      onNewProject={newProject.open}
       onOpen={(slug) => void navigate({ to: '/projects/$slug', params: { slug }, search: { source: search.source } })}
       onPin={
         isLive

@@ -3,8 +3,8 @@
 // pinned ones first (R2, R3). The grid has four columns on the desktop, two on
 // a tablet and one on a phone; the library has no grid by width, so T10b's
 // three columns at 1133 px are two (LIBRARY_GAPS.md). New project is drawn as
-// the frames draw it and has no action until increment four (d-133). Props
-// only; the open menu and a pin go out through the callbacks.
+// the frames draw it and opens New project's form (`onNewProject`, increment
+// four). Props only; the open menu and a pin go out through the callbacks.
 import { Button, Grid, PageHeader, Stack } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
@@ -33,9 +33,10 @@ export type ProjectsHomeProps = {
   onUiChange?: ((change: Partial<ProjectsUi>) => void) | undefined
   onPin?: ((slug: string, pinned: boolean) => void) | undefined
   onOpen?: ((slug: string) => void) | undefined
+  onNewProject?: (() => void) | undefined
 }
 
-export function ProjectsHome({ data, ui, layout, onUiChange, onPin, onOpen }: ProjectsHomeProps) {
+export function ProjectsHome({ data, ui, layout, onUiChange, onPin, onOpen, onNewProject }: ProjectsHomeProps) {
   const count = data.projects.length
   return (
     <Stack gap={stackGap[layout]} className={page[layout]}>
@@ -47,7 +48,7 @@ export function ProjectsHome({ data, ui, layout, onUiChange, onPin, onOpen }: Pr
           size={layout === 'phone' ? 'phone' : 'page'}
         >
           <span data-figma="button · New project">
-            <Button variant="primary" size={layout === 'desktop' ? 'md' : 'lg'}>
+            <Button variant="primary" size={layout === 'desktop' ? 'md' : 'lg'} onClick={onNewProject}>
               {data.newProject}
             </Button>
           </span>

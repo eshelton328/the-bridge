@@ -8,7 +8,8 @@
 // project, none by default), `GET /api/projects/:slug/repositories` (the
 // test's sections of the project, none by default), `GET /api/projects/:slug/drift` (the test's last
 // drift run, none by default) and `POST /api/projects/:slug/drift` (a clean run
-// now, kept as the last). Every project, body and answer is checked against the
+// now, kept as the last), `GET /api/projects/-/slug?name=` (the server's slug of
+// the name, free when no project has it). Every project, body and answer is checked against the
 // contract, so a test cannot send or get what the server would not: a body the
 // contract refuses is 400 invalid-input, and an unknown slug is 404. The pins
 // live in the fake, as the server keeps them in a file, so a new page (a
@@ -27,11 +28,30 @@ import {
   ProjectSummary,
   RepositoriesResponse,
   RunDriftRequest,
+  SlugResponse,
 } from '@bridge/contract'
 import { errorAnswer } from './fakeTranscriptServer.ts'
 
 /** A request kind the fake takes. */
-export type ProjectsCall = 'list' | 'pin' | 'detail' | 'chats' | 'ideas' | 'repositories' | 'drift' | 'runDrift'
+export type ProjectsCall =
+  | 'list'
+  | 'pin'
+  | 'detail'
+  | 'chats'
+  | 'ideas'
+  | 'repositories'
+  | 'drift'
+  | 'runDrift'
+  | 'slug'
+
+/** The server's slug of a name (server/src/services/brainWrites.ts `slugOf`), or null. */
+const slugOf = (name: string) => {
+  const slug = name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+  return /^[a-z0-9][a-z0-9._-]{0,63}$/.test(slug) ? slug : null
+}
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } })
@@ -127,8 +147,9 @@ export function fakeProjectsServer(
     answerNext: (call: ProjectsCall, answer: () => Response | Promise<Response>) => {
       answers.set(call, answer)
     },
-    /** The answer to a request for `path`, or undefined when it is not a Projects home route. */
-    handle: (path: string, init?: RequestInit): Response | Promise<Response> | undefined => {
+    /** The answer to a request for `url` (a path and its query), or undefined when it is not a Projects route. */
+    handle: (url: string, init?: RequestInit): Response | Promise<Response> | undefined => {
+      const [path = '', query = ''] = url.split('?')
       const method = (init?.method ?? 'GET').toUpperCase()
       const pinPath = /^\/api\/projects\/([^/]+)\/pin$/.exec(path)
       const detailPath = /^\/api\/projects\/([^/]+)$/.exec(path)
@@ -153,13 +174,19 @@ export function fakeProjectsServer(
                       ? 'drift'
                       : driftPath !== null && method === 'POST'
                         ? 'runDrift'
-                        : undefined
+                        : path === '/api/projects/-/slug' && method === 'GET'
+                          ? 'slug'
+                          : undefined
       if (call === undefined) return undefined
-      requests.push({ call, path, body: bodyOf(init) })
+      requests.push({ call, path: url, body: bodyOf(init) })
       const next = answers.get(call)
       if (next !== undefined) {
         answers.delete(call)
         return next()
+      }
+      if (call === 'slug') {
+        const slug = slugOf(new URLSearchParams(query).get('name') ?? '')
+        return json(SlugResponse.parse({ slug, free: slug !== null && !stored.has(slug) }))
       }
       if (call === 'list') return json(ProjectsResponse.parse({ projects: shown() }))
       if (call === 'detail') return detail(decodeURIComponent(detailPath?.[1] ?? ''), path)
