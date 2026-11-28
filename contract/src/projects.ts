@@ -364,12 +364,12 @@ export const AgentsMdKind = z.enum([
 ])
 export type AgentsMdKind = z.infer<typeof AgentsMdKind>
 
-/** A path in a repository, from its root: no leading "/", no "." or ".." part. */
+/** A path in a repository, from its root: "." for the root folder, else no leading "/" and no "." or ".." part. */
 const RepositoryPath = z
   .string()
   .min(1)
   .max(500)
-  .refine((p) => !p.startsWith('/') && p.split('/').every((part) => part !== '' && part !== '.' && part !== '..'), {
+  .refine((p) => p === '.' || p.split('/').every((part) => part !== '' && part !== '.' && part !== '..'), {
     message: 'a path from the repository root',
   })
 

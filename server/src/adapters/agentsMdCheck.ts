@@ -3,7 +3,8 @@
 // `python3 -I` with an argument list, never a shell, a 60 s limit and only
 // PATH, HOME and LANG of the server's environment, from the brain folder.
 // Exit 0 is a clean repository and exit 1 its problem lines, each read as a
-// kind, a path from the repository root and the rest of the line. A kind
+// kind, a path from the repository root ("." for the root folder, a space
+// kept) and the rest of the line, as the script writes each kind. A kind
 // the contract does not know is the fault `unknown-kind` and any other line
 // it cannot read `EBADDATA`, never a dropped line; any other end is a fault
 // with its code only. Each line is masked as `relativeLines`
@@ -36,21 +37,44 @@ export type AgentsMdCheck = {
   run(dir: string): Promise<Result<Checked, ProjectFault>>
 }
 
-/** A kind, a path and the rest of a check line, as `scripts/check` prints them. */
-const problemLine = /^(\S+)\s+(\S+)(?:\s+(.+))?$/
+/** A kind and the rest of a check line: `scripts/check` prints `f"{kind:<12} {path}"`, and a path may hold spaces. */
+const problemLine = /^(\S+)\s+(.+)$/
+
+/** A path as the check shows it ("./", "src/", "./CLAUDE.md") from the repository root: "." is the root folder. */
+const fromRoot = (shown: string) => shown.replace(/^\.\//, '').replace(/\/$/, '') || '.'
+
+/** An absolute path in backticks (an old pointer's text) as "`<path>`", spaces and all; relativeLines masks only unquoted ones. */
+const maskQuoted = (detail: string) => detail.replace(/`\/[^`]*`/g, '`<path>`')
+
+/** A kind's path and detail: a folder, a file, a file and "(…)", or a file, ": " and a link or pointer. */
+function partsOf(kind: AgentsMdKind, rest: string): { path: string; detail: string | null } {
+  if (kind === 'over-budget' || kind === 'unlinked') {
+    const at = rest.lastIndexOf(' (')
+    if (at > 0 && rest.endsWith(')')) return { path: fromRoot(rest.slice(0, at)), detail: rest.slice(at + 1) }
+  }
+  if (kind === 'dead-link' || kind === 'old-pointer') {
+    const at = rest.indexOf('AGENTS.md: ')
+    if (at >= 0) {
+      const target = rest.slice(at + 'AGENTS.md: '.length)
+      return {
+        path: fromRoot(rest.slice(0, at + 'AGENTS.md'.length)),
+        detail: target.startsWith('/') ? '<path>' : maskQuoted(target),
+      }
+    }
+  }
+  return { path: fromRoot(rest), detail: null }
+}
 
 /** The findings of the check's lines: `unknown-kind` for a kind the contract does not know, `EBADDATA` for any other line it cannot read. */
 export function findingsOf(lines: readonly string[]): Result<Checked, ProjectFault> {
   const found: RepositoryDriftFinding[] = []
   for (const line of lines) {
     const parts = problemLine.exec(line)
-    if (parts !== null && !AgentsMdKind.safeParse(parts[1]).success)
-      return err({ reason: 'failed', code: 'unknown-kind' })
-    const finding = RepositoryDriftFinding.safeParse({
-      kind: parts?.[1],
-      path: parts?.[2],
-      detail: parts?.[3]?.slice(0, 500) ?? null,
-    })
+    if (parts === null) return err({ reason: 'failed', code: 'EBADDATA' })
+    const kind = AgentsMdKind.safeParse(parts[1])
+    if (!kind.success) return err({ reason: 'failed', code: 'unknown-kind' })
+    const { path, detail } = partsOf(kind.data, parts[2] ?? '')
+    const finding = RepositoryDriftFinding.safeParse({ kind: kind.data, path, detail: detail?.slice(0, 500) ?? null })
     if (!finding.success) return err({ reason: 'failed', code: 'EBADDATA' })
     found.push(finding.data)
   }

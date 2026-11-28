@@ -51,7 +51,7 @@ describe('createAgentsMdCheck', () => {
       [
         'exempt       references/AGENTS.md',
         'over-budget  contract/src/AGENTS.md (165 > 60 lines)',
-        `dead-link    web/AGENTS.md -> ${dir}/private/x.md`,
+        `dead-link    web/AGENTS.md: ${dir}/private/x.md`,
       ].join('\n'),
       1,
     )
@@ -62,7 +62,7 @@ describe('createAgentsMdCheck', () => {
         findings: [
           { kind: 'exempt', path: 'references/AGENTS.md', detail: null },
           { kind: 'over-budget', path: 'contract/src/AGENTS.md', detail: '(165 > 60 lines)' },
-          { kind: 'dead-link', path: 'web/AGENTS.md', detail: '-> <path>' },
+          { kind: 'dead-link', path: 'web/AGENTS.md', detail: '<path>' },
         ],
         total: 3,
       },
@@ -85,6 +85,36 @@ describe('createAgentsMdCheck', () => {
   it('fails a run on a kind the contract does not know, never dropping the line', async () => {
     const { check, snapshot } = await stub('missing      a/AGENTS.md\nnew-kind     b/AGENTS.md', 1)
     expect(await check.run(snapshot)).toEqual({ ok: false, error: { reason: 'failed', code: 'unknown-kind' } })
+  })
+
+  it('reads each kind as scripts/check writes it: folders, the root, a separator, spaces and quoted paths', () => {
+    expect(
+      findingsOf([
+        'missing      ./',
+        'missing      src/',
+        'shim         ./CLAUDE.md',
+        'exempt       docs/my folder/AGENTS.md',
+        'over-budget  ./AGENTS.md (165 > 120 lines)',
+        'unlinked     web/my app/AGENTS.md (no link from ./AGENTS.md)',
+        'dead-link    web/AGENTS.md: ../gone.md#top',
+        `old-pointer  ./AGENTS.md: \`${tmpdir()}/old folder/notes\``,
+      ]),
+    ).toEqual({
+      ok: true,
+      value: {
+        findings: [
+          { kind: 'missing', path: '.', detail: null },
+          { kind: 'missing', path: 'src', detail: null },
+          { kind: 'shim', path: 'CLAUDE.md', detail: null },
+          { kind: 'exempt', path: 'docs/my folder/AGENTS.md', detail: null },
+          { kind: 'over-budget', path: 'AGENTS.md', detail: '(165 > 120 lines)' },
+          { kind: 'unlinked', path: 'web/my app/AGENTS.md', detail: '(no link from ./AGENTS.md)' },
+          { kind: 'dead-link', path: 'web/AGENTS.md', detail: '../gone.md#top' },
+          { kind: 'old-pointer', path: 'AGENTS.md', detail: '`<path>`' },
+        ],
+        total: 8,
+      },
+    })
   })
 
   it('fails a line whose path leaves the repository, and keeps the first 200 findings with the full count', () => {

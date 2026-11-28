@@ -491,8 +491,10 @@ client of a socket or a file sits beside them.
   `agentsMdCheck.ts` (increment two, R7) runs the brain's `agents-md`
   `scripts/check` on a snapshot as `python3 -I`, from the brain folder,
   with a 60 s limit and only PATH, HOME and LANG: exit 0 is clean, exit 1
-  gives each line as a kind, a path from the repository root and its
-  detail, masked as `relativeLines` does, the first 200 with the full
+  gives each line as a kind, a path from the repository root ("." for
+  the root folder; a space stays in the path) and its detail, read as the
+  script writes each kind, masked as `relativeLines` does and with an
+  absolute path in backticks as `<path>`, the first 200 with the full
   count. A kind the contract does not know is `unknown-kind` and another
   line it cannot read `EBADDATA`, never a dropped line; exit 1 with no line
   is `no-output` (`agentsMdCheck.test.ts`).

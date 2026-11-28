@@ -100,6 +100,7 @@ describe('the projects contract', () => {
       total: 1,
     })
     expect(RepositoryDriftRun.safeParse(run('contract/src/AGENTS.md')).success).toBe(true)
+    expect(RepositoryDriftRun.safeParse(run('.', 'missing')).success).toBe(true)
     for (const path of ['/etc/AGENTS.md', '../AGENTS.md', 'a/./AGENTS.md', 'a//AGENTS.md'])
       expect(RepositoryDriftRun.safeParse(run(path)).success).toBe(false)
     expect(RepositoryDriftRun.safeParse(run('AGENTS.md', 'other')).success).toBe(false)
