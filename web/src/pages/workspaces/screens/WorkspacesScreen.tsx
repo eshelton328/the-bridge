@@ -521,7 +521,7 @@ function WorkspacesLayout({
           }
           detail={
             <SlotBoundary contentKey="loading">
-              <ChatSkeleton label="Loading this chat" composer="Loading…" />
+              <ChatSkeleton label="Loading the open chat" composer="Loading…" />
             </SlotBoundary>
           }
         />

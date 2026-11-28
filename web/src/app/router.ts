@@ -6,10 +6,11 @@
 import { createRouter } from '@tanstack/react-router'
 import { NotFound } from '../errors/NotFound.tsx'
 import { RouteError } from '../errors/RouteError.tsx'
+import { pendingTiming } from '../lib/pendingTiming.ts'
 import { routeTree } from './routeTree.gen.ts'
 
 /** When a route's pendingComponent shows, and for how long at least; the route tests use the same. */
-export const pendingTiming = { defaultPendingMs: 200, defaultPendingMinMs: 300 } as const
+export { pendingTiming }
 
 export const router = createRouter({
   routeTree,

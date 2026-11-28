@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
 import { testRender } from '../../lib/testRender.ts'
 import { resetAllStores } from '../../state/resetStores.ts'
-import { loadWorkspacesState } from './loadWorkspacesState.ts'
+import { loadWorkspacesRoute } from './loadWorkspacesState.ts'
 import { WorkspacesScreen } from './screens/WorkspacesScreen.tsx'
 import { workspacesSearch } from './search.ts'
 import { workspacesStates } from './states/index.ts'
@@ -103,7 +103,7 @@ function renderRoute(path: string) {
     path: 'workspaces',
     validateSearch: workspacesSearch,
     loaderDeps: ({ search }) => ({ state: search.state, source: search.source }),
-    loader: ({ deps }) => loadWorkspacesState(deps.state, deps.source),
+    loader: ({ deps }) => loadWorkspacesRoute(deps.state, deps.source),
     component: WorkspacesPage,
   })
   const router = createRouter({

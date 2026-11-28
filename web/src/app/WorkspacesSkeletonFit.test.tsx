@@ -160,7 +160,7 @@ describe('the Workspaces skeleton (R58)', () => {
     await userEvent.click(page.getByRole('button', { name: 'Workspaces', exact: true }))
     await expect.poll(() => router.state.location.pathname).toBe('/workspaces')
     await expect.element(page.getByRole('status', { name: 'Loading Workspaces' })).toBeInTheDocument()
-    await expect.element(page.getByRole('status', { name: 'Loading this chat' })).toBeInTheDocument()
+    await expect.element(page.getByRole('status', { name: 'Loading the open chat' })).toBeInTheDocument()
     // No text lines of the generic shell: the sidebar and the chat draw their own layout.
     expect(document.querySelector('[data-loading="page"]')).toBeNull()
     await expect.element(page.getByRole('button', { name: 'New workspace', exact: true })).toBeDisabled()
