@@ -106,6 +106,8 @@ export const ProjectPageWords = z.object({
     reading: z.string(),
     notRead: z.string(),
   }),
+  /** The QA tab's label. */
+  qa: z.string(),
   /** The QA tab (increment three, R2 to R4): its two groups, the empty list, each status and worktree. */
   qaGroups: z.record(QaPhase, z.string()),
   noQa: z.string(),
@@ -114,8 +116,11 @@ export const ProjectPageWords = z.object({
 })
 export type ProjectPageWords = z.infer<typeof ProjectPageWords>
 
-/** A project page's tab (R4): Overview and Ideas of increment one, and Repositories of increment two (d-133). */
-export const ProjectTab = z.enum(['overview', 'repositories', 'ideas'])
+/**
+ * A project page's tab (R4): Overview and Ideas of increment one, Repositories of increment two (d-133) and QA of
+ * increment three.
+ */
+export const ProjectTab = z.enum(['overview', 'repositories', 'qa', 'ideas'])
 export type ProjectTab = z.infer<typeof ProjectTab>
 
 /** An Inbox panel row (R5): the item's kind tile, title, project and age ("5d"). */
@@ -252,6 +257,8 @@ export const ProjectsData = z.object({
   ideas: ProjectIdeas.optional(),
   /** The open project's Repositories tab (increment two), read when the tab shows; with none the tab draws nothing. */
   repositories: ProjectRepositories.optional(),
+  /** The open project's QA tab (increment three), read when the tab shows; with none the tab draws nothing. */
+  qa: ProjectQa.optional(),
   /** The idea whose page shows in place of the tabs (R11). */
   idea: IdeaPage.optional(),
   /** The line of a read or a pin that missed, such as "Projects not read — the server answered 500". */

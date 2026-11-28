@@ -13,7 +13,8 @@
 // Its Ideas tab reads `GET /api/projects/:slug/ideas` only while it shows,
 // and an idea's page `GET /api/projects/:slug/ideas/:id` (R10, R11); an
 // idea the server does not know is not found. Its Repositories tab reads
-// `GET /api/projects/:slug/repositories` (increment two).
+// `GET /api/projects/:slug/repositories` (increment two), and its QA tab
+// `GET /api/projects/:slug/qa` (increment three), each only while it shows.
 // The Context drift panel (R9) reads the last check with it; Run check is `runDrift`.
 //
 // A read or a pin that misses shows one short line by status ("Projects not
@@ -34,6 +35,7 @@ import {
   type ProjectPull,
   ProjectsResponse,
   type ProjectSummary,
+  QaListResponse,
   RepositoriesResponse,
   RepositoryCiResponse,
 } from '@bridge/contract'
@@ -63,6 +65,7 @@ type ProjectsStep =
   | 'idea'
   | 'repositories'
   | 'ci'
+  | 'qa'
   | 'drift'
   | 'runDrift'
   | 'chats'
@@ -403,6 +406,24 @@ async function readRepositoryCi(slug: string, repo: string, now: Date, signal: A
   if (ci === null) return reading ? { runs: null, runMinutes: null, asOf: null } : null
   const old = readAt !== null && now.getTime() - Date.parse(readAt) > ciFreshMs
   return { runs: ci.runs, runMinutes: ci.runMinutes, asOf: old ? ageOf(readAt, now) : null }
+}
+
+/** The project's QA tab (increment three, R2 to R4) from `GET /api/projects/:slug/qa`; a miss gives its line. */
+export async function withLiveQa(
+  state: ProjectsState,
+  slug: string,
+  { signal }: { readonly signal?: AbortSignal | undefined } = {},
+): Promise<ProjectsState> {
+  const answer = await send(
+    (init) => api.api.projects[':slug'].qa.$get({ param: { slug } }, { init: { signal: init } }),
+    signal,
+  )
+  if (!answer.ok) {
+    reportMiss('qa', answer.error)
+    return { ...state, data: { ...state.data, qa: { rows: [], notRead: missLine('QA items not read', answer.error) } } }
+  }
+  const { items } = QaListResponse.parse(readJson(answer.value))
+  return { ...state, data: { ...state.data, qa: { rows: items } } }
 }
 
 /** Pins or unpins the project `slug` (`PUT /api/projects/:slug/pin`); a miss gives its line. */

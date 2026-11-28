@@ -39,11 +39,11 @@ What differs from the frame after round 2 of the fidelity loop
   and a 13 px count: no text style is 18 px (`LIBRARY_GAPS.md`).
 - **Panel gap.** One panel over the other, they are 24 apart where the
   frame has 28, which no spacing token has (`LIBRARY_GAPS.md`).
-- **Tabs.** The tab row shows Overview, Repositories and Ideas, where the
+- **Tabs.** The tab row shows Overview, Repositories, QA and Ideas, where the
   frame shows Overview, Repositories, Architecture and QA: only the tabs of
   shipped increments show (d-133). Repositories is increment two's live
-  slice, and Ideas is increment one's. So Ideas sits where the frame draws
-  Architecture, and the frame's QA tab is not there.
+  slice, QA increment three's and Ideas increment one's. So QA sits where
+  the frame draws Architecture, and Ideas where it draws QA.
 - **Quick chat** shows as the frame draws it; no frame draws its
   composer, so it is the library Dialog on every size, and in a state
   it opens nothing.
