@@ -364,11 +364,24 @@ export const AgentsMdKind = z.enum([
 ])
 export type AgentsMdKind = z.infer<typeof AgentsMdKind>
 
-/** A path in a repository, from its root: "." for the root folder, else no leading "/" and no "." or ".." part. */
+/** True when `p` has a control character (code below 32, or 127). */
+const hasControl = (p: string) => {
+  for (let i = 0; i < p.length; i += 1) {
+    const code = p.charCodeAt(i)
+    if (code < 32 || code === 127) return true
+  }
+  return false
+}
+
+/**
+ * A path in a repository, from its root: "." for the root folder, else no leading "/" and no "." or ".." part; no
+ * control character and no backslash, as a file name may hold an escape character.
+ */
 const RepositoryPath = z
   .string()
   .min(1)
   .max(500)
+  .refine((p) => !p.includes('\\') && !hasControl(p), { message: 'no control character or backslash' })
   .refine((p) => p === '.' || p.split('/').every((part) => part !== '' && part !== '.' && part !== '..'), {
     message: 'a path from the repository root',
   })
