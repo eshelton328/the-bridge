@@ -21,6 +21,7 @@ const Env = z.object({
   BRIDGE_CHAT_ROOT: path.optional(),
   BRIDGE_LOG_DIR: path,
   BRIDGE_LOG_LEVEL: z.enum(logLevels).default('info'),
+  BRIDGE_LINEAR_KEY_FILE: path.optional(),
   BRIDGE_PUSH_SUBJECT: z
     .string()
     .regex(/^(mailto:|https:\/\/)\S+$/, 'must be a mailto: or https:// URL')
@@ -48,6 +49,8 @@ export type Config = {
   readonly logLevel: LogLevel
   /** The contact that the VAPID key names to the push services (d-118); the public repository when not set, never a personal address. */
   readonly pushSubject: string
+  /** The 0600 file of the Linear API key (f-008 increment three); null when not set, so each QA read is 503. */
+  readonly linearKeyFile: string | null
 }
 
 /** The config from the environment, or one line for each variable that is missing or wrong. */
@@ -68,5 +71,6 @@ export function readConfig(env: Readonly<Record<string, string | undefined>>): R
     logDir: e.BRIDGE_LOG_DIR,
     logLevel: e.BRIDGE_LOG_LEVEL,
     pushSubject: e.BRIDGE_PUSH_SUBJECT ?? 'https://github.com/eshelton328/the-bridge',
+    linearKeyFile: e.BRIDGE_LINEAR_KEY_FILE ?? null,
   })
 }

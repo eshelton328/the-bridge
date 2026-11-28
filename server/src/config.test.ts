@@ -29,6 +29,7 @@ describe('config', () => {
         logDir: '/tmp/bridge-logs',
         logLevel: 'info',
         pushSubject: 'https://github.com/eshelton328/the-bridge',
+        linearKeyFile: null,
       },
     })
   })
@@ -48,6 +49,12 @@ describe('config', () => {
     const read = readConfig({ ...env, BRIDGE_PUSH_SUBJECT: 'https://example.com/the-bridge' })
     expect(read.ok ? read.value.pushSubject : undefined).toBe('https://example.com/the-bridge')
     expect(readConfig({ ...env, BRIDGE_PUSH_SUBJECT: 'owner@example.com' }).ok).toBe(false)
+  })
+
+  it('takes the Linear key file from BRIDGE_LINEAR_KEY_FILE, an absolute path only', () => {
+    const read = readConfig({ ...env, BRIDGE_LINEAR_KEY_FILE: '/home/dev/.config/linear-key' })
+    expect(read.ok ? read.value.linearKeyFile : undefined).toBe('/home/dev/.config/linear-key')
+    expect(readConfig({ ...env, BRIDGE_LINEAR_KEY_FILE: 'linear-key' }).ok).toBe(false)
   })
 
   it('takes the log level from BRIDGE_LOG_LEVEL and refuses an unknown one', () => {

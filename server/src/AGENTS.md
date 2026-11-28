@@ -29,7 +29,8 @@ The server's source in three layers: `routes/` call `services/`, and
 - `config.ts`: every path and port comes from an environment variable,
   and the server does not start when one is missing. `BRIDGE_CHAT_ROOT`
   (else the brain folder's parent) is the only folder tree in which the
-  app may start a chat (slice W3).
+  app may start a chat (slice W3). `BRIDGE_LINEAR_KEY_FILE` names the
+  Linear key file of the QA tab; with none, each QA read is 503.
 - `auth.ts`: a request through Tailscale Serve must carry the owner's
   `Tailscale-User-Login`; a request with no identity is let in only on
   localhost with no proxy header.
