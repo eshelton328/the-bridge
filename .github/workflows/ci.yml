@@ -187,6 +187,12 @@ jobs:
         env:
           VITEST_SHARD: ${{ matrix.shard }}/4
           VITEST_MAX_WORKERS: "2"
+      # The motion cases (web/src/**/*.motion.test.tsx) read one sample per
+      # rendering step; beside another test file the runner draws too few
+      # frames for them to judge a glide (NCC-174), so they run alone with
+      # one worker, in one shard, on every PR.
+      - if: matrix.shard == 2
+        run: pnpm test:motion
 
   # The required check: it passes only when every test:unit shard passed.
   # It reads one result, so ubuntu-slim (1 vCPU container) is enough.
