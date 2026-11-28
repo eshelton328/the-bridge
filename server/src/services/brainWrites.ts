@@ -7,7 +7,7 @@ import type { Result } from '@bridge/shared'
 /** `busy`: another git command runs in the brain, or its index is locked; the caller tries again. */
 export type BrainWriteFault = { readonly reason: 'busy' } | { readonly reason: 'failed'; readonly code: string }
 
-export type NewProject = {
+type NewProject = {
   readonly slug: ProjectSlug
   readonly name: string
   /** The description; empty when the owner gave none. */

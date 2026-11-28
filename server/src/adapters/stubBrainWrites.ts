@@ -5,7 +5,7 @@ import { chmod, mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 
 /** A stub of the helper's Python: it saves its arguments and environment beside itself, then writes the home as `init` does. */
-export const stubInit = [
+const stubInit = [
   '#!/bin/sh',
   String.raw`printf '%s\n' "$@" > "$0.args"`,
   'env > "$0.env"',
