@@ -121,7 +121,7 @@ type NotFound = 'notFound'
 type CiOutcome = { readonly response: RepositoryCiResponse; readonly code: string | null }
 
 /** What a CI read tells the log: a fault code, or the milliseconds of one part. */
-export type CiLog = (
+type CiLog = (
   event:
     | { readonly kind: 'failed'; readonly code: string }
     | { readonly kind: 'timed'; readonly part: 'runs' | 'merged' | 'jobs'; readonly ms: number },
