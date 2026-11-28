@@ -1,11 +1,9 @@
 // The Architecture tab (f-008 increment two, R9 to R15): one diagram for each
 // scope of a project, `@system` and each repository of its `project.yaml`. A
-// runner makes a diagram from the code; the service cleans its text, checks it
-// with the contract, keeps it in the store and tells the watchers. One run goes
-// at a time over all projects: a regenerate of the running scope joins it, and
-// one of another scope is `busy` (409 architecture-busy). `running` is in
-// memory only, so a restart shows false. A log keeps a fault's code and nothing
-// of a model: no part name and no path.
+// runner makes a diagram; the service cleans and checks it, keeps it and tells
+// the watchers. One run goes at a time over all projects: a regenerate of the
+// running scope joins it, another scope is `busy`. `running` is in memory
+// only. A log keeps a fault's code only, nothing of a model.
 import {
   ArchitectureModel,
   type ArchitectureResponse,

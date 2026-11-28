@@ -25,6 +25,8 @@ const model: ArchitectureModel = {
   stack: [],
 }
 const commit = 'b'.repeat(40)
+/** A scope's state before its first run. */
+const never = { commit: null, generatedAt: null, stale: false, running: false }
 
 function memoryStore() {
   const files = new Map<string, KeptDiagram>()
@@ -60,15 +62,8 @@ describe('the Architecture service', () => {
     expect(listed).toEqual(
       ok({
         scopes: [
-          {
-            scope: '@system',
-            title: 'How the system works',
-            commit: null,
-            generatedAt: null,
-            stale: false,
-            running: false,
-          },
-          { scope: 'system', title: 'How system works', commit: null, generatedAt: null, stale: false, running: false },
+          { ...never, scope: '@system', title: 'How the system works' },
+          { ...never, scope: 'system', title: 'How system works' },
         ],
       }),
     )
