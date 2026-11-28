@@ -316,7 +316,7 @@ export async function withLiveIdeas(
       return {
         ...state,
         ui: { ...state.ui, idea },
-        data: { ...state.data, idea: { row: ideaRow(read.idea, now), body: read.body } },
+        data: { ...state.data, idea: { row: ideaRow(read.idea, now), body: read.body, file: read.file } },
       }
     }
     if (answer.error.kind === 'not-found') return { ...state, ui: { ...state.ui, idea } }

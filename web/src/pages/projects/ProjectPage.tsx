@@ -22,9 +22,10 @@ import { navRoute } from '../../lib/navRoutes.ts'
 import { MarkdownFeaturesContext } from '../../blocks/markdownFeatures.ts'
 import { useSettingsRichText, useVisibleNavPages } from '../../state/settingsStore.ts'
 import type { ProjectChats, ProjectInbox } from './liveProjects.ts'
+import { ideaPrompt } from './ideaChat.ts'
 import type { QuickChatAttempt } from './liveQuickChat.ts'
 import { ProjectsScreen } from './screens/ProjectsScreen.tsx'
-import type { ProjectDrift, ProjectsUi } from './types.ts'
+import type { IdeaPage, ProjectDrift, ProjectsUi } from './types.ts'
 
 const route = getRouteApi('/projects_/$slug')
 
@@ -149,17 +150,26 @@ export function ProjectPage() {
   // Each run, a close and the unmount count up, so a late answer of an older run changes nothing.
   const runRef = useRef(0)
   useEffect(() => () => void (runRef.current += 1), [])
-  const run = async (next: QuickChatAttempt): Promise<boolean> => {
+  // `status` is where the run shows: the Quick chat dialog, or the idea page's line (NCC-132 AC2).
+  const run = async (next: QuickChatAttempt, status: 'quickChat' | 'ideaChat' = 'quickChat'): Promise<boolean> => {
     attemptRef.current = next
     const ran = (runRef.current += 1)
-    changeUi({ quickChat: { busy: true } })
+    changeUi({ [status]: { busy: true } })
     const result = await import('./liveQuickChat.ts').then((live) => live.quickChat(next))
     if (ran !== runRef.current) return false
     if ('chat' in result) void navigate({ to: '/workspaces', search: { chat: result.chat } })
-    else changeUi({ quickChat: { line: result.line, retry: result.retry } })
+    else changeUi({ [status]: { line: result.line, retry: result.retry } })
     return 'chat' in result
   }
   const slug = state.ui.open
+  const openIdea = state.data.idea
+  // A retry of the idea's chat keeps its create ID and send ID, as Quick chat's Retry does.
+  const chatAboutIdea = (project: string, idea: IdeaPage) => {
+    const text = ideaPrompt(project, idea)
+    const last = attemptRef.current
+    const again = ui.ideaChat?.retry === true && last?.text === text
+    void run(again ? last : { project, text, createId: crypto.randomUUID(), sendId: crypto.randomUUID() }, 'ideaChat')
+  }
   const screen = (
     <ProjectsScreen
       settingsEntry
@@ -184,8 +194,22 @@ export function ProjectPage() {
       }
       onRunDrift={state.data.live === undefined ? undefined : () => void runDrift()}
       onChatOpen={(chat) => void navigate({ to: '/workspaces', search: { chat } })}
-      onIdeaOpen={(idea) => void navigate({ search: view('ideas', idea) })}
-      onIdeaBack={() => void navigate({ search: view('ideas') })}
+      onIdeaOpen={(idea) => {
+        changeUi({ ideaChat: undefined })
+        void navigate({ search: view('ideas', idea) })
+      }}
+      onIdeaBack={() => {
+        runRef.current += 1
+        changeUi({ ideaChat: undefined })
+        void navigate({ search: view('ideas') })
+      }}
+      onIdeaChat={
+        state.data.live === undefined || slug === undefined || openIdea === undefined
+          ? undefined
+          : () => {
+              chatAboutIdea(slug, openIdea)
+            }
+      }
       onQuickChatRetry={() => {
         if (attemptRef.current !== undefined) void run(attemptRef.current)
       }}
