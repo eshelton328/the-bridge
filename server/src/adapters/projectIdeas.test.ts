@@ -140,11 +140,15 @@ describe("an idea's source kind and links", () => {
       '[a](a.md) [d](../decisions/d-001-x.md#why) [a again](./a.md)',
       '[web](https://example.com/x.md) [abs](/etc/x.md) [up](../../../x.md) [png](pic.png)',
       '[f](../product/features/f-008-projects-app/README.md)',
+      '[titled](b.md "The B record") [single](c.md \'C\') [angle](<d.md>)',
     ].join('\n')
     expect(linkedPaths(body)).toEqual([
       'ideas/a.md',
       'decisions/d-001-x.md',
       'product/features/f-008-projects-app/README.md',
+      'ideas/b.md',
+      'ideas/c.md',
+      'ideas/d.md',
     ])
   })
 

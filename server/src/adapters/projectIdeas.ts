@@ -82,7 +82,8 @@ export function sourceOf(source: string | null): IdeaSource | null {
 /** The project-relative paths of the Markdown files a body links to, from `ideas/`, in body order, each once. */
 export function linkedPaths(body: string): string[] {
   const found: string[] = []
-  for (const match of body.matchAll(/\[[^\]\n]*\]\(([^)\s]+)\)/g)) {
+  // An inline link, its destination bare or in <>, with or without a title in quotes.
+  for (const match of body.matchAll(/\[[^\]\n]*\]\(\s*<?([^)\s<>]+)>?(?:\s+(?:"[^"\n]*"|'[^'\n]*'))?\s*\)/g)) {
     const target = (match[1] ?? '').split('#')[0] ?? ''
     // A URL or an absolute path is no brain record of this folder.
     if (target === '' || target.includes(':') || target.startsWith('/') || !target.endsWith('.md')) continue
