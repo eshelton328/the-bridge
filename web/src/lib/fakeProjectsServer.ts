@@ -10,7 +10,9 @@
 // project, none by default), `.../repositories/:repo/ci` (the test's CI
 // answer, not read by default; `setCi` changes it; a repository the
 // project does not list is 404), `GET /api/projects/:slug/qa` (the test's QA
-// items of the project, none by default), `GET /api/projects/:slug/drift` (the test's last
+// items of the project, none by default), `GET /api/projects/:slug/architecture` and
+// `.../architecture/:scope` (the test's scopes and kept diagrams; by default
+// System alone with no diagram, as the server answers; an unknown scope is 404), `GET /api/projects/:slug/drift` (the test's last
 // drift run, none by default) and `POST /api/projects/:slug/drift` (a clean run
 // now, kept as the last). Every project, body and answer is checked against the
 // contract, so a test cannot send or get what the server would not: a body the
@@ -20,6 +22,9 @@
 // test's answer, and `requests` records each one with its body. A test plugs
 // `handle` into its `fetch` stub.
 import {
+  ArchitectureModel,
+  ArchitectureResponse,
+  ArchitectureScopeResponse,
   DriftResponse,
   IdeaDetailResponse,
   IdeasResponse,
@@ -49,6 +54,15 @@ export type ProjectsCall =
   | 'qa'
   | 'drift'
   | 'runDrift'
+  | 'architecture'
+  | 'diagram'
+
+/** A project's Architecture list with no fixture: System alone, with no diagram yet, as the server answers. */
+const noArchitecture = ArchitectureResponse.parse({
+  scopes: [
+    { scope: '@system', title: 'How the system works', commit: null, generatedAt: null, stale: false, running: false },
+  ],
+})
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } })
@@ -83,12 +97,39 @@ type FakeProjectsOptions = {
   readonly qa?: Readonly<Record<string, readonly unknown[]>>
   /** Each project's last drift run (`DriftRun`) by its slug; none (never checked) by default. */
   readonly drift?: Readonly<Record<string, unknown>>
+  /**
+   * Each project's Architecture tab by its slug: its scopes (`ArchitectureScopeState`, in the list's order) and each
+   * scope's kept model or null; by default System alone with no diagram.
+   */
+  readonly architecture?: Readonly<
+    Record<string, { readonly scopes: readonly unknown[]; readonly models?: Readonly<Record<string, unknown>> }>
+  >
 }
 
 export function fakeProjectsServer(
   projects: readonly unknown[] = [],
-  { chats = {}, queues = {}, ideas = {}, repositories = {}, ci = {}, qa = {}, drift = {} }: FakeProjectsOptions = {},
+  {
+    chats = {},
+    queues = {},
+    ideas = {},
+    repositories = {},
+    ci = {},
+    qa = {},
+    drift = {},
+    architecture = {},
+  }: FakeProjectsOptions = {},
 ) {
+  const archOf = new Map(
+    Object.entries(architecture).map(([slug, a]) => [
+      slug,
+      {
+        list: ArchitectureResponse.parse({ scopes: a.scopes }),
+        models: new Map(
+          Object.entries(a.models ?? {}).map(([scope, m]) => [scope, ArchitectureModel.nullable().parse(m)]),
+        ),
+      },
+    ]),
+  )
   const sectionsOf = new Map(
     Object.entries(repositories).map(([slug, list]) => [slug, RepositoriesResponse.parse({ repositories: list })]),
   )
@@ -166,6 +207,8 @@ export function fakeProjectsServer(
       const qaPath = /^\/api\/projects\/([^/]+)\/qa$/.exec(path)
       const ideaPath = /^\/api\/projects\/([^/]+)\/ideas\/([^/]+)$/.exec(path)
       const driftPath = /^\/api\/projects\/([^/]+)\/drift$/.exec(path)
+      const archPath = /^\/api\/projects\/([^/]+)\/architecture$/.exec(path)
+      const diagramPath = /^\/api\/projects\/([^/]+)\/architecture\/([^/]+)$/.exec(path)
       const call: ProjectsCall | undefined =
         path === '/api/projects' && method === 'GET'
           ? 'list'
@@ -189,7 +232,11 @@ export function fakeProjectsServer(
                             ? 'runDrift'
                             : qaPath !== null && method === 'GET'
                               ? 'qa'
-                              : undefined
+                              : archPath !== null && method === 'GET'
+                                ? 'architecture'
+                                : diagramPath !== null && method === 'GET'
+                                  ? 'diagram'
+                                  : undefined
       if (call === undefined) return undefined
       requests.push({ call, path, body: bodyOf(init) })
       const next = answers.get(call)
@@ -229,6 +276,18 @@ export function fakeProjectsServer(
         if (!stored.has(slug))
           return errorAnswer({ kind: 'not-found', path, message: 'no project has this slug', requestId: 'r-404' }, 404)
         return json(qaOf.get(slug) ?? { items: [] })
+      }
+      if (call === 'architecture' || call === 'diagram') {
+        const slug = decodeURIComponent((archPath ?? diagramPath)?.[1] ?? '')
+        if (!stored.has(slug))
+          return errorAnswer({ kind: 'not-found', path, message: 'no project has this slug', requestId: 'r-404' }, 404)
+        const arch = archOf.get(slug)
+        if (call === 'architecture') return json(arch?.list ?? noArchitecture)
+        const scope = decodeURIComponent(diagramPath?.[2] ?? '')
+        const state = (arch?.list ?? noArchitecture).scopes.find((s) => s.scope === scope)
+        if (state === undefined)
+          return errorAnswer({ kind: 'not-found', path, message: 'no such scope', requestId: 'r-404' }, 404)
+        return json(ArchitectureScopeResponse.parse({ state, model: arch?.models.get(scope) ?? null }))
       }
       if (call === 'ideas' || call === 'idea') {
         const slug = decodeURIComponent((ideasPath ?? ideaPath)?.[1] ?? '')

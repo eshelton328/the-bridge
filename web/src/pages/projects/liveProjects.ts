@@ -13,7 +13,9 @@
 // Its Ideas tab reads `GET /api/projects/:slug/ideas` only while it shows,
 // and an idea's page `GET /api/projects/:slug/ideas/:id` (R10, R11); an
 // idea the server does not know is not found. Its Repositories tab reads
-// `GET /api/projects/:slug/repositories` (increment two), and its QA tab
+// `GET /api/projects/:slug/repositories` (increment two), its Architecture tab
+// `GET /api/projects/:slug/architecture` and the shown scope's
+// `.../architecture/:scope` (increment two, R9, R10), and its QA tab
 // `GET /api/projects/:slug/qa` (increment three), each only while it shows.
 // The Context drift panel (R9) reads the last check with it; Run check is `runDrift`.
 //
@@ -23,6 +25,9 @@
 // `ProjectsMissError` with the step, kind and status, never a name. A reply the
 // contract refuses throws, for RouteError.
 import {
+  ArchitectureResponse,
+  ArchitectureScopeResponse,
+  type ArchitectureScopeState,
   DriftResponse,
   type DriftRun,
   ErrorBody,
@@ -44,7 +49,15 @@ import { report } from '../../errors/reporter.ts'
 import { api } from '../../lib/api.ts'
 import { InboxMissError, readInboxList } from '../../lib/inboxClient.ts'
 import type { ScreenState } from '../../lib/screenState.ts'
-import type { IdeaRow, ProjectCard, ProjectDrift, ProjectOverview, ProjectsData, ProjectsUi } from './types.ts'
+import type {
+  IdeaRow,
+  ProjectArchitecture,
+  ProjectCard,
+  ProjectDrift,
+  ProjectOverview,
+  ProjectsData,
+  ProjectsUi,
+} from './types.ts'
 
 /** How long a read or a pin waits for the server, in ms, as the Artifacts reads do. */
 const projectsTimeoutMs = 8000
@@ -69,6 +82,8 @@ type ProjectsStep =
   | 'drift'
   | 'runDrift'
   | 'chats'
+  | 'architecture'
+  | 'diagram'
 
 /** A miss for report(): a stable name and, in its message, only the step, the kind and the status. */
 class ProjectsMissError extends Error {
@@ -382,6 +397,64 @@ export async function withLiveRepositories(
     })),
   )
   return { ...state, data: { ...state.data, repositories: { rows } } }
+}
+
+/** The shown scope's caption (R10): its view, the diagram's commit (7 characters) and its day; null with none. */
+function captionOf(state: ArchitectureScopeState, view: string | undefined, words: ProjectsData['page']['arch']) {
+  if (state.commit === null || state.generatedAt === null || view === undefined) return null
+  return words.caption
+    .replace('{view}', view)
+    .replace('{commit}', state.commit.slice(0, 7))
+    .replace('{date}', state.generatedAt.slice(0, 10))
+}
+
+/**
+ * The project's Architecture tab (increment two, R9, R10): the scopes of `GET /api/projects/:slug/architecture`
+ * as chips (System, then each repository), and the shown scope's kept diagram from `.../architecture/:scope`. A
+ * scope the list does not have shows the first one; a miss of either read gives its line.
+ */
+export async function withLiveArchitecture(
+  state: ProjectsState,
+  slug: string,
+  scope: string | undefined,
+  { signal }: { readonly signal?: AbortSignal | undefined } = {},
+): Promise<ProjectsState> {
+  const words = state.data.page.arch
+  const missed = (step: 'architecture' | 'diagram', miss: ProjectsMiss, chips: ProjectArchitecture['chips']) => {
+    reportMiss(step, miss)
+    const line = missLine(step === 'architecture' ? 'Architecture not read' : 'Diagram not read', miss)
+    const architecture = { chips, scope: scope ?? '@system', title: '', caption: null, running: false, model: null }
+    return { ...state, data: { ...state.data, architecture: { ...architecture, notRead: line } } }
+  }
+  const list = await send(
+    (init) => api.api.projects[':slug'].architecture.$get({ param: { slug } }, { init: { signal: init } }),
+    signal,
+  )
+  if (!list.ok) return missed('architecture', list.error, [])
+  const { scopes } = ArchitectureResponse.parse(readJson(list.value))
+  const chips = scopes.map((s) => ({ value: s.scope, label: s.scope === '@system' ? words.system : s.scope }))
+  const shown = scopes.find((s) => s.scope === scope) ?? scopes[0]
+  if (shown === undefined) return missed('architecture', { kind: 'status', status: undefined }, chips)
+  const one = await send(
+    (init) =>
+      api.api.projects[':slug'].architecture[':scope'].$get(
+        { param: { slug, scope: shown.scope } },
+        { init: { signal: init } },
+      ),
+    signal,
+  )
+  if (!one.ok) return missed('diagram', one.error, chips)
+  const read = ArchitectureScopeResponse.parse(readJson(one.value))
+  const view = read.model === null ? undefined : words.views[read.model.view]
+  const architecture = {
+    chips,
+    scope: read.state.scope,
+    title: read.state.title,
+    caption: captionOf(read.state, view, words),
+    running: read.state.running,
+    model: read.model,
+  }
+  return { ...state, data: { ...state.data, architecture } }
 }
 
 /** How old a CI read may be before its row says "as of" (the contract's 10 minutes). */
