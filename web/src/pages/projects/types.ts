@@ -1,5 +1,5 @@
 // The Projects page's view models, display-ready, each from its Zod schema.
-import { ChatStatus } from '@bridge/contract'
+import { ChatStatus, QaItem, QaPhase, QaStatus, QaWorktree } from '@bridge/contract'
 import { z } from 'zod'
 
 /** One card of the Projects home (R2): the project's tile, name and purpose, and whether the owner pinned it (R3). */
@@ -106,6 +106,11 @@ export const ProjectPageWords = z.object({
     reading: z.string(),
     notRead: z.string(),
   }),
+  /** The QA tab (increment three, R2 to R4): its two groups, the empty list, each status and worktree. */
+  qaGroups: z.record(QaPhase, z.string()),
+  noQa: z.string(),
+  qaStatuses: z.record(QaStatus, z.string()),
+  qaWorktrees: z.record(QaWorktree, z.string()),
 })
 export type ProjectPageWords = z.infer<typeof ProjectPageWords>
 
@@ -213,6 +218,10 @@ export type RepositoryRow = z.infer<typeof RepositoryRow>
 /** The Repositories tab's rows in `project.yaml` order, or none and the line of a read that missed. */
 export const ProjectRepositories = z.object({ rows: z.array(RepositoryRow), notRead: z.string().optional() })
 export type ProjectRepositories = z.infer<typeof ProjectRepositories>
+
+/** The QA tab's items, newest ask first, or none and the line of a read that missed. */
+export const ProjectQa = z.object({ rows: z.array(QaItem), notRead: z.string().optional() })
+export type ProjectQa = z.infer<typeof ProjectQa>
 
 /** An idea's page (R11): its row and its record's text as Markdown. */
 export const IdeaPage = z.object({

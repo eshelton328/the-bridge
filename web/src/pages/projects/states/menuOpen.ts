@@ -79,6 +79,21 @@ export const menuOpen = {
         reading: 'Reading CI',
         notRead: 'CI not read',
       },
+      qaGroups: { beforeMerge: 'Before merge', afterMerge: 'After merge' },
+      noQa: 'Nothing waits for your check',
+      qaStatuses: {
+        waiting: 'Waiting',
+        changesRequested: 'Changes requested',
+        ciFailing: 'CI failing',
+        approved: 'Approved',
+      },
+      qaWorktrees: {
+        stopped: 'Stopped',
+        starting: 'Starting',
+        running: 'Running',
+        failed: 'Failed',
+        servedApp: 'Served app',
+      },
     },
     projects: [
       {
