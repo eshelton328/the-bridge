@@ -518,6 +518,24 @@ describe('/api/projects/:slug/repositories/:repo/ci', () => {
     expect(failing.logger.lines()).toContainEqual(expect.objectContaining({ msg: 'ci read failed', code: 'exit-1' }))
   })
 
+  it('is null with the code threw when the CI source throws, and reads again on the next request', async () => {
+    let reads = 0
+    const throwing: CiSource = {
+      ...fakeCi().source,
+      runs: () => {
+        reads++
+        return Promise.reject(new Error('gh went away'))
+      },
+    }
+    const { app, logger } = server(throwing)
+    const res = await read(app, '/api/projects/example-project/repositories/example-repo/ci')
+    expect(res.status).toBe(200)
+    expect(RepositoryCiResponse.parse(await res.json()).ci).toBeNull()
+    expect(logger.lines()).toContainEqual(expect.objectContaining({ msg: 'ci read failed', code: 'threw' }))
+    await read(app, '/api/projects/example-project/repositories/example-repo/ci')
+    expect(reads).toBe(2)
+  })
+
   it('is 404 for a repository the project does not have', async () => {
     const { app } = server(fakeCi().source)
     const res = await read(app, '/api/projects/example-project/repositories/no-repo/ci')

@@ -207,7 +207,7 @@ const ciKeptMs = 600_000
 
 /**
  * One answer for each key, kept `keptMs` and shared by the requests that ask while it runs; an answer `keep` refuses
- * is not kept, so the next request reads again.
+ * is not kept, so the next request reads again. A read that throws is not kept either.
  */
 function keptAnswers<T>(keptMs: number, now: () => Date, keep: (answer: T) => boolean) {
   const kept = new Map<string, { readonly at: number; readonly answer: Promise<T> }>()
@@ -217,9 +217,12 @@ function keptAnswers<T>(keptMs: number, now: () => Date, keep: (answer: T) => bo
     if (last !== undefined && at - last.at < keptMs) return last.answer
     const entry = { at, answer: read() }
     kept.set(key, entry)
+    const drop = () => {
+      if (kept.get(key) === entry) kept.delete(key)
+    }
     void entry.answer.then((answer) => {
-      if (!keep(answer) && kept.get(key) === entry) kept.delete(key)
-    })
+      if (!keep(answer)) drop()
+    }, drop)
     return entry.answer
   }
 }
@@ -466,7 +469,9 @@ export function createProjects({
       if (repository === undefined) return ok('notFound')
       const github = repository.github
       if (github === null) return ok({ response: { ci: null }, code: null })
-      return ok(await keptCi(`${github.owner}/${github.name}`, () => readCi(github)))
+      // A read that throws is the fault `threw`, so no rejection is left unhandled; its message is not kept.
+      const read = () => readCi(github).catch((): CiOutcome => ({ response: { ci: null }, code: 'threw' }))
+      return ok(await keptCi(`${github.owner}/${github.name}`, read))
     },
 
     async runDrift(slug) {
