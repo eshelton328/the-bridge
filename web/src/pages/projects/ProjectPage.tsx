@@ -137,37 +137,36 @@ export function ProjectPage() {
     return 'chat' in result
   }
   const slug = state.ui.open
-  return (
-    <MarkdownFeaturesContext value={richText}>
-      <ProjectsScreen
-        settingsEntry
-        navPages={navPages}
-        data={{ ...state.data, railBadge, overview: overview && { ...overview, drift: shownDrift } }}
-        ui={ui}
-        viewport="desktop"
-        onNavigate={(page) => {
-          const to = navRoute(page)
-          if (to !== undefined) void navigate({ to })
-        }}
-        onUiChange={(change) => {
-          if ('quickChat' in change && change.quickChat === undefined) runRef.current += 1
-          if (change.tab !== undefined) void navigate({ search: view(change.tab) })
-          else changeUi(change)
-        }}
-        onBack={() => void navigate({ to: '/projects', search: { source: search.source } })}
-        onQuickChatSend={
-          state.data.live === undefined || slug === undefined
-            ? undefined
-            : (text) => run({ project: slug, text, createId: crypto.randomUUID(), sendId: crypto.randomUUID() })
-        }
-        onRunDrift={state.data.live === undefined ? undefined : () => void runDrift()}
-        onChatOpen={(chat) => void navigate({ to: '/workspaces', search: { chat } })}
-        onIdeaOpen={(idea) => void navigate({ search: view('ideas', idea) })}
-        onIdeaBack={() => void navigate({ search: view('ideas') })}
-        onQuickChatRetry={() => {
-          if (attemptRef.current !== undefined) void run(attemptRef.current)
-        }}
-      />
-    </MarkdownFeaturesContext>
+  const screen = (
+    <ProjectsScreen
+      settingsEntry
+      navPages={navPages}
+      data={{ ...state.data, railBadge, overview: overview && { ...overview, drift: shownDrift } }}
+      ui={ui}
+      viewport="desktop"
+      onNavigate={(page) => {
+        const to = navRoute(page)
+        if (to !== undefined) void navigate({ to })
+      }}
+      onUiChange={(change) => {
+        if ('quickChat' in change && change.quickChat === undefined) runRef.current += 1
+        if (change.tab !== undefined) void navigate({ search: view(change.tab) })
+        else changeUi(change)
+      }}
+      onBack={() => void navigate({ to: '/projects', search: { source: search.source } })}
+      onQuickChatSend={
+        state.data.live === undefined || slug === undefined
+          ? undefined
+          : (text) => run({ project: slug, text, createId: crypto.randomUUID(), sendId: crypto.randomUUID() })
+      }
+      onRunDrift={state.data.live === undefined ? undefined : () => void runDrift()}
+      onChatOpen={(chat) => void navigate({ to: '/workspaces', search: { chat } })}
+      onIdeaOpen={(idea) => void navigate({ search: view('ideas', idea) })}
+      onIdeaBack={() => void navigate({ search: view('ideas') })}
+      onQuickChatRetry={() => {
+        if (attemptRef.current !== undefined) void run(attemptRef.current)
+      }}
+    />
   )
+  return <MarkdownFeaturesContext value={richText}>{screen}</MarkdownFeaturesContext>
 }
