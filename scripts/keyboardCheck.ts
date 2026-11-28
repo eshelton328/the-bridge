@@ -1,11 +1,11 @@
 #!/usr/bin/env node
-// pnpm keyboard:served: the keyboard check of screen review R20 to R22 on the served app. It opens the Workspaces
-// chat and the Inbox chat in Playwright's WebKit as an installed iPhone app, takes the composer's focus with a tap,
-// opens and closes a fake keyboard (window.visualViewport shrinks and grows on iOS's keyboard curve, as iOS
-// Safari's does, like the stand-in of WorkspacesChatDock.test.tsx) and samples every animation frame. It checks
-// that the header never moves, the window never scrolls, the last message stays above the composer and nothing
-// fades (keyboardCheckLib.ts), and tiles a recording of each run into a contact sheet. Prints one JSON line and
-// exits 1 when a check fails. The flags are listed in scripts/AGENTS.md.
+// pnpm keyboard:served: the keyboard check of screen review R20 to R22 on a dev server (a build ignores ?state=).
+// It opens the Workspaces chat and the Inbox chat in Playwright's WebKit as an installed iPhone app, takes the
+// composer's focus with a tap, opens and closes a fake keyboard (window.visualViewport shrinks and grows on iOS's
+// keyboard curve, as iOS Safari's does, like the stand-in of WorkspacesChatDock.test.tsx) and samples every
+// animation frame. It checks that the header never moves, the window never scrolls, the last message stays above
+// the composer and nothing fades (keyboardCheckLib.ts), and tiles a recording of each run into a contact sheet.
+// Prints one JSON line and exits 1 when a check fails. The flags are listed in scripts/AGENTS.md.
 import { execFileSync } from 'node:child_process'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
