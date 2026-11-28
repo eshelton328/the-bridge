@@ -2,7 +2,8 @@
 // render ov-D01.dc.html, d-133): NCC-1701's page on the desktop, on its
 // Overview tab: Back to Projects, the letter tile, the name, the purpose,
 // Quick chat and the tabs Overview and Ideas, and the Inbox and Queue panels
-// (R5, R6) with D01's rows. The other data is D10's.
+// (R5, R6) with D01's rows, and Context drift (R9) with findings of its kind.
+// The other data is D10's.
 import type { ScreenState } from '../../../lib/screenState.ts'
 import type { ProjectsData, ProjectsUi } from '../types.ts'
 import { menuOpen } from './menuOpen.ts'
@@ -32,6 +33,19 @@ export const overviewRows = {
       pr('component-library-1701#359', 'Keep a pinned body on track when its footer grows', 'ciFailed'),
       pr('component-library-1701#357', 'Fade a thread line under the composer in a dock move', 'draft'),
     ],
+  },
+  // The check gives a line for each finding, not D01's groups for each repository.
+  drift: {
+    title: 'Context drift',
+    checked: 'Checked 12m ago',
+    scope: 'Folder layout and hooks.',
+    findings: [
+      'not a git clone: projects/ncc-1701/verify-move.log (only <repo>/ and <repo>-worktrees/ go here)',
+      'no commit-msg hook in component-library-1701 (run `ncc check --fix`)',
+      'missing or stale projects/pinpoint/CLAUDE.md (run `ncc check --fix`)',
+    ],
+    run: 'Run check',
+    running: 'Checking…',
   },
 }
 
