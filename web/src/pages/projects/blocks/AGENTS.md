@@ -50,10 +50,13 @@ moves to `web/src/blocks/`.
   after the meta on the phone). The frames' tables, search, chips and pager
   are later PRs'.
 - `ArchitectureView` is the Architecture tab: single-choice `FilterChips`
-  ("Diagram scope") over a `Panel` with the scope's title, caption, a
-  compact `ListRow` for each part and a line for each arrow, and a Stack
-  `Panel` of `Badge` groups beside it on the desktop, under it on a
-  tablet or phone. The drawn diagram and its legend are part two's.
+  ("Diagram scope") over a `Panel` with the scope's title and the
+  library `ArchitectureDiagram`: the boxes and arrow points of
+  `lib/architectureLayout.ts`, the caption, the legend, the hidden lists
+  of parts, boundaries and arrows, and the scroll hint when it is wider
+  than its box. A Stack `Panel` of `Badge` groups sits beside it on the
+  desktop, under it on a tablet or phone. Regenerate and the Parts panel
+  are part two's next PR.
 - `ContextDrift` is the Context drift panel (R9): `PageHeader` with the
   secondary Run check and its `RefreshIcon` (off while `busy`) over a
   `Panel` with the check's time and scope and a compact `ListRow` for each
