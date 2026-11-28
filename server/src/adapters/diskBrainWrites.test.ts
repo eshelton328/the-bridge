@@ -87,6 +87,17 @@ describe('createDiskBrainWrites', () => {
     expect(await writes().createProject(project)).toEqual({ ok: true, value: 'created' })
   })
 
+  it('undoes a part home when init fails, and is busy while an index file has an edit', async () => {
+    await writeFile(paths.python, '#!/bin/sh\nmkdir projects/new-app\necho x >> projects/AGENTS.md\nexit 1\n')
+    expect(await writes().createProject(project)).toEqual({
+      ok: false,
+      error: { reason: 'failed', code: 'init-exit-1' },
+    })
+    expect(git('status', '--porcelain')).toBe('')
+    await writeFile(join(paths.brain, 'projects', 'README.md'), 'an edit\n')
+    expect(await writes().createProject(project)).toEqual({ ok: false, error: { reason: 'busy' } })
+  })
+
   it('keeps a chat-root folder that another process made after the check', async () => {
     await writeFile(
       paths.python,

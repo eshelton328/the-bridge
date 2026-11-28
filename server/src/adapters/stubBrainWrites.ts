@@ -13,8 +13,7 @@ const stubInit = [
   String.raw`printf 'schema_version: 1\nslug: "%s"\nname: "%s"\npurpose: "%s"\nrepositories: []\nlinear: []\n' "$slug" "$name" "$purpose" > "projects/$slug/project.yaml"`,
   'for f in README.md AGENTS.md; do echo "# $slug" > "projects/$slug/$f"; done',
   'echo \'@AGENTS.md\' > "projects/$slug/CLAUDE.md"',
-  'echo "- [$slug/AGENTS.md]($slug/AGENTS.md)" >> projects/AGENTS.md',
-  'echo "- [$slug/README.md]($slug/README.md)" >> projects/README.md',
+  'echo "- [$slug/AGENTS.md]" >> projects/AGENTS.md; echo "- [$slug/README.md]" >> projects/README.md',
   `echo '{"ok": true, "created": true, "id": "x", "project": "p", "written": []}'`,
   '',
 ].join('\n')

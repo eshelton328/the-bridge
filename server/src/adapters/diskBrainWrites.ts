@@ -1,9 +1,8 @@
 // The brain's writes on disk (f-008, increment four). A new project runs the project-setup helper's `init` as
-// `python -I` with an argument list, never a shell, a time limit and only PATH, HOME, LANG and TMPDIR (the helper's
-// lock file is in TMPDIR). Then it makes `<chat root>/projects/<slug>/` with its `CLAUDE.md` and commits the brain's
-// paths with `git add --` and `git commit --`, a fixed message and the brain's hooks. Each folder is checked by real
-// path, so a symlink cannot move a write out of it. A failed write after `init` removes both new folders and puts
-// back the two index files, so a retry can make the project. A fault is a code only, and no helper output is logged.
+// `python -I` with an argument list, a time limit and only PATH, HOME, LANG and TMPDIR (its lock), makes
+// `<chat root>/projects/<slug>/CLAUDE.md` and commits only its paths, with a fixed message and the brain's hooks. Each
+// folder is checked by real path, so no symlink moves a write. A failed write after `init` removes the new folders and
+// puts back the two index files, so a retry can make the project. A fault is a code only; no helper output is logged.
 import { execFile } from 'node:child_process'
 import { lstat, mkdir, readFile, realpath, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
@@ -12,7 +11,6 @@ import { z } from 'zod'
 import type { BrainWriteFault, BrainWrites } from '../services/brainWrites.ts'
 import { projectShim } from '../services/brainWrites.ts'
 
-/** How long the helper or one git command may run. */
 const runTimeoutMs = 30_000
 /** The commit message of a new project: fixed, so no name the owner typed goes into it. */
 export const createMessage = 'docs(projects): add a project from the Projects app'
@@ -30,9 +28,7 @@ export type DiskBrainWritesOptions = {
   readonly env: Readonly<Record<string, string | undefined>>
 }
 
-type Ran =
-  | { readonly ok: true; readonly stdout: string }
-  | { readonly ok: false; readonly code: string; readonly stderr: string }
+type Ran = { ok: true; stdout: string } | { ok: false; code: string; stderr: string }
 
 const run = (command: string, args: readonly string[], cwd: string, env: Record<string, string>) =>
   new Promise<Ran>((resolve) => {
@@ -78,13 +74,8 @@ const anyExists = async (paths: readonly string[]) => {
   return (await Promise.all(paths.map(entry))).includes(true)
 }
 
-export function createDiskBrainWrites({
-  brainDir,
-  chatRoot,
-  python,
-  helper,
-  env,
-}: DiskBrainWritesOptions): BrainWrites {
+export function createDiskBrainWrites(options: DiskBrainWritesOptions): BrainWrites {
+  const { brainDir, chatRoot, python, helper, env } = options
   const kept: Record<string, string> = {}
   for (const key of ['PATH', 'HOME', 'LANG', 'TMPDIR']) {
     const value = env[key]
@@ -93,9 +84,8 @@ export function createDiskBrainWrites({
   const gitEnv = { ...kept, GIT_TERMINAL_PROMPT: '0' }
 
   /** The real brain and the two real `projects` folders, each a plain folder in its root. */
-  const roots = async (): Promise<
-    Result<{ brain: string; brainProjects: string; chatProjects: string }, BrainWriteFault>
-  > => {
+  type Roots = { brain: string; brainProjects: string; chatProjects: string }
+  const roots = async (): Promise<Result<Roots, BrainWriteFault>> => {
     try {
       const [brain, chat] = await Promise.all([realpath(brainDir), realpath(chatRoot)])
       const [brainProjects, chatProjects] = await Promise.all([
@@ -146,6 +136,10 @@ export function createDiskBrainWrites({
         if (!taken.ok) return taken
         if (taken.value) return ok('taken')
         const indexes = ['projects/AGENTS.md', 'projects/README.md']
+        // Another chat's edit of an index file would go into this commit, and the undo would remove it.
+        const edited = await run('git', ['status', '--porcelain', '--', ...indexes], brain, gitEnv)
+        if (!edited.ok) return failed(`git-${edited.code}`)
+        if (edited.stdout !== '') return err({ reason: 'busy' })
         const before = await attempt(() => Promise.all(indexes.map((path) => readFile(join(brain, path), 'utf8'))))
         if (!before.ok) return before
         const paths = [
@@ -174,15 +168,16 @@ export function createDiskBrainWrites({
         if (purpose !== '') args.push(`--purpose=${purpose}`)
         if (icon !== null) args.push(`--icon=${icon}`)
         const made = await run(python, args, brain, kept)
-        if (!made.ok) return failed(`init-${made.code}`)
+        // The helper writes its files one at a time, so a failed or killed run can leave a part of the home.
+        if (!made.ok) return undo(failed(`init-${made.code}`))
         let reply: unknown
         try {
           reply = JSON.parse(made.stdout)
         } catch {
-          return failed('init-reply')
+          return undo(failed('init-reply'))
         }
         const read = InitReply.safeParse(reply)
-        if (!read.success) return failed('init-reply')
+        if (!read.success) return undo(failed('init-reply'))
         if (!read.data.created) return ok('taken')
         try {
           await mkdir(join(chatProjects, slug))
