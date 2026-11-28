@@ -10,7 +10,13 @@
 // Run check (R9) keeps its busy state here, as the server has none.
 import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { useEffect, useRef, useState } from 'react'
-import { useInboxBadge, useInboxChanges, useProjectsChanges } from '../../lib/inboxFeed.ts'
+import {
+  useInboxBadge,
+  useInboxChanges,
+  useChatStatus,
+  useProjectsChanges,
+  useWorkspacesChanges,
+} from '../../lib/inboxFeed.ts'
 import { navRoute } from '../../lib/navRoutes.ts'
 import { MarkdownFeaturesContext } from '../../blocks/markdownFeatures.ts'
 import { useSettingsRichText, useVisibleNavPages } from '../../state/settingsStore.ts'
@@ -97,10 +103,20 @@ export function ProjectPage() {
           // A read that a leave or a later change stopped throws its abort.
           if (!reading.signal.aborted) throw thrown
         })
-      readChatsRef.current()
     },
     shown?.count ?? railBadge,
   )
+  // The chats read again on each stream open and workspaces.changed; a chat.status changes one pill (NCC-149).
+  useWorkspacesChanges(live && state.ui.open !== undefined, () => {
+    readChatsRef.current()
+  })
+  useChatStatus(live && state.ui.open !== undefined, ({ chat, status }) => {
+    setChats((before) => {
+      const rows = before?.of === state ? before.read : state.data.overview?.chats
+      if (!rows?.rows.some((c) => c.id === chat && c.status !== status)) return before
+      return { of: state, read: { ...rows, rows: rows.rows.map((c) => (c.id === chat ? { ...c, status } : c)) } }
+    })
+  })
   useEffect(() => () => readingRef.current?.abort(), [])
   const shownChats = chats?.of === state ? chats.read : undefined
   const loaded = state.data.overview

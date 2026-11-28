@@ -80,6 +80,9 @@ state file and a page are in `screenState.ts` (d-082).
   backoff of `reconnectBackoff.ts`) with the quiet iOS resume of
   `pageResume.ts`; `inboxFeed.ts` holds the context that
   `app/InboxFeedProvider.tsx` fills, and the hooks a page entry uses
-  (`useInboxBadge`, `useInboxChanges`). Without the provider, as in a
+  (`useInboxBadge`, `useInboxChanges`, and `useProjectsChanges`,
+  `useWorkspacesChanges` and `useChatStatus` for `projects.changed`,
+  `workspaces.changed` and `chat.status`). A `chat.status` frame the
+  contract refuses gives no call. Without the provider, as in a
   route test, a page keeps its own number and the Inbox page its own
   stream.

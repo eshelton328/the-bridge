@@ -23,6 +23,7 @@
 // reported once for the outage. A read that answers ends it. Its stream is
 // `watchInboxChanges`, whose reader closes a stream that gives no byte for
 // 45 s (lib/eventFrames.ts), so it connects again as after a drop.
+import type { ChatStatusEvent } from '@bridge/contract'
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 import { report } from '../errors/reporter.ts'
 import { reconnectGraceMs } from '../lib/eventFrames.ts'
@@ -38,6 +39,14 @@ class InboxRefusedError extends Error {
   }
 }
 
+/** Adds `follower` to `set`; the result takes it out again. */
+function followOf<T>(set: Set<T>, follower: T): () => void {
+  set.add(follower)
+  return () => {
+    set.delete(follower)
+  }
+}
+
 /** A miss with no answer from the server: none at all, or a 5xx with no error body (a proxy for a server that is down). */
 const noAnswer = (miss: InboxMiss) => miss.status === undefined || (miss.kind === 'status' && miss.status >= 500)
 
@@ -48,6 +57,9 @@ const settleMs = 100
 type Hub = {
   followers: Set<() => void>
   projectFollowers: Set<() => void>
+  /** The pages that read their chats on each stream open and `workspaces.changed`, and change a pill on `chat.status`. */
+  workspaceFollowers: Set<() => void>
+  statusFollowers: Set<(event: ChatStatusEvent['data']) => void>
   hosts: number
   /** The feed's own stream, while it is open, and how to open it (once the Inbox client loaded). */
   stop: (() => void) | undefined
@@ -64,6 +76,8 @@ type Hub = {
 const newHub = (): Hub => ({
   followers: new Set(),
   projectFollowers: new Set(),
+  workspaceFollowers: new Set(),
+  statusFollowers: new Set(),
   hosts: 0,
   stop: undefined,
   open: () => undefined,
@@ -140,6 +154,12 @@ export function InboxFeedProvider({ children }: { children: ReactNode }) {
             onProjects: () => {
               for (const follower of [...hub.projectFollowers]) follower()
             },
+            onWorkspaces: () => {
+              for (const follower of [...hub.workspaceFollowers]) follower()
+            },
+            onChatStatus: (event) => {
+              for (const follower of [...hub.statusFollowers]) follower(event)
+            },
           })
       }
       const onVisibility = () => {
@@ -181,13 +201,9 @@ export function InboxFeedProvider({ children }: { children: ReactNode }) {
           })
         }
       },
-      followProjects: (onChange) => {
-        const hub = hubRef.current
-        hub.projectFollowers.add(onChange)
-        return () => {
-          hub.projectFollowers.delete(onChange)
-        }
-      },
+      followProjects: (onChange) => followOf(hubRef.current.projectFollowers, onChange),
+      followWorkspaces: (onChange) => followOf(hubRef.current.workspaceFollowers, onChange),
+      followChatStatus: (onStatus) => followOf(hubRef.current.statusFollowers, onStatus),
       publish: (next) => {
         // The Inbox page's count is newer than the badge read that runs, if one does: that read is dropped.
         hubRef.current.reading?.abort()

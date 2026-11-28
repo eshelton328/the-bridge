@@ -5,7 +5,7 @@
 // Inbox list (`GET /api/inbox`) and the watcher of `inbox.changed` on
 // `GET /api/events`. It reports nothing; its callers report a miss by its
 // step, kind and status only (`InboxMissError`).
-import { ErrorBody, type ErrorKind, InboxResponse } from '@bridge/contract'
+import { ChatStatusEvent, ErrorBody, type ErrorKind, InboxResponse } from '@bridge/contract'
 import { err, ok, type Result } from '@bridge/shared'
 import { api } from './api.ts'
 import { frames } from './eventFrames.ts'
@@ -148,11 +148,25 @@ export type WatchInboxDeps = {
   readonly onChange: () => void
   /** A project's open PRs changed (`projects.changed`, NCC-156). */
   readonly onProjects?: () => void
+  /** The chats may have changed (NCC-149): one for each burst of `workspaces.changed`, and one each open, as the stream sends no missed event. */
+  readonly onWorkspaces?: () => void
+  /** A chat's status changed (`chat.status`, NCC-149). A frame the contract refuses gives no call. */
+  readonly onChatStatus?: (event: ChatStatusEvent['data']) => void
   readonly open?: OpenStream
   /** How long a burst of events waits before it gives one `onChange`, in ms. */
   readonly settleMs?: number
   /** The backoff's jitter, in [0, 1) as Math.random gives: a test's fixed wait. */
   readonly random?: () => number
+}
+
+/** The data of a `chat.status` frame, or undefined when it is not JSON or the contract refuses it. */
+function chatStatusOf(data: string): ChatStatusEvent['data'] | undefined {
+  try {
+    const parsed = ChatStatusEvent.safeParse(JSON.parse(data))
+    return parsed.success ? parsed.data.data : undefined
+  } catch {
+    return undefined
+  }
 }
 
 /**
@@ -166,6 +180,8 @@ export type WatchInboxDeps = {
 export function watchInboxChanges({
   onChange,
   onProjects,
+  onWorkspaces,
+  onChatStatus,
   open = openEvents,
   settleMs = 100,
   random = () => Math.random(),
@@ -179,6 +195,15 @@ export function watchInboxChanges({
     timer ??= setTimeout(() => {
       timer = undefined
       onChange()
+    }, settleMs)
+  }
+  // A burst of workspaces.changed (and an open) gives one call, as a burst of inbox.changed does.
+  let workspacesTimer: ReturnType<typeof setTimeout> | undefined
+  const workspacesChanged = () => {
+    if (onWorkspaces === undefined) return
+    workspacesTimer ??= setTimeout(() => {
+      workspacesTimer = undefined
+      onWorkspaces()
     }, settleMs)
   }
   const pause = (ms: number) =>
@@ -206,6 +231,11 @@ export function watchInboxChanges({
           // Each open, the first too, may follow events the page missed while the stream was closed (the contract's rule).
           if (frame.event === 'open' || frame.event === 'inbox.changed') changed()
           if (frame.event === 'projects.changed') onProjects?.()
+          if (frame.event === 'open' || frame.event === 'workspaces.changed') workspacesChanged()
+          if (frame.event === 'chat.status') {
+            const status = chatStatusOf(frame.data)
+            if (status !== undefined) onChatStatus?.(status)
+          }
         }
       } catch {
         if (closed()) return
@@ -226,6 +256,7 @@ export function watchInboxChanges({
     window.removeEventListener('online', onFront)
     document.removeEventListener('visibilitychange', onFront)
     clearTimeout(timer)
+    clearTimeout(workspacesTimer)
     abort.abort()
   }
 }

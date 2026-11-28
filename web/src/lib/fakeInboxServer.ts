@@ -86,8 +86,11 @@ export function fakeInboxServer({ items = [], details = {}, now = () => new Date
       details[item.id] ?? (item.source === 'chat' ? { source: 'chat', chat: null } : { source: 'brain', body: '' }),
     )
 
+  let seq = 0
   const emit = (type: string, data: unknown = {}) => {
-    const frame = new TextEncoder().encode(`event: ${type}\ndata: ${JSON.stringify({ type, data })}\n\n`)
+    // The contract's envelope (EventEnvelope), so a client that parses an event's data sees what the server sends.
+    const envelope = { source: 'test-box/fake', seq: seq++, type, data }
+    const frame = new TextEncoder().encode(`event: ${type}\ndata: ${JSON.stringify(envelope)}\n\n`)
     for (const control of streams) control.enqueue(frame)
   }
 
