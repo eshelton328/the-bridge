@@ -25,6 +25,7 @@ export const menuOpen = {
       overview: 'Overview',
       ideas: 'Ideas',
       repositories: 'Repositories',
+      qa: 'QA',
       message: 'First message',
       retry: 'Retry',
       panels: {

@@ -7,7 +7,7 @@
 // `?tab=ideas` reads the live Ideas tab and `?idea=` the live idea's page
 // (R10, R11; an idea the server does not know, or an ID IdeaId refuses
 // (no read), is not found), `?tab=repositories` the live Repositories tab
-// (increment two).
+// (increment two) and `?tab=qa` the live QA tab (increment three).
 import { IdeaId, ProjectSlug } from '@bridge/contract'
 import { notFound } from '@tanstack/react-router'
 import { parseState } from '../../errors/parseState.ts'
@@ -55,12 +55,13 @@ export function loadProjectState(
         const tab = view.idea === undefined ? view.tab : 'ideas'
         const project = await live.withLiveProject(read.value.state, slug, {
           signal,
-          chats: tab !== 'ideas' && tab !== 'repositories',
+          chats: tab === undefined || tab === 'overview',
         })
         if (tab === undefined || tab === 'overview' || project.data.projects.length === 0) return project
         const shownTab = { ...project, ui: { ...project.ui, tab } }
-        return tab === 'ideas'
-          ? live.withLiveIdeas(shownTab, slug, view.idea, { signal })
+        if (tab === 'ideas') return live.withLiveIdeas(shownTab, slug, view.idea, { signal })
+        return tab === 'qa'
+          ? live.withLiveQa(shownTab, slug, { signal })
           : live.withLiveRepositories(shownTab, slug, { signal })
       })
       .then((merged) => shown(merged, `${name} (live)`))

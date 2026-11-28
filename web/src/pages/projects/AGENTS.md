@@ -21,7 +21,7 @@ T10b, M10 for the home, D01, T01, T01b, M01 for a project's page), read with
   project's page.
 - A project's page is `ui.open` on the same state, so it shares the
   home's data and screen. It shows the header and the tabs Overview,
-  Repositories (increment two) and Ideas (d-133). The Overview draws the Inbox and Queue
+  Repositories (increment two), QA (increment three) and Ideas (d-133). The Overview draws the Inbox and Queue
   panels (R5, R6) from `data.overview`: the overview states' rows, or
   the live page's from the server; with none it draws no panel.
   `ProjectPage.tsx` is its
@@ -104,6 +104,14 @@ T10b, M10 for the home, D01, T01, T01b, M01 for a project's page), read with
     stream opens again, the loader reads them again.
     `app/ProjectRepositoriesLive.test.tsx` checks it at 1440, 1024 and
     390 px with the fake.
+  - The QA tab (increment three; the live slice, plain on every size,
+    NCC-155) is `?tab=qa`. Only then does the loader read
+    `GET /api/projects/:slug/qa`, and no chats: the items that wait for the
+    owner's check in two groups, Before merge and After merge, each with its
+    title, issue ID, `<repository>#<pr>`, status and worktree. A miss shows
+    one line ("QA items not read — the server answered 503" when the server
+    has no Linear key). `app/ProjectQaLive.test.tsx` checks it at 1440,
+    1024 and 390 px with the fake.
   - report() gets only a miss the server answered, as `ProjectsMissError`
     with its step, kind and status, never a name.
 - The home's route test is `app/ProjectsHome.test.tsx` (every menu closed

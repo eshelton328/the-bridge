@@ -1,15 +1,17 @@
 // A project's page in the shell's detail (D01, T01, T01b, M01; R4): its
-// header and its tabs, Overview, Repositories and Ideas (d-133). The
+// header and its tabs, Overview, Repositories, QA and Ideas (d-133). The
 // Overview shows the Inbox and Queue panels (R5, R6), the Repositories tab
-// each repository (increment two) and the Ideas tab the idea records (R10);
+// each repository (increment two), the QA tab the items that wait for the
+// owner's check (increment three) and the Ideas tab the idea records (R10);
 // an open idea's page shows in place of the tabs (R11).
 // The Overview's other panels are later issues'. Props only.
-import { BulbIcon, FolderIcon, GridIcon, ItemTabs } from '@eshelton328/component-library-1701'
+import { BulbIcon, FolderIcon, GridIcon, ItemTabs, PlayIcon } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { IdeasList } from '../blocks/IdeasList.tsx'
 import { IdeaView } from '../blocks/IdeaView.tsx'
 import { OverviewPanels } from '../blocks/OverviewPanels.tsx'
+import { QaList } from '../blocks/QaList.tsx'
 import { RepositoriesList } from '../blocks/RepositoriesList.tsx'
 import { ProjectHeader } from '../blocks/ProjectHeader.tsx'
 import { type ProjectCard, ProjectTab, type ProjectsData, type ProjectsUi } from '../types.ts'
@@ -74,6 +76,7 @@ export function ProjectDetail(props: ProjectDetailProps) {
     data.repositories === undefined ? null : (
       <RepositoriesList repositories={data.repositories} words={words} layout={layout} />
     )
+  const qa = data.qa === undefined ? null : <QaList qa={data.qa} words={words} layout={layout} />
   const ideas =
     data.ideas === undefined ? null : (
       <IdeasList
@@ -107,6 +110,7 @@ export function ProjectDetail(props: ProjectDetailProps) {
           items={[
             { value: 'overview', label: words.overview, icon: <GridIcon />, content: overview },
             { value: 'repositories', label: words.repositories, icon: <FolderIcon />, content: repositories },
+            { value: 'qa', label: words.qa, icon: <PlayIcon />, content: qa },
             { value: 'ideas', label: words.ideas, icon: <BulbIcon />, content: ideas },
           ]}
         />

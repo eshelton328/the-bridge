@@ -1,0 +1,9 @@
+{
+  "rules": [
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"project tabs\"] > div.item-tabs__root > div.item-tabs__list:nth-of-type(1)",
+      "reason": "The tab row scrolls: the frame (frame.png) draws its row of five tabs past the right edge, and the page's four tabs run past it too; a tap on Ideas at 390 px opens it (app/ProjectQaLive.test.tsx)."
+    }
+  ]
+}

@@ -9,7 +9,8 @@
 // `GET /api/projects/:slug/repositories` (the test's sections of the
 // project, none by default), `.../repositories/:repo/ci` (the test's CI
 // answer, not read by default; `setCi` changes it; a repository the
-// project does not list is 404), `GET /api/projects/:slug/drift` (the test's last
+// project does not list is 404), `GET /api/projects/:slug/qa` (the test's QA
+// items of the project, none by default), `GET /api/projects/:slug/drift` (the test's last
 // drift run, none by default) and `POST /api/projects/:slug/drift` (a clean run
 // now, kept as the last). Every project, body and answer is checked against the
 // contract, so a test cannot send or get what the server would not: a body the
@@ -28,6 +29,7 @@ import {
   ProjectDetailResponse,
   ProjectsResponse,
   ProjectSummary,
+  QaListResponse,
   RepositoriesResponse,
   RepositoryCiResponse,
   RunDriftRequest,
@@ -44,6 +46,7 @@ export type ProjectsCall =
   | 'idea'
   | 'repositories'
   | 'ci'
+  | 'qa'
   | 'drift'
   | 'runDrift'
 
@@ -76,18 +79,21 @@ type FakeProjectsOptions = {
   readonly repositories?: Readonly<Record<string, readonly unknown[]>>
   /** Each repository's CI answer (`RepositoryCiResponse`) by `<slug>/<repository ID>`; not read by default. */
   readonly ci?: Readonly<Record<string, unknown>>
+  /** Each project's QA items (`QaItem`) by its slug, in the list's order; none by default. */
+  readonly qa?: Readonly<Record<string, readonly unknown[]>>
   /** Each project's last drift run (`DriftRun`) by its slug; none (never checked) by default. */
   readonly drift?: Readonly<Record<string, unknown>>
 }
 
 export function fakeProjectsServer(
   projects: readonly unknown[] = [],
-  { chats = {}, queues = {}, ideas = {}, repositories = {}, ci = {}, drift = {} }: FakeProjectsOptions = {},
+  { chats = {}, queues = {}, ideas = {}, repositories = {}, ci = {}, qa = {}, drift = {} }: FakeProjectsOptions = {},
 ) {
   const sectionsOf = new Map(
     Object.entries(repositories).map(([slug, list]) => [slug, RepositoriesResponse.parse({ repositories: list })]),
   )
   const ciOf = new Map(Object.entries(ci).map(([key, answer]) => [key, RepositoryCiResponse.parse(answer)]))
+  const qaOf = new Map(Object.entries(qa).map(([slug, list]) => [slug, QaListResponse.parse({ items: list })]))
   const ideasOf = new Map(
     Object.entries(ideas).map(([slug, list]) => [slug, list.map((i) => IdeaDetailResponse.parse(i))]),
   )
@@ -157,6 +163,7 @@ export function fakeProjectsServer(
       const ideasPath = /^\/api\/projects\/([^/]+)\/ideas$/.exec(path)
       const reposPath = /^\/api\/projects\/([^/]+)\/repositories$/.exec(path)
       const ciPath = /^\/api\/projects\/([^/]+)\/repositories\/([^/]+)\/ci$/.exec(path)
+      const qaPath = /^\/api\/projects\/([^/]+)\/qa$/.exec(path)
       const ideaPath = /^\/api\/projects\/([^/]+)\/ideas\/([^/]+)$/.exec(path)
       const driftPath = /^\/api\/projects\/([^/]+)\/drift$/.exec(path)
       const call: ProjectsCall | undefined =
@@ -180,7 +187,9 @@ export function fakeProjectsServer(
                           ? 'drift'
                           : driftPath !== null && method === 'POST'
                             ? 'runDrift'
-                            : undefined
+                            : qaPath !== null && method === 'GET'
+                              ? 'qa'
+                              : undefined
       if (call === undefined) return undefined
       requests.push({ call, path, body: bodyOf(init) })
       const next = answers.get(call)
@@ -214,6 +223,12 @@ export function fakeProjectsServer(
             404,
           )
         return json(ciOf.get(`${slug}/${repo}`) ?? { ci: null, readAt: null, reading: false })
+      }
+      if (call === 'qa') {
+        const slug = decodeURIComponent(qaPath?.[1] ?? '')
+        if (!stored.has(slug))
+          return errorAnswer({ kind: 'not-found', path, message: 'no project has this slug', requestId: 'r-404' }, 404)
+        return json(qaOf.get(slug) ?? { items: [] })
       }
       if (call === 'ideas' || call === 'idea') {
         const slug = decodeURIComponent((ideasPath ?? ideaPath)?.[1] ?? '')
