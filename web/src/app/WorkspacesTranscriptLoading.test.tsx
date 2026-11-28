@@ -229,6 +229,10 @@ describe('a live chat while its transcript loads', () => {
       const server = slowServer()
       server.hold()
       await openChat(device.size, device.taps)
+      // The desktop shows the chat as the page loads. Wait for its heading, so the skeleton below is the chat's own and
+      // not the page's loading layout, which a slow page load draws first (NCC-181); the held read keeps it showing.
+      if (!device.taps)
+        await expect.element(page.getByRole('heading', { name: title }), { timeout: loadLimitMs }).toBeVisible()
       await expect.element(loading()).toBeInTheDocument()
       const skel = skeleton()
       const body = skel?.parentElement ?? null
@@ -276,15 +280,6 @@ describe('a live chat while its transcript loads', () => {
             listBottom: listBox(body).bottom,
             scrollTop: body.scrollTop,
             messageBoxHeight: messageBox().query()?.getBoundingClientRect().height ?? null,
-          })
-        // NCC-181: a CI run waited here with no check counted. With the reply still in the page but `body` gone, the
-        // pane mounted a new scroller, and `rowOf` gave an element outside the transcript; count that case apart.
-        else if (text !== null)
-          Object.assign(seen, {
-            staleChecks: Number(seen.staleChecks ?? 0) + 1,
-            msSinceRelease: Math.round(performance.now() - releasedAt),
-            textInBody: body.contains(text),
-            newestTag: newest.tagName,
           })
         return Math.abs(newest.getBoundingClientRect().bottom - loadedFrom) <= 1
       })
