@@ -14,8 +14,8 @@ const head = css({ display: 'flex', flexDirection: 'column', gap: '4', pt: '16',
 const title = css({ textStyle: 'heading', color: 'fg.default' })
 const meta = css({ textStyle: 'small', color: 'fg.muted' })
 
-/** The record's text without its first `# ` heading, which the page draws as its title. */
-const bodyOf = (text: string) => text.replace(/^\s*#\s[^\n]*\n+/, '')
+/** The record's text without its first `# ` heading (an empty one too), which the page draws as its title; never the next line. */
+const bodyOf = (text: string) => text.replace(/^\s*#(?:[ \t][^\n]*)?(?:\n+|$)/, '')
 
 export type IdeaViewProps = {
   idea: IdeaPage

@@ -59,3 +59,10 @@ export const LinksAndLists: Story = {
     await expect(item === null ? 'none' : getComputedStyle(item).listStyleType).not.toBe('none')
   },
 }
+
+export const EmptyFirstHeading: Story = {
+  args: { idea: { ...meta.args.idea, body: '#\nThe line under an empty heading.\n' } },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText('The line under an empty heading.')).toBeVisible()
+  },
+}
